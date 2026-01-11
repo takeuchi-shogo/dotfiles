@@ -15,7 +15,6 @@ SYMLINK_EXCLUDE_FILES=(
   "\.zcompdump.*"
   "^\.config/jgit/config$"
   "^\.config/raycast/extensions/"
-  "^\.config/karabiner/karabiner\.json$"
   "^\.serena/"
   "^sample-dotfiles/"
 )
