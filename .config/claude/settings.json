@@ -1,0 +1,16 @@
+{
+  "permission": {
+    "allow": [],
+    "deny": [],
+    "ask": []
+  },
+  "attribution": { "commit": "🤖 Generated with Claude Code", "pr": "" },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "language": "japanese",
+  "enabledMcpjsonServers": ["playwright", "context7"],
+  "enableAllProjectMcpServers": true
+}

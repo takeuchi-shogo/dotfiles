@@ -17,6 +17,7 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/raycast/extensions/"
   "^\.config/karabiner/karabiner\.json$"
   "^\.serena/"
+  "^sample-dotfiles/"
 )
 
 is_excluded() {
@@ -69,13 +70,13 @@ main() {
 
   echo "Processing dotfiles in $DOTFILES_DIR..."
 
-  # すべてのファイルを処理（macOS互換）
+  # すべてのファイルとシンボリックリンクを処理（macOS互換）
   while IFS= read -r file; do
     if is_excluded "$file"; then
       continue
     fi
     create_symlink "$file" || true  # エラーが発生しても続行
-  done < <(find . -type f ! -path '*.git/*' ! -name '.DS_Store' | sed 's|^\./||')
+  done < <(find . \( -type f -o -type l \) ! -path '*.git/*' ! -name '.DS_Store' | sed 's|^\./||')
 
   echo "Complete! 🚀"
 }
