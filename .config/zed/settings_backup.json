@@ -19,7 +19,7 @@
     "background_coloring": "indent_aware",
   },
   // 行番号を相対表示する
-  "relative_line_numbers": "enabled",
+  "relative_line_numbers": true,
   "inlay_hints": {
     "enabled": true,
   },
@@ -33,7 +33,7 @@
   },
   "chat_panel": {
     // chatは使用しないので非表示
-    "button": "never",
+    "button": false,
   },
   "notification_panel": {
     // notificationは使用しないので非表示

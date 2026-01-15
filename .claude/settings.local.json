@@ -1,7 +1,4 @@
 {
-  "enabledMcpjsonServers": [
-    "playwright",
-    "context7"
-  ],
+  "enabledMcpjsonServers": ["playwright", "context7"],
   "enableAllProjectMcpServers": true
 }

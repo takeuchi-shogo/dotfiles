@@ -1,0 +1,7 @@
+version: "3"
+
+tasks:
+  symlink:
+    desc: run create symlink
+    cmds:
+      - ~/dotfiles/.bin/symlink.sh

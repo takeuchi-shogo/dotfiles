@@ -1,1 +1,5 @@
 sample-dotfiles
+
+/.git
+
+/.config/sketchybar/noice.log
