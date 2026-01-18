@@ -116,9 +116,9 @@ number_threshold = 1
 format = '[$symbol]($style)'
 
 [cmd_duration]
-min_time = 500
+min_time = 0
 show_milliseconds = true
-style = 'fg:gray'
+style = 'fg:green'
 format = '[󱎫 $duration]($style) '
 
 [time]

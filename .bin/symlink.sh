@@ -17,6 +17,12 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/raycast/extensions/"
   "^\.serena/"
   "^sample-dotfiles/"
+  "^\.config/zsh/"  # ディレクトリ全体でシンボリックリンクするため除外
+)
+
+# ディレクトリ全体をシンボリックリンクするリスト
+ZSH_SYMLINK_DIRECTORIES=(
+  ".config/zsh"
 )
 
 is_excluded() {
@@ -61,6 +67,33 @@ create_symlink() {
   fi
 }
 
+create_directory_symlink() {
+  local dir="$1"
+  local target="$DOTFILES_DIR/$dir"
+  local link="$HOME/$dir"
+  local link_parent
+  link_parent="$(dirname "$link")"
+
+  # 親ディレクトリを作成
+  mkdir -p "$link_parent"
+
+  # 既存ディレクトリの処理
+  if [ -d "$link" ] && [ ! -L "$link" ]; then
+    echo "Warning: $link exists and is not a symlink. Removing..." >&2
+    rm -rf "$link"
+  fi
+
+  # シンボリックリンクの作成
+  if [ -L "$link" ]; then
+    if [ "$(readlink "$link")" = "$target" ]; then
+      return 0
+    fi
+    ln -sfvn "$target" "$link"
+  else
+    ln -sv "$target" "$link"
+  fi
+}
+
 main() {
   if ! cd "$DOTFILES_DIR"; then
     echo "Error: $DOTFILES_DIR not found." >&2
@@ -69,7 +102,14 @@ main() {
 
   echo "Processing dotfiles in $DOTFILES_DIR..."
 
+  # ディレクトリ全体のシンボリックリンクを作成
+  echo "Creating directory symlinks..."
+  for dir in "${ZSH_SYMLINK_DIRECTORIES[@]}"; do
+    create_directory_symlink "$dir" || true
+  done
+
   # すべてのファイルとシンボリックリンクを処理（macOS互換）
+  echo "Creating file symlinks..."
   while IFS= read -r file; do
     if is_excluded "$file"; then
       continue
