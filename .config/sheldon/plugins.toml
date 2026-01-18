@@ -35,3 +35,7 @@ apply = ["defer"]
 [plugins.zsh-autopair]
 github = "hlissner/zsh-autopair"
 apply = ["defer"]
+
+# fzf-tab: タブ補完をfzfで強化
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"

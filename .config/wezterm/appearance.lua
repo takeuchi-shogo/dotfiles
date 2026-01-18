@@ -8,7 +8,10 @@ local appearance = {
 
   -- font
   font_size = 13.0,
-  font = wezterm.font("HackGen Console NF"),
+  font = wezterm.font_with_fallback({
+    "Hack Nerd Font",
+    "HackGen Console NF",  -- 日本語フォールバック
+  }),
   unicode_version = 14,
 
   -- window title

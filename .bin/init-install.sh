@@ -103,6 +103,8 @@ install_brew_packages() {
     git
     neovim
     sheldon
+    starship
+    fzf
     sketchybar
     lua
     grep
@@ -116,6 +118,7 @@ install_brew_packages() {
     karabiner-elements
     sf-symbols
     font-hackgen-nerd
+    font-hack-nerd-font
   )
 
   # Get installed packages once (optimization)
@@ -151,51 +154,15 @@ install_brew_packages() {
 }
 
 # =============================================================================
-# Oh My Zsh
+# Starship Prompt
 # =============================================================================
-install_oh_my_zsh() {
-  section "Oh My Zsh"
+setup_starship() {
+  section "Starship"
 
-  if [ -d "$HOME/.oh-my-zsh" ]; then
-    log "Oh My Zsh is already installed"
+  if command_exists starship; then
+    log "Starship is already installed"
   else
-    log "Installing Oh My Zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-  fi
-
-  local zsh_custom="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-
-  # Install Powerlevel10k
-  local p10k_dir="$zsh_custom/themes/powerlevel10k"
-  if [ -d "$p10k_dir" ]; then
-    log "Powerlevel10k is already installed"
-  else
-    log "Installing Powerlevel10k..."
-    if ! git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"; then
-      warn "Failed to install Powerlevel10k"
-    fi
-  fi
-
-  # Install zsh-syntax-highlighting
-  local syntax_dir="$zsh_custom/plugins/zsh-syntax-highlighting"
-  if [ -d "$syntax_dir" ]; then
-    log "zsh-syntax-highlighting is already installed"
-  else
-    log "Installing zsh-syntax-highlighting..."
-    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$syntax_dir"; then
-      warn "Failed to install zsh-syntax-highlighting"
-    fi
-  fi
-
-  # Install zsh-autosuggestions
-  local suggest_dir="$zsh_custom/plugins/zsh-autosuggestions"
-  if [ -d "$suggest_dir" ]; then
-    log "zsh-autosuggestions is already installed"
-  else
-    log "Installing zsh-autosuggestions..."
-    if ! git clone https://github.com/zsh-users/zsh-autosuggestions.git "$suggest_dir"; then
-      warn "Failed to install zsh-autosuggestions"
-    fi
+    warn "Starship is not installed (should be installed via brew)"
   fi
 }
 
@@ -320,18 +287,16 @@ print_summary() {
 The following has been set up:
   ✅ Xcode Command Line Tools
   ✅ Homebrew
-  ✅ CLI tools (git, neovim, sheldon, sketchybar, etc.)
+  ✅ CLI tools (git, neovim, sheldon, starship, fzf, sketchybar, etc.)
   ✅ GUI apps (WezTerm, AeroSpace, Karabiner-Elements)
-  ✅ Fonts (HackGen Nerd, Sketchybar App Font)
-  ✅ Oh My Zsh with Powerlevel10k
-  ✅ Zsh plugins
+  ✅ Fonts (HackGen Nerd, Hack Nerd Font, Sketchybar App Font)
   ✅ Symlinks
   ✅ Sheldon plugins
+  ✅ Starship prompt
 
 Next steps:
   1. Restart your terminal (or run: exec zsh)
-  2. Run 'p10k configure' if you want to reconfigure Powerlevel10k
-  3. Check sketchybar and AeroSpace are running
+  2. Check sketchybar and AeroSpace are running
 
 EOF
   echo "Log file: $LOG_FILE"
@@ -359,10 +324,10 @@ EOF
   install_xcode_cli
   install_homebrew
   install_brew_packages
-  install_oh_my_zsh
   install_sketchybar_font
   create_symlinks
   setup_sheldon      # After symlinks so config exists
+  setup_starship
   start_services
   print_summary
 }
