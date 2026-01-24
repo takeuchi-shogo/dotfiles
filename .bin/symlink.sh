@@ -17,12 +17,27 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/raycast/extensions/"
   "^\.serena/"
   "^sample-dotfiles/"
-  "^\.config/zsh/"  # ディレクトリ全体でシンボリックリンクするため除外
+  "^\.config/zsh/"    # ディレクトリ全体でシンボリックリンクするため除外
+  "^\.config/claude/" # ~/.claude/ へカスタムシンボリックリンクするため除外
+  "^\.claude/"        # プロジェクトローカルの設定は除外
 )
 
 # ディレクトリ全体をシンボリックリンクするリスト
 ZSH_SYMLINK_DIRECTORIES=(
   ".config/zsh"
+)
+
+# Claude設定: .config/claude/ -> ~/.claude/ へのシンボリックリンク
+CLAUDE_SYMLINK_FILES=(
+  "settings.json"
+  "settings.local.json"
+  "statusline.sh"
+)
+CLAUDE_SYMLINK_DIRECTORIES=(
+  "agents"
+  "commands"
+  "scripts"
+  "skills"
 )
 
 is_excluded() {
@@ -94,6 +109,65 @@ create_directory_symlink() {
   fi
 }
 
+# Claude設定用のシンボリックリンク作成 (.config/claude/ -> ~/.claude/)
+create_claude_symlinks() {
+  local src_dir="$DOTFILES_DIR/.config/claude"
+  local dest_dir="$HOME/.claude"
+
+  # ~/.claude ディレクトリが存在しない場合は作成
+  mkdir -p "$dest_dir"
+
+  # ファイルのシンボリックリンク
+  for file in "${CLAUDE_SYMLINK_FILES[@]}"; do
+    local target="$src_dir/$file"
+    local link="$dest_dir/$file"
+
+    if [ ! -f "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -f "$link" ] && [ ! -L "$link" ]; then
+      echo "Backing up $link to ${link}.backup"
+      mv "$link" "${link}.backup"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfv "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+
+  # ディレクトリのシンボリックリンク
+  for dir in "${CLAUDE_SYMLINK_DIRECTORIES[@]}"; do
+    local target="$src_dir/$dir"
+    local link="$dest_dir/$dir"
+
+    if [ ! -d "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      echo "Warning: $link exists and is not a symlink. Removing..." >&2
+      rm -rf "$link"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfvn "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+}
+
 main() {
   if ! cd "$DOTFILES_DIR"; then
     echo "Error: $DOTFILES_DIR not found." >&2
@@ -107,6 +181,10 @@ main() {
   for dir in "${ZSH_SYMLINK_DIRECTORIES[@]}"; do
     create_directory_symlink "$dir" || true
   done
+
+  # Claude設定のシンボリックリンクを作成
+  echo "Creating Claude config symlinks..."
+  create_claude_symlinks || true
 
   # すべてのファイルとシンボリックリンクを処理（macOS互換）
   echo "Creating file symlinks..."

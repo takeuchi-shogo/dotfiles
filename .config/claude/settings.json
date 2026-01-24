@@ -1,17 +1,21 @@
 {
+  "model": "opus",
+  "language": "japanese",
+  "includeCoAuthoredBy": false,
+  "attribution": { "commit": "", "pr": "" },
   "permission": {
     "allow": [],
     "deny": [],
     "ask": []
   },
-  "includeCoAuthoredBy": false,
-  "attribution": { "commit": "", "pr": "" },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
-  "language": "japanese",
   "enabledMcpjsonServers": ["playwright", "context7"],
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  }
 }
