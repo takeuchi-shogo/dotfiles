@@ -29,6 +29,7 @@ ZSH_SYMLINK_DIRECTORIES=(
 
 # Claude設定: .config/claude/ -> ~/.claude/ へのシンボリックリンク
 CLAUDE_SYMLINK_FILES=(
+  "CLAUDE.md"
   "settings.json"
   "settings.local.json"
   "statusline.sh"
