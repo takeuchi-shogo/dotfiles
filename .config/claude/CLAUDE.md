@@ -38,6 +38,32 @@
 | `frontend-design` | UI/UXデザイン、コンポーネントスタイリング |
 | `code-reviewer` | コードレビュー、セキュリティチェック |
 | `git-commit-helper` | コミットメッセージ生成 |
+| `codex` | OpenAI Codex CLI連携、GPT-5.2によるコード分析・リファクタリング |
+| `codex-review` | Codex AI連携のコードレビュー、CHANGELOG自動生成 |
+
+### Codex スキルの使い方
+
+**codex** - OpenAI Codex CLIを使用した高度なコード操作
+
+```bash
+# 基本コマンド構造
+codex exec --skip-git-repo-check -m gpt-5.2 --config model_reasoning_effort="medium" --sandbox <mode> "プロンプト" 2>/dev/null
+
+# サンドボックスモード
+- read-only        : 読み取り専用（分析・レビュー）
+- workspace-write  : ローカル編集許可
+- danger-full-access : フルアクセス（ネットワーク含む）
+
+# セッション再開
+echo "追加の指示" | codex exec --skip-git-repo-check resume --last 2>/dev/null
+```
+
+**推論レベル:** `xhigh`（超複雑） / `high`（複雑） / `medium`（標準） / `low`（簡単）
+
+**codex-review** - コミット前の自動レビュー
+- 大規模リファクタリング時に使用
+- CHANGELOG.md の自動生成
+- conventional commit形式と併用推奨
 
 ## 並行処理
 
@@ -72,6 +98,12 @@
 1. `senior-architect` で方針決定
 2. 専門エージェントで実装
 3. `code-reviewer` で品質確認
+
+### 大規模コード分析・編集（Codex連携）
+1. `codex` スキルで分析タスクを実行（read-only モード）
+2. 編集が必要な場合は `workspace-write` モードで再実行
+3. `codex-review` でレビューとCHANGELOG生成
+4. `git-commit-helper` または `commit` でコミット
 
 ## コード品質
 
