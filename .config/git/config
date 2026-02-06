@@ -1,0 +1,17 @@
+[user]
+	name = takeuchi-shogo
+	email = takeuchi-shogo@users.noreply.github.com
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = nvim
+	excludesFile = ~/.config/git/ignore
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+

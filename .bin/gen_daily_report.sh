@@ -13,6 +13,5 @@ if [ ! -f "$REPORT_FILE" ]; then
   cp "$TEMPLATE" "$REPORT_FILE"
   sed -i '' "s/{{YYYY-MM-DD}}/$DATE/" "$REPORT_FILE" # macOS 用（BSD sed）
 fi
-echo "which nvim = $(which nvim)" >>/tmp/report.log
 
 /opt/homebrew/bin/nvim "$REPORT_FILE"

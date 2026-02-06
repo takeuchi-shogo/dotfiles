@@ -2,6 +2,26 @@ version: "3"
 
 tasks:
   symlink:
-    desc: run create symlink
+    desc: Create symlinks for dotfiles
     cmds:
       - ~/dotfiles/.bin/symlink.sh
+
+  install:
+    desc: Run initial setup (Homebrew, packages, symlinks, etc.)
+    cmds:
+      - ~/dotfiles/.bin/init-install.sh
+
+  brew:
+    desc: Install packages from Brewfile
+    cmds:
+      - brew bundle --file=~/dotfiles/Brewfile
+
+  restart-wm:
+    desc: Restart window manager services (sketchybar & AeroSpace)
+    cmds:
+      - ~/dotfiles/.bin/restart-wm.sh
+
+  update:
+    desc: Update Homebrew and all packages
+    cmds:
+      - brew update && brew upgrade && brew cleanup

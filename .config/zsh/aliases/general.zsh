@@ -1,0 +1,10 @@
+# General aliases
+alias ll='ls -la'
+alias la='ls -a'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias mkdir='mkdir -p'
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'

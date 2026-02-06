@@ -98,59 +98,16 @@ install_homebrew() {
 install_brew_packages() {
   section "Brew Packages"
 
-  # Formulas (CLI tools)
-  local formulas=(
-    git
-    neovim
-    sheldon
-    starship
-    fzf
-    sketchybar
-    lua
-    grep
-    gh
-  )
+  local brewfile="$DOTFILES_DIR/Brewfile"
 
-  # Casks (GUI apps)
-  local casks=(
-    wezterm
-    aerospace
-    karabiner-elements
-    sf-symbols
-    font-hackgen-nerd
-    font-hack-nerd-font
-  )
-
-  # Get installed packages once (optimization)
-  log "Checking installed packages..."
-  local installed_formulas
-  local installed_casks
-  installed_formulas=$(brew list --formula 2>/dev/null || echo "")
-  installed_casks=$(brew list --cask 2>/dev/null || echo "")
-
-  log "Installing formulas..."
-  for formula in "${formulas[@]}"; do
-    if echo "$installed_formulas" | grep -q "^${formula}$"; then
-      log "  $formula is already installed"
-    else
-      log "  Installing $formula..."
-      if ! brew install "$formula"; then
-        warn "Failed to install $formula"
-      fi
+  if [ -f "$brewfile" ]; then
+    log "Installing packages from Brewfile..."
+    if ! brew bundle --file="$brewfile"; then
+      warn "Some packages failed to install"
     fi
-  done
-
-  log "Installing casks..."
-  for cask in "${casks[@]}"; do
-    if echo "$installed_casks" | grep -q "^${cask}$"; then
-      log "  $cask is already installed"
-    else
-      log "  Installing $cask..."
-      if ! brew install --cask "$cask"; then
-        warn "Failed to install $cask"
-      fi
-    fi
-  done
+  else
+    warn "Brewfile not found at $brewfile"
+  fi
 }
 
 # =============================================================================

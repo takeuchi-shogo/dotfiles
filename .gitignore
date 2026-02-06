@@ -2,4 +2,7 @@ sample-dotfiles
 
 /.git
 
+.DS_Store
+*.log
+
 /.config/sketchybar/noice.log
