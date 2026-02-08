@@ -1,7 +1,7 @@
 ---
 name: backend-architect
 description: Backend system architecture and API design specialist. Use PROACTIVELY for RESTful APIs, microservice boundaries, database schemas, scalability planning, and performance optimization.
-tools: Read, Write, Edit, Bash
+tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 

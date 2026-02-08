@@ -1,21 +1,62 @@
 {
-  "model": "opus",
-  "language": "japanese",
-  "includeCoAuthoredBy": false,
-  "attribution": { "commit": "", "pr": "" },
-  "permission": {
-    "allow": [],
-    "deny": [],
-    "ask": []
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeCoAuthoredBy": false,
+  "model": "opus",
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright",
+    "context7"
+  ],
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
-  "enabledMcpjsonServers": ["playwright", "context7"],
-  "enableAllProjectMcpServers": true,
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true
+  },
+  "language": "japanese",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(pnpm *)",
+      "Bash(bun *)",
+      "Bash(go build *)",
+      "Bash(go test *)",
+      "Bash(go run *)",
+      "Bash(go mod *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git stash *)",
+      "Bash(git remote *)",
+      "Bash(ls *)",
+      "Bash(which *)",
+      "Bash(* --version)",
+      "Bash(* --help)",
+      "Bash(pwd)",
+      "Bash(brew list *)",
+      "Bash(brew info *)",
+      "Bash(codex exec *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)",
+      "Bash(chmod 777 *)"
+    ]
   }
 }

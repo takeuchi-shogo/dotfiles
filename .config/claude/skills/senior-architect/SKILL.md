@@ -1,209 +1,27 @@
 ---
 name: senior-architect
-description: Comprehensive software architecture skill for designing scalable, maintainable systems using ReactJS, NextJS, NodeJS, Express, React Native, Swift, Kotlin, Flutter, Postgres, GraphQL, Go, Python. Includes architecture diagram generation, system design patterns, tech stack decision frameworks, and dependency analysis. Use when designing system architecture, making technical decisions, creating architecture diagrams, evaluating trade-offs, or defining integration patterns.
+description: システムアーキテクチャ設計。マイクロサービス境界、技術選定、スケーラビリティ設計、アーキテクチャ図生成。
 ---
+# Senior Architect Guide
 
-# Senior Architect
+## 設計プロセス
+1. 要件整理（機能要件 + 非機能要件）
+2. コンポーネント分割（境界コンテキスト）
+3. データフロー設計
+4. 技術選定（トレードオフ評価）
+5. Mermaid図でアーキテクチャを可視化
 
-Complete toolkit for senior architect with modern tools and best practices.
+## アーキテクチャパターン
+- モノリス → モジュラーモノリス → マイクロサービス（段階的移行）
+- イベント駆動: 疎結合な非同期通信
+- CQRS: 読み書きの分離（高負荷時）
+- BFF: フロントエンド別のAPIゲートウェイ
 
-## Quick Start
+## スケーラビリティ
+- 水平スケーリング: ステートレス設計が前提
+- データベース: リードレプリカ、シャーディング
+- キャッシュ: CDN + アプリケーションキャッシュ
 
-### Main Capabilities
-
-This skill provides three core capabilities through automated scripts:
-
-```bash
-# Script 1: Architecture Diagram Generator
-python scripts/architecture_diagram_generator.py [options]
-
-# Script 2: Project Architect
-python scripts/project_architect.py [options]
-
-# Script 3: Dependency Analyzer
-python scripts/dependency_analyzer.py [options]
-```
-
-## Core Capabilities
-
-### 1. Architecture Diagram Generator
-
-Automated tool for architecture diagram generator tasks.
-
-**Features:**
-- Automated scaffolding
-- Best practices built-in
-- Configurable templates
-- Quality checks
-
-**Usage:**
-```bash
-python scripts/architecture_diagram_generator.py <project-path> [options]
-```
-
-### 2. Project Architect
-
-Comprehensive analysis and optimization tool.
-
-**Features:**
-- Deep analysis
-- Performance metrics
-- Recommendations
-- Automated fixes
-
-**Usage:**
-```bash
-python scripts/project_architect.py <target-path> [--verbose]
-```
-
-### 3. Dependency Analyzer
-
-Advanced tooling for specialized tasks.
-
-**Features:**
-- Expert-level automation
-- Custom configurations
-- Integration ready
-- Production-grade output
-
-**Usage:**
-```bash
-python scripts/dependency_analyzer.py [arguments] [options]
-```
-
-## Reference Documentation
-
-### Architecture Patterns
-
-Comprehensive guide available in `references/architecture_patterns.md`:
-
-- Detailed patterns and practices
-- Code examples
-- Best practices
-- Anti-patterns to avoid
-- Real-world scenarios
-
-### System Design Workflows
-
-Complete workflow documentation in `references/system_design_workflows.md`:
-
-- Step-by-step processes
-- Optimization strategies
-- Tool integrations
-- Performance tuning
-- Troubleshooting guide
-
-### Tech Decision Guide
-
-Technical reference guide in `references/tech_decision_guide.md`:
-
-- Technology stack details
-- Configuration examples
-- Integration patterns
-- Security considerations
-- Scalability guidelines
-
-## Tech Stack
-
-**Languages:** TypeScript, JavaScript, Python, Go, Swift, Kotlin
-**Frontend:** React, Next.js, React Native, Flutter
-**Backend:** Node.js, Express, GraphQL, REST APIs
-**Database:** PostgreSQL, Prisma, NeonDB, Supabase
-**DevOps:** Docker, Kubernetes, Terraform, GitHub Actions, CircleCI
-**Cloud:** AWS, GCP, Azure
-
-## Development Workflow
-
-### 1. Setup and Configuration
-
-```bash
-# Install dependencies
-npm install
-# or
-pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-```
-
-### 2. Run Quality Checks
-
-```bash
-# Use the analyzer script
-python scripts/project_architect.py .
-
-# Review recommendations
-# Apply fixes
-```
-
-### 3. Implement Best Practices
-
-Follow the patterns and practices documented in:
-- `references/architecture_patterns.md`
-- `references/system_design_workflows.md`
-- `references/tech_decision_guide.md`
-
-## Best Practices Summary
-
-### Code Quality
-- Follow established patterns
-- Write comprehensive tests
-- Document decisions
-- Review regularly
-
-### Performance
-- Measure before optimizing
-- Use appropriate caching
-- Optimize critical paths
-- Monitor in production
-
-### Security
-- Validate all inputs
-- Use parameterized queries
-- Implement proper authentication
-- Keep dependencies updated
-
-### Maintainability
-- Write clear code
-- Use consistent naming
-- Add helpful comments
-- Keep it simple
-
-## Common Commands
-
-```bash
-# Development
-npm run dev
-npm run build
-npm run test
-npm run lint
-
-# Analysis
-python scripts/project_architect.py .
-python scripts/dependency_analyzer.py --analyze
-
-# Deployment
-docker build -t app:latest .
-docker-compose up -d
-kubectl apply -f k8s/
-```
-
-## Troubleshooting
-
-### Common Issues
-
-Check the comprehensive troubleshooting section in `references/tech_decision_guide.md`.
-
-### Getting Help
-
-- Review reference documentation
-- Check script output messages
-- Consult tech stack documentation
-- Review error logs
-
-## Resources
-
-- Pattern Reference: `references/architecture_patterns.md`
-- Workflow Guide: `references/system_design_workflows.md`
-- Technical Guide: `references/tech_decision_guide.md`
-- Tool Scripts: `scripts/` directory
+## 技術選定フレームワーク
+- 評価軸: 学習コスト、コミュニティ、パフォーマンス、運用負荷
+- PoC: 判断に迷う場合は小規模検証
