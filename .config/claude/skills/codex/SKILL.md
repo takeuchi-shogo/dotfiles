@@ -1,12 +1,12 @@
 ---
 name: codex
-description: Use when the user asks to run Codex CLI (codex exec, codex resume) or references OpenAI Codex for code analysis, refactoring, or automated editing. Uses GPT-5.2 by default for state-of-the-art software engineering.
+description: Use when the user asks to run Codex CLI (codex exec, codex resume) or references OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.3-codex by default for state-of-the-art software engineering.
 ---
 
 # Codex Skill Guide
 
 ## Running a Task
-1. Default to `gpt-5.2` model. Ask the user (via `AskUserQuestion`) which reasoning effort to use (`xhigh`,`high`, `medium`, or `low`). User can override model if needed (see Model Options below).
+1. Default to `gpt-5.3-codex` model. Ask the user (via `AskUserQuestion`) which reasoning effort to use (`xhigh`,`high`, `medium`, or `low`). User can override model if needed (see Model Options below).
 2. Select the sandbox mode required for the task; default to `--sandbox read-only` unless edits or network access are necessary.
 3. Assemble the command with the appropriate options:
    - `-m, --model <MODEL>`
@@ -34,12 +34,12 @@ description: Use when the user asks to run Codex CLI (codex exec, codex resume) 
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |
+| `gpt-5.3-codex` ⭐ | **Codex-optimized model**: Software engineering, agentic coding workflows | 400K input / 128K output | Codex CLI 最適化、高精度コード生成 |
 | `gpt-5.2-max` | **Max model**: Ultra-complex reasoning, deep problem analysis | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
-| `gpt-5.2` ⭐ | **Flagship model**: Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
+| `gpt-5.2` | **Flagship model**: General-purpose software engineering | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
 | `gpt-5.2-mini` | Cost-efficient coding (4x more usage allowance) | 400K input / 128K output | Near SOTA performance, $0.25/$2.00 |
-| `gpt-5.1-thinking` | Ultra-complex reasoning, deep problem analysis | 400K input / 128K output | Adaptive thinking depth, runs 2x slower on hardest tasks |
 
-**GPT-5.2 Advantages**: 76.3% SWE-bench (vs 72.8% GPT-5), 30% faster on average tasks, better tool handling, reduced hallucinations, improved code quality. Knowledge cutoff: September 30, 2024.
+**GPT-5.3-codex Advantages**: Codex CLI に最適化されたモデル。高精度コード生成、改善されたツール使用、低遅延。`gpt-5.2` ベースの強化版。
 
 **Reasoning Effort Levels**:
 - `xhigh` - Ultra-complex tasks (deep problem analysis, complex reasoning, deep understanding of the problem)
@@ -61,6 +61,6 @@ description: Use when the user asks to run Codex CLI (codex exec, codex resume) 
 
 ## CLI Version
 
-Requires Codex CLI v0.57.0 or later for GPT-5.2 model support. The CLI defaults to `gpt-5.2` on macOS/Linux and `gpt-5.2` on Windows. Check version: `codex --version`
+Requires Codex CLI v0.57.0 or later. The CLI defaults to `gpt-5.3-codex` (config.toml で設定済み). Check version: `codex --version`
 
 Use `/model` slash command within a Codex session to switch models, or configure default in `~/.codex/config.toml`.

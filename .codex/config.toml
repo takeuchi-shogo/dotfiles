@@ -1,0 +1,18 @@
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
+model_reasoning_summary = "detailed"
+model_personality = "pragmatic"
+
+# 通常タスクは high で十分。xhigh はコスト高で必要時のみ CLI フラグで指定
+# model_reasoning_summary = "detailed" で推論過程の可視性を向上
+
+[features]
+shell_snapshot = true        # 環境スナップショット（beta）
+apply_patch_freeform = true  # freeform パッチ適用（experimental）
+
+[notifications]
+command = "osascript -e 'display notification \"Codex が完了しました\" with title \"Codex CLI\"'"
+# agent-turn-complete イベントで macOS 通知（Claude Code hooks と統一）
+
+[analytics]
+enabled = false  # 匿名テレメトリ無効化
