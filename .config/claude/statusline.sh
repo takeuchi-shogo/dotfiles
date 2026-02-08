@@ -1,9 +1,3 @@
 #!/bin/bash
-# Read JSON input from stdin
-input=$(cat)
-
-# Extract values using jq
-MODEL_DISPLAY=$(echo "$input" | jq -r '.model.display_name')
-CURRENT_DIR=$(echo "$input" | jq -r '.workspace.current_dir')
-
-echo "[$MODEL_DISPLAY] 📁 ${CURRENT_DIR##*/}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cat | python3 "$SCRIPT_DIR/scripts/context-monitor.py" 2>/dev/null || echo "[Claude] 📁 ${PWD##*/}"

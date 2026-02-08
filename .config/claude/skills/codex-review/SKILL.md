@@ -1,37 +1,24 @@
 ---
 name: codex-review
-description: Professional code review with auto CHANGELOG generation, integrated with Codex AI
+description: Codex AI を使ったコードレビューと CHANGELOG 自動生成。大規模リファクタリングやリリース前のレビューに使用。
 ---
 
-# codex-review
+# Codex Review
 
-## Overview
-Professional code review with auto CHANGELOG generation, integrated with Codex AI
+## 使い方
+1. レビュー対象の変更を `git diff` で確認
+2. Codex CLI を read-only モードで実行してレビュー:
+   ```bash
+   codex exec --skip-git-repo-check -m gpt-5.2 --config model_reasoning_effort="high" --sandbox read-only "Review the following changes for bugs, security issues, and code quality. Provide actionable feedback." 2>/dev/null
+   ```
+3. レビュー結果を元に修正を適用
 
-## When to Use
-- When you want professional code review before commits
-- When you need automatic CHANGELOG generation
-- When reviewing large-scale refactoring
-
-## Installation
+## CHANGELOG 自動生成
 ```bash
-npx skills add -g BenedictKing/codex-review
+codex exec --skip-git-repo-check -m gpt-5.2 --config model_reasoning_effort="medium" --sandbox read-only "Generate a CHANGELOG entry for the recent changes based on git log and conventional commits format." 2>/dev/null
 ```
 
-## Step-by-Step Guide
-1. Install the skill using the command above
-2. Ensure Codex CLI is installed
-3. Use `/codex-review` or natural language triggers
-
-## Examples
-See [GitHub Repository](https://github.com/BenedictKing/codex-review) for examples.
-
-## Best Practices
-- Keep CHANGELOG.md in your project root
-- Use conventional commit messages
-
-## Troubleshooting
-See the GitHub repository for troubleshooting guides.
-
-## Related Skills
-- context7-auto-research, tavily-web, exa-search, firecrawl-scraper
+## いつ使うか
+- 大規模リファクタリング後のセカンドオピニオン
+- リリース前の最終レビュー
+- CHANGELOG.md の更新が必要なとき
