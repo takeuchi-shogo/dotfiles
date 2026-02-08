@@ -1,21 +1,21 @@
 # CLI tools
-brew "git"
-brew "neovim"
-brew "sheldon"
-brew "starship"
-brew "fzf"
-brew "sketchybar"
-brew "lua"
-brew "grep"
-brew "gh"
-brew "mise"
+brew "git"        # バージョン管理
+brew "neovim"     # テキストエディタ (AstroNvim)
+brew "sheldon"    # zsh プラグインマネージャ
+brew "starship"   # クロスシェルプロンプト
+brew "fzf"        # ファジーファインダー
+brew "sketchybar" # macOS ステータスバー
+brew "lua"        # Sketchybar/Neovim スクリプト
+brew "grep"       # GNU grep (macOS 標準より高機能)
+brew "gh"         # GitHub CLI
+brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
 
 # GUI apps
-cask "wezterm"
-cask "aerospace"
-cask "karabiner-elements"
-cask "sf-symbols"
+cask "wezterm"            # GPU アクセラレーテッドターミナル
+cask "aerospace"          # タイル型ウィンドウマネージャ
+cask "karabiner-elements" # キーボードカスタマイズ
+cask "sf-symbols"         # Apple SF Symbols ブラウザ
 
 # Fonts
-cask "font-hackgen-nerd"
-cask "font-hack-nerd-font"
+cask "font-hackgen-nerd"  # HackGen Nerd Font (日本語対応)
+cask "font-hack-nerd-font" # Hack Nerd Font

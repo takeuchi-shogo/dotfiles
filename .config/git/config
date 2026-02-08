@@ -15,3 +15,24 @@
 [push]
 	autoSetupRemote = true
 
+[alias]
+	st = status -sb
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	df = diff
+	dfs = diff --staged
+	co = checkout
+	cob = checkout -b
+	br = branch
+	cm = commit -m
+	cane = commit --amend --no-edit
+	pf = push --force-with-lease
+	unstage = reset HEAD --
+	last = log -1 HEAD
+	undo = reset --soft HEAD^
+
+[diff]
+	algorithm = histogram
+
+[merge]
+	conflictstyle = zdiff3
+
