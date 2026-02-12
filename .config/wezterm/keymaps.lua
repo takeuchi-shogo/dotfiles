@@ -268,9 +268,11 @@ local keys = {
         window:perform_action(act.TogglePaneZoomState, pane)
       end
       local new_pane = pane:split({ direction = "Bottom", size = 1.0 })
-      new_pane:send_text("lazygit\n")
       new_pane:activate()
       window:perform_action(act.TogglePaneZoomState, new_pane)
+      wezterm.time.call_after(0.5, function()
+        new_pane:send_text("lazygit\n")
+      end)
     end),
   },
 
