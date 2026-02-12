@@ -218,6 +218,50 @@ setup_sheldon() {
 }
 
 # =============================================================================
+# Claude Code Plugins
+# =============================================================================
+setup_claude_plugins() {
+  section "Claude Code Plugins"
+
+  if ! command_exists claude; then
+    warn "Claude Code CLI is not installed, skipping plugin setup..."
+    return
+  fi
+
+  # Marketplaces
+  local marketplaces=(
+    "anthropics/claude-code"
+    "anthropics/claude-plugins-official"
+    "obra/superpowers-marketplace"
+  )
+
+  for mp in "${marketplaces[@]}"; do
+    log "Adding marketplace: $mp"
+    if ! claude plugin marketplace add "$mp" >> "$LOG_FILE" 2>&1; then
+      log "Marketplace $mp already exists (continuing)"
+    fi
+  done
+
+  # Plugins
+  local plugins=(
+    "superpowers@superpowers-marketplace"
+    "frontend-design@claude-code-plugins"
+    "code-simplifier@claude-plugins-official"
+    "playground@claude-plugins-official"
+    "pr-review-toolkit@claude-code-plugins"
+  )
+
+  for plugin in "${plugins[@]}"; do
+    log "Installing plugin: $plugin"
+    if ! claude plugin install "$plugin" >> "$LOG_FILE" 2>&1; then
+      warn "Failed to install plugin: $plugin"
+    fi
+  done
+
+  log "Claude Code plugin setup complete"
+}
+
+# =============================================================================
 # Start Services
 # =============================================================================
 start_services() {
@@ -250,6 +294,7 @@ The following has been set up:
   ✅ Symlinks
   ✅ Sheldon plugins
   ✅ Starship prompt
+  ✅ Claude Code plugins
 
 Next steps:
   1. Restart your terminal (or run: exec zsh)
@@ -285,6 +330,7 @@ EOF
   create_symlinks
   setup_sheldon      # After symlinks so config exists
   setup_starship
+  setup_claude_plugins  # After symlinks so settings.json exists
   start_services
   print_summary
 }
