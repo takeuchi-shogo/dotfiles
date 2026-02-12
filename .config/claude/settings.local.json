@@ -2,5 +2,10 @@
   "env": {
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
     "DISABLE_COST_WARNINGS": "1"
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "context7"
+  ],
+  "enableAllProjectMcpServers": true
 }

@@ -6,3 +6,5 @@ sample-dotfiles
 *.log
 
 /.config/sketchybar/noice.log
+
+settings.local.json

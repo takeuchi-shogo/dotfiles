@@ -2,7 +2,7 @@
 # Zsh Configuration
 # =============================================================================
 
-ZSHDIR="${ZDOTDIR:-$HOME/.config/zsh}"
+ZSHDIR="$HOME/.config/zsh"
 
 # Load configuration files in order
 for dir in core tools functions aliases plugins; do
