@@ -1,16 +1,4 @@
 {
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ]
-  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
@@ -19,21 +7,6 @@
     "pr": ""
   },
   "includeCoAuthoredBy": false,
-  "model": "opus",
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "playwright",
-    "context7"
-  ],
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh",
-    "padding": 0
-  },
-  "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true
-  },
-  "language": "japanese",
   "permissions": {
     "allow": [
       "Bash(npm run *)",
@@ -70,5 +43,32 @@
       "Bash(git clean -f *)",
       "Bash(chmod 777 *)"
     ]
-  }
+  },
+  "model": "opus",
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright",
+    "context7"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "language": "japanese"
 }

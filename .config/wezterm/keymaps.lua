@@ -250,6 +250,30 @@ local keys = {
       },
     }),
   },
+  -- LazyGit
+  {
+    key = "g",
+    mods = "LEADER",
+    action = wezterm.action_callback(function(window, pane)
+      local tab = pane:tab()
+      local panes_with_info = tab:panes_with_info()
+      local is_zoomed = false
+      for _, pane_info in ipairs(panes_with_info) do
+        if pane_info.is_active and pane_info.is_zoomed then
+          is_zoomed = true
+          break
+        end
+      end
+      if is_zoomed then
+        window:perform_action(act.TogglePaneZoomState, pane)
+      end
+      local new_pane = pane:split({ direction = "Bottom", size = 1.0 })
+      new_pane:send_text("lazygit\n")
+      new_pane:activate()
+      window:perform_action(act.TogglePaneZoomState, new_pane)
+    end),
+  },
+
   -- ShowLauncher
   -- { key = "l", mods = "SUPER", action = wezterm.action.ShowLauncher }, -- default: Alt + l
   {

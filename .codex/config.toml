@@ -2,6 +2,7 @@ model = "gpt-5.3-codex"
 model_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
 model_personality = "pragmatic"
+personality = "pragmatic"
 
 # 通常タスクは high で十分。xhigh はコスト高で必要時のみ CLI フラグで指定
 # model_reasoning_summary = "detailed" で推論過程の可視性を向上
