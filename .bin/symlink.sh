@@ -49,6 +49,16 @@ CODEX_SYMLINK_FILES=(
 )
 CODEX_SYMLINK_DIRECTORIES=()
 
+# Codex スキル: Claude スキルを ~/.codex/skills/ に共有
+# ~/.codex/skills/.system/ を壊さないよう個別にシンボリックリンク
+CODEX_SHARED_SKILLS=(
+  "senior-architect"
+  "senior-backend"
+  "senior-frontend"
+  "react-best-practices"
+  "frontend-design"
+)
+
 is_excluded() {
   local file="$1"
   local pattern
@@ -223,6 +233,35 @@ create_codex_symlinks() {
     if [ -d "$link" ] && [ ! -L "$link" ]; then
       echo "Warning: $link exists and is not a symlink. Removing..." >&2
       rm -rf "$link"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfvn "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+
+  # Claude スキルを Codex スキルとして共有（個別シンボリックリンク）
+  local claude_skills_dir="$DOTFILES_DIR/.config/claude/skills"
+  local codex_skills_dir="$dest_dir/skills"
+  mkdir -p "$codex_skills_dir"
+
+  for skill in "${CODEX_SHARED_SKILLS[@]}"; do
+    local target="$claude_skills_dir/$skill"
+    local link="$codex_skills_dir/$skill"
+
+    if [ ! -d "$target" ]; then
+      echo "Warning: Claude skill $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      echo "Warning: $link exists and is not a symlink. Skipping." >&2
+      continue
     fi
 
     if [ -L "$link" ]; then
