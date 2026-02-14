@@ -9,9 +9,11 @@ brew "lua"        # Sketchybar/Neovim スクリプト
 brew "grep"       # GNU grep (macOS 標準より高機能)
 brew "gh"         # GitHub CLI
 brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
+brew "borders"    # ウィンドウ枠線ハイライト
 
 # GUI apps
 cask "wezterm"            # GPU アクセラレーテッドターミナル
+cask "ghostty"            # GPU アクセラレーテッドターミナル (代替)
 cask "aerospace"          # タイル型ウィンドウマネージャ
 cask "karabiner-elements" # キーボードカスタマイズ
 cask "sf-symbols"         # Apple SF Symbols ブラウザ
