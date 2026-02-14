@@ -16,6 +16,7 @@ function module.apply_to_config(config)
   local TAB_ICON_NB = wezterm.nerdfonts.md_notebook
   local TAB_ICON_SSH = wezterm.nerdfonts.md_lan
   local TAB_ICON_FALLBACK = wezterm.nerdfonts.md_console_network
+  local TAB_ICON_ZOOM = wezterm.nerdfonts.md_magnify
 
   -- Color
   local TAB_ICON_COLOR_DOCKER = "#4169e1"
@@ -28,7 +29,6 @@ function module.apply_to_config(config)
   local TAB_ICON_COLOR_SSH = "#ff6b6b"
   local TAB_ICON_COLOR_FALLBACK = "#ae8b2d"
   local TAB_FOREGROUND_INACTIVE = "#a0a9cb"
-  local TAB_BACKGROUND_INACTIVE = "#1d2230"
   local TAB_FOREGROUND_ACTIVE = "#313244"
   local TAB_BACKGROUND_ACTIVE = "#80EBDF"
   local TAB_BACKGROUND_SSH_ACTIVE = "#ff6b6b"
@@ -40,6 +40,11 @@ function module.apply_to_config(config)
 
   local function basename(s)
     return string.gsub(s, "(.*[/\\])(.*)", "%2")
+  end
+
+  local function is_claude_process(process_name, pane_title)
+    return process_name == "claude"
+      or (pane_title and (pane_title:find("^✳") or pane_title:lower():find("claude")))
   end
 
   wezterm.on("pane-focus-changed", function(_, pane)
@@ -59,7 +64,7 @@ function module.apply_to_config(config)
     end
   end)
 
-  wezterm.on("update-status", function(window, pane)
+  wezterm.on("update-status", function(_, pane)
     local pane_id = pane:pane_id()
 
     local user_vars = pane.user_vars or {}
@@ -75,13 +80,12 @@ function module.apply_to_config(config)
           if home and cwd:find("^" .. home) then
             cwd = cwd:gsub("^" .. home, "~")
           end
-          -- nbディレクトリの検出
           if cwd:find("%.nb") then
             title_cache[pane_id] = "nb"
           else
             local github_prefix_pattern = ".*/src/github.com/([^/]+)/([^/]+)"
-            local user, project = cwd:match(github_prefix_pattern)
-            if user and project then
+            local _, project = cwd:match(github_prefix_pattern)
+            if project then
               title_cache[pane_id] = project
             else
               cwd = cwd:gsub("/$", "")
@@ -92,29 +96,6 @@ function module.apply_to_config(config)
         end
       end
     end
-
-    -- Update the status bar at the same time
-    local left_status = {}
-
-    -- Get workspace name
-    local workspace = window:active_workspace()
-    wezterm.log_info("Current workspace: " .. tostring(workspace))
-    table.insert(left_status, " " .. workspace .. " ")
-
-    -- Check key table mode for workspace color
-    local key_table = window:active_key_table()
-    local workspace_color = "#80EBDF"  -- Default color (cyan)
-    if key_table == "copy_mode" then
-      workspace_color = "#ffd700"  -- Yellow for copy mode
-    elseif key_table == "setting_mode" then
-      workspace_color = "#39FF14"  -- Neon green for setting mode
-    end
-
-    -- Shown on the left
-    window:set_left_status(wezterm.format({
-      { Foreground = { Color = workspace_color } },
-      { Text = " " .. table.concat(left_status, " | ") .. " " },
-    }))
   end)
 
   wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
@@ -173,7 +154,7 @@ function module.apply_to_config(config)
         title_cache[pane_id] = nil
       end
     end
-    local background = TAB_BACKGROUND_INACTIVE
+    local background = "transparent"
     local foreground = TAB_FOREGROUND_INACTIVE
     if tab.is_active and is_ssh then
       background = TAB_BACKGROUND_SSH_ACTIVE
@@ -182,7 +163,7 @@ function module.apply_to_config(config)
       background = TAB_BACKGROUND_ACTIVE
       foreground = TAB_FOREGROUND_ACTIVE
     end
-    local edge_background = TAB_BACKGROUND_INACTIVE -- Make it the same background color for the tab bar
+    local edge_background = "transparent"
     local edge_foreground = background
 
     local cwd = "-"
@@ -214,13 +195,12 @@ function module.apply_to_config(config)
     local current_cwd = title_cache[pane_id] or ""
     if is_ssh then
       icon = TAB_ICON_SSH
-      -- If the ssh tab is active, the icon is white, if inactive, the icon is red
       if tab.is_active then
         icon_foreground = "#ffffff"
       else
         icon_foreground = TAB_ICON_COLOR_SSH
       end
-    elseif pane.title == "nvim" then
+    elseif pane.title == "nvim" or process_name == "nvim" then
       icon = TAB_ICON_NEOVIM
       icon_foreground = TAB_ICON_COLOR_NEOVIM
     elseif
@@ -249,35 +229,45 @@ function module.apply_to_config(config)
       icon_foreground = TAB_ICON_COLOR_TASK
     end
 
-    local title = " " .. wezterm.truncate_right(cwd, max_width) .. " "
-    
-    -- Add zoom indicator if the pane is zoomed
+    -- Claude Code detection
+    local claude_suffix = ""
+    if is_claude_process(process_name, title) and title ~= "" then
+      claude_suffix = " " .. title
+    end
+
+    local title_text = " " .. wezterm.truncate_right(cwd, max_width)
+    local claude_title = wezterm.truncate_right(claude_suffix, max_width) .. " "
+
+    -- Zoom indicator
     local zoom_indicator = ""
     for _, pane_info in ipairs(tab.panes) do
       if pane_info.is_zoomed then
-        zoom_indicator = wezterm.nerdfonts.md_magnify .. " "
+        zoom_indicator = TAB_ICON_ZOOM .. " "
         break
       end
     end
-    
+
+    -- Half circles (active tab only)
+    local left_circle = tab.is_active and SOLID_LEFT_CIRCLE or ""
+    local right_circle = tab.is_active and SOLID_RIGHT_CIRCLE or ""
+
     return {
       { Background = { Color = edge_background } },
       { Text = " " },
       { Foreground = { Color = edge_foreground } },
-      { Text = SOLID_LEFT_CIRCLE },
+      { Text = left_circle },
       { Background = { Color = background } },
       { Foreground = { Color = icon_foreground } },
       { Text = icon },
-      { Background = { Color = background } },
       { Foreground = { Color = foreground } },
       { Text = zoom_indicator },
-      { Background = { Color = background } },
-      { Foreground = { Color = foreground } },
       { Attribute = { Intensity = "Bold" } },
-      { Text = title },
+      { Text = title_text },
+      { Attribute = { Intensity = "Normal" } },
+      { Text = claude_title },
       { Background = { Color = edge_background } },
       { Foreground = { Color = edge_foreground } },
-      { Text = SOLID_RIGHT_CIRCLE },
+      { Text = right_circle },
     }
   end)
 end

@@ -2,6 +2,8 @@ local wezterm = require("wezterm")
 local module = {}
 
 local appearance = {
+  color_scheme = "Solarized Dark Higher Contrast",
+
   -- background
   window_background_opacity = 0.7,
   macos_window_background_blur = 13,
@@ -37,7 +39,8 @@ local appearance = {
 
   --pane
   inactive_pane_hsb = {
-    saturation = 0.5,
+    hue = 0.9,
+    saturation = 0.9,
     brightness = 1.0,
   },
   default_cursor_style = "SteadyBlock", -- BlinkingBlock, SteadyUnderline, BlinkingUnderline, SteadyBar, BlinkingBar
@@ -62,18 +65,25 @@ local appearance = {
   hide_tab_bar_if_only_one_tab = false,
   tab_bar_at_bottom = true,
   show_new_tab_button_in_tab_bar = false,
-  -- show_close_tab_button_in_tabs = false, -- Can only be used in nightly
+  show_close_tab_button_in_tabs = false,
   tab_max_width = 30,
-  use_fancy_tab_bar = false,
+  use_fancy_tab_bar = true,
+  window_frame = {
+    inactive_titlebar_bg = "none",
+    active_titlebar_bg = "none",
+  },
   -- Hide borders between tabs
   colors = {
+    background = "#1a1a2e",
     tab_bar = {
       background = "none",
       inactive_tab_edge = "none",
     },
-    cursor_bg = "#ffcc00", -- カーソルの背景色（ブロックカーソルの本体色）
-    cursor_fg = "#000000", -- カーソル内の文字の色
-    cursor_border = "#ffaa00", -- カーソルの枠線の色（主にブロックカーソルで使われる）
+    cursor_bg = "#80EBDF",
+    cursor_fg = "#000000",
+    cursor_border = "#80EBDF",
+    selection_bg = "#ffdd00",
+    selection_fg = "#000000",
   },
 }
 

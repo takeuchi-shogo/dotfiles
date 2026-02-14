@@ -7,6 +7,78 @@ local translate = require("translate")
 
 local module = {}
 
+-- Helper: set pane height to percentage
+local function set_pane_height_percent(percent)
+  return wezterm.action_callback(function(window, pane)
+    local tab = pane:tab()
+    local tab_size = tab:get_size()
+    local pane_dims = pane:get_dimensions()
+    local pane_id = pane:pane_id()
+
+    local is_top_pane = false
+    for _, info in ipairs(tab:panes_with_info()) do
+      if info.pane:pane_id() == pane_id then
+        is_top_pane = (info.top == 0)
+        break
+      end
+    end
+
+    local target_rows = math.floor(tab_size.rows * percent)
+    local current_rows = pane_dims.viewport_rows
+    local diff = current_rows - target_rows
+
+    if is_top_pane then
+      if diff > 0 then
+        window:perform_action(act.AdjustPaneSize({ "Up", diff }), pane)
+      elseif diff < 0 then
+        window:perform_action(act.AdjustPaneSize({ "Down", -diff }), pane)
+      end
+    else
+      if diff > 0 then
+        window:perform_action(act.AdjustPaneSize({ "Down", diff }), pane)
+      elseif diff < 0 then
+        window:perform_action(act.AdjustPaneSize({ "Up", -diff }), pane)
+      end
+    end
+  end)
+end
+
+-- Helper: set pane width to percentage
+local function set_pane_width_percent(percent)
+  return wezterm.action_callback(function(window, pane)
+    local tab = pane:tab()
+    local tab_size = tab:get_size()
+    local pane_dims = pane:get_dimensions()
+    local pane_id = pane:pane_id()
+
+    local is_left_pane = false
+    for _, info in ipairs(tab:panes_with_info()) do
+      if info.pane:pane_id() == pane_id then
+        is_left_pane = (info.left == 0)
+        break
+      end
+    end
+
+    local target_cols = math.floor(tab_size.cols * percent)
+    local current_cols = pane_dims.cols
+    local diff = current_cols - target_cols
+
+    if is_left_pane then
+      if diff > 0 then
+        window:perform_action(act.AdjustPaneSize({ "Left", diff }), pane)
+      elseif diff < 0 then
+        window:perform_action(act.AdjustPaneSize({ "Right", -diff }), pane)
+      end
+    else
+      if diff > 0 then
+        window:perform_action(act.AdjustPaneSize({ "Right", diff }), pane)
+      elseif diff < 0 then
+        window:perform_action(act.AdjustPaneSize({ "Left", -diff }), pane)
+      end
+    end
+  end)
+end
+
 local leader = { key = "q", mods = "CTRL", timeout_milliseconds = 2000 }
 
 local keys = {
@@ -470,15 +542,38 @@ local key_tables = {
   },
   -- custom key tables
   setting_mode = {
+    -- Pane size adjustment (1 step)
     { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
     { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
     { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
     { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
 
+    -- Pane height percentage (1=10%, 2=20%, ..., 9=90%)
+    { key = "1", action = set_pane_height_percent(0.1) },
+    { key = "2", action = set_pane_height_percent(0.2) },
+    { key = "3", action = set_pane_height_percent(0.3) },
+    { key = "4", action = set_pane_height_percent(0.4) },
+    { key = "5", action = set_pane_height_percent(0.5) },
+    { key = "6", action = set_pane_height_percent(0.6) },
+    { key = "7", action = set_pane_height_percent(0.7) },
+    { key = "8", action = set_pane_height_percent(0.8) },
+    { key = "9", action = set_pane_height_percent(0.9) },
+
+    -- Pane width percentage (Ctrl+1=10%, Ctrl+2=20%, ..., Ctrl+9=90%)
+    { key = "1", mods = "CTRL", action = set_pane_width_percent(0.1) },
+    { key = "2", mods = "CTRL", action = set_pane_width_percent(0.2) },
+    { key = "3", mods = "CTRL", action = set_pane_width_percent(0.3) },
+    { key = "4", mods = "CTRL", action = set_pane_width_percent(0.4) },
+    { key = "5", mods = "CTRL", action = set_pane_width_percent(0.5) },
+    { key = "6", mods = "CTRL", action = set_pane_width_percent(0.6) },
+    { key = "7", mods = "CTRL", action = set_pane_width_percent(0.7) },
+    { key = "8", mods = "CTRL", action = set_pane_width_percent(0.8) },
+    { key = "9", mods = "CTRL", action = set_pane_width_percent(0.9) },
+
     -- Cancel the mode
     { key = "Escape", action = "PopKeyTable" },
     { key = "q", action = "PopKeyTable" },
-    { key = "c", mod = "CTRL", action = "PopKeyTable" },
+    { key = "c", mods = "CTRL", action = "PopKeyTable" },
   },
 }
 
