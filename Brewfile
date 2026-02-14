@@ -6,6 +6,9 @@ brew "starship"   # クロスシェルプロンプト
 brew "fzf"        # ファジーファインダー
 brew "sketchybar" # macOS ステータスバー
 brew "lua"        # Sketchybar/Neovim スクリプト
+brew "ripgrep"    # 高速 grep (rg)
+brew "fd"         # 高速 find
+brew "tree-sitter-cli" # Tree-sitter パーサ CLI (Neovim)
 brew "grep"       # GNU grep (macOS 標準より高機能)
 brew "gh"         # GitHub CLI
 brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
