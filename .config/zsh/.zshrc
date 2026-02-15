@@ -12,3 +12,6 @@ for dir in core tools functions aliases plugins; do
     done
   fi
 done
+
+# Load machine-local config (not tracked by git)
+[[ -f "$ZSHDIR/local.zsh" ]] && source "$ZSHDIR/local.zsh"

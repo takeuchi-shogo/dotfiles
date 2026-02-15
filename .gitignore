@@ -8,3 +8,6 @@ sample-dotfiles
 /.config/sketchybar/noice.log
 
 settings.local.json
+
+# Machine-local zsh config
+.config/zsh/local.zsh
