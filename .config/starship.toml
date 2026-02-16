@@ -39,7 +39,7 @@ truncate_to_repo = false
 
 [git_branch]
 style = 'fg:green'
-symbol = ' '
+symbol = " "
 format = '[on](white) [$symbol$branch ]($style)'
 
 [git_status]
@@ -66,51 +66,57 @@ symbol = ' '
 
 [python]
 style = 'teal'
-symbol = ' '
+symbol = " "
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 pyenv_version_name = true
 pyenv_prefix = ''
 
 [lua]
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [nodejs]
 style = 'blue'
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [golang]
 style = 'blue'
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [haskell]
 style = 'blue'
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [rust]
 style = 'orange'
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [ruby]
 style = 'blue'
-symbol = ' '
+symbol = " "
+format = '[$symbol($version )]($style)'
 
 [package]
 symbol = '󰏗 '
 
 [aws]
-symbol = ' '
+symbol = " "
 style = 'yellow'
 format = '[$symbol($profile )(\[$duration\] )]($style)'
 
 [docker_context]
-symbol = ' '
+symbol = " "
 style = 'fg:#06969A'
 format = '[$symbol]($style) $path'
 detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile']
 detect_extensions = ['Dockerfile']
 
 [jobs]
-symbol = ' '
+symbol = " "
 style = 'red'
 number_threshold = 1
 format = '[$symbol]($style)'
