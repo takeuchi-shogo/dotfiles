@@ -1,3 +1,7 @@
+# Taps
+tap "FelixKratz/formulae"
+tap "nikitabobko/tap"
+
 # CLI tools
 brew "git"        # バージョン管理
 brew "neovim"     # テキストエディタ (AstroNvim)
