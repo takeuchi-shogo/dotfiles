@@ -11,3 +11,7 @@ settings.local.json
 
 # Machine-local zsh config
 .config/zsh/local.zsh
+
+# Claude reviewer persona (contains personal data)
+.config/claude/agents/reviewer-*.md
+.config/claude/data/
