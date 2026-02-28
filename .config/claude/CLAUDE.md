@@ -73,6 +73,8 @@ Plan -> Implement -> Test -> Review -> Security Check -> Commit
 | テスト作成 | `test-engineer` | テスト戦略、テスト実装 |
 | デバッグ | `debugger` | 根本原因分析、バグ修正 |
 | セキュリティ | `security-reviewer` | 脆弱性検出、OWASP準拠 |
+| ビルドエラー | `build-fixer` | 型エラー、コンパイル失敗、依存関係修正 |
+| タスク振り分け | `triage-router` | タスク種別判定、最適エージェントへルーティング |
 | Go 開発 | `golang-pro` | Go パターン、並行処理 |
 | TypeScript 開発 | `typescript-pro` | 型設計、高度な型推論 |
 

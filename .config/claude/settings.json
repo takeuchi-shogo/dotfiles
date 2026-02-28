@@ -41,6 +41,7 @@
       "Bash(git push --force *)",
       "Bash(git reset --hard *)",
       "Bash(git clean -f *)",
+      "Bash(git checkout -- *)",
       "Bash(chmod 777 *)"
     ]
   },
@@ -51,12 +52,53 @@
     "context7"
   ],
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/session-load.js"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/session-save.js"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/session-save.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/suggest-compact.js"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"' && afplay /System/Library/Sounds/Glass.aiff &"
+            "command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"'; afplay /System/Library/Sounds/Glass.aiff &"
           }
         ]
       }
