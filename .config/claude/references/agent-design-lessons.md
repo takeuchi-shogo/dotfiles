@@ -1,0 +1,122 @@
+# Lessons from Building Claude Code: Seeing like an Agent
+
+出典: Anthropic Thariq (@trq212) — 2026年2月
+元記事の要約と、自分の設定への適用記録。
+
+---
+
+## 核心メッセージ
+
+**「エージェントの目線で見ろ（See like an Agent）」**
+
+ツール設計は科学ではなくアート。モデルの能力を観察し、出力を読み、実験を繰り返す。
+
+---
+
+## 5つの教訓
+
+### 1. ツールはモデルが「自然に呼びたくなる」形にする
+
+AskUserQuestion ツールの変遷:
+- プレーンテキスト質問 → 摩擦が大きい
+- マークダウン出力形式を指定 → 出力が不安定（Claude が形式を守らない）
+- 専用ツール化 → **Claude が喜んで呼ぶようになった**
+
+> "Even the best designed tool doesn't work if Claude doesn't understand how to call it."
+
+**適用**: スキルの `description` フィールドが自動選択のキー。曖昧な description は Claude が正しくルーティングできない原因になる。
+
+### 2. モデルが進化したらツールを見直す
+
+TodoWrite → Task Tool への進化:
+- 初期 Claude: Todo リストがないと迷子になる → 5ターンごとにリマインダー注入
+- 現在の Claude: Todo に縛られて柔軟性が下がる → Task Tool（依存関係・サブエージェント連携）に置き換え
+
+> "As model capabilities increase, the tools that your models once needed might now be constraining them."
+
+**適用**: 6段階ワークフローの全段階強制 → S/M/L 規模別スケーリングに変更済み。定期的にスキル・ルールが「今のモデルにとって制約になっていないか」を見直す。
+
+### 3. Progressive Disclosure で機能追加、ツール追加なし
+
+Claude Code のツール数: ~20個。新ツール追加のハードルは高い。
+
+Claude Code Guide Agent の事例:
+- 問題: Claude が自分自身（Claude Code）の使い方を知らない
+- 案1: システムプロンプトに全情報 → コンテキスト劣化、本業（コード書き）の邪魔
+- 案2: ドキュメントリンクを渡す → Claude が大量に読み込む
+- 解決: **専用サブエージェント**を作り、質問時だけ呼ばれるようにした
+
+> "We were able to add things to Claude's action space without adding a tool."
+
+**適用**: CLAUDE.md をコア原則のみ（69行）にスリム化し、詳細は `references/workflow-guide.md` に分離済み。スキルの3層ローディング（metadata → SKILL.md → references/）も同じ思想。
+
+### 4. RAG → Grep → スキルの段階的文脈構築
+
+初期: RAG ベクターDB → 脆弱でセットアップが重い、Claude に文脈が「与えられる」だけ
+現在: Grep + スキルファイルの再帰的読み込み → Claude が「自分で」文脈を構築する
+
+> "Claude went from not really being able to build its own context, to being able to do nested search across several layers of files."
+
+**適用**: 自分の設計（ルーティングファイル → モジュール指示 → データファイル）は公式チームと同じ思想。
+
+### 5. 少数のモデルに絞る
+
+> "This is also why it's useful to stick to a small set of models to support that have a fairly similar capabilities profile."
+
+ツール設計はモデルの能力に依存するため、対応モデルが増えると設計が発散する。
+
+**適用**: settings.json で `model: opus` に統一、エージェントは `model: sonnet` に統一。triage-router のみ `haiku`。この3モデル体制を維持する。
+
+---
+
+## 設計チェックリスト（定期見直し用）
+
+- [ ] 各スキルの description は Claude が正確にルーティングできる精度か
+- [ ] モデルアップデート後、既存のスキル・ルールが制約になっていないか
+- [ ] CLAUDE.md に「たまにしか使わない情報」が混入していないか
+- [ ] 新機能は Progressive Disclosure（サブエージェント、参照ファイル）で追加できないか
+- [ ] Claude の出力を観察して「使いにくそうなツール」がないか
+
+---
+
+## Ralph Loop（関連知見）
+
+Dan (@d4m1n) が公開した長時間 AI エージェント自動化ワークフロー。
+
+### コンセプト
+- **1タスク = 1セッション** でコンテキストウィンドウの劣化を回避
+- 状態はファイルシステム + git に保持（コンテキストウィンドウではない）
+- Docker サンドボックス内で Claude Code を繰り返し起動
+
+### 構造
+```
+.agent/
+├── PROMPT.md      # メインのイテレーション指示
+├── SUMMARY.md     # プロジェクト概要
+├── STEERING.md    # 実行中の方向修正（人間が編集可能）
+├── tasks.json     # タスク一覧
+├── tasks/         # 個別タスク仕様
+└── logs/          # 進捗ログ
+```
+
+### ループの仕組み
+```bash
+for i in $(seq 1 $N); do
+  docker sandbox run claude "PROMPT.md を読んで次のタスクをやれ"
+  # AIが実装・テスト・コミットして終了 → 次のループ（フレッシュなコンテキスト）
+done
+```
+
+### 向き不向き
+- 向いている: MVP、テスト自動化、マイグレーション、ボイラープレート
+- 向いていない: ピクセルパーフェクトなデザイン、斬新なアーキテクチャ、セキュリティクリティカル
+
+### 核心の洞察
+> 人間の役割は「コードを書く人」から「要件を明確に定義する人」に変わる。PRD の品質がそのまま成果物の品質になる。
+
+### インストール
+```bash
+npx @pageai/ralph-loop  # プロジェクトルートで実行
+```
+
+Claude Code の機能ではなく、外部のオーケストレーション層。CLI エージェントは交換可能（Codex, Gemini CLI 等）。
