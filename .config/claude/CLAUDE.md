@@ -8,7 +8,12 @@
 ## IMPORTANT ルール
 
 - サブエージェント・スキルを積極的に活用する（単独で完結させず、専門エージェントに委譲）
-- コード変更後は必ず `code-reviewer`・`code-reviewer-ma`・`code-reviewer-mu` の3エージェントと `/codex-review` スキルを**チームで並列実行**し、全結果を統合して最終評価を提示する
+- コード変更後のレビューは **4つの Agent ツール呼び出しを1メッセージで並列起動** する（Skill ツールは Agent と並列実行できないため、Agent ツールに統一する）:
+  1. `code-reviewer` エージェント（subagent_type: code-reviewer）
+  2. `code-reviewer-ma` エージェント（subagent_type: code-reviewer-ma）
+  3. `code-reviewer-mu` エージェント（subagent_type: code-reviewer-mu）
+  4. codex レビュー（subagent_type: general-purpose）— `codex exec` CLI でレビュー実行
+- 4つの結果を統合して最終評価を提示する
 - 日本語で応答する
 
 ## コミット規則
@@ -39,10 +44,14 @@
 - テストが通らなければ実装に戻る
 
 ### 4. Review（レビュー）
-- `/review` コマンドで変更をレビュー
-- code-reviewer / code-reviewer-ma / code-reviewer-mu の3エージェントで並列レビュー
-- `/codex-review` で追加の品質チェック
+- 以下の4つを **Agent ツールで1メッセージに並列起動** する（Skill ツールは使わない）:
+  - `code-reviewer` エージェント
+  - `code-reviewer-ma` エージェント
+  - `code-reviewer-mu` エージェント
+  - `general-purpose` エージェントで `codex exec` CLI レビュー実行
+- 4つの結果を統合し、重複を除去して最終評価を提示する
 - 指摘があれば修正してから次へ
+- 注: `/review` と `/codex-review` は手動で個別に使うスキル。自動レビューフローでは Agent に統一する
 
 ### 5. Verify（検証）
 - `verification-before-completion` スキルで完了前検証
@@ -167,6 +176,10 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - **壊れたら即STOP**: そのまま突き進まず、再プランする
 - **エレガンスの追求**: 些細でない変更では「もっと良い方法は？」と一度立ち止まる。ただし過度な設計はNG
 - **自律的バグ解決**: ログ・エラー・テストを自分で調べ、ユーザーのコンテキスト切り替えをゼロにする
+- **修正時の3点説明**: コードを修正・変更したら、必ず以下の3点をユーザーに明示する:
+  1. **原因**: なぜその問題が起きていたか（根本原因）
+  2. **修正内容**: 何をどう変えたか（具体的な変更）
+  3. **効果**: この修正でどう変わるか（ビフォーアフター）
 
 ---
 
