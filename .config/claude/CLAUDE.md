@@ -18,7 +18,7 @@
 
 ---
 
-## ワークフロー（5段階プロセス）
+## ワークフロー（6段階プロセス）
 
 すべての非自明なタスクは以下の5段階で進める:
 
@@ -44,17 +44,23 @@
 - `/codex-review` で追加の品質チェック
 - 指摘があれば修正してから次へ
 
-### 5. Security Check（セキュリティ）
+### 5. Verify（検証）
+- `verification-before-completion` スキルで完了前検証
+- ビルド・テスト・lint を実際に実行し、出力を確認してから完了宣言
+- 仮定に基づく「問題ありません」は禁止
+
+### 6. Security Check（セキュリティ）
 - `/security-review` コマンドでセキュリティチェック
 - security-reviewer エージェントに OWASP Top 10 ベースの分析を委譲
 - Critical/High の指摘は必ず修正してからコミット
 
 ```
-Plan -> Implement -> Test -> Review -> Security Check -> Commit
+Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 失敗時のループ:
 - テスト失敗       -> Implement に戻る
 - レビュー指摘     -> Implement に戻る
+- 検証失敗         -> Implement に戻る
 - セキュリティ指摘 -> Implement に戻る
 ```
 
@@ -101,11 +107,12 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 
 ### メモリ記録ルール
 
-- 修正を受けたらパターンを memory に記録し、同じミスを防ぐ
+- 修正を受けたらパターンを memory に記録し、同じミスを防ぐ（`continuous-learning` スキル）
 - MEMORY.md は200行以内に保つ。詳細は別ファイルに分離
 - 機密情報（token, password, secret）は絶対に保存しない
 - 重複記録を避ける。既存のメモリを確認してから書く
 - 間違っていた記録は速やかに更新・削除する
+- `/memory-status` でメモリの健全性を確認できる
 
 ---
 
@@ -125,6 +132,7 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - 調査タスクは Explore エージェントに委譲（メインコンテキストを汚さない）
 - 長い出力を返すコマンドは `head` や `tail` でフィルタ
 - 独立したタスクはサブエージェントに並列委譲
+- `/check-context` でセッション状態を確認できる
 
 ---
 
