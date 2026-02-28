@@ -238,3 +238,7 @@ run = ['move-node-to-workspace Z', 'layout accordion']
 [[on-window-detected]]
 if.app-id = 'com.anthropic.claudefordesktop'
 run = 'move-node-to-workspace 3'
+
+[[on-window-detected]]
+if.app-id = 'com.cmuxterm.app'
+run = 'move-node-to-workspace 4'
