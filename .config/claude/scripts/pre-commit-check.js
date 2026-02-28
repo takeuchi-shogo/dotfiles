@@ -84,7 +84,12 @@ process.stdin.on('end', () => {
       warnings.forEach((w) => process.stderr.write(`  ${w}\n`));
       const hasCritical = warnings.some((w) => w.startsWith('[CRITICAL]'));
       if (hasCritical) {
-        process.stderr.write('[Pre-commit] CRITICAL issues found. Review before committing.\n');
+        const reasons = warnings.filter((w) => w.startsWith('[CRITICAL]')).join('; ');
+        process.stderr.write(`[Pre-commit] BLOCKED: ${reasons}\n`);
+        process.stdout.write(JSON.stringify({
+          decision: 'block',
+          reason: `セキュリティ上の問題が検出されました: ${reasons}`,
+        }), () => process.exit(2));
       }
     }
   } catch {
