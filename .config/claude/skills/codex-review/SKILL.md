@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Codex AI を使ったコードレビューと CHANGELOG 自動生成。大規模リファクタリングやリリース前のレビューに使用。
+description: Codex AI を使った read-only コードレビューと CHANGELOG 自動生成。手動レビュー(/codex-review)や自動レビューフロー(general-purpose Agent経由)で使用。実装・編集には codex スキルを使うこと。
 ---
 
 # Codex Review
