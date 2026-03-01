@@ -10,16 +10,22 @@
 - サブエージェント・スキルを積極的に活用する（単独で完結させず、専門エージェントに委譲）
 - コード変更後のレビューは **変更規模に応じてスケール** する:
   - ~10行: レビュー省略可（Verify のみ）
-  - ~50行: `code-reviewer` 1つ
-  - ~200行: 2エージェント並列
-  - 200行超: 4エージェント全並列（code-reviewer + code-reviewer-ma + code-reviewer-mu + codex）
-- 汎用レビューに加え、**専門レビュアーを変更内容に応じて追加起動** する（詳細は workflow-guide.md）:
+  - ~50行: `code-reviewer` + 言語専門1つ（2並列）
+  - ~200行: `code-reviewer` + 言語専門 + ma or mu（3並列）
+  - 200行超: code-reviewer + 言語専門 + ma + mu + codex（5並列）
+- **言語検出**: 変更ファイルの拡張子で言語専門レビューアーを自動選択:
+  - `.ts/.tsx/.js/.jsx` → `code-reviewer-ts`
+  - `.go` → `code-reviewer-go`
+  - `.py` → `code-reviewer-py`
+  - `.rs` → `code-reviewer-rs`
+  - 複数言語混在 → 該当する全レビューアーを起動
+- 200行超で変更内容に応じて **専門レビュアーを追加起動** する（詳細は workflow-guide.md）:
   - `comment-analyzer`: ドキュメント・コメントの大幅変更時
-  - `test-analyzer`: テスト追加・変更時、テスト不足が疑われる時
   - `silent-failure-hunter`: エラーハンドリング・catch・fallback を含む変更時
+  - `pr-test-analyzer`: テスト追加・変更時、テスト不足が疑われる時
   - `type-design-analyzer`: 新しい型の追加・型リファクタリング時
 - レビューは **Agent ツールで1メッセージに並列起動** する（Skill ツールは Agent と並列実行できないため）
-- 4つの結果を統合して最終評価を提示する
+- 結果を統合して最終評価を提示する
 - 日本語で応答する
 
 ## コミット規則
