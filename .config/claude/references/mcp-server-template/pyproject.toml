@@ -1,0 +1,15 @@
+[project]
+name = "project-context-mcp"
+version = "0.1.0"
+description = "MCP server for project-specific context management"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+project-context = "project_context:main"

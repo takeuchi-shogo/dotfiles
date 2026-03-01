@@ -69,6 +69,59 @@ Claude Code Guide Agent の事例:
 
 ---
 
+## Breadcrumb Pattern（Codified Context より）
+
+出典: "Codified Context: Infrastructure for AI Agents in a Complex Codebase" (Vasilopoulos, 2026)
+
+AI が既に知っている概念には **Breadcrumb**（最小限のヒント）で十分。プロジェクト固有の情報のみ **Full Prose** で詳細に記述する。
+
+### 5つのパターン
+
+| パターン | 説明 | 例 |
+|---------|------|---|
+| **Terse Tables** | 属性・制約をテーブルで圧縮 | `\| field \| type \| constraint \|` |
+| **Keyword Clusters** | 関連キーワードをカンマ区切りで列挙 | `React, RSC, App Router, Suspense` |
+| **Shorthand References** | 規約名やパターン名だけで参照 | `Follow Effective Go. Use table-driven tests.` |
+| **Compact Signatures** | 関数シグネチャだけで API を伝える | `func (s *Service) Create(ctx, req) (*Resp, error)` |
+| **Trigger-Word Lists** | エージェントの起動条件をキーワードで列挙 | `Use when: build fails, type error, dependency issue` |
+
+### 使い分けルール
+
+```
+if AI が一般的に知っている概念 (React, Go, REST, OWASP etc.):
+    → Breadcrumb（パターン名、キーワード、参照先だけ）
+    例: "Follow OWASP Top 10. Use parameterized queries."
+
+elif プロジェクト固有の概念 (独自の命名規約、ビジネスロジック, 内部API):
+    → Full Prose（詳細な説明、コード例、理由）
+    例: "werrors.New は toplevel で使うな。stack trace が初期化時のものになる。"
+
+elif 両方の要素がある (一般概念 + プロジェクト固有の変形):
+    → Breadcrumb + 差分のみ Full Prose
+    例: "Follow conventional commits. 絵文字プレフィックス必須: ✨ feat:, 🐛 fix:"
+```
+
+### 適用チェックリスト
+
+- [ ] エージェントの description に Trigger-Word Lists を使っているか
+- [ ] CLAUDE.md のコア原則は Shorthand References で十分では
+- [ ] ルールファイルに React/Go の基礎知識を書いていないか（Breadcrumb で済む）
+- [ ] プロジェクト固有の命名規約は Full Prose で書いてあるか
+- [ ] テーブル化できる情報がダラダラ書かれていないか（Terse Tables へ）
+- [ ] workflow-guide.md のルーティングテーブルは Terse Tables を活用しているか
+
+### 既存設定への適用状況
+
+| 対象 | 現状 | 改善案 |
+|------|------|--------|
+| エージェント description | ✅ Trigger-Word Lists 使用中 | — |
+| CLAUDE.md コア原則 | ✅ Shorthand References | — |
+| workflow-guide.md ルーティング | ✅ Terse Tables | — |
+| code-reviewer-ma/mu | ✅ Full Prose（プロジェクト固有） | — |
+| rules/ | 要確認 | 一般知識→Breadcrumb に短縮可能か |
+
+---
+
 ## 設計チェックリスト（定期見直し用）
 
 - [ ] 各スキルの description は Claude が正確にルーティングできる精度か

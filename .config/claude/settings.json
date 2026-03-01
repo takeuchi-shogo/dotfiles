@@ -63,6 +63,14 @@
             "command": "node $HOME/.claude/scripts/session-load.js"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/context-drift-check.py --commits 10 --json 2>/dev/null || true"
+          }
+        ]
       }
     ],
     "Stop": [
