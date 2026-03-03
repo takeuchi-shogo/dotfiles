@@ -13,6 +13,11 @@
   - ~50行: `code-reviewer` 1つ
   - ~200行: 2エージェント並列
   - 200行超: 4エージェント全並列（code-reviewer + code-reviewer-ma + code-reviewer-mu + codex）
+- 汎用レビューに加え、**専門レビュアーを変更内容に応じて追加起動** する（詳細は workflow-guide.md）:
+  - `comment-analyzer`: ドキュメント・コメントの大幅変更時
+  - `test-analyzer`: テスト追加・変更時、テスト不足が疑われる時
+  - `silent-failure-hunter`: エラーハンドリング・catch・fallback を含む変更時
+  - `type-design-analyzer`: 新しい型の追加・型リファクタリング時
 - レビューは **Agent ツールで1メッセージに並列起動** する（Skill ツールは Agent と並列実行できないため）
 - 4つの結果を統合して最終評価を提示する
 - 日本語で応答する

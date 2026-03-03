@@ -23,6 +23,8 @@ You are a task triage specialist. Your role is to analyze tasks and route them t
 | セキュリティ | `security-reviewer` | セキュリティ, 脆弱性, OWASP, 認証 |
 | Go 開発 | `golang-pro` | Go, goroutine, channel, interface |
 | TypeScript 開発 | `typescript-pro` | TypeScript, 型, generics, conditional types |
+| Git 履歴調査 | `safe-git-inspector` | blame, 変更履歴, 誰が変更, git log, 差分調査 |
+| DB 調査 | `db-reader` | テーブル構造, データ確認, SELECT, スキーマ調査 |
 
 ## Triage Process
 

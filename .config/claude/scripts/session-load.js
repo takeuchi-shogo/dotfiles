@@ -3,6 +3,7 @@
 // Triggered by: hooks.SessionStart
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const STATE_FILE = path.join(process.env.HOME, '.claude', 'session-state', 'last-session.json');
 
@@ -32,10 +33,39 @@ function loadState() {
   }
 }
 
+function detectTools() {
+  const tools = {
+    'Package managers': ['bun', 'pnpm', 'npm', 'yarn'],
+    'Languages/Runtimes': ['go', 'node', 'python3', 'ruby', 'rust'],
+    'Dev tools': ['gh', 'docker', 'kubectl', 'terraform'],
+    'AI tools': ['codex'],
+  };
+
+  try {
+    const found = [];
+    for (const names of Object.values(tools)) {
+      for (const name of names) {
+        try {
+          execSync(`which ${name}`, { timeout: 2000, stdio: 'pipe' });
+          found.push(name);
+        } catch {
+          // Tool not found — skip
+        }
+      }
+    }
+    if (found.length > 0) {
+      process.stderr.write(`[Session] Available tools: ${found.join(', ')}\n`);
+    }
+  } catch {
+    // Non-blocking — ignore any unexpected errors
+  }
+}
+
 // Read stdin and pass through
 let data = '';
 process.stdin.on('data', (chunk) => { data += chunk; });
 process.stdin.on('end', () => {
   loadState();
+  detectTools();
   process.stdout.write(data);
 });
