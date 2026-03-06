@@ -13,6 +13,15 @@ function run(cmd) {
   }
 }
 
+function checkProtectedBranch() {
+  const branch = run('git branch --show-current');
+  const protected_branches = ['main', 'master'];
+  if (protected_branches.includes(branch)) {
+    return `保護ブランチ "${branch}" への直接コミットはブロックされています。フィーチャーブランチを作成してください。`;
+  }
+  return null;
+}
+
 function checkStagedFiles() {
   const warnings = [];
 
@@ -78,6 +87,17 @@ let data = '';
 process.stdin.on('data', (chunk) => { data += chunk; });
 process.stdin.on('end', () => {
   try {
+    // Check protected branch first
+    const branchBlock = checkProtectedBranch();
+    if (branchBlock) {
+      process.stderr.write(`[Pre-commit] ${branchBlock}\n`);
+      process.stdout.write(JSON.stringify({
+        decision: 'block',
+        reason: branchBlock,
+      }), () => process.exit(2));
+      return;
+    }
+
     const warnings = checkStagedFiles();
     if (warnings.length > 0) {
       process.stderr.write('[Pre-commit] Quality check results:\n');
