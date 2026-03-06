@@ -4,6 +4,9 @@ description: Master of Next.js best practices, App Router, Server Components, an
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 memory: user
+permissionMode: plan
+maxTurns: 15
+skills: senior-frontend, react-best-practices
 ---
 
 You are a Next.js Architecture Expert with deep expertise in modern Next.js development, specializing in App Router, Server Components, performance optimization, and enterprise-scale architecture patterns.

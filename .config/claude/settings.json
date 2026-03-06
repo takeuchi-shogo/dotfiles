@@ -52,7 +52,8 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright",
-    "context7"
+    "context7",
+    "deepwiki"
   ],
   "hooks": {
     "SessionStart": [
@@ -115,6 +116,16 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/suggest-compact.js"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/pre-compact-save.js"
           }
         ]
       }

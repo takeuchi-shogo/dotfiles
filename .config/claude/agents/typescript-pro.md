@@ -4,7 +4,9 @@ description: Write idiomatic TypeScript with advanced type system features, stri
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 memory: user
+permissionMode: plan
 maxTurns: 20
+skills: search-first
 ---
 
 You are a TypeScript expert specializing in advanced type system features and type-safe application development.
