@@ -273,7 +273,26 @@ After generating, verify:
 
 ---
 
-## Phase 5: Reference File Generation (Optional)
+## Phase 5: .claudeignore Generation
+
+Every project should have a `.claudeignore` file. Generate one based on the detected tech stack:
+
+```bash
+# Check existing ignore files for reference
+cat .gitignore 2>/dev/null
+```
+
+Use the template at `references/claudeignore-template.md` as a base, then customize:
+- Include tech-stack-specific entries (node_modules, __pycache__, target/, etc.)
+- Include build outputs detected in the project
+- Include lock files that add noise (package-lock.json, yarn.lock, etc.)
+- Include any large generated directories found during analysis
+
+Write `.claudeignore` to the project root alongside CLAUDE.md.
+
+---
+
+## Phase 6: Reference File Generation (Optional)
 
 If the project is complex enough, also generate:
 
@@ -298,9 +317,10 @@ Present the generated CLAUDE.md to the user with:
 
 1. **Analysis Summary** — What was detected (tech stack, conventions, structure)
 2. **Generated CLAUDE.md** — The full content
-3. **Line Count** — Confirm it's under 100 lines
-4. **Recommendations** — Suggested reference files to create next
-5. **User Review** — Ask for adjustments before writing to disk
+3. **Generated .claudeignore** — Tech stack に応じたファイル
+4. **Line Count** — CLAUDE.md が100行以内であることを確認
+5. **Recommendations** — Suggested reference files to create next
+6. **User Review** — Ask for adjustments before writing to disk
 
 Only write the file after user approval (`permissionMode: plan`).
 
