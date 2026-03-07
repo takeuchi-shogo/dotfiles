@@ -1,7 +1,6 @@
-model = "gpt-5.2-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
-model_personality = "pragmatic"
 personality = "pragmatic"
 
 # 通常タスクは high で十分。xhigh はコスト高で必要時のみ CLI フラグで指定
@@ -17,3 +16,6 @@ command = "osascript -e 'display notification \"Codex が完了しました\" wi
 
 [analytics]
 enabled = false  # 匿名テレメトリ無効化
+
+[projects."/Users/takeuchishougo/dotfiles"]
+trust_level = "trusted"
