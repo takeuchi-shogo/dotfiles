@@ -36,7 +36,8 @@
       "Bash(pwd)",
       "Bash(brew list *)",
       "Bash(brew info *)",
-      "Bash(codex exec *)"
+      "Bash(codex exec *)",
+      "Bash(gemini *)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -50,11 +51,7 @@
   "model": "opus",
   "plansDirectory": "./tmp/plans",
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "playwright",
-    "context7",
-    "deepwiki"
-  ],
+  "enabledMcpjsonServers": ["playwright", "context7", "deepwiki"],
   "hooks": {
     "SessionStart": [
       {
@@ -94,6 +91,16 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/agent-router.py"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash(git commit *)",
@@ -101,6 +108,15 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/pre-commit-check.js"
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/suggest-gemini.py"
           }
         ]
       }
@@ -116,6 +132,19 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/suggest-compact.js"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/error-to-codex.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/post-test-analysis.py"
           }
         ]
       }

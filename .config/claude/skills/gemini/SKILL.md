@@ -1,0 +1,46 @@
+---
+name: gemini
+description: "Gemini CLI (1Mコンテキスト) を使った大規模分析・リサーチ・マルチモーダル処理。コードベース全体分析、外部リサーチ、PDF/動画/音声の読み取りに使用。設計/推論には codex スキルを使うこと。"
+---
+
+# Gemini Skill Guide
+
+## Running a Task
+
+1. デフォルトで非対話モード (`-p`) を使用する
+2. 用途に応じて approval-mode を選択:
+   - `plan` (default): read-only 分析
+   - `yolo`: ファイル操作が必要な場合（ユーザー確認後のみ）
+3. コマンドを組み立てて実行する
+
+### Quick Reference
+
+| Use case         | Approval mode | Command                                                               |
+| ---------------- | ------------- | --------------------------------------------------------------------- |
+| コードベース分析 | `plan`        | `gemini --approval-mode plan -p "Analyze: {prompt}" 2>/dev/null`      |
+| 外部リサーチ     | `plan`        | `gemini --approval-mode plan -p "Research: {topic}" 2>/dev/null`      |
+| マルチモーダル   | `plan`        | `gemini --approval-mode plan -p "Read this file: {path}" 2>/dev/null` |
+| セッション再開   | inherited     | `gemini --resume latest -p "{prompt}" 2>/dev/null`                    |
+
+### 出力が大きい場合
+
+結果を `.claude/docs/research/` に保存する:
+
+```bash
+gemini --approval-mode plan -p "..." 2>/dev/null > .claude/docs/research/{topic}.md
+```
+
+## When to Use Gemini
+
+- **使う**: コードベース全体分析、外部リサーチ（Google Search grounding）、PDF/動画/音声/画像の読み取り、ライブラリ比較調査
+- **使わない**: 設計判断（→Codex）、デバッグ（→Codex）、コード実装（→Claude 直接）、単純なファイル読み取り（→Read ツール）
+
+## Language Protocol
+
+Gemini への指示は英語で行い、結果をユーザーの言語（日本語）で報告する。
+
+## Error Handling
+
+- `gemini --version` が失敗したら Gemini CLI 未インストールを報告
+- 出力が空の場合はプロンプトを見直して再試行
+- タイムアウト（2分超）の場合はプロンプトを分割する
