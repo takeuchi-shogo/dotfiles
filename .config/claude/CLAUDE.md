@@ -11,9 +11,9 @@
 - コード変更後のレビューは **変更規模に応じてスケール** する:
   - ~10行: レビュー省略可（Verify のみ）
   - ~50行: `code-reviewer` + 言語専門1つ（2並列）
-  - ~100行: `code-reviewer` + 言語専門 + codex（3並列）
-  - ~200行: `code-reviewer` + 言語専門 + codex + ma or mu（4並列）
-  - 200行超: code-reviewer + 言語専門 + codex + ma + mu（5並列）
+  - ~100行: `code-reviewer` + 言語専門 + `codex-reviewer`（3並列）
+  - ~200行: `code-reviewer` + 言語専門 + `codex-reviewer` + ma or mu（4並列）
+  - 200行超: code-reviewer + 言語専門 + `codex-reviewer` + ma + mu（5並列）
 - **言語検出**: 変更ファイルの拡張子で言語専門レビューアーを自動選択:
   - `.ts/.tsx/.js/.jsx` → `code-reviewer-ts`
   - `.go` → `code-reviewer-go`

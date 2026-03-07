@@ -90,13 +90,13 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 ### レビュー並列数のスケーリング
 
-| 変更規模   | レビュー構成                                                                             |
-| ---------- | ---------------------------------------------------------------------------------------- |
-| ~10行以下  | レビュー省略可（Verify のみ）                                                            |
-| ~50行以下  | `code-reviewer` + 言語専門1つ（2並列）                                                   |
-| ~100行以下 | `code-reviewer` + 言語専門 + `codex`（3並列）                                            |
-| ~200行以下 | `code-reviewer` + 言語専門 + `codex` + `code-reviewer-ma` or `code-reviewer-mu`（4並列） |
-| 200行超    | `code-reviewer` + 言語専門 + `codex` + `ma` + `mu`（5並列）+ 専門レビュアー              |
+| 変更規模   | レビュー構成                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| ~10行以下  | レビュー省略可（Verify のみ）                                                                     |
+| ~50行以下  | `code-reviewer` + 言語専門1つ（2並列）                                                            |
+| ~100行以下 | `code-reviewer` + 言語専門 + `codex-reviewer`（3並列）                                            |
+| ~200行以下 | `code-reviewer` + 言語専門 + `codex-reviewer` + `code-reviewer-ma` or `code-reviewer-mu`（4並列） |
+| 200行超    | `code-reviewer` + 言語専門 + `codex-reviewer` + `ma` + `mu`（5並列）+ 専門レビュアー              |
 
 **言語専門レビューアー選択**: 変更ファイルの拡張子で自動決定
 
@@ -114,31 +114,32 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 タスクの種別に応じて、最適なエージェントを選択する:
 
-| タスク種別         | 推奨エージェント                                   | 用途                                             |
-| ------------------ | -------------------------------------------------- | ------------------------------------------------ |
-| アーキテクチャ設計 | `backend-architect`                                | API設計、DB設計、システム構成                    |
-| Next.js 設計       | `nextjs-architecture-expert`                       | App Router、RSC、パフォーマンス                  |
-| フロントエンド実装 | `frontend-developer`                               | React コンポーネント、UI/UX                      |
-| コードレビュー     | `code-reviewer` + 言語専門 + `ma` + `mu` + `codex` | 最大5視点の並列レビュー                          |
-| TS レビュー        | `code-reviewer-ts`                                 | TypeScript/React 専門観点                        |
-| Go レビュー        | `code-reviewer-go`                                 | Go 慣用パターン・並行処理                        |
-| Python レビュー    | `code-reviewer-py`                                 | Pythonic パターン・型ヒント                      |
-| Rust レビュー      | `code-reviewer-rs`                                 | 所有権・安全性・パフォーマンス                   |
-| コメント分析       | `comment-analyzer`（pr-review-toolkit）            | コメント精度・腐敗検出                           |
-| エラーハンドリング | `silent-failure-hunter`（pr-review-toolkit）       | サイレント障害検出                               |
-| テスト品質         | `pr-test-analyzer`（pr-review-toolkit）            | テストカバレッジ分析                             |
-| 型設計             | `type-design-analyzer`（pr-review-toolkit）        | 型の設計品質評価                                 |
-| テスト作成         | `test-engineer`                                    | テスト戦略、テスト実装                           |
-| デバッグ           | `debugger`                                         | 根本原因分析、バグ修正                           |
-| セキュリティ       | `security-reviewer`                                | 脆弱性検出、OWASP準拠                            |
-| ビルドエラー       | `build-fixer`                                      | 型エラー、コンパイル失敗、依存関係修正           |
-| タスク振り分け     | `triage-router`                                    | タスク種別判定、最適エージェントへルーティング   |
-| Go 開発            | `golang-pro`                                       | Go パターン、並行処理                            |
-| TypeScript 開発    | `typescript-pro`                                   | 型設計、高度な型推論                             |
-| Git 履歴調査       | `safe-git-inspector`                               | 安全な git 履歴調査（読み取り専用）              |
-| DB 調査            | `db-reader`                                        | 安全な DB 読み取り調査（SELECT のみ）            |
-| Gemini リサーチ    | `gemini-explore`                                   | 1Mコンテキスト分析、外部リサーチ、マルチモーダル |
-| Codex デバッグ     | `codex-debugger`                                   | Codex による深いエラー分析・根本原因特定         |
+| タスク種別         | 推奨エージェント                                            | 用途                                             |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------ |
+| アーキテクチャ設計 | `backend-architect`                                         | API設計、DB設計、システム構成                    |
+| Next.js 設計       | `nextjs-architecture-expert`                                | App Router、RSC、パフォーマンス                  |
+| フロントエンド実装 | `frontend-developer`                                        | React コンポーネント、UI/UX                      |
+| コードレビュー     | `code-reviewer` + 言語専門 + `ma` + `mu` + `codex-reviewer` | 最大5視点の並列レビュー                          |
+| TS レビュー        | `code-reviewer-ts`                                          | TypeScript/React 専門観点                        |
+| Go レビュー        | `code-reviewer-go`                                          | Go 慣用パターン・並行処理                        |
+| Python レビュー    | `code-reviewer-py`                                          | Pythonic パターン・型ヒント                      |
+| Rust レビュー      | `code-reviewer-rs`                                          | 所有権・安全性・パフォーマンス                   |
+| コメント分析       | `comment-analyzer`（pr-review-toolkit）                     | コメント精度・腐敗検出                           |
+| エラーハンドリング | `silent-failure-hunter`（pr-review-toolkit）                | サイレント障害検出                               |
+| テスト品質         | `pr-test-analyzer`（pr-review-toolkit）                     | テストカバレッジ分析                             |
+| 型設計             | `type-design-analyzer`（pr-review-toolkit）                 | 型の設計品質評価                                 |
+| テスト作成         | `test-engineer`                                             | テスト戦略、テスト実装                           |
+| デバッグ           | `debugger`                                                  | 根本原因分析、バグ修正                           |
+| セキュリティ       | `security-reviewer`                                         | 脆弱性検出、OWASP準拠                            |
+| ビルドエラー       | `build-fixer`                                               | 型エラー、コンパイル失敗、依存関係修正           |
+| タスク振り分け     | `triage-router`                                             | タスク種別判定、最適エージェントへルーティング   |
+| Go 開発            | `golang-pro`                                                | Go パターン、並行処理                            |
+| TypeScript 開発    | `typescript-pro`                                            | 型設計、高度な型推論                             |
+| Git 履歴調査       | `safe-git-inspector`                                        | 安全な git 履歴調査（読み取り専用）              |
+| DB 調査            | `db-reader`                                                 | 安全な DB 読み取り調査（SELECT のみ）            |
+| Gemini リサーチ    | `gemini-explore`                                            | 1Mコンテキスト分析、外部リサーチ、マルチモーダル |
+| Codex レビュー     | `codex-reviewer`                                            | Codex による深い推論レビュー（並列起動）         |
+| Codex デバッグ     | `codex-debugger`                                            | Codex による深いエラー分析・根本原因特定         |
 
 ### ルーティングルール
 
