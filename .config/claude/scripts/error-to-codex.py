@@ -39,7 +39,7 @@ IGNORE_COMMANDS = [
     "codex", "gemini",  # Prevent infinite loops
 ]
 
-GUIDES_PATH = Path(os.path.expanduser("~/.claude/references/error-fix-guides.md"))
+GUIDES_PATH = Path(__file__).resolve().parent.parent / "references" / "error-fix-guides.md"
 
 # Cache parsed guides
 _guides_cache: Optional[Dict[str, Tuple[str, str]]] = None
