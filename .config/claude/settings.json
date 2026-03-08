@@ -85,6 +85,10 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/session-save.js"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/session-learner.py"
           }
         ]
       }
@@ -95,6 +99,10 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/session-save.js"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/session-learner.py"
           }
         ]
       }
