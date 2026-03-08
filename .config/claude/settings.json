@@ -69,6 +69,14 @@
             "command": "python3 $HOME/.claude/scripts/context-drift-check.py --commits 10 --json 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/doc-garden-check.py 2>/dev/null || true"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -132,6 +140,10 @@
           {
             "type": "command",
             "command": "node $HOME/.claude/scripts/suggest-compact.js"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/golden-check.py"
           }
         ]
       },
@@ -145,6 +157,10 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/scripts/post-test-analysis.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/plan-lifecycle.py"
           }
         ]
       }
