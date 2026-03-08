@@ -15,3 +15,4 @@ settings.local.json
 # Claude reviewer persona (contains personal data)
 .config/claude/agents/reviewer-*.md
 .config/claude/data/
+__pycache__/
