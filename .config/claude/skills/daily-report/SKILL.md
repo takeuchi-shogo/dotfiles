@@ -62,6 +62,22 @@ jq -r 'select(.type == "user") | .timestamp + " | " + (.message.content | tostri
 
 **プロジェクト名の表示**: `projectPath` の最後のディレクトリ名を使う（例: `/Users/foo/dev/my-app` → `my-app`）
 
+### Step 4.5: AutoEvolve データの収集
+
+対象日のセッション学習データを収集する:
+
+```bash
+TARGET_DATE="YYYY-MM-DD"
+# セッションメトリクス
+cat ~/.claude/agent-memory/metrics/session-metrics.jsonl 2>/dev/null | jq -r --arg date "$TARGET_DATE" 'select(.timestamp | startswith($date))'
+# エラーイベント
+cat ~/.claude/agent-memory/learnings/errors.jsonl 2>/dev/null | jq -r --arg date "$TARGET_DATE" 'select(.timestamp | startswith($date))'
+# 品質指摘
+cat ~/.claude/agent-memory/learnings/quality.jsonl 2>/dev/null | jq -r --arg date "$TARGET_DATE" 'select(.timestamp | startswith($date))'
+```
+
+データが存在しない場合は、このセクションをスキップする。
+
 ### Step 5: 日本語サマリーの生成
 
 グルーピング結果をもとに、以下のフォーマットで日報を生成する:
@@ -74,19 +90,35 @@ jq -r 'select(.type == "user") | .timestamp + " | " + (.message.content | tostri
 ### <プロジェクト名>
 
 #### <やったこと>（ブランチ: <branch>）
+
 - セッション (HH:MM-HH:MM): やったことの要約
 - セッション (HH:MM-HH:MM): やったことの要約
 - 成果: 具体的な成果
 
 ### <別プロジェクト名>
+
 ...
 
+## 今日の学び
+
+- エラー: N 件（主なもの: ...）
+- 品質指摘: N 件（主なルール: ...）
+- パターン: N 件
+
 ## 今日のまとめ
+
 - N セッション / N プロジェクト
 - 主な成果: ...
+- 学び: エラー N 件、品質指摘 N 件を記録
 ```
 
+**「今日の学び」セクションのルール**:
+
+- Step 4.5 で AutoEvolve データが存在する場合のみ表示する。データがない場合はセクションごと省略する
+- 「今日のまとめ」の「学び」行も、データがある場合のみ含める
+
 **ルール**:
+
 - 時刻は JST (UTC+9) に変換して表示する
 - セッション単位ではなく「やったこと」単位でまとめる
 - summary と firstPrompt、そしてユーザーメッセージの内容をもとに、何をしたかを具体的に書く
