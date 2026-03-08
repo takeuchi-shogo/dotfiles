@@ -6,6 +6,7 @@ Input: stdin passthrough
 Output: stdout passthrough
 """
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -42,10 +43,17 @@ def build_session_summary(cwd: str | None = None) -> dict:
 
 def process_session(cwd: str | None = None) -> None:
     """セッションデータを処理し、永続ストレージに書き出す。"""
+    logger = logging.getLogger("autoevolve")
     summary = build_session_summary(cwd=cwd)
 
     if summary["total_events"] == 0:
         return
+
+    logger.info(
+        "session-learner: processing %d events for %s",
+        summary["total_events"],
+        summary["project"],
+    )
 
     for error in summary["_errors"]:
         entry = {k: v for k, v in error.items() if k != "category"}
@@ -70,13 +78,21 @@ def process_session(cwd: str | None = None) -> None:
     }
     append_to_metrics(metrics)
 
+    logger.info(
+        "session-learner: flushed %d errors, %d quality, %d patterns",
+        summary["errors_count"],
+        summary["quality_issues"],
+        summary["patterns_found"],
+    )
+
 
 def main() -> None:
+    logger = logging.getLogger("autoevolve")
     data = sys.stdin.read()
     try:
         process_session(cwd=os.getcwd())
     except Exception as e:
-        print(f"[session-learner] error: {e}", file=sys.stderr)
+        logger.error("session-learner error: %s", e)
     sys.stdout.write(data)
 
 
