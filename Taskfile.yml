@@ -25,3 +25,25 @@ tasks:
     desc: Update Homebrew and all packages
     cmds:
       - brew update && brew upgrade && brew cleanup
+
+  validate:
+    desc: Run all dotfiles validation checks
+    cmds:
+      - task: validate-configs
+      - task: validate-readmes
+      - task: validate-symlinks
+
+  validate-configs:
+    desc: Validate syntax for config and script files
+    cmds:
+      - ~/dotfiles/.bin/validate_configs.sh
+
+  validate-readmes:
+    desc: Validate local links in README files
+    cmds:
+      - ~/dotfiles/.bin/validate_readmes.sh
+
+  validate-symlinks:
+    desc: Validate key symlinks managed by dotfiles
+    cmds:
+      - ~/dotfiles/.bin/validate_symlinks.sh
