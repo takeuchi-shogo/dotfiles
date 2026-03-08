@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """AutoEvolve session learner — flushes session events to persistent storage.
 
 Triggered by: hooks.Stop / hooks.SessionEnd

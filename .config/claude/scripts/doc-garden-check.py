@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Doc Garden check — detects stale documentation at session start.
 
 Triggered by: hooks.SessionStart

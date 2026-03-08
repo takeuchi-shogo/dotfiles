@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Post-test analysis hook — suggests Codex analysis when tests fail.
 
 Triggered by: hooks.PostToolUse (Bash)

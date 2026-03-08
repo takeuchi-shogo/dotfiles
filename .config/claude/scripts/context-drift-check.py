@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Context Drift Detection for Claude Code dotfiles.
 
 Analyzes git history to detect when code changes (agents, hooks, scripts)

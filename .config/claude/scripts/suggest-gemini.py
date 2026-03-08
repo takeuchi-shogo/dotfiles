@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Suggest Gemini hook — recommends Gemini CLI for complex research before WebSearch.
 
 Triggered by: hooks.PreToolUse (WebSearch)

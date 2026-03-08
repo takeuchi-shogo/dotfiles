@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Claude Code Context Monitor
 Real-time context usage monitoring with visual indicators and session analytics

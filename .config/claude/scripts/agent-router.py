@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Agent router hook — detects keywords in user input and suggests Codex/Gemini delegation.
 
 Triggered by: hooks.UserPromptSubmit

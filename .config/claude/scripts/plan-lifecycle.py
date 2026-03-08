@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Plan lifecycle hook — tracks plan status based on git commits.
 
 Triggered by: hooks.PostToolUse (Bash)

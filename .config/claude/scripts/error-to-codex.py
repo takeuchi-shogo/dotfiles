@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Error-to-Codex hook — suggests codex-debugger when Bash errors are detected.
 Also injects fix guidance from error-fix-guides.md when available.
 

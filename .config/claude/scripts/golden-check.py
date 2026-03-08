@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Golden Principles check — detects deviations on file edit/write.
 
 Triggered by: hooks.PostToolUse (Edit|Write)
