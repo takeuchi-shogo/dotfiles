@@ -9,6 +9,13 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    from session_events import emit_event as _emit
+except ImportError:
+    def _emit(*_a, **_kw): pass
 
 
 DEPENDENCY_FILES = {
@@ -94,14 +101,29 @@ def main() -> None:
     dep_warn = check_dependency_file(file_path)
     if dep_warn:
         warnings.append(dep_warn)
+        _emit("quality", {
+            "rule": "GP-003",
+            "file": file_path,
+            "detail": dep_warn[:200],
+        })
 
     catch_warn = check_empty_catch(content)
     if catch_warn:
         warnings.append(catch_warn)
+        _emit("quality", {
+            "rule": "GP-004",
+            "file": file_path,
+            "detail": catch_warn[:200],
+        })
 
     type_warn = check_unsafe_types(content, file_path)
     if type_warn:
         warnings.append(type_warn)
+        _emit("quality", {
+            "rule": "GP-005",
+            "file": file_path,
+            "detail": type_warn[:200],
+        })
 
     if warnings:
         warnings.append(

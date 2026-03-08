@@ -11,6 +11,12 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    from session_events import emit_event as _emit
+except ImportError:
+    def _emit(*_a, **_kw): pass
+
 
 ERROR_PATTERNS = [
     re.compile(r"Traceback \(most recent call last\)"),
@@ -129,6 +135,10 @@ def main() -> None:
 
     error_match = has_error(output)
     if error_match:
+        _emit("error", {
+            "message": error_match,
+            "command": command[:200],
+        })
         # Build context message
         context_parts = [
             f"[Error-to-Codex] エラーが検出されました: {error_match}",
