@@ -175,3 +175,42 @@ keep/discard         = ブランチ → 人間レビュー
 - **段階的構築**: Step 1 から小さく動かし、改良を加える
 - **機密分離**: 生データはローカルのみ、整理済み知識のみ git 候補
 - **既存資産活用**: continuous-learning, daily-report, memory システムを拡張
+
+## バックグラウンド実行の設定
+
+### cron 設定
+
+```bash
+# 毎日午前3時に実行
+crontab -e
+0 3 * * * ~/.claude/scripts/autoevolve-runner.sh >> ~/.claude/agent-memory/logs/autoevolve-cron.log 2>&1
+```
+
+### 手動バックグラウンド実行
+
+```bash
+# ドライラン（何が実行されるか確認）
+~/.claude/scripts/autoevolve-runner.sh --dry-run
+
+# 実際に実行
+~/.claude/scripts/autoevolve-runner.sh &
+```
+
+### 結果確認
+
+```bash
+# ログ確認
+cat ~/.claude/agent-memory/logs/autoevolve-cron.log
+
+# 提案されたブランチの確認
+cd ~/dotfiles && git branch --list "autoevolve/*"
+
+# 変更内容の確認
+git diff master..autoevolve/YYYY-MM-DD
+
+# 承認してマージ
+git checkout master && git merge autoevolve/YYYY-MM-DD
+
+# 却下してブランチ削除
+git branch -D autoevolve/YYYY-MM-DD
+```
