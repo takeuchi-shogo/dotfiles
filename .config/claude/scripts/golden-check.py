@@ -9,7 +9,6 @@ import json
 import os
 import re
 import sys
-from typing import List
 
 
 DEPENDENCY_FILES = {
@@ -49,8 +48,16 @@ def check_empty_catch(content: str) -> str | None:
     return None
 
 
-def check_unsafe_types(content: str) -> str | None:
-    for pattern in UNSAFE_TYPE_PATTERNS:
+def check_unsafe_types(content: str, file_path: str = "") -> str | None:
+    ext = os.path.splitext(file_path)[1].lower()
+    patterns: list[re.Pattern[str]] = []
+    if ext in (".ts", ".tsx", ".js", ".jsx"):
+        patterns = [re.compile(r":\s*any\b"), re.compile(r"\bas\s+any\b")]
+    elif ext in (".go",):
+        patterns = [re.compile(r"\binterface\{\}")]
+    # Python Any is generally acceptable; skip for .py
+
+    for pattern in patterns:
         if pattern.search(content):
             return (
                 "[GP-005] `any` または `interface{}` の使用が検出されました。"
@@ -70,13 +77,19 @@ def main() -> None:
         json.dump(data, sys.stdout)
         return
 
-    file_path = data.get("tool_input", {}).get("file_path", "")
-    content = data.get("tool_input", {}).get("content", "")
+    tool_input = data.get("tool_input", {})
+    file_path = tool_input.get("file_path", "")
+
+    # Write uses 'content', Edit uses 'new_string'
+    if tool_name == "Write":
+        content = tool_input.get("content", "")
+    else:
+        content = tool_input.get("new_string", "")
 
     if not content:
         content = data.get("tool_output", "") or ""
 
-    warnings: List[str] = []
+    warnings: list[str] = []
 
     dep_warn = check_dependency_file(file_path)
     if dep_warn:
@@ -86,7 +99,7 @@ def main() -> None:
     if catch_warn:
         warnings.append(catch_warn)
 
-    type_warn = check_unsafe_types(content)
+    type_warn = check_unsafe_types(content, file_path)
     if type_warn:
         warnings.append(type_warn)
 
@@ -108,5 +121,6 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception as e:
+        print(f"[golden-check] error: {e}", file=sys.stderr)
         json.dump({}, sys.stdout)

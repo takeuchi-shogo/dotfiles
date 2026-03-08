@@ -10,10 +10,8 @@ moving them to completed/ when sufficient progress is detected.
 """
 import json
 import os
-import re
 import subprocess
 import sys
-from typing import List
 
 
 PLANS_DIR = "docs/plans/active"
@@ -30,7 +28,7 @@ def get_repo_root() -> str | None:
         return None
 
 
-def get_active_plans(repo_root: str) -> List[str]:
+def get_active_plans(repo_root: str) -> list[str]:
     active_dir = os.path.join(repo_root, PLANS_DIR)
     if not os.path.isdir(active_dir):
         return []
@@ -40,7 +38,7 @@ def get_active_plans(repo_root: str) -> List[str]:
     ]
 
 
-def extract_plan_references(commit_msg: str, plans: List[str]) -> List[str]:
+def extract_plan_references(commit_msg: str, plans: list[str]) -> list[str]:
     referenced = []
     msg_lower = commit_msg.lower()
     for plan in plans:
@@ -93,10 +91,19 @@ def main() -> None:
         json.dump(data, sys.stdout)
         return
 
-    commit_msg = command
-    msg_match = re.search(r'-m\s+["\'](.+?)["\']', command)
-    if msg_match:
-        commit_msg = msg_match.group(1)
+    # Get actual commit message from git log (immune to HEREDOC/quoting)
+    try:
+        log_result = subprocess.run(
+            ["git", "log", "-1", "--pretty=%B"],
+            capture_output=True, text=True, cwd=repo_root, timeout=5,
+        )
+        commit_msg = log_result.stdout.strip() if log_result.returncode == 0 else ""
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        commit_msg = ""
+
+    if not commit_msg:
+        json.dump(data, sys.stdout)
+        return
 
     referenced = extract_plan_references(commit_msg, plans)
     if referenced:
@@ -118,5 +125,6 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception as e:
+        print(f"[plan-lifecycle] error: {e}", file=sys.stderr)
         json.dump({}, sys.stdout)

@@ -25,7 +25,6 @@ DOC_DIRS = [
 
 CODE_DIRS = [
     ".config/claude/scripts",
-    ".config/claude/agents",
     ".config/claude/skills",
 ]
 
@@ -166,5 +165,6 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
-        pass
+    except Exception as e:
+        import sys
+        print(f"[doc-garden-check] error: {e}", file=sys.stderr)
