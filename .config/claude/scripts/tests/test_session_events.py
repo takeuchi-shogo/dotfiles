@@ -1,0 +1,212 @@
+"""Tests for session_events.py — importance scoring."""
+import json
+import os
+import sys
+from pathlib import Path
+
+import pytest
+
+# scripts/ ディレクトリをパスに追加
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from session_events import (
+    BASE_CONFIDENCE,
+    RULE_CONFIDENCE,
+    compute_importance,
+    emit_event,
+    flush_session,
+)
+
+
+@pytest.fixture(autouse=True)
+def isolate_data_dir(tmp_path, monkeypatch):
+    """全テストで AUTOEVOLVE_DATA_DIR を tmpdir に隔離する。"""
+    monkeypatch.setenv("AUTOEVOLVE_DATA_DIR", str(tmp_path))
+    # ロガーのハンドラをリセット（テスト間で干渉しないように）
+    import logging
+    logger = logging.getLogger("autoevolve")
+    logger.handlers.clear()
+    return tmp_path
+
+
+# --- compute_importance テスト ---
+
+
+class TestComputeImportanceHighRules:
+    """高重要度ルール (0.8-1.0) のテスト。"""
+
+    def test_permission_denied(self):
+        score, conf = compute_importance("error", {"message": "Permission denied"})
+        assert score == 0.9
+        assert conf == RULE_CONFIDENCE
+
+    def test_eacces(self):
+        score, conf = compute_importance("error", {"message": "EACCES: open failed"})
+        assert score == 0.9
+        assert conf == RULE_CONFIDENCE
+
+    def test_segfault(self):
+        score, conf = compute_importance("error", {"message": "segfault at 0x0"})
+        assert score == 1.0
+        assert conf == RULE_CONFIDENCE
+
+    def test_oom(self):
+        score, conf = compute_importance("error", {"message": "OOM killer invoked"})
+        assert score == 1.0
+        assert conf == RULE_CONFIDENCE
+
+    def test_out_of_memory(self):
+        score, conf = compute_importance("error", {"message": "out of memory"})
+        assert score == 1.0
+        assert conf == RULE_CONFIDENCE
+
+    def test_golden_principle(self):
+        score, conf = compute_importance("quality", {"rule": "GP-003"})
+        assert score == 0.8
+        assert conf == RULE_CONFIDENCE
+
+    def test_security(self):
+        score, conf = compute_importance("error", {"message": "SQL injection detected"})
+        assert score == 0.9
+        assert conf == RULE_CONFIDENCE
+
+    def test_vulnerability(self):
+        score, conf = compute_importance("error", {"message": "vulnerability found"})
+        assert score == 0.9
+        assert conf == RULE_CONFIDENCE
+
+
+class TestComputeImportanceMediumRules:
+    """中重要度ルール (0.4-0.7) のテスト。"""
+
+    def test_module_not_found(self):
+        score, conf = compute_importance("error", {"message": "ModuleNotFoundError: foo"})
+        assert score == 0.5
+        assert conf == RULE_CONFIDENCE
+
+    def test_cannot_find_module(self):
+        score, conf = compute_importance("error", {"message": "Cannot find module 'bar'"})
+        assert score == 0.5
+        assert conf == RULE_CONFIDENCE
+
+    def test_type_error(self):
+        score, conf = compute_importance("error", {"message": "TypeError: x is not a function"})
+        assert score == 0.5
+        assert conf == RULE_CONFIDENCE
+
+    def test_reference_error(self):
+        score, conf = compute_importance("error", {"message": "ReferenceError: y is not defined"})
+        assert score == 0.5
+        assert conf == RULE_CONFIDENCE
+
+    def test_timeout(self):
+        score, conf = compute_importance("error", {"message": "ETIMEDOUT"})
+        assert score == 0.6
+        assert conf == RULE_CONFIDENCE
+
+
+class TestComputeImportanceLowRules:
+    """低重要度ルール (0.0-0.3) のテスト。"""
+
+    def test_warning(self):
+        score, conf = compute_importance("quality", {"message": "warning: unused variable"})
+        assert score == 0.2
+        assert conf == RULE_CONFIDENCE
+
+    def test_deprecated(self):
+        score, conf = compute_importance("quality", {"message": "this API is deprecated"})
+        assert score == 0.3
+        assert conf == RULE_CONFIDENCE
+
+
+class TestComputeImportanceCategoryFallback:
+    """ルール未マッチ時のカテゴリベーススコアテスト。"""
+
+    def test_error_category(self):
+        score, conf = compute_importance("error", {"message": "something went wrong"})
+        assert score == 0.5
+        assert conf == BASE_CONFIDENCE
+
+    def test_quality_category(self):
+        score, conf = compute_importance("quality", {"message": "lint issue found"})
+        assert score == 0.6
+        assert conf == BASE_CONFIDENCE
+
+    def test_pattern_category(self):
+        score, conf = compute_importance("pattern", {"message": "repeated code"})
+        assert score == 0.4
+        assert conf == BASE_CONFIDENCE
+
+    def test_correction_category(self):
+        score, conf = compute_importance("correction", {"message": "user corrected"})
+        assert score == 0.7
+        assert conf == BASE_CONFIDENCE
+
+    def test_unknown_category_defaults_to_05(self):
+        score, conf = compute_importance("unknown", {"message": "something"})
+        assert score == 0.5
+        assert conf == BASE_CONFIDENCE
+
+
+# --- emit_event テスト ---
+
+
+class TestEmitEvent:
+    """emit_event がスコアフィールドを含むことを確認。"""
+
+    def test_emit_includes_scoring_fields(self, tmp_path):
+        emit_event("error", {"message": "Permission denied on /etc/foo"})
+        session_file = tmp_path / "current-session.jsonl"
+        assert session_file.exists()
+
+        lines = session_file.read_text().strip().split("\n")
+        assert len(lines) == 1
+
+        entry = json.loads(lines[0])
+        assert entry["category"] == "error"
+        assert entry["message"] == "Permission denied on /etc/foo"
+        assert entry["importance"] == 0.9
+        assert entry["confidence"] == 0.8
+        assert entry["scored_by"] == "rule"
+        assert entry["promotion_status"] == "pending"
+        assert "timestamp" in entry
+
+    def test_emit_preserves_existing_data(self, tmp_path):
+        emit_event("quality", {"message": "GP-002 violation", "rule": "GP-002", "file": "main.py"})
+        session_file = tmp_path / "current-session.jsonl"
+        entry = json.loads(session_file.read_text().strip())
+
+        # 既存データが保持されていること
+        assert entry["rule"] == "GP-002"
+        assert entry["file"] == "main.py"
+        # スコアフィールドも存在
+        assert entry["importance"] == 0.8
+        assert entry["scored_by"] == "rule"
+
+    def test_emit_multiple_events(self, tmp_path):
+        emit_event("error", {"message": "timeout connecting"})
+        emit_event("quality", {"message": "deprecated API used"})
+        emit_event("pattern", {"message": "normal pattern"})
+
+        session_file = tmp_path / "current-session.jsonl"
+        lines = session_file.read_text().strip().split("\n")
+        assert len(lines) == 3
+
+        entries = [json.loads(line) for line in lines]
+        assert entries[0]["importance"] == 0.6  # timeout
+        assert entries[1]["importance"] == 0.3  # deprecated
+        assert entries[2]["importance"] == 0.4  # pattern (category fallback)
+
+    def test_emit_then_flush_preserves_scores(self, tmp_path):
+        emit_event("error", {"message": "SIGSEGV crash"})
+        events = flush_session()
+
+        assert len(events) == 1
+        assert events[0]["importance"] == 1.0
+        assert events[0]["confidence"] == 0.8
+        assert events[0]["scored_by"] == "rule"
+        assert events[0]["promotion_status"] == "pending"
+
+        # flush 後はファイルが削除される
+        session_file = tmp_path / "current-session.jsonl"
+        assert not session_file.exists()

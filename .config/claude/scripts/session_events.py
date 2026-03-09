@@ -10,9 +10,40 @@ Usage (from other hooks):
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
+
+IMPORTANCE_RULES: list[tuple[str, re.Pattern, float]] = [
+    ("high", re.compile(r"EACCES|Permission denied", re.I), 0.9),
+    ("high", re.compile(r"segfault|SIGSEGV|OOM|out of memory", re.I), 1.0),
+    ("high", re.compile(r"GP-00[1-5]"), 0.8),
+    ("high", re.compile(r"security|vulnerability|injection", re.I), 0.9),
+    ("medium", re.compile(r"Cannot find module|ModuleNotFoundError", re.I), 0.5),
+    ("medium", re.compile(r"TypeError|ReferenceError", re.I), 0.5),
+    ("medium", re.compile(r"timeout|ETIMEDOUT", re.I), 0.6),
+    ("low", re.compile(r"(?<!\w)warning(?:s)?(?:\s*:|\s)", re.I), 0.2),
+    ("low", re.compile(r"deprecated", re.I), 0.3),
+]
+
+BASE_IMPORTANCE: dict[str, float] = {
+    "error": 0.5, "quality": 0.6, "pattern": 0.4, "correction": 0.7,
+}
+
+RULE_CONFIDENCE = 0.8
+BASE_CONFIDENCE = 0.5
+
+
+def compute_importance(category: str, data: dict) -> tuple[float, float]:
+    """ルールベースで importance と confidence を計算する。"""
+    searchable = " ".join(str(v) for v in data.values())
+    for _level, pattern, score in IMPORTANCE_RULES:
+        if pattern.search(searchable):
+            return score, RULE_CONFIDENCE
+    base = BASE_IMPORTANCE.get(category, 0.5)
+    return base, BASE_CONFIDENCE
 
 
 def _get_data_dir() -> Path:
@@ -72,16 +103,25 @@ def _now_iso() -> str:
 
 
 def emit_event(category: str, data: dict) -> None:
-    """セッション中のイベントを一時ファイルに追記する。"""
+    """セッション中のイベントを一時ファイルに追記する（スコア付き）。"""
     logger = _setup_logger()
     try:
+        importance, confidence = compute_importance(category, data)
         path = _temp_path()
         path.parent.mkdir(parents=True, exist_ok=True)
-        entry = {"timestamp": _now_iso(), "category": category, **data}
+        entry = {
+            "timestamp": _now_iso(),
+            "category": category,
+            **data,
+            "importance": round(importance, 2),
+            "confidence": round(confidence, 2),
+            "scored_by": "rule",
+            "promotion_status": "pending",
+        }
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
         brief = str(data.get("message", data.get("rule", "")))[:80]
-        logger.debug("emit: %s - %s", category, brief)
+        logger.debug("emit: %s [i=%.1f] - %s", category, importance, brief)
     except Exception as exc:
         try:
             logger.error("emit failed: %s", exc)
