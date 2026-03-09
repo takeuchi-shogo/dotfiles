@@ -35,6 +35,8 @@ managed_links = [
     (home / ".codex/skills/senior-architect", root / ".config/claude/skills/senior-architect", ".codex/skills/senior-architect"),
     (home / ".codex/skills/senior-backend", root / ".config/claude/skills/senior-backend", ".codex/skills/senior-backend"),
     (home / ".codex/skills/senior-frontend", root / ".config/claude/skills/senior-frontend", ".codex/skills/senior-frontend"),
+    (home / ".codex/skills/codex-search-first", root / ".agents/skills/codex-search-first", ".codex/skills/codex-search-first"),
+    (home / ".codex/skills/codex-verification-before-completion", root / ".agents/skills/codex-verification-before-completion", ".codex/skills/codex-verification-before-completion"),
 ]
 
 errors = []

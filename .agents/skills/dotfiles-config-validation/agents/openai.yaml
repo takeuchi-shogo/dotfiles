@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dotfiles Validation"
+  short_description: "Pick the right validation command for dotfiles"
+  default_prompt: "Use $dotfiles-config-validation to pick the smallest correct validation command for this dotfiles change."

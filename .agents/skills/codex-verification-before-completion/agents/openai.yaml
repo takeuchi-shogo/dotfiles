@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Verification"
+  short_description: "Run real validation before declaring done"
+  default_prompt: "Use $codex-verification-before-completion to choose and run the smallest valid verification commands before reporting completion."
