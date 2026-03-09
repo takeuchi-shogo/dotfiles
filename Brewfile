@@ -17,6 +17,7 @@ brew "grep"       # GNU grep (macOS 標準より高機能)
 brew "gh"         # GitHub CLI
 brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
 brew "borders"    # ウィンドウ枠線ハイライト
+brew "nb"         # ターミナルノート管理 CLI
 
 # GUI apps
 cask "wezterm"            # GPU アクセラレーテッドターミナル
