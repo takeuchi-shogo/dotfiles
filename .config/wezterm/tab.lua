@@ -22,17 +22,17 @@ function module.apply_to_config(config)
   local TAB_ICON_COLOR_DOCKER = "#4169e1"
   local TAB_ICON_COLOR_PYTHON = "#ffd700"
   local TAB_ICON_COLOR_NEOVIM = "#57A143"
-  local TAB_ICON_COLOR_ZSH = "#769ff0"
-  local TAB_ICON_COLOR_TASK = "#ff7f50"
-  local TAB_ICON_COLOR_NODE = "#1e90ff"
-  local TAB_ICON_COLOR_NB = "#9370DB"
-  local TAB_ICON_COLOR_SSH = "#ff6b6b"
-  local TAB_ICON_COLOR_FALLBACK = "#ae8b2d"
-  local TAB_FOREGROUND_INACTIVE = "#a0a9cb"
-  local TAB_FOREGROUND_ACTIVE = "#313244"
-  local TAB_BACKGROUND_ACTIVE = "#80EBDF"
-  local TAB_BACKGROUND_SSH_ACTIVE = "#ff6b6b"
-  local TAB_FOREGROUND_SSH_ACTIVE = "#ffffff"
+  local TAB_ICON_COLOR_ZSH = "#268bd2"       -- Solarized blue
+  local TAB_ICON_COLOR_TASK = "#cb4b16"       -- Solarized orange
+  local TAB_ICON_COLOR_NODE = "#268bd2"       -- Solarized blue
+  local TAB_ICON_COLOR_NB = "#6c71c4"         -- Solarized violet
+  local TAB_ICON_COLOR_SSH = "#dc322f"        -- Solarized red
+  local TAB_ICON_COLOR_FALLBACK = "#b58900"   -- Solarized yellow
+  local TAB_FOREGROUND_INACTIVE = "#586e75"   -- Solarized base01
+  local TAB_FOREGROUND_ACTIVE = "#002b36"     -- Solarized base03
+  local TAB_BACKGROUND_ACTIVE = "#2aa198"     -- Solarized cyan
+  local TAB_BACKGROUND_SSH_ACTIVE = "#dc322f" -- Solarized red
+  local TAB_FOREGROUND_SSH_ACTIVE = "#fdf6e3" -- Solarized base3
 
   -- Decoration
   local SOLID_LEFT_CIRCLE = wezterm.nerdfonts.ple_left_half_circle_thick

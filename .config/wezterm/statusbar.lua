@@ -6,9 +6,9 @@ local module = {}
 -- =============================================================================
 
 local WORKSPACE_COLORS = {
-  default = "#80EBDF",
-  copy_mode = "#ffd700",
-  setting_mode = "#39FF14",
+  default = "#2aa198",     -- Solarized cyan
+  copy_mode = "#b58900",   -- Solarized yellow
+  setting_mode = "#859900", -- Solarized green
 }
 
 -- 前回の色を記録（不要な更新を避けるため）
