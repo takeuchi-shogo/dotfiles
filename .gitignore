@@ -16,3 +16,8 @@ settings.local.json
 .config/claude/agents/reviewer-*.md
 .config/claude/data/
 __pycache__/
+
+# Raycast secrets
+.config/raycast/**/secrets*
+.config/raycast/**/*token*
+.config/raycast/**/*api_key*

@@ -28,6 +28,7 @@ cask "karabiner-elements" # キーボードカスタマイズ
 cask "sf-symbols"         # Apple SF Symbols ブラウザ
 cask "macssk"             # SKK 日本語入力メソッド
 cask "jordanbaird-ice"    # メニューバーマネージャ (SketchyBar 後継)
+cask "raycast"            # ランチャー (Spotlight 代替)
 
 # Fonts
 cask "font-hackgen-nerd"  # HackGen Nerd Font (日本語対応)
