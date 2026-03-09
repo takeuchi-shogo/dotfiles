@@ -57,12 +57,13 @@ git diff --name-only HEAD
 行数に関係なく、diff の内容にマッチするスペシャリストを追加する。
 ただし **50行以上の変更** でのみ適用（10行以下はレビュー自体を省略）。
 
-| diff 内のシグナル  | スペシャリスト          | 検出パターン                                                    |
-| ------------------ | ----------------------- | --------------------------------------------------------------- |
-| エラーハンドリング | `silent-failure-hunter` | `catch`, `recover`, `fallback`, `retry`, `on.*error`, `try {`   |
-| 新しい型定義       | `type-design-analyzer`  | `type `, `interface `, `struct `, `enum ` の追加行              |
-| テスト変更         | `pr-test-analyzer`      | `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイル変更 |
-| コメント大量変更   | `comment-analyzer`      | `/** */`, `///`, `# ` のブロック追加（10行以上）                |
+| diff 内のシグナル    | スペシャリスト          | 検出パターン                                                    |
+| -------------------- | ----------------------- | --------------------------------------------------------------- |
+| エラーハンドリング   | `silent-failure-hunter` | `catch`, `recover`, `fallback`, `retry`, `on.*error`, `try {`   |
+| 新しい型定義         | `type-design-analyzer`  | `type `, `interface `, `struct `, `enum ` の追加行              |
+| テスト変更           | `pr-test-analyzer`      | `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイル変更 |
+| コメント大量変更     | `comment-analyzer`      | `/** */`, `///`, `# ` のブロック追加（10行以上）                |
+| nil/ポインタ操作     | `nil-path-reviewer`     | `*`, `nil`, `Option`, `.Get()`, ポインタ型フィールドの追加/変更 |
 
 ## Step 3: Dispatch
 

@@ -67,6 +67,28 @@
 - **トリガー**: `/** */`, `///`, `# ` 等のコメントブロックが10行以上追加されている
 - **検出対象**: コメント腐敗、WHY の欠落、不正確な記述
 
+### nil-path-reviewer
+
+- **subagent_type**: `general-purpose`（専用エージェントではなく汎用エージェントに専用プロンプトを渡す）
+- **観点**: nil/zero パスの安全性、ポインタ dereference の防御、暗黙の前提の検出
+- **トリガー**: diff の追加/変更行に以下が含まれる場合:
+  - Go: ポインタ型フィールド (`*`), `nil`, `.Get()`, `option.Option`, `option.Some`, `option.None`
+  - TypeScript: `undefined`, `null`, optional chaining (`?.`), non-null assertion (`!.`)
+- **プロンプト**: 以下を含めること:
+  ```
+  コード変更に含まれるポインタ型・Option 型・nullable フィールドについて、
+  以下の観点でレビューしてください:
+
+  1. nil/undefined になりうるフィールドが dereference される箇所に防御があるか
+  2. 下流の関数に nil が渡された場合に panic/crash しないか（データフロー追跡）
+  3. 「呼び出し側が nil を渡さないはず」という暗黙の前提がないか
+  4. Option 型の .Get() が ok チェックなしで使われていないか
+  5. テストで nil/zero ケースがカバーされているか
+
+  重要度の高い指摘のみ報告してください。
+  ```
+- **重要度**: CRITICAL（nil dereference で panic 可能）, HIGH（暗黙の前提に依存）, MEDIUM（テスト欠落）
+
 ## Agent プロンプトテンプレート
 
 各レビューアーへ渡すプロンプトの基本構造:
