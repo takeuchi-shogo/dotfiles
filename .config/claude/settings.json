@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/session-load.js"
+            "command": "node $HOME/.claude/scripts/runtime/session-load.js"
           }
         ]
       },
@@ -66,23 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/checkpoint_recover.py 2>/dev/null || true"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/context-drift-check.py --commits 10 --json 2>/dev/null || true"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/doc-garden-check.py 2>/dev/null || true"
+            "command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true"
           }
         ]
       }
@@ -92,11 +76,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/session-save.js"
+            "command": "node $HOME/.claude/scripts/runtime/session-save.js"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/session-learner.py"
+            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
           }
         ]
       }
@@ -106,11 +90,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/session-save.js"
+            "command": "node $HOME/.claude/scripts/runtime/session-save.js"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/session-learner.py"
+            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
           }
         ]
       }
@@ -120,7 +104,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/agent-router.py"
+            "command": "python3 $HOME/.claude/scripts/policy/agent-router.py"
           }
         ]
       }
@@ -131,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/pre-commit-check.js"
+            "command": "node $HOME/.claude/scripts/policy/pre-commit-check.js"
           }
         ]
       },
@@ -140,7 +124,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/suggest-gemini.py"
+            "command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py"
           }
         ]
       }
@@ -151,19 +135,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/auto-format.js"
+            "command": "node $HOME/.claude/scripts/runtime/auto-format.js"
           },
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/suggest-compact.js"
+            "command": "node $HOME/.claude/scripts/runtime/suggest-compact.js"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/golden-check.py"
+            "command": "python3 $HOME/.claude/scripts/policy/golden-check.py"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/checkpoint_manager.py"
+            "command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py"
           }
         ]
       },
@@ -172,15 +156,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/error-to-codex.py"
+            "command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/post-test-analysis.py"
+            "command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py"
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/plan-lifecycle.py"
+            "command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py"
           }
         ]
       }
@@ -190,7 +174,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/pre-compact-save.js"
+            "command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js"
           }
         ]
       }
