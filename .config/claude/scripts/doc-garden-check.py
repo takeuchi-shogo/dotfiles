@@ -40,6 +40,17 @@ FILE_REF_PATTERN = re.compile(
     r'[`"\']([a-zA-Z0-9_./-]+\.(py|js|ts|md|json|sh))[`"\']'
 )
 
+# 参照チェックから除外するファイル名（検出対象として言及されるもの）
+EXCLUDE_REFS = {
+    "package.json", "go.mod", "Cargo.toml", "requirements.txt",
+    "pyproject.toml", "server.py",
+}
+
+# 比喩・概念的言及を示すパターン（この前後にファイル名があれば除外）
+METAPHOR_PATTERN = re.compile(
+    r'に相当する|のような|に倣い|を参考に|の概念'
+)
+
 
 def get_repo_root() -> str | None:
     try:
@@ -144,6 +155,10 @@ def check_references(repo_root: str) -> List[str]:
                 for ref_path, _ in refs:
                     if ref_path.startswith(("http", "//", "#")):
                         continue
+                    # 除外: 検出対象ファイル名（package.json 等）
+                    basename = os.path.basename(ref_path)
+                    if basename in EXCLUDE_REFS:
+                        continue
                     candidates = [
                         os.path.join(repo_root, ref_path),
                         os.path.join(repo_root, ".config/claude", ref_path),
@@ -153,6 +168,14 @@ def check_references(repo_root: str) -> List[str]:
                         continue
                     if _find_in_skills(repo_root, os.path.basename(ref_path)):
                         continue
+                    # 除外: 比喩表現内の参照
+                    ref_line_idx = content.find(ref_path)
+                    if ref_line_idx >= 0:
+                        context_start = max(0, ref_line_idx - 50)
+                        context_end = min(len(content), ref_line_idx + len(ref_path) + 50)
+                        context_text = content[context_start:context_end]
+                        if METAPHOR_PATTERN.search(context_text):
+                            continue
                     rel = os.path.relpath(fpath, repo_root)
                     warnings.append(f"{rel} → `{ref_path}` が存在しない")
 
