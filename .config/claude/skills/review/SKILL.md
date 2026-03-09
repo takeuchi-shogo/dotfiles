@@ -1,6 +1,9 @@
 ---
 name: review
-description: コード変更のレビューを実行。変更規模に応じてレビューアーを自動選択・並列起動し、結果を統合する。コード変更後の Review 段階で使用、または /review で手動起動。
+description: >
+  コード変更のレビューを実行。変更規模に応じてレビューアーを自動選択・並列起動し、結果を統合する。
+  コード変更後の Review 段階で使用、または /review で手動起動。
+  Do NOT use when a specific language reviewer (code-reviewer-ts, code-reviewer-go, etc.) is explicitly requested.
 allowed-tools: Read, Bash, Grep, Glob, Agent
 ---
 
