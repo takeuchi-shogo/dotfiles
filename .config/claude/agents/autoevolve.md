@@ -55,6 +55,17 @@ insights の分析結果から、以下の優先度で改善候補を特定:
 | **中** | コンテキスト効率が悪いエージェント | プロンプト簡潔化                    |
 | **低** | 1-2回のみの観察                    | 記録のみ、変更しない                |
 
+### 実験カテゴリと変更対象
+
+| カテゴリ | 変更対象 | スコアリング基準 |
+|---------|---------|----------------|
+| errors | `references/error-fix-guides.md` | 同一エラーの再発回数 |
+| quality | `references/golden-principles.md`, `rules/` | 同一ルール違反の頻度 |
+| agents | `agents/*.md` | タスク完了までのターン数 |
+| skills | `skills/*/SKILL.md` | ユーザー手動介入率 |
+
+各カテゴリで `autoevolve/{category}-YYYY-MM-DD` ブランチを作成する。
+
 ### Phase 3: ブランチ作成と変更実装
 
 ```bash
@@ -101,6 +112,39 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 1. 承認 → master に merge
 2. 却下 → ブランチ削除
 3. 修正依頼 → 具体的なフィードバック
+```
+
+### Phase 5: 既存実験の効果レビュー
+
+マージ済みの実験がある場合、効果を測定する:
+
+```bash
+# 効果測定
+python3 ~/.claude/scripts/experiment_tracker.py measure
+
+# 全実験のステータス確認
+python3 ~/.claude/scripts/experiment_tracker.py list
+```
+
+測定結果に基づく次のアクション:
+
+| 判定 | 意味 | アクション |
+|------|------|----------|
+| keep | 20%以上改善 | 成功パターンを他カテゴリに横展開検討 |
+| neutral | 変化なし | 追加実験で別アプローチを試行 |
+| discard | 20%以上悪化 | 変更をリバートする提案を生成 |
+| insufficient_data | データ不足 | 次サイクルまで待機 |
+
+### Phase 6: 実験記録
+
+改善を実装した場合、experiment_tracker で記録:
+
+```bash
+python3 ~/.claude/scripts/experiment_tracker.py record \
+  --category {category} \
+  --hypothesis "{仮説}" \
+  --branch "autoevolve/{category}-$(date +%Y-%m-%d)" \
+  --files "{変更ファイル1},{変更ファイル2}"
 ```
 
 ## 変更の種類と具体例
