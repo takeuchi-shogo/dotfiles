@@ -66,6 +66,23 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.rule' | sort | uniq
 - **スキル改善候補**: 同じタイプのタスクで毎回同じ修正 → スキルに組み込む
 - **MEMORY.md 追記候補**: プロジェクト固有の規約
 
+### 5. クロスカテゴリ相関分析
+
+複数カテゴリのデータを突き合わせ、相関を発見する:
+
+```bash
+# errors と quality の相関（同一タイムスタンプ付近での共起）
+echo "=== errors timestamps ==="
+cat ~/.claude/agent-memory/learnings/errors.jsonl | jq -r '.timestamp' | cut -c1-13 | sort | uniq -c | sort -rn | head -10
+echo "=== quality timestamps ==="
+cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.timestamp' | cut -c1-13 | sort | uniq -c | sort -rn | head -10
+```
+
+分析観点:
+- **errors × quality**: GP違反が多い時間帯にエラーも多い → 共通の根本原因がある可能性
+- **errors × patterns**: 特定のパターンが確認されたプロジェクトでエラーが少ない → パターンの有効性
+- **quality × agents**: 特定のエージェント使用時にGP違反が少ない → エージェントの品質向上効果
+
 ## 出力フォーマット
 
 ### insights/analysis-YYYY-MM-DD.md
@@ -100,6 +117,13 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.rule' | sort | uniq
 ### 優先度中
 
 - [ ] ...
+
+## クロスカテゴリ相関
+
+| 相関ペア | 発見 | 推奨アクション |
+|---------|------|--------------|
+| errors × quality | ... | ... |
+| errors × patterns | ... | ... |
 ```
 
 ### insights/project-profiles/{project-name}.md
