@@ -3,6 +3,9 @@ set -euo pipefail
 
 DOTFILES_DIR="$HOME/dotfiles"
 
+# macSKK: ~/Library/Containers/net.mtgto.inputmethod.macSKK/ に設定保存
+# macOS サンドボックス制約により symlink 不可。Brewfile でインストールのみ管理。
+
 SYMLINK_EXCLUDE_FILES=(
   "^README\.md$"
   "^Taskfile\.yml$"
