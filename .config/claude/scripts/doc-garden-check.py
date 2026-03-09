@@ -24,6 +24,12 @@ DOC_DIRS = [
     ".config/claude/agents",
 ]
 
+# Reference check is limited to references/ only — agents/ and rules/ contain
+# pattern definitions with file names that are not actual file references.
+REF_CHECK_DIRS = [
+    ".config/claude/references",
+]
+
 CODE_DIRS = [
     ".config/claude/scripts",
     ".config/claude/skills",
@@ -97,11 +103,29 @@ def check_timestamps(repo_root: str) -> List[str]:
     return warnings
 
 
+def _strip_code_blocks(text: str) -> str:
+    """Remove fenced code blocks and pattern-definition lines to avoid false positives."""
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'^-\s+\*\*(?:検出パターン|ファイル|キーワード)\*\*:.*$', '', text, flags=re.MULTILINE)
+    return text
+
+
+def _find_in_skills(repo_root: str, filename: str) -> bool:
+    """Recursively search for filename under .config/claude/skills/."""
+    skills_dir = os.path.join(repo_root, ".config/claude/skills")
+    if not os.path.isdir(skills_dir):
+        return False
+    for root, _, files in os.walk(skills_dir):
+        if filename in files:
+            return True
+    return False
+
+
 def check_references(repo_root: str) -> List[str]:
     """C) Find docs referencing non-existent file paths."""
     warnings = []
 
-    for doc_dir in DOC_DIRS:
+    for doc_dir in REF_CHECK_DIRS:
         full_dir = os.path.join(repo_root, doc_dir)
         if not os.path.isdir(full_dir):
             continue
@@ -115,17 +139,22 @@ def check_references(repo_root: str) -> List[str]:
                 except OSError:
                     continue
 
-                refs = FILE_REF_PATTERN.findall(content)
+                cleaned = _strip_code_blocks(content)
+                refs = FILE_REF_PATTERN.findall(cleaned)
                 for ref_path, _ in refs:
                     if ref_path.startswith(("http", "//", "#")):
                         continue
                     candidates = [
                         os.path.join(repo_root, ref_path),
                         os.path.join(repo_root, ".config/claude", ref_path),
+                        os.path.join(os.path.dirname(fpath), ref_path),
                     ]
-                    if not any(os.path.exists(c) for c in candidates):
-                        rel = os.path.relpath(fpath, repo_root)
-                        warnings.append(f"{rel} → `{ref_path}` が存在しない")
+                    if any(os.path.exists(c) for c in candidates):
+                        continue
+                    if _find_in_skills(repo_root, os.path.basename(ref_path)):
+                        continue
+                    rel = os.path.relpath(fpath, repo_root)
+                    warnings.append(f"{rel} → `{ref_path}` が存在しない")
 
     return warnings
 
