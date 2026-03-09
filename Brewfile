@@ -18,6 +18,7 @@ brew "gh"         # GitHub CLI
 brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
 brew "borders"    # ウィンドウ枠線ハイライト
 brew "nb"         # ターミナルノート管理 CLI
+brew "direnv"     # ディレクトリ別環境変数マネージャ
 
 # GUI apps
 cask "wezterm"            # GPU アクセラレーテッドターミナル
