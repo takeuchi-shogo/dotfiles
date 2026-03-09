@@ -48,15 +48,15 @@ local appearance = {
 
   -- command palette
   -- command_palette_font = wezterm.font("Roboto"), -- Not a valid config field
-  command_palette_bg_color = "#1d2230",
-  command_palette_fg_color = "#769ff0",
+  command_palette_bg_color = "#073642",
+  command_palette_fg_color = "#2aa198",
   command_palette_rows = 18,
   command_palette_font_size = 14.0,
 
   -- char select
   -- char_select_font = wezterm.font("Roboto"), -- Not a valid config field
-  char_select_bg_color = "#1d2230",
-  char_select_fg_color = "#769ff0",
+  char_select_bg_color = "#073642",
+  char_select_fg_color = "#2aa198",
 
   ----------------------------------------------------
   -- Tab
@@ -72,17 +72,39 @@ local appearance = {
     active_titlebar_bg = "none",
   },
   -- Hide borders between tabs
+  -- Solarized Osaka color palette
   colors = {
-    background = "#1a1a2e",
+    background = "#002b36",
+    foreground = "#839496",
     tab_bar = {
       background = "none",
       inactive_tab_edge = "none",
     },
-    cursor_bg = "#80EBDF",
-    cursor_fg = "#000000",
-    cursor_border = "#80EBDF",
-    selection_bg = "#ffdd00",
-    selection_fg = "#000000",
+    cursor_bg = "#d33682",
+    cursor_fg = "#002b36",
+    cursor_border = "#d33682",
+    selection_bg = "#073642",
+    selection_fg = "#839496",
+    ansi = {
+      "#073642", -- black (base02)
+      "#dc322f", -- red
+      "#859900", -- green
+      "#b58900", -- yellow
+      "#268bd2", -- blue
+      "#d33682", -- magenta
+      "#2aa198", -- cyan
+      "#eee8d5", -- white (base2)
+    },
+    brights = {
+      "#586e75", -- bright black (base01)
+      "#cb4b16", -- bright red (orange)
+      "#586e75", -- bright green (base01)
+      "#657b83", -- bright yellow (base00)
+      "#839496", -- bright blue (base0)
+      "#6c71c4", -- bright magenta (violet)
+      "#93a1a1", -- bright cyan (base1)
+      "#fdf6e3", -- bright white (base3)
+    },
   },
 }
 
