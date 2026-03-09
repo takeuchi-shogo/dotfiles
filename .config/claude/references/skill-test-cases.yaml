@@ -1,0 +1,91 @@
+# スキルトリガーテスト定義
+# 各スキルの should_trigger / should_not_trigger を定義。
+# 自動テストではなく、手動テスト時のチェックリストとして使用。
+
+codex:
+  should_trigger:
+    - "codex exec で分析して"
+    - "Codex を使ってリファクタリング"
+    - "codex resume で続きをやって"
+  should_not_trigger:
+    - "このバグを修正して"
+    - "コードレビューして"
+    - "テストを書いて"
+
+codex-review:
+  should_trigger:
+    - "Codex でコードレビューして"
+    - "codex-review を実行"
+    - "CHANGELOG を自動生成して"
+  should_not_trigger:
+    - "簡単なレビューをして"
+    - "10行の変更を確認して"
+
+review:
+  should_trigger:
+    - "コード変更をレビューして"
+    - "この差分を確認して"
+    - "/review"
+  should_not_trigger:
+    - "TypeScriptの型エラーを直して"
+    - "新機能を実装して"
+
+search-first:
+  should_trigger:
+    - "新しいライブラリを追加したい"
+    - "この機能を実装する前に既存のものを探して"
+  should_not_trigger:
+    - "typo を修正して"
+    - "この変数名を変えて"
+
+senior-architect:
+  should_trigger:
+    - "マイクロサービスに分割すべきか"
+    - "システムアーキテクチャを設計して"
+    - "スケーラビリティを考慮した設計をしたい"
+  should_not_trigger:
+    - "この関数のバグを直して"
+    - "CSSを修正して"
+
+senior-backend:
+  should_trigger:
+    - "API設計をレビューして"
+    - "DBスキーマを設計して"
+    - "REST vs GraphQL どちらが良いか"
+  should_not_trigger:
+    - "Reactコンポーネントを作って"
+    - "CSSのレイアウトを修正して"
+
+senior-frontend:
+  should_trigger:
+    - "コンポーネント設計を相談したい"
+    - "状態管理の方針を決めたい"
+    - "アクセシビリティを改善したい"
+  should_not_trigger:
+    - "DBのインデックスを追加して"
+    - "APIエンドポイントを設計して"
+
+gemini:
+  should_trigger:
+    - "大規模なコードベースを分析して"
+    - "Gemini で調べて"
+    - "PDFの内容を読み取って"
+  should_not_trigger:
+    - "簡単なバグを修正して"
+    - "テストを書いて"
+
+edge-case-analysis:
+  should_trigger:
+    - "実装前に異常系を洗い出して"
+    - "境界値を確認して"
+  should_not_trigger:
+    - "typo を直して"
+    - "ドキュメントを更新して"
+
+verification-before-completion:
+  should_trigger:
+    - "完了前に検証して"
+    - "ビルドとテストが通るか確認"
+  should_not_trigger:
+    - "新機能を追加して"
+    - "リファクタリングして"
