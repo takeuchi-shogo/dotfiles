@@ -17,7 +17,7 @@ model_reasoning_summary = "detailed"
 [profiles.research]
 model_reasoning_effort = "high"
 model_reasoning_summary = "auto"
-web_search = true
+web_search = "live"
 
 [features]
 shell_snapshot = true        # 環境スナップショット（beta）
@@ -31,4 +31,7 @@ command = "osascript -e 'display notification \"Codex が完了しました\" wi
 enabled = false  # 匿名テレメトリ無効化
 
 [projects."/Users/takeuchishougo/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/shogo_takeuchi/projects/knowledge-work/knowledgework"]
 trust_level = "trusted"

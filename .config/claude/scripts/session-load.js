@@ -49,7 +49,7 @@ function loadState() {
 
 function detectTools() {
   const tools = {
-    "Package managers": ["bun", "pnpm", "npm", "yarn"],
+    "Package managers": ["pnpm", "npm", "yarn"],
     "Languages/Runtimes": ["go", "node", "python3", "ruby", "rust"],
     "Dev tools": ["gh", "docker", "kubectl", "terraform"],
     "AI tools": ["codex", "gemini"],
@@ -82,6 +82,6 @@ process.stdin.on("data", (chunk) => {
 });
 process.stdin.on("end", () => {
   loadState();
-  detectTools();
+  // detectTools(); // Disabled: `which` triggers security alerts
   process.stdout.write(data);
 });
