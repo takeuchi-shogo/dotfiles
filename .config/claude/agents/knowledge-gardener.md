@@ -57,6 +57,7 @@ mv errors.jsonl.new errors.jsonl
 | 同じパターンが3回以上出現                  | `insights/`         | 自動で整理                      |
 | 確信度が高い（5回以上 + 複数プロジェクト） | `MEMORY.md`         | ユーザーに追記を提案            |
 | 汎用性が高い（全プロジェクト共通）         | `skill/` or `rule/` | ユーザーにスキル/ルール化を提案 |
+| **複数カテゴリに効果あり（cross_impact）** | **優先昇格**        | **即座にユーザーに提案**        |
 
 提案フォーマット:
 
@@ -112,6 +113,17 @@ mv errors.jsonl.new errors.jsonl
 - `insights/` のレポート数
 - `MEMORY.md` の行数（200行制限に近づいていないか）
 - 最後の分析実行日時
+
+### 6. クロスカテゴリ効果の検証
+
+experiment-registry.jsonl の cross_impact フィールドを分析:
+
+```bash
+cat ~/.claude/agent-memory/experiments/experiment-registry.jsonl 2>/dev/null | jq 'select(.cross_impact != null)'
+```
+
+- cross_impact で2カテゴリ以上に改善効果がある実験 → **優先昇格候補**
+- 1つのカテゴリの改善が他カテゴリを悪化させている → **要注意パターン**として報告
 
 ## 実行方法
 
