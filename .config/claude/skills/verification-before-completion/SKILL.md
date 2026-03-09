@@ -1,6 +1,9 @@
 ---
 name: verification-before-completion
-description: Mandatory verification before claiming work is complete. Run actual commands to confirm success — never claim completion based on assumptions. Evidence before assertions.
+description: >
+  Mandatory verification before claiming work is complete. Run actual commands to
+  confirm success — never claim completion based on assumptions. Evidence before assertions.
+allowed-tools: "Read, Bash, Grep, Glob, Agent"
 ---
 
 # Verification Before Completion
