@@ -17,7 +17,7 @@ tasks:
       - brew bundle --file=~/dotfiles/Brewfile
 
   restart-wm:
-    desc: Restart window manager services (sketchybar & AeroSpace)
+    desc: Restart window manager services (AeroSpace)
     cmds:
       - ~/dotfiles/.bin/restart-wm.sh
 

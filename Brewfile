@@ -1,5 +1,5 @@
 # Taps
-tap "FelixKratz/formulae"
+tap "FelixKratz/formulae"    # borders
 tap "nikitabobko/tap"
 
 # CLI tools
@@ -8,8 +8,8 @@ brew "neovim"     # テキストエディタ (AstroNvim)
 brew "sheldon"    # zsh プラグインマネージャ
 brew "starship"   # クロスシェルプロンプト
 brew "fzf"        # ファジーファインダー
-brew "sketchybar" # macOS ステータスバー
-brew "lua"        # Sketchybar/Neovim スクリプト
+# brew "sketchybar" # macOS ステータスバー (Ice に移行、設定は .config/sketchybar/ に保持)
+brew "lua"        # Neovim スクリプト
 brew "ripgrep"    # 高速 grep (rg)
 brew "fd"         # 高速 find
 brew "tree-sitter-cli" # Tree-sitter パーサ CLI (Neovim)
@@ -27,6 +27,7 @@ cask "aerospace"          # タイル型ウィンドウマネージャ
 cask "karabiner-elements" # キーボードカスタマイズ
 cask "sf-symbols"         # Apple SF Symbols ブラウザ
 cask "macssk"             # SKK 日本語入力メソッド
+cask "jordanbaird-ice"    # メニューバーマネージャ (SketchyBar 後継)
 
 # Fonts
 cask "font-hackgen-nerd"  # HackGen Nerd Font (日本語対応)
