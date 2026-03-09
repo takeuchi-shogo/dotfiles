@@ -5,9 +5,9 @@
 マージ後の効果を learnings データから測定する。
 
 Usage:
-    python experiment-tracker.py record --category errors --hypothesis "..." --branch autoevolve/errors-2026-03-10 --files f1.md f2.md
-    python experiment-tracker.py list [--status pending_review]
-    python experiment-tracker.py measure <exp-id>
+    python experiment_tracker.py record --category errors --hypothesis "..." --branch autoevolve/errors-2026-03-10 --files f1.md f2.md
+    python experiment_tracker.py list [--status pending_review]
+    python experiment_tracker.py measure <exp-id>
 """
 
 import argparse

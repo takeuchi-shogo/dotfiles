@@ -77,17 +77,21 @@ class TestExperimentTracker:
         update_status(exp["id"], "merged")
         learnings_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
         now = datetime.now(timezone.utc)
+        # 5 errors within 7-day window before merge (days=3 is inside the window)
         for i in range(5):
-            ts = (now - timedelta(days=10)).isoformat()
+            ts = (now - timedelta(days=3)).isoformat()
             entry = {"timestamp": ts, "message": f"TypeError {i}"}
             with open(learnings_path, "a") as f:
                 f.write(json.dumps(entry) + "\n")
+        # 2 errors after merge
         for i in range(2):
             entry = {"timestamp": now.isoformat(), "message": f"TypeError {i}"}
             with open(learnings_path, "a") as f:
                 f.write(json.dumps(entry) + "\n")
         result = measure_effect(exp["id"])
-        assert result["verdict"] in ("keep", "discard", "neutral", "insufficient_data")
+        assert result["verdict"] == "keep"
+        assert result["before_count"] == 5
+        assert result["after_count"] == 2
 
     def test_record_cross_impact(self):
         from experiment_tracker import record_experiment, record_cross_impact, list_experiments
