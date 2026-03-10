@@ -101,6 +101,9 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 | ドキュメントメンテナンス | `doc-gardener`               | 陳腐化ドキュメント検出・修正                            |
 | コード品質スキャン       | `golden-cleanup`             | ゴールデンプリンシプル逸脱スキャン                      |
 | UI 観察                  | `ui-observer`                | Playwright による UI 状態確認（サブエージェント限定）   |
+| 並列リサーチ             | `/research` スキル           | マルチエージェント並列調査、レポート生成                |
+| 自律実行                 | `/autonomous` スキル         | 長時間タスクのセッション跨ぎ自律実行                    |
+| ブレイクスルー記録       | `/eureka` スキル             | 技術的発見の構造化記録、INDEX 管理                      |
 
 ### ルーティングルール
 
