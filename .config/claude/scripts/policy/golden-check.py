@@ -6,9 +6,11 @@ Triggered by: hooks.PostToolUse (Edit|Write)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext warning on stdout
 """
+import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
@@ -17,6 +19,42 @@ from hook_utils import (
     load_hook_input, output_passthrough, output_context,
     check_tool, run_hook, get_emitter,
 )
+
+WARNING_COOLDOWN_SECONDS = 300  # 5 minutes
+WARNING_STATE_FILE = Path(
+    os.environ.get("CLAUDE_SESSION_STATE_DIR",
+                    os.path.join(os.environ.get("HOME", ""), ".claude", "session-state")),
+) / "golden-warnings.json"
+
+
+def _load_warning_state() -> dict:
+    try:
+        return json.loads(WARNING_STATE_FILE.read_text())
+    except Exception:
+        return {}
+
+
+def _save_warning_state(state: dict) -> None:
+    try:
+        WARNING_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        WARNING_STATE_FILE.write_text(json.dumps(state))
+    except OSError:
+        pass  # Non-critical state — loss is acceptable
+
+
+def _is_duplicate_warning(file_path: str, rule: str) -> bool:
+    """同じファイル+ルールの警告がクールダウン期間内に出ていたら True."""
+    state = _load_warning_state()
+    now = time.time()
+    key = f"{file_path}:{rule}"
+    last_warned = state.get(key, 0)
+    if now - last_warned < WARNING_COOLDOWN_SECONDS:
+        return True
+    # Prune old entries and record this warning
+    state = {k: v for k, v in state.items() if now - v < WARNING_COOLDOWN_SECONDS}
+    state[key] = now
+    _save_warning_state(state)
+    return False
 
 emit = get_emitter()
 
@@ -100,32 +138,20 @@ def main() -> None:
 
     warnings: list[str] = []
 
-    dep_warn = check_dependency_file(file_path)
-    if dep_warn:
-        warnings.append(dep_warn)
-        emit("quality", {
-            "rule": "GP-003",
-            "file": file_path,
-            "detail": dep_warn[:200],
-        })
+    checks: list[tuple[str, str | None]] = [
+        ("GP-003", check_dependency_file(file_path)),
+        ("GP-004", check_empty_catch(content)),
+        ("GP-005", check_unsafe_types(content, file_path)),
+    ]
 
-    catch_warn = check_empty_catch(content)
-    if catch_warn:
-        warnings.append(catch_warn)
-        emit("quality", {
-            "rule": "GP-004",
-            "file": file_path,
-            "detail": catch_warn[:200],
-        })
-
-    type_warn = check_unsafe_types(content, file_path)
-    if type_warn:
-        warnings.append(type_warn)
-        emit("quality", {
-            "rule": "GP-005",
-            "file": file_path,
-            "detail": type_warn[:200],
-        })
+    for rule, warn in checks:
+        if warn and not _is_duplicate_warning(file_path, rule):
+            warnings.append(warn)
+            emit("quality", {
+                "rule": rule,
+                "file": file_path,
+                "detail": warn[:200],
+            })
 
     if warnings:
         warnings.append(

@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 // Token-aware compaction reminder — suggests compaction after many edits
 // Triggered by: hooks.PostToolUse (Edit|Write)
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const COUNTER_FILE = path.join(process.env.HOME, '.claude', 'session-state', 'edit-counter.json');
+const COUNTER_FILE = path.join(
+  process.env.HOME,
+  ".claude",
+  "session-state",
+  "edit-counter.json",
+);
 const LOOP_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const LOOP_THRESHOLD = 3;
 const MAX_RECENT_EDITS = 20;
 
 function getCounter() {
   try {
-    return JSON.parse(fs.readFileSync(COUNTER_FILE, 'utf8'));
+    return JSON.parse(fs.readFileSync(COUNTER_FILE, "utf8"));
   } catch {
     return { count: 0, lastReset: Date.now(), recentEdits: [] };
   }
@@ -57,21 +62,20 @@ function checkEditLoop(counter, filePath) {
 
   // Count edits to this file within the (already-filtered) window
   const recentCount = counter.recentEdits.filter(
-    (e) => e.file === filePath
+    (e) => e.file === filePath,
   ).length;
 
   if (recentCount >= LOOP_THRESHOLD) {
-    process.stderr.write(
-      `[Loop] ${path.basename(filePath)} が短時間に${recentCount}回編集されています。修正ループの可能性があります。\n` +
-      `/clear してより具体的なプロンプトで再出発することを検討してください。\n`
-    );
+    counter._loopDetected = { file: filePath, count: recentCount };
   }
 }
 
 // Read stdin and pass through
-let data = '';
-process.stdin.on('data', (chunk) => { data += chunk; });
-process.stdin.on('end', () => {
+let data = "";
+process.stdin.on("data", (chunk) => {
+  data += chunk;
+});
+process.stdin.on("end", () => {
   const counter = getCounter();
 
   // Reset counter if more than 2 hours old
@@ -91,10 +95,36 @@ process.stdin.on('end', () => {
 
   // Suggest compaction at thresholds
   if (counter.count === 30) {
-    process.stderr.write('[Token] 30 edits in this session. Consider compacting context if response quality degrades.\n');
+    process.stderr.write(
+      "[Token] 30 edits in this session. Consider compacting context if response quality degrades.\n",
+    );
   } else if (counter.count === 50) {
-    process.stderr.write('[Token] 50 edits reached. Strongly recommend delegating to subagents or compacting.\n');
+    process.stderr.write(
+      "[Token] 50 edits reached. Strongly recommend delegating to subagents or compacting.\n",
+    );
   }
 
-  process.stdout.write(data);
+  // Output loop detection as additionalContext so AI sees it
+  if (counter._loopDetected) {
+    const loop = counter._loopDetected;
+    const basename = path.basename(loop.file);
+    try {
+      const parsed = JSON.parse(data);
+      const output = {
+        ...parsed,
+        hookSpecificOutput: {
+          hookEventName: "PostToolUse",
+          additionalContext:
+            `[Loop Detection] ${basename} が ${loop.count} 回編集されています（10分以内）。` +
+            `修正ループの可能性があります。このファイルへの編集を一旦停止し、アプローチを見直してください。` +
+            `この警告は情報提供であり、修正不要です。`,
+        },
+      };
+      process.stdout.write(JSON.stringify(output));
+    } catch {
+      process.stdout.write(data);
+    }
+  } else {
+    process.stdout.write(data);
+  }
 });
