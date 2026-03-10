@@ -66,6 +66,42 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.rule' | sort | uniq
 - **スキル改善候補**: 同じタイプのタスクで毎回同じ修正 → スキルに組み込む
 - **MEMORY.md 追記候補**: プロジェクト固有の規約
 
+### 5. クロスカテゴリ相関分析
+
+複数カテゴリのデータを突き合わせ、相関を発見する:
+
+```bash
+# errors と quality の相関（同一タイムスタンプ付近での共起）
+echo "=== errors timestamps ==="
+cat ~/.claude/agent-memory/learnings/errors.jsonl | jq -r '.timestamp' | cut -c1-13 | sort | uniq -c | sort -rn | head -10
+echo "=== quality timestamps ==="
+cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.timestamp' | cut -c1-13 | sort | uniq -c | sort -rn | head -10
+```
+
+分析観点:
+- **errors × quality**: GP違反が多い時間帯にエラーも多い → 共通の根本原因がある可能性
+- **errors × patterns**: 特定のパターンが確認されたプロジェクトでエラーが少ない → パターンの有効性
+- **quality × agents**: 特定のエージェント使用時にGP違反が少ない → エージェントの品質向上効果
+
+### 6. LLM 再スコアリング
+
+`scored_by: "rule"` かつ `confidence < 0.7` のエントリを抽出し、LLM で再評価:
+
+1. learnings/*.jsonl から対象エントリを抽出
+2. 類似エントリをグループ化（同じ message/rule）
+3. 出現頻度を計算
+4. 重要度を再評価して `scored_by: "llm"` に更新
+
+### 7. 昇格判定
+
+scoring-rules.md の昇格ルールに従い:
+
+- `importance >= 0.8` + 1回出現 → 自動昇格候補
+- `0.4 <= importance < 0.8` + 3回以上出現 → 昇格候補
+- `importance < 0.4` → 昇格なし
+
+昇格候補は insights/analysis-YYYY-MM-DD.md の「昇格提案」セクションに記載。
+
 ## 出力フォーマット
 
 ### insights/analysis-YYYY-MM-DD.md
@@ -100,6 +136,20 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl | jq -r '.rule' | sort | uniq
 ### 優先度中
 
 - [ ] ...
+
+## 昇格提案
+
+### 自動昇格候補 (importance >= 0.8)
+
+| エントリ | importance | 出現回数 | 昇格先 |
+| -------- | ---------- | -------- | ------ |
+| ...      | ...        | ...      | ...    |
+
+### 昇格候補 (3回以上出現)
+
+| エントリ | importance | 出現回数 | 昇格先 |
+| -------- | ---------- | -------- | ------ |
+| ...      | ...        | ...      | ...    |
 ```
 
 ### insights/project-profiles/{project-name}.md

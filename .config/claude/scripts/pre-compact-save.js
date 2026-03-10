@@ -32,4 +32,14 @@ const state = {
   },
 };
 
+// Force checkpoint before compaction
+try {
+  execSync(
+    'python3 $HOME/.claude/scripts/checkpoint_manager.py <<< "{}"',
+    { encoding: "utf-8", timeout: 10000, stdio: ["pipe", "pipe", "pipe"] },
+  );
+} catch {
+  // Non-critical — checkpoint failure shouldn't block compaction
+}
+
 console.log(JSON.stringify(state, null, 2));

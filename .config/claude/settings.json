@@ -66,6 +66,14 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/checkpoint_recover.py 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/context-drift-check.py --commits 10 --json 2>/dev/null || true"
           }
         ]
@@ -152,6 +160,10 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/scripts/golden-check.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/checkpoint_manager.py"
           }
         ]
       },
