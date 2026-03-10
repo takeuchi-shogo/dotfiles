@@ -44,6 +44,40 @@ MULTIMODAL_PATTERN = re.compile(
 )
 
 
+# --- Context Profiles ---
+
+PROFILE_OVERRIDE_RE = re.compile(r"@(planning|debugging|incident|default)")
+
+PROFILE_KEYWORDS = {
+    "planning": [
+        re.compile(r"設計|アーキテクチャ|architecture|design(?!ate)|plan(?!e)|構成", re.I),
+        re.compile(r"どう(する|すべき)|方針|戦略|strategy", re.I),
+        re.compile(r"新機能|feature|リファクタ", re.I),
+    ],
+    "debugging": [
+        re.compile(r"バグ|bug|エラー|(?<!\w)error(?!\w)|失敗|fail", re.I),
+        re.compile(r"動かない|壊れ|broken|crash", re.I),
+        re.compile(r"なぜ|(?<!\w)why(?!\w)|原因|cause|調査", re.I),
+    ],
+    "incident": [
+        re.compile(r"障害|incident|緊急|urgent|本番|production", re.I),
+        re.compile(r"ダウン|(?<!\w)down(?!\w)|止まっ|復旧", re.I),
+    ],
+}
+
+
+def detect_profile(prompt: str) -> str:
+    """プロンプトからコンテキストプロファイルを判別する。"""
+    override = PROFILE_OVERRIDE_RE.search(prompt)
+    if override:
+        return override.group(1)
+    for profile, patterns in PROFILE_KEYWORDS.items():
+        for pattern in patterns:
+            if pattern.search(prompt):
+                return profile
+    return "default"
+
+
 def detect_multimodal(text: str) -> list[str]:
     return list(set(MULTIMODAL_PATTERN.findall(text)))
 
@@ -60,9 +94,13 @@ def main() -> None:
         return
 
     prompt = data.get("user_prompt", "") or data.get("content", "")
-    if not prompt or len(prompt) < 10:
+    if not prompt or len(prompt) < 3:
         json.dump(data, sys.stdout)
         return
+
+    # Detect context profile
+    profile = detect_profile(prompt)
+    profile_context = f"[Context Profile: {profile}] " if profile != "default" else ""
 
     # Priority 1: Multimodal files → Gemini
     mm_files = detect_multimodal(prompt)
@@ -72,6 +110,7 @@ def main() -> None:
             "hookSpecificOutput": {
                 "hookEventName": "UserPromptSubmit",
                 "additionalContext": (
+                    f"{profile_context}"
                     f"[Agent Router] マルチモーダルファイル ({exts}) が検出されました。"
                     "Gemini CLI (1Mコンテキスト) での処理を推奨します。"
                     "gemini-explore エージェントまたは gemini スキルを使用してください。"
@@ -88,6 +127,7 @@ def main() -> None:
             "hookSpecificOutput": {
                 "hookEventName": "UserPromptSubmit",
                 "additionalContext": (
+                    f"{profile_context}"
                     f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
                     "Codex CLI での深い分析を検討してください。"
                     "codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。"
@@ -104,9 +144,23 @@ def main() -> None:
             "hookSpecificOutput": {
                 "hookEventName": "UserPromptSubmit",
                 "additionalContext": (
+                    f"{profile_context}"
                     f"[Agent Router] リサーチ/分析キーワード ({keywords}) が検出されました。"
                     "Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。"
                     "gemini-explore エージェントまたは gemini スキルを使用できます。"
+                ),
+            }
+        }, sys.stdout)
+        return
+
+    # Profile-only output (no agent routing match but profile detected)
+    if profile != "default":
+        json.dump({
+            "hookSpecificOutput": {
+                "hookEventName": "UserPromptSubmit",
+                "additionalContext": (
+                    f"[Context Profile: {profile}] "
+                    f"{profile} モードのコンテキストを優先して参照します。"
                 ),
             }
         }, sys.stdout)
