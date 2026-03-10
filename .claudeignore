@@ -1,0 +1,34 @@
+# ==============================================================
+# .claudeignore - Claude Code からのアクセスを技術的に遮断
+# NOTE: 補助的防御層。根本対策はシークレットマネージャー移行
+# ==============================================================
+
+# --- Environment files (秘密情報の典型的格納先) ---
+.env
+.env.*
+# .envrc は direnv 用の参照ファイルのため除外しない
+
+# --- Cryptographic keys & certificates ---
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# --- SSH keys ---
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+
+# --- Platform-specific secrets ---
+.config/raycast/**/secrets*
+.config/raycast/**/*token*
+.config/raycast/**/*api_key*
+
+# --- Machine-local config (トークンを含む可能性) ---
+.config/zsh/local.zsh
+settings.local.json
