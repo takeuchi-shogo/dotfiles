@@ -174,3 +174,45 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - 異なるタスクの文脈が混ざると、autocompact 後も前タスクの仮定が残留し、後半の品質が下がる
 - タスク完了後は `/compact` または新セッションで切り替える
 - 例外: 密接に関連するタスク（同一機能のフロント + バック等）は同一セッションでOK
+
+---
+
+## EPD ワークフロー（Engineering, Product & Design）
+
+Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワークフロー。
+実装コストがゼロに近づいた世界で、**何を作るべきか**と**品質の3軸レビュー**を強化する。
+
+### 新規コマンド
+
+| コマンド    | 用途                                                   |
+| ----------- | ------------------------------------------------------ |
+| `/spec`     | Prompt-as-PRD 生成（構造化プロンプトとして仕様を記述） |
+| `/spike`    | プロトタイプファースト開発（worktree 隔離 → validate） |
+| `/validate` | Product Validation（acceptance criteria 照合）         |
+| `/epd`      | 統合ワークフロー（Spec → Spike → Build → Review）      |
+
+### EPD フルフロー
+
+```
+Spec → Spike → Validate → Decide → Build(/rpi) → Review(3軸) → Commit
+                              ↑                        ↓
+                              └──── Pivot ─────────────┘
+```
+
+### レビュー3軸
+
+| 軸          | エージェント       | 自動起動条件                             |
+| ----------- | ------------------ | ---------------------------------------- |
+| Engineering | 既存レビューアー群 | 常時（変更規模に応じてスケール）         |
+| Product     | `product-reviewer` | `docs/specs/*.prompt.md` が存在する場合  |
+| Design      | `design-reviewer`  | `.tsx/.css/.html` 等の UI ファイル変更時 |
+
+### 使い分け
+
+| シナリオ                 | 推奨コマンド         |
+| ------------------------ | -------------------- |
+| 不確実なアイデアの検証   | `/epd`（フルフロー） |
+| 仕様が明確な機能開発     | `/rpi`（従来通り）   |
+| 素早いプロトタイプだけ   | `/spike`             |
+| 仕様書だけ作りたい       | `/spec`              |
+| 実装後の仕様適合チェック | `/validate`          |
