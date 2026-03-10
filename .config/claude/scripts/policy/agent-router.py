@@ -6,9 +6,15 @@ Triggered by: hooks.UserPromptSubmit
 Input: JSON with user prompt on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
-import json
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+)
 
 
 CODEX_KEYWORDS_JA = [
@@ -44,40 +50,6 @@ MULTIMODAL_PATTERN = re.compile(
 )
 
 
-# --- Context Profiles ---
-
-PROFILE_OVERRIDE_RE = re.compile(r"@(planning|debugging|incident|default)")
-
-PROFILE_KEYWORDS = {
-    "planning": [
-        re.compile(r"設計|アーキテクチャ|architecture|design(?!ate)|plan(?!e)|構成", re.I),
-        re.compile(r"どう(する|すべき)|方針|戦略|strategy", re.I),
-        re.compile(r"新機能|feature|リファクタ", re.I),
-    ],
-    "debugging": [
-        re.compile(r"バグ|bug|エラー|(?<!\w)error(?!\w)|失敗|fail", re.I),
-        re.compile(r"動かない|壊れ|broken|crash", re.I),
-        re.compile(r"なぜ|(?<!\w)why(?!\w)|原因|cause|調査", re.I),
-    ],
-    "incident": [
-        re.compile(r"障害|incident|緊急|urgent|本番|production", re.I),
-        re.compile(r"ダウン|(?<!\w)down(?!\w)|止まっ|復旧", re.I),
-    ],
-}
-
-
-def detect_profile(prompt: str) -> str:
-    """プロンプトからコンテキストプロファイルを判別する。"""
-    override = PROFILE_OVERRIDE_RE.search(prompt)
-    if override:
-        return override.group(1)
-    for profile, patterns in PROFILE_KEYWORDS.items():
-        for pattern in patterns:
-            if pattern.search(prompt):
-                return profile
-    return "default"
-
-
 def detect_multimodal(text: str) -> list[str]:
     return list(set(MULTIMODAL_PATTERN.findall(text)))
 
@@ -88,86 +60,50 @@ def match_keywords(text: str, keywords: list[str]) -> list[str]:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
     prompt = data.get("user_prompt", "") or data.get("content", "")
-    if not prompt or len(prompt) < 3:
-        json.dump(data, sys.stdout)
+    if not prompt or len(prompt) < 10:
+        output_passthrough(data)
         return
-
-    # Detect context profile
-    profile = detect_profile(prompt)
-    profile_context = f"[Context Profile: {profile}] " if profile != "default" else ""
 
     # Priority 1: Multimodal files → Gemini
     mm_files = detect_multimodal(prompt)
     if mm_files:
         exts = ", ".join(f".{e}" for e in mm_files)
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "UserPromptSubmit",
-                "additionalContext": (
-                    f"{profile_context}"
-                    f"[Agent Router] マルチモーダルファイル ({exts}) が検出されました。"
-                    "Gemini CLI (1Mコンテキスト) での処理を推奨します。"
-                    "gemini-explore エージェントまたは gemini スキルを使用してください。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("UserPromptSubmit", (
+            f"[Agent Router] マルチモーダルファイル ({exts}) が検出されました。"
+            "Gemini CLI (1Mコンテキスト) での処理を推奨します。"
+            "gemini-explore エージェントまたは gemini スキルを使用してください。"
+        ))
         return
 
     # Priority 2: Codex keywords
     codex_matches = match_keywords(prompt, CODEX_KEYWORDS_JA + CODEX_KEYWORDS_EN)
     if codex_matches:
         keywords = ", ".join(codex_matches[:3])
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "UserPromptSubmit",
-                "additionalContext": (
-                    f"{profile_context}"
-                    f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
-                    "Codex CLI での深い分析を検討してください。"
-                    "codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("UserPromptSubmit", (
+            f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
+            "Codex CLI での深い分析を検討してください。"
+            "codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。"
+        ))
         return
 
     # Priority 3: Gemini keywords
     gemini_matches = match_keywords(prompt, GEMINI_KEYWORDS_JA + GEMINI_KEYWORDS_EN)
     if gemini_matches:
         keywords = ", ".join(gemini_matches[:3])
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "UserPromptSubmit",
-                "additionalContext": (
-                    f"{profile_context}"
-                    f"[Agent Router] リサーチ/分析キーワード ({keywords}) が検出されました。"
-                    "Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。"
-                    "gemini-explore エージェントまたは gemini スキルを使用できます。"
-                ),
-            }
-        }, sys.stdout)
-        return
-
-    # Profile-only output (no agent routing match but profile detected)
-    if profile != "default":
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "UserPromptSubmit",
-                "additionalContext": (
-                    f"[Context Profile: {profile}] "
-                    f"{profile} モードのコンテキストを優先して参照します。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("UserPromptSubmit", (
+            f"[Agent Router] リサーチ/分析キーワード ({keywords}) が検出されました。"
+            "Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。"
+            "gemini-explore エージェントまたは gemini スキルを使用できます。"
+        ))
         return
 
     # No match — pass through
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":

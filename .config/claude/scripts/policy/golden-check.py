@@ -6,17 +6,19 @@ Triggered by: hooks.PostToolUse (Edit|Write)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext warning on stdout
 """
-import json
 import os
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
-try:
-    from session_events import emit_event as _emit
-except ImportError:
-    def _emit(*_a, **_kw): pass
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+    check_tool, run_hook, get_emitter,
+)
+
+emit = get_emitter()
 
 
 DEPENDENCY_FILES = {
@@ -75,20 +77,19 @@ def check_unsafe_types(content: str, file_path: str = "") -> str | None:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
-    tool_name = data.get("tool_name", "")
-    if tool_name not in ("Edit", "Write"):
-        json.dump(data, sys.stdout)
+    if not check_tool(data, ["Edit", "Write"]):
+        output_passthrough(data)
         return
 
     tool_input = data.get("tool_input", {})
     file_path = tool_input.get("file_path", "")
 
     # Write uses 'content', Edit uses 'new_string'
+    tool_name = data.get("tool_name", "")
     if tool_name == "Write":
         content = tool_input.get("content", "")
     else:
@@ -102,7 +103,7 @@ def main() -> None:
     dep_warn = check_dependency_file(file_path)
     if dep_warn:
         warnings.append(dep_warn)
-        _emit("quality", {
+        emit("quality", {
             "rule": "GP-003",
             "file": file_path,
             "detail": dep_warn[:200],
@@ -111,7 +112,7 @@ def main() -> None:
     catch_warn = check_empty_catch(content)
     if catch_warn:
         warnings.append(catch_warn)
-        _emit("quality", {
+        emit("quality", {
             "rule": "GP-004",
             "file": file_path,
             "detail": catch_warn[:200],
@@ -120,7 +121,7 @@ def main() -> None:
     type_warn = check_unsafe_types(content, file_path)
     if type_warn:
         warnings.append(type_warn)
-        _emit("quality", {
+        emit("quality", {
             "rule": "GP-005",
             "file": file_path,
             "detail": type_warn[:200],
@@ -130,20 +131,11 @@ def main() -> None:
         warnings.append(
             "golden-cleanup エージェントで詳細なプリンシプルスキャンを実行できます。"
         )
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": "\n".join(warnings),
-            }
-        }, sys.stdout)
+        output_context("PostToolUse", "\n".join(warnings))
         return
 
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"[golden-check] error: {e}", file=sys.stderr)
-        json.dump({}, sys.stdout)
+    run_hook("golden-check", main)

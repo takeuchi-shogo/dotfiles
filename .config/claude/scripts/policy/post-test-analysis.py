@@ -6,9 +6,16 @@ Triggered by: hooks.PostToolUse (Bash)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
-import json
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+    check_tool, run_hook,
+)
 
 
 TEST_COMMANDS = [
@@ -49,43 +56,33 @@ def count_failures(output: str) -> int:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
-    tool_name = data.get("tool_name", "")
-    if tool_name != "Bash":
-        json.dump(data, sys.stdout)
+    if not check_tool(data, "Bash"):
+        output_passthrough(data)
         return
 
     command = data.get("tool_input", {}).get("command", "")
     output = data.get("tool_output", "") or ""
 
     if not is_test_command(command):
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     if has_test_failure(output):
         count = count_failures(output)
         count_str = f"{count}件の" if count > 0 else ""
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": (
-                    f"[Post-Test] {count_str}テスト失敗が検出されました。\n"
-                    "codex-debugger エージェントで根本原因を分析できます。\n"
-                    "または debugger エージェントで体系的にデバッグすることも可能です。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("PostToolUse", (
+            f"[Post-Test] {count_str}テスト失敗が検出されました。\n"
+            "codex-debugger エージェントで根本原因を分析できます。\n"
+            "または debugger エージェントで体系的にデバッグすることも可能です。"
+        ))
         return
 
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        json.dump({}, sys.stdout)
+    run_hook("post-test-analysis", main)
