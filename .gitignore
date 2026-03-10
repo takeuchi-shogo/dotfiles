@@ -25,3 +25,8 @@ __pycache__/
 
 # Design/plan docs (session artifacts, not version-controlled)
 docs/plans/
+
+# npx skills artifacts
+.agent/
+.kiro/
+skills-lock.json
