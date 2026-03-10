@@ -1,6 +1,6 @@
 # AutoEvolve 改善ポリシー
 
-> このファイルは autoresearch の `program.md` に相当する。
+> このファイルは autoresearch の program.md に相当する。
 > AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義する。
 > ユーザーがこのファイルを編集することで、改善の方向性を操作できる。
 

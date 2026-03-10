@@ -1,10 +1,16 @@
 model = "gpt-5.4"
 model_reasoning_effort = "high"
+plan_mode_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
+review_model = "gpt-5.4"
 personality = "pragmatic"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
 
 # 通常タスクは high で十分。xhigh はコスト高で必要時のみ CLI フラグで指定
 # model_reasoning_summary = "detailed" で推論過程の可視性を向上
+# approval_policy = "on-request" と sandbox_mode = "workspace-write" を既定にして
+# 低摩擦に編集できる状態を保ちつつ、危険な操作は都度確認する
 
 [profiles.fast]
 model_reasoning_effort = "medium"
@@ -13,15 +19,29 @@ model_reasoning_summary = "auto"
 [profiles.review]
 model_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
+sandbox_mode = "read-only"
 
 [profiles.research]
 model_reasoning_effort = "high"
 model_reasoning_summary = "auto"
+sandbox_mode = "read-only"
 web_search = "live"
 
 [features]
 shell_snapshot = true        # 環境スナップショット（beta）
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+
+[mcp_servers.deepwiki]
+command = "npx"
+args = ["-y", "@anthropic-ai/deepwiki-mcp@latest"]
 
 [notifications]
 command = "osascript -e 'display notification \"Codex が完了しました\" with title \"Codex CLI\"'"

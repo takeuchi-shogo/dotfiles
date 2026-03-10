@@ -1,6 +1,10 @@
 ---
 name: codex-review
-description: Codex AI を使った read-only コードレビューと CHANGELOG 自動生成。手動レビュー(/codex-review)や自動レビューフロー(general-purpose Agent経由)で使用。実装・編集には codex スキルを使うこと。
+description: >
+  Codex AI を使った read-only コードレビューと CHANGELOG 自動生成。手動レビュー(/codex-review)や
+  自動レビューフロー(general-purpose Agent経由)で使用。実装・編集には codex スキルを使うこと。
+  Do NOT use for standard code reviews under 100 lines — use /review skill instead.
+allowed-tools: "Read, Bash, Grep, Glob, Agent"
 ---
 
 # Codex Review

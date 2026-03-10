@@ -9,10 +9,16 @@ DOTFILES_DIR="$HOME/dotfiles"
 SYMLINK_EXCLUDE_FILES=(
   "^README\.md$"
   "^Taskfile\.yml$"
+  "^\.mcp\.json$"
+  "^\.playwright-mcp/"
+  "^\.pytest_cache/"
+  "^\.venv/"
   "^vm/"
   "^images/"
   "^docs/"
   "^bin/"
+  "^tests/"
+  "^tmp/"
   "\.zsh_history$"
   "git-templates"
   "\.zcompdump.*"
@@ -23,6 +29,7 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/zsh/"    # ディレクトリ全体でシンボリックリンクするため除外
   "^\.config/claude/" # ~/.claude/ へカスタムシンボリックリンクするため除外
   "^\.claude/"        # プロジェクトローカルの設定は除外
+  "^\.agents/"        # project-local skills は ~/.codex/skills へ個別共有するため除外
   "^\.codex/"         # ~/.codex/ へカスタムシンボリックリンクするため除外
 )
 
@@ -52,14 +59,19 @@ CODEX_SYMLINK_FILES=(
 )
 CODEX_SYMLINK_DIRECTORIES=()
 
-# Codex スキル: Claude スキルを ~/.codex/skills/ に共有
+# Codex スキル: 共有可能な skill を ~/.codex/skills/ に個別共有
 # ~/.codex/skills/.system/ を壊さないよう個別にシンボリックリンク
-CODEX_SHARED_SKILLS=(
+CODEX_SHARED_CLAUDE_SKILLS=(
   "senior-architect"
   "senior-backend"
   "senior-frontend"
   "react-best-practices"
   "frontend-design"
+)
+
+CODEX_SHARED_PROJECT_SKILLS=(
+  "codex-search-first"
+  "codex-verification-before-completion"
 )
 
 is_excluded() {
@@ -250,15 +262,40 @@ create_codex_symlinks() {
 
   # Claude スキルを Codex スキルとして共有（個別シンボリックリンク）
   local claude_skills_dir="$DOTFILES_DIR/.config/claude/skills"
+  local project_skills_dir="$DOTFILES_DIR/.agents/skills"
   local codex_skills_dir="$dest_dir/skills"
   mkdir -p "$codex_skills_dir"
 
-  for skill in "${CODEX_SHARED_SKILLS[@]}"; do
+  for skill in "${CODEX_SHARED_CLAUDE_SKILLS[@]}"; do
     local target="$claude_skills_dir/$skill"
     local link="$codex_skills_dir/$skill"
 
     if [ ! -d "$target" ]; then
       echo "Warning: Claude skill $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      echo "Warning: $link exists and is not a symlink. Skipping." >&2
+      continue
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfvn "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+
+  for skill in "${CODEX_SHARED_PROJECT_SKILLS[@]}"; do
+    local target="$project_skills_dir/$skill"
+    local link="$codex_skills_dir/$skill"
+
+    if [ ! -d "$target" ]; then
+      echo "Warning: project skill $target not found. Skipping." >&2
       continue
     fi
 

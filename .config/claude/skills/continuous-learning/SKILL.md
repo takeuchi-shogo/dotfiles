@@ -1,6 +1,9 @@
 ---
 name: continuous-learning
-description: Auto-detect and record reusable patterns from corrections, debugging, and repeated work. Use when receiving feedback, fixing a recurring issue, or discovering a new project-specific convention.
+description: >
+  Auto-detect and record reusable patterns from corrections, debugging, and repeated work.
+  Use when receiving feedback, fixing a recurring issue, or discovering a new project-specific convention.
+allowed-tools: "Read, Bash, Grep, Glob"
 ---
 
 # Continuous Learning

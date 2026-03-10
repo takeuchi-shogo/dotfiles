@@ -1,6 +1,11 @@
 ---
 name: search-first
-description: "Research-before-coding workflow. Search for existing tools, libraries, and patterns before writing custom code. Use when starting a new feature, adding a dependency, or before creating a new utility."
+description: >
+  Research-before-coding workflow. Search for existing tools, libraries, and patterns
+  before writing custom code. Use when starting a new feature, adding a dependency,
+  or before creating a new utility. Do NOT use for known bugs with clear fixes
+  or simple typo corrections.
+allowed-tools: "Read, Bash, Grep, Glob, Agent"
 ---
 
 # /search-first — 実装前に検索する

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Search First"
+  short_description: "Search before adding new code or tools"
+  default_prompt: "Use $codex-search-first to check existing tasks, scripts, skills, MCP servers, and docs before implementing this change."
