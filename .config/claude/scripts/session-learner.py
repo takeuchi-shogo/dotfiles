@@ -27,6 +27,11 @@ def build_session_summary(cwd: str | None = None) -> dict:
 
     project = Path(cwd).name if cwd else "unknown"
 
+    # Score summary
+    all_importance = [e.get("importance", 0.5) for e in events]
+    high_count = sum(1 for i in all_importance if i >= 0.8)
+    avg_importance = sum(all_importance) / len(all_importance) if all_importance else 0.0
+
     return {
         "project": project,
         "cwd": cwd or os.getcwd(),
@@ -35,6 +40,8 @@ def build_session_summary(cwd: str | None = None) -> dict:
         "quality_issues": len(quality),
         "patterns_found": len(patterns),
         "corrections": len(corrections),
+        "high_importance_count": high_count,
+        "avg_importance": round(avg_importance, 2),
         "_errors": errors,
         "_quality": quality,
         "_patterns": patterns,
@@ -76,6 +83,8 @@ def process_session(cwd: str | None = None) -> None:
         "quality_issues": summary["quality_issues"],
         "patterns_found": summary["patterns_found"],
         "corrections": summary["corrections"],
+        "high_importance_count": summary["high_importance_count"],
+        "avg_importance": summary["avg_importance"],
     }
     append_to_metrics(metrics)
 

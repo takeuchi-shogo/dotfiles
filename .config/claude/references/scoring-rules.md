@@ -1,53 +1,60 @@
 # Importance Scoring Rules
 
-## スコアリングモデル
+## スコアリングルール
 
-全ての learnings エントリに付与するフィールド:
-
-| フィールド         | 型        | 説明                     |
-| ------------------ | --------- | ------------------------ |
-| `importance`       | `0.0-1.0` | 重要度                   |
-| `confidence`       | `0.0-1.0` | スコアの確信度           |
-| `type`             | `string`  | イベント種別             |
-| `scored_by`        | `string`  | `"rule"` or `"llm"`     |
-| `promotion_status` | `string`  | `"pending"` / `"promoted"` / `"archived"` |
-
-## ルールベーススコアリング
+イベント記録時にルールベースで importance (0.0-1.0) と confidence (0.0-1.0) を付与する。
 
 ### 高重要度 (0.8-1.0)
 
-- `EACCES|Permission denied` → 0.9
-- `segfault|SIGSEGV|OOM` → 1.0
-- `GP-001|GP-002|GP-003|GP-004|GP-005` → 0.8
-- `security|vulnerability|injection` → 0.9
+| パターン | importance | 説明 |
+| -------- | ---------- | ---- |
+| `permission denied` | 0.9 | 権限エラー |
+| `EACCES` | 0.9 | アクセス拒否 |
+| `security` | 1.0 | セキュリティ関連 |
+| `OOM\|out of memory` | 1.0 | メモリ枯渇 |
+| `GP-\d+` (golden principle) | 0.8 | ゴールデンプリンシプル違反 |
 
 ### 中重要度 (0.4-0.7)
 
-- `Cannot find module|ModuleNotFoundError` → 0.5
-- `TypeError|ReferenceError` → 0.5
-- `timeout|ETIMEDOUT` → 0.6
+| パターン | importance | 説明 |
+| -------- | ---------- | ---- |
+| `ModuleNotFoundError` | 0.6 | モジュール不在 |
+| `Cannot find module` | 0.6 | モジュール不在 (Node) |
+| `TypeError` | 0.5 | 型エラー |
+| `ReferenceError` | 0.5 | 参照エラー |
+| `timeout\|timed out` | 0.4 | タイムアウト |
 
 ### 低重要度 (0.0-0.3)
 
-- `warning:|WARN` → 0.2
-- `deprecated` → 0.3
+| パターン | importance | 説明 |
+| -------- | ---------- | ---- |
+| `warning` | 0.2 | 警告 |
+| `deprecated` | 0.3 | 非推奨 |
 
-### カテゴリベーススコア（ルール未マッチ時）
+### カテゴリフォールバック
 
-- `error` → 0.5
-- `quality` → 0.6
-- `pattern` → 0.4
-- `correction` → 0.7
+ルールにマッチしない場合、カテゴリに基づくデフォルト値を使用:
 
-### confidence
+| カテゴリ | importance | confidence |
+| -------- | ---------- | ---------- |
+| error | 0.5 | 0.5 |
+| quality | 0.6 | 0.5 |
+| pattern | 0.4 | 0.5 |
+| correction | 0.7 | 0.5 |
+| その他 | 0.5 | 0.5 |
 
-- ルールマッチ時: 0.8
-- カテゴリベース時: 0.5
+## 信頼度
+
+- ルールマッチ: `confidence = 0.8` (`scored_by: "rule"`)
+- カテゴリフォールバック: `confidence = 0.5` (`scored_by: "rule"`)
+- LLM 再評価: `confidence = 0.9` (`scored_by: "llm"`)
 
 ## 昇格ルール
 
-| 条件                                    | アクション     |
-| --------------------------------------- | -------------- |
-| `importance >= 0.8` + 1回出現           | 自動昇格候補   |
-| `0.4 <= importance < 0.8` + 3回以上出現 | 昇格候補       |
-| `importance < 0.4`                      | 90日後アーカイブ |
+| 条件 | アクション |
+| ---- | ---------- |
+| `importance >= 0.8` + 1回以上出現 | 自動昇格候補 → insights に記載 |
+| `0.4 <= importance < 0.8` + 3回以上出現 | 昇格候補 → insights に記載 |
+| `importance < 0.4` | 昇格なし |
+
+昇格先: `insights/analysis-YYYY-MM-DD.md` の「昇格提案」セクション
