@@ -9,10 +9,17 @@ Output: JSON with additionalContext suggestion on stdout
 Checks if git commit messages reference active plans and suggests
 moving them to completed/ when sufficient progress is detected.
 """
-import json
 import os
 import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+    check_tool, run_hook,
+)
 
 
 PLANS_DIR = "docs/plans/active"
@@ -56,20 +63,18 @@ def extract_plan_references(commit_msg: str, plans: list[str]) -> list[str]:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
-    tool_name = data.get("tool_name", "")
-    if tool_name != "Bash":
-        json.dump(data, sys.stdout)
+    if not check_tool(data, "Bash"):
+        output_passthrough(data)
         return
 
     command = data.get("tool_input", {}).get("command", "")
 
     if "git commit" not in command:
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     output = data.get("tool_output", "") or ""
@@ -79,17 +84,17 @@ def main() -> None:
         and "insertion" not in output.lower()
         and "create mode" not in output.lower()
     ):
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     repo_root = get_repo_root()
     if not repo_root:
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     plans = get_active_plans(repo_root)
     if not plans:
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     # Get actual commit message from git log (immune to HEREDOC/quoting)
@@ -103,29 +108,20 @@ def main() -> None:
         commit_msg = ""
 
     if not commit_msg:
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     referenced = extract_plan_references(commit_msg, plans)
     if referenced:
         plan_list = ", ".join(f"`{p}`" for p in referenced)
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": (
-                    f"[plan-lifecycle] アクティブ計画 {plan_list} に関連するコミットを検出。\n"
-                    "計画が完了した場合は `docs/plans/active/` → `docs/plans/completed/` に移動してください。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("PostToolUse", (
+            f"[plan-lifecycle] アクティブ計画 {plan_list} に関連するコミットを検出。\n"
+            "計画が完了した場合は `docs/plans/active/` → `docs/plans/completed/` に移動してください。"
+        ))
         return
 
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"[plan-lifecycle] error: {e}", file=sys.stderr)
-        json.dump({}, sys.stdout)
+    run_hook("plan-lifecycle", main)

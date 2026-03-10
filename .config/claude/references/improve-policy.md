@@ -1,6 +1,6 @@
 # AutoEvolve 改善ポリシー
 
-> このファイルは autoresearch の program.md に相当する。
+> このファイルは karpathy/autoresearch の program.md に相当する概念的ガイドである。
 > AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義する。
 > ユーザーがこのファイルを編集することで、改善の方向性を操作できる。
 
@@ -25,7 +25,7 @@
 
 ### 慎重に扱うべきもの（差分を小さく）
 
-- `scripts/*.py` / `scripts/*.js` — hook スクリプトの変更
+- `scripts/{runtime,policy,lifecycle,learner}/*.py|*.js` — hook スクリプトの変更
 - `settings.json` — hook 登録の追加・変更
 - `CLAUDE.md` — コア原則の変更
 

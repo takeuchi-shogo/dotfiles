@@ -7,16 +7,18 @@ Triggered by: hooks.PostToolUse (Bash)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
-import json
 import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-try:
-    from session_events import emit_event as _emit
-except ImportError:
-    def _emit(*_a, **_kw): pass
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+    check_tool, run_hook, get_emitter, resolve_reference,
+)
+
+emit = get_emitter()
 
 
 ERROR_PATTERNS = [
@@ -44,7 +46,7 @@ IGNORE_COMMANDS = [
     "codex", "gemini",  # Prevent infinite loops
 ]
 
-GUIDES_PATH = Path(__file__).resolve().parent.parent / "references" / "error-fix-guides.md"
+GUIDES_PATH = resolve_reference("error-fix-guides.md")
 
 def load_fix_guides() -> dict[str, tuple[str, str]]:
     """Parse error-fix-guides.md into {header_keyword: (cause, fix)} dict.
@@ -111,14 +113,12 @@ def has_error(output: str) -> str | None:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
-    tool_name = data.get("tool_name", "")
-    if tool_name != "Bash":
-        json.dump(data, sys.stdout)
+    if not check_tool(data, "Bash"):
+        output_passthrough(data)
         return
 
     command = data.get("tool_input", {}).get("command", "")
@@ -126,17 +126,17 @@ def main() -> None:
 
     # Skip info commands and short output
     if is_info_command(command) or len(output) < 20:
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     # Skip "already exists" and similar benign messages
     if "already exists" in output.lower():
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     error_match = has_error(output)
     if error_match:
-        _emit("error", {
+        emit("error", {
             "message": error_match,
             "command": command[:200],
         })
@@ -159,20 +159,11 @@ def main() -> None:
         )
         context_parts.append("コマンド: " + command[:100])
 
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": "\n".join(context_parts),
-            }
-        }, sys.stdout)
+        output_context("PostToolUse", "\n".join(context_parts))
         return
 
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"[error-to-codex] error: {e}", file=sys.stderr)
-        json.dump({}, sys.stdout)
+    run_hook("error-to-codex", main)

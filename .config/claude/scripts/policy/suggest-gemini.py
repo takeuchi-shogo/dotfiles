@@ -6,8 +6,15 @@ Triggered by: hooks.PreToolUse (WebSearch)
 Input: JSON with tool_name, tool_input on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
-import json
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import (
+    load_hook_input, output_passthrough, output_context,
+    run_hook,
+)
 
 
 SIMPLE_QUERIES = [
@@ -43,37 +50,28 @@ def is_research_query(query: str) -> bool:
 
 
 def main() -> None:
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
+    data = load_hook_input()
+    if not data:
         return
 
     query = data.get("tool_input", {}).get("query", "") or ""
 
     if not query or is_simple_query(query):
-        json.dump(data, sys.stdout)
+        output_passthrough(data)
         return
 
     if is_research_query(query):
-        json.dump({
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "additionalContext": (
-                    "[Suggest-Gemini] 複雑なリサーチが検出されました。"
-                    "Gemini CLI (1Mコンテキスト + Google Search grounding) の方が"
-                    "より包括的な結果を得られる可能性があります。\n"
-                    "gemini-explore エージェントまたは gemini スキルの使用を検討してください。\n"
-                    "結果は .claude/docs/research/ に保存できます。"
-                ),
-            }
-        }, sys.stdout)
+        output_context("PreToolUse", (
+            "[Suggest-Gemini] 複雑なリサーチが検出されました。"
+            "Gemini CLI (1Mコンテキスト + Google Search grounding) の方が"
+            "より包括的な結果を得られる可能性があります。\n"
+            "gemini-explore エージェントまたは gemini スキルの使用を検討してください。\n"
+            "結果は .claude/docs/research/ に保存できます。"
+        ))
         return
 
-    json.dump(data, sys.stdout)
+    output_passthrough(data)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        json.dump({}, sys.stdout)
+    run_hook("suggest-gemini", main)
