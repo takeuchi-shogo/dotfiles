@@ -92,6 +92,9 @@ git diff --name-only HEAD
 2. **重要度順**: Critical → Important → Suggestion の順に整理
 3. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「参考」を付与
 4. **判定**: 全体として修正が必要かどうかを明示する
+5. **信頼度フィルタ**: confidence < 80 の指摘を除外
+6. **既存コード除外**: diff の追加行以外への指摘を除外
+7. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 
 ## Anti-Patterns
 
