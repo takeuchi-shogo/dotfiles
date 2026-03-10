@@ -25,7 +25,7 @@
 
 ### 慎重に扱うべきもの（差分を小さく）
 
-- `scripts/*.py` / `scripts/*.js` — hook スクリプトの変更
+- `scripts/{runtime,policy,lifecycle,learner}/*.py|*.js` — hook スクリプトの変更
 - `settings.json` — hook 登録の追加・変更
 - `CLAUDE.md` — コア原則の変更
 
