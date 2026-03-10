@@ -1,7 +1,6 @@
 #!/bin/bash
 # Restart window manager services (AeroSpace)
 # Note: Ice はログイン項目として管理（手動再起動不要）
-# Note: SketchyBar 設定は .config/sketchybar/ に保持（Ice に移行済み）
 
 set -e
 
