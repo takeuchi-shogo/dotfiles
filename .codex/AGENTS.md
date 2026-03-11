@@ -21,3 +21,7 @@
 - リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
 - `git commit --no-verify` 禁止。pre-commit フックをバイパスしない。
 - タスク完了前にテスト・lint を実行して通過を確認する。
+- repo 共通 contract は `docs/agent-harness-contract.md` を参照する。
+- 長時間タスク、中断前、handoff 前は `$codex-checkpoint-resume` を使って filesystem に状態を残す。
+- 繰り返し発生した repo 固有ルールや failure は `$codex-memory-capture` で `~/.codex/memories` に記録する。
+- repo 開始時に `~/.codex/memories/dotfiles-memory.md` があれば確認する。

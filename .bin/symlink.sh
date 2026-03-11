@@ -10,9 +10,15 @@ SYMLINK_EXCLUDE_FILES=(
   "^README\.md$"
   "^Taskfile\.yml$"
   "^\.mcp\.json$"
+  "^\.claudeignore$"
+  "^\.agent/"
+  "^\.kiro/"
   "^\.playwright-mcp/"
   "^\.pytest_cache/"
+  "^\.skill-eval/"
   "^\.venv/"
+  "^breakthroughs/"
+  "^skills-lock\.json$"
   "^vm/"
   "^images/"
   "^docs/"
@@ -72,6 +78,9 @@ CODEX_SHARED_CLAUDE_SKILLS=(
 CODEX_SHARED_PROJECT_SKILLS=(
   "codex-search-first"
   "codex-verification-before-completion"
+  "dotfiles-config-validation"
+  "codex-checkpoint-resume"
+  "codex-memory-capture"
 )
 
 is_excluded() {

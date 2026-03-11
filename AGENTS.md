@@ -35,6 +35,8 @@
   - `$codex-search-first`: 実装前の既存資産調査
   - `$codex-verification-before-completion`: 完了前の実コマンド検証
   - `$dotfiles-config-validation`: dotfiles 向け validation コマンド選定
+  - `$codex-checkpoint-resume`: 長時間タスクの checkpoint と再開補助
+  - `$codex-memory-capture`: repo 固有 learnings の durable 保存
 - Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提の記述をそのまま実行せず、文書として必要部分だけ採用する。
 
 ## Useful Commands
@@ -53,8 +55,8 @@
 - 検証は変更対象に最も近いコマンドだけを実行し、無関係な全体変更は避ける。
 - `.codex/` や symlink 管理を変えたら `task validate-symlinks` を含める。
 
-## Harness Tooling
-- **リンター/フォーマッター**: Biome+Oxlint (TS/JS), Ruff (Python), golangci-lint (Go)。PostToolUse hook で自動実行される。
-- **リンター設定保護**: `.eslintrc*`, `biome.json`, `.prettierrc*` 等は変更禁止。コードを修正すること。
-- **テスト実行**: Stop hook がプロジェクトのテストを自動検出・実行する。テストが失敗していたら修正してから完了する。
-- **`--no-verify` 禁止**: pre-commit フックをバイパスしない。
+## Harness Contract
+- 共通 contract は `docs/agent-harness-contract.md` を参照する。
+- repo 共通で信頼してよいのは `Taskfile.yml`、`validate_*.sh`、`.mcp.json`、`.agents/skills/`、`AGENTS.md`。
+- Claude 固有の hook / middleware / completion gate は `.config/claude/` 配下の harness として扱う。
+- Codex 固有の config / profile / local skill / memory は `.codex/` と `.agents/skills/` の harness として扱う。

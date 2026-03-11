@@ -25,6 +25,7 @@ description: Validation guide for this dotfiles repository. Use when editing she
 - tool 別 README 変更だけなら `task validate-readmes`
 - shell / script / config 変更なら `task validate-configs`
 - 迷ったら `Taskfile.yml` と `.bin/validate_*.sh` を読んで最小コマンドを選ぶ
+- optional tool binary が無い場合は skip を明示し、無関係な failure にしない
 
 ## Before Editing
 

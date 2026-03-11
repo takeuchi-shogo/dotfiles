@@ -37,6 +37,9 @@ managed_links = [
     (home / ".codex/skills/senior-frontend", root / ".config/claude/skills/senior-frontend", ".codex/skills/senior-frontend"),
     (home / ".codex/skills/codex-search-first", root / ".agents/skills/codex-search-first", ".codex/skills/codex-search-first"),
     (home / ".codex/skills/codex-verification-before-completion", root / ".agents/skills/codex-verification-before-completion", ".codex/skills/codex-verification-before-completion"),
+    (home / ".codex/skills/dotfiles-config-validation", root / ".agents/skills/dotfiles-config-validation", ".codex/skills/dotfiles-config-validation"),
+    (home / ".codex/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".codex/skills/codex-checkpoint-resume"),
+    (home / ".codex/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".codex/skills/codex-memory-capture"),
 ]
 
 errors = []

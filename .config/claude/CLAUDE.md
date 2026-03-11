@@ -11,6 +11,15 @@
 - コード変更後のレビューは `/review` スキルのワークフローに従う（変更規模に応じてレビューアーを自動選択・並列起動・結果統合）
 - 日本語で応答する
 
+## Harness Guarantees
+
+- Claude 固有の harness contract は `docs/agent-harness-contract.md` を前提にする。
+- `PostToolUse` hook が formatter / policy check / checkpoint を補助する。
+- `Stop` hook が completion gate を実行し、失敗したテストは追加コンテキストとして差し戻す。
+- `SessionStart` / `SessionEnd` hook が session-state と learnings を保存・復元する。
+- `.eslintrc*`, `biome.json`, `.prettierrc*` などの lint config は保護対象。設定ではなくコードを直す。
+- `git commit --no-verify` は禁止。
+
 ## コミット規則
 
 - conventional commit + 絵文字プレフィックス（例: ✨ feat:, 🐛 fix:, 📝 docs:, ♻️ refactor:, 🔧 chore:）

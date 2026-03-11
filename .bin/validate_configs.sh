@@ -4,6 +4,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
 echo "==> Validate TOML and JSON"
 python3 - <<'PY'
 import json
@@ -49,17 +53,29 @@ for file in .config/sketchybar/icon_map.sh .config/sketchybar/icon_updater.sh; d
 done
 
 echo "==> Validate zsh files"
-while IFS= read -r file; do
-  zsh -n "$file"
-  echo "ok  $file"
-done < <(find .config/zsh -type f -name '*.zsh' | sort)
+if have_cmd zsh; then
+  while IFS= read -r file; do
+    zsh -n "$file"
+    echo "ok  $file"
+  done < <(find .config/zsh -type f -name '*.zsh' | sort)
+else
+  echo "skip  zsh validation (zsh not found)"
+fi
 
 echo "==> Validate Lua syntax"
-while IFS= read -r file; do
-  luac -p "$file"
-  echo "ok  $file"
-done < <(find .config/nvim .config/sketchybar .config/wezterm -type f -name '*.lua' | sort)
+if have_cmd luac; then
+  while IFS= read -r file; do
+    luac -p "$file"
+    echo "ok  $file"
+  done < <(find .config/nvim .config/sketchybar .config/wezterm -type f -name '*.lua' | sort)
+else
+  echo "skip  Lua validation (luac not found)"
+fi
 
 echo "==> Validate WezTerm config load"
-wezterm --config-file .config/wezterm/wezterm.lua show-keys >/dev/null
-echo "ok  .config/wezterm/wezterm.lua"
+if have_cmd wezterm; then
+  wezterm --config-file .config/wezterm/wezterm.lua show-keys >/dev/null
+  echo "ok  .config/wezterm/wezterm.lua"
+else
+  echo "skip  .config/wezterm/wezterm.lua (wezterm not found)"
+fi

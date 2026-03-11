@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Memory Capture"
+  short_description: "Store durable learnings for future Codex sessions"
+  default_prompt: "Use $codex-memory-capture to record a stable repo-specific rule or repeated failure in ~/.codex/memories."

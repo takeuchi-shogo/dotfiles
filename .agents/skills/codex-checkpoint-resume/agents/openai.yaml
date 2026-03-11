@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Checkpoint Resume"
+  short_description: "Save a durable checkpoint for long Codex tasks"
+  default_prompt: "Use $codex-checkpoint-resume to save the current goal, progress, next step, files, and pending commands before stopping or compacting."
