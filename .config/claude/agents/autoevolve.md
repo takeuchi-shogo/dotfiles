@@ -119,10 +119,16 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 マージ済みの実験がある場合、効果を測定する:
 
 ```bash
-# 効果測定
-python3 ~/.claude/scripts/experiment_tracker.py measure
+# 全実験の俯瞰ビュー（autoresearch results.tsv 相当）
+python3 ~/.claude/scripts/experiment_tracker.py export-tsv
 
-# 全実験のステータス確認
+# ステータスサマリー
+python3 ~/.claude/scripts/experiment_tracker.py status
+
+# 全 merged 実験の効果一括測定
+python3 ~/.claude/scripts/experiment_tracker.py measure-all
+
+# 個別実験のステータス確認
 python3 ~/.claude/scripts/experiment_tracker.py list
 ```
 

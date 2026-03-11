@@ -13,7 +13,6 @@ Usage:
 import argparse
 import json
 import os
-import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -24,10 +23,12 @@ def _get_data_dir() -> Path:
     テスト時に AUTOEVOLVE_DATA_DIR を差し替えられるよう、
     呼び出しごとに環境変数を読む。
     """
-    return Path(os.environ.get(
-        "AUTOEVOLVE_DATA_DIR",
-        os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
-    ))
+    return Path(
+        os.environ.get(
+            "AUTOEVOLVE_DATA_DIR",
+            os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
+        )
+    )
 
 
 def _registry_path() -> Path:
@@ -269,6 +270,43 @@ def measure_effect(exp_id: str) -> dict:
     }
 
 
+def export_tsv() -> str:
+    """全実験を autoresearch の results.tsv 風フラット TSV で出力する。"""
+    experiments = _load_registry()
+    lines = ["date\tcategory\tid\tstatus\thypothesis\tchange_pct\tverdict\tfiles"]
+    for exp in experiments:
+        date = exp.get("created_at", "")[:10]
+        category = exp.get("category", "")
+        exp_id = exp.get("id", "")
+        status = exp.get("status", "")
+        hypothesis = exp.get("hypothesis", "").replace("\t", " ")[:80]
+        change_pct = ""
+        verdict = ""
+        if status == "merged":
+            result = measure_effect(exp_id)
+            verdict = result.get("verdict", "")
+            cp = result.get("change_pct")
+            change_pct = f"{cp}" if cp is not None else ""
+        files = ",".join(exp.get("files_changed", []))
+        lines.append(
+            f"{date}\t{category}\t{exp_id}\t{status}\t{hypothesis}\t{change_pct}\t{verdict}\t{files}"
+        )
+    return "\n".join(lines)
+
+
+def status_summary() -> str:
+    """実験のステータスサマリーを返す。"""
+    experiments = _load_registry()
+    if not experiments:
+        return "実験データなし"
+    counts: dict[str, int] = {}
+    for exp in experiments:
+        s = exp.get("status", "unknown")
+        counts[s] = counts.get(s, 0) + 1
+    parts = [f"{k}: {v}" for k, v in sorted(counts.items())]
+    return f"全 {len(experiments)} 件 — " + ", ".join(parts)
+
+
 def main():
     """CLI エントリポイント。"""
     parser = argparse.ArgumentParser(
@@ -279,9 +317,13 @@ def main():
     # record サブコマンド
     record_parser = subparsers.add_parser("record", help="Record a new experiment")
     record_parser.add_argument("--category", required=True, help="Experiment category")
-    record_parser.add_argument("--hypothesis", required=True, help="Hypothesis description")
+    record_parser.add_argument(
+        "--hypothesis", required=True, help="Hypothesis description"
+    )
     record_parser.add_argument("--branch", required=True, help="Experiment branch name")
-    record_parser.add_argument("--files", nargs="+", required=True, help="Changed files")
+    record_parser.add_argument(
+        "--files", nargs="+", required=True, help="Changed files"
+    )
 
     # list サブコマンド
     list_parser = subparsers.add_parser("list", help="List experiments")
@@ -290,6 +332,15 @@ def main():
     # measure サブコマンド
     measure_parser = subparsers.add_parser("measure", help="Measure experiment effect")
     measure_parser.add_argument("exp_id", help="Experiment ID")
+
+    # export-tsv サブコマンド
+    subparsers.add_parser("export-tsv", help="Export all experiments as TSV")
+
+    # status サブコマンド
+    subparsers.add_parser("status", help="Show experiment status summary")
+
+    # measure-all サブコマンド
+    subparsers.add_parser("measure-all", help="Measure all merged experiments")
 
     args = parser.parse_args()
 
@@ -311,11 +362,29 @@ def main():
                 "rejected": "❌",
                 "reverted": "↩️",
             }.get(exp.get("status", ""), "?")
-            print(f"{status_mark} {exp['id']} [{exp['status']}] {exp['hypothesis'][:60]}")
+            print(
+                f"{status_mark} {exp['id']} [{exp['status']}] {exp['hypothesis'][:60]}"
+            )
 
     elif args.command == "measure":
         result = measure_effect(args.exp_id)
         print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "export-tsv":
+        print(export_tsv())
+
+    elif args.command == "status":
+        print(status_summary())
+
+    elif args.command == "measure-all":
+        exps = list_experiments(status="merged")
+        if not exps:
+            print("測定対象の merged 実験がありません")
+        for exp in exps:
+            result = measure_effect(exp["id"])
+            verdict = result.get("verdict", "?")
+            change = result.get("change_pct", "N/A")
+            print(f"{exp['id']}: {verdict} (change: {change}%)")
 
 
 if __name__ == "__main__":
