@@ -231,7 +231,8 @@
 		"code-simplifier@claude-plugins-official": true,
 		"playground@claude-plugins-official": true,
 		"pr-review-toolkit@claude-code-plugins": true,
-		"datadog@kw-marketplace": true
+		"datadog@kw-marketplace": true,
+		"claude-md-management@claude-plugins-official": true
 	},
 	"language": "japanese",
 	"effortLevel": "high"
