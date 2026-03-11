@@ -243,6 +243,12 @@
 						"type": "command",
 						"command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py",
 						"timeout": 15
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/review-feedback-tracker.py",
+						"timeout": 15,
+						"statusMessage": "Review feedback tracking..."
 					}
 				]
 			}

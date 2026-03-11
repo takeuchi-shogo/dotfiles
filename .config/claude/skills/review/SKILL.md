@@ -112,9 +112,49 @@ git diff --name-only HEAD
 7. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 8. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
 
+## Step 5: Findings Persistence（フィードバックループ）
+
+Step 4 の統合後、最終レポートに含まれる各指摘を `review-findings.jsonl` に保存する。
+これにより、後続の git commit 時に `review-feedback-tracker.py` hook が
+指摘の受入/却下を自動判定し、レビューアーの精度追跡が可能になる。
+
+**保存方法**: Bash ツールで以下の Python スクリプトを実行する:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from session_events import emit_review_finding
+import json, hashlib, datetime
+
+findings = json.loads(sys.stdin.read())
+for f in findings:
+    emit_review_finding(f)
+print(f'{len(findings)} findings saved')
+" <<'FINDINGS_JSON'
+[
+  {
+    "id": "rf-{date}-{seq:03d}",
+    "reviewer": "{reviewer_agent_name}",
+    "file": "{file_path}",
+    "line": {line_number},
+    "confidence": {confidence_score},
+    "failure_mode": "{FM-XXX or empty}",
+    "finding": "{指摘の要約}",
+    "failure_type": "generalization"
+  }
+]
+FINDINGS_JSON
+```
+
+**ID生成ルール**: `rf-YYYY-MM-DD-NNN` (例: `rf-2026-03-12-001`)
+
+**failure_mode マッピング**: `references/failure-taxonomy.md` を参照し、指摘内容に最も近い FM-XXX を付与する。
+マッチしない場合は空文字列。
+
 ## Anti-Patterns
 
 - レビューアーを直接 Skill ツールで起動する（Agent ツールで並列起動すること）
 - 行数だけでスペシャリストを判断する（コンテンツシグナルも見ること）
 - レビュー結果をそのまま列挙する（統合・重複排除すること）
 - 10行以下の変更に対してフルレビューを実行する
+- findings の保存を省略する（フィードバックループが機能しなくなる）
