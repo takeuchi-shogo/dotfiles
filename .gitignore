@@ -31,3 +31,7 @@ docs/plans/
 .kiro/
 skills-lock.json
 .skill-eval/
+
+# Benchmark/research artifacts (skill-audit等で生成される一時ファイル)
+.claude/react/
+.claude/research/
