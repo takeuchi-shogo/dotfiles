@@ -30,3 +30,4 @@ docs/plans/
 .agent/
 .kiro/
 skills-lock.json
+.skill-eval/
