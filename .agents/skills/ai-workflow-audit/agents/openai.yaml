@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Workflow Audit"
+  short_description: "Audit AI workflows and choose the right promotion surface"
+  default_prompt: "Use $ai-workflow-audit to decide whether this AI workflow improvement belongs in skills, memory, scripts, docs, or MCP."

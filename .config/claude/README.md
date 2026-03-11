@@ -188,6 +188,7 @@ dotfiles → home への個別 symlink で接続:
 | -------------------------------- | --------------------------------------------------------------- |
 | `review`                         | レビューアー自動ルーティング + テンプレートベースのレビュー出力 |
 | `search-first`                   | 実装前に既存ツール/ライブラリ/パターンを検索                    |
+| `ai-workflow-audit`              | AI workflow を監査し、skill / memory / script への昇格先を決める |
 | `verification-before-completion` | 完了前の必須検証 (実コマンドで証拠を確認)                       |
 | `continuous-learning`            | セッション中の修正・デバッグから再利用パターンを自動記録        |
 | `skill-creator`                  | 新規スキル定義の作成ガイド                                      |
