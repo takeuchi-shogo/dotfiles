@@ -31,6 +31,11 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
   fi
 
   echo "=== Session $i/$MAX_SESSIONS ==="
+
+  # Snapshot task state before session
+  BEFORE_DONE=$(grep -c '^\- \[x\]' "$TASK_LIST" 2>/dev/null || echo 0)
+  TOTAL_TASKS=$(grep -c '^\- \[' "$TASK_LIST" 2>/dev/null || echo 0)
+
   TASK_CONTENT=$(cat "$TASK_LIST")
   PROMPT=$(sed "s|{task_list_content}|${TASK_CONTENT}|g; s|{work_dir}|$(pwd)|g" \
     "${TASK_DIR}/executor-prompt.md" 2>/dev/null || echo "$TASK_CONTENT")
@@ -40,10 +45,29 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
     --max-cost "$BUDGET" \
     > "${SESSION_LOG}/session-${i}.md" 2>&1 || true
 
-  echo "Session $i completed. Output: ${SESSION_LOG}/session-${i}.md"
+  # Detect which tasks were completed in this session
+  AFTER_DONE=$(grep -c '^\- \[x\]' "$TASK_LIST" 2>/dev/null || echo 0)
+  REMAINING=$((TOTAL_TASKS - AFTER_DONE))
+  COMPLETED_THIS=$((AFTER_DONE - BEFORE_DONE))
 
-  # Append to progress
-  echo "| $(date -u +%Y-%m-%dT%H:%M:%SZ) | Session $i | completed | See session-${i}.md |" >> "$PROGRESS"
+  TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  echo "Session $i completed: +${COMPLETED_THIS} tasks done, ${REMAINING} remaining"
+
+  # Structured progress entry
+  {
+    echo "### Session $i — ${TIMESTAMP}"
+    echo ""
+    echo "- **Status**: completed"
+    echo "- **Tasks completed this session**: ${COMPLETED_THIS}"
+    echo "- **Total progress**: ${AFTER_DONE}/${TOTAL_TASKS}"
+    echo "- **Output**: session-${i}.md"
+    if [[ "$COMPLETED_THIS" -gt 0 ]]; then
+      echo "- **Newly completed**:"
+      # Extract task names that are now checked (compare before/after)
+      grep '^\- \[x\]' "$TASK_LIST" | tail -n "$COMPLETED_THIS" | sed 's/^/  /'
+    fi
+    echo ""
+  } >> "$PROGRESS"
 done
 
 rm -f "$LOCK_FILE"

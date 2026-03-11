@@ -91,11 +91,27 @@ for each unchecked task in task_list.md:
 
 ## Step 4: Monitor
 
-実行中/完了後に以下で進捗を確認:
+### 構造化された進捗レポート
+
+`run-session.sh` は各セッション完了時に `progress.md` へ構造化エントリを記録する:
+
+```markdown
+### Session 3 — 2026-03-12T14:30:00Z
+
+- **Status**: completed
+- **Tasks completed this session**: 2
+- **Total progress**: 5/8
+- **Output**: session-3.md
+- **Newly completed**:
+  - [x] データベースマイグレーション作成
+  - [x] API エンドポイント実装
+```
+
+### 進捗確認コマンド
 
 ```bash
-# 進捗確認
-cat .autonomous/{task-name}/task_list.md
+# 構造化された進捗レポート
+cat .autonomous/{task-name}/progress.md
 # 残りタスク数
 grep -c '^\- \[ \]' .autonomous/{task-name}/task_list.md
 # 最新セッション出力

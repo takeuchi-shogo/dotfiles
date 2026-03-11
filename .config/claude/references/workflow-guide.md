@@ -137,6 +137,18 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 ファクトリーエージェントは `permissionMode: plan` で動作し、生成前にユーザーの承認を得る。
 
+### サブエージェント委譲パターン
+
+タスクをサブエージェントに委譲する際の3パターン。詳細は **`references/subagent-delegation-guide.md`** を参照。
+
+| パターン | 方式 | 使い所 |
+|---|---|---|
+| **Sync** | Agent ツール | 結果が次のステップに必要（レビュー、分析、テスト） |
+| **Async** | `claude -p` / `run_in_background` | 独立した長時間タスク（リサーチ、自律実行） |
+| **Scheduled** | CronCreate / cron | 将来の特定時刻に実行（日次分析、フォローアップ） |
+
+**判断基準**: 結果が必要 → Sync、独立タスク → Async、後で → Scheduled、迷ったら → Async
+
 ---
 
 ## メモリシステム
