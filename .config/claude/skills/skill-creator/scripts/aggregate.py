@@ -9,7 +9,6 @@ and timing.json data into benchmark.json and benchmark.md summaries.
 
 import argparse
 import json
-import os
 import statistics
 import sys
 from datetime import date
