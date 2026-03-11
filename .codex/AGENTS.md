@@ -18,6 +18,7 @@
 - context が長くなったら、先に checkpoint を残してから compact / resume する。
 - compact / resume 後も、元の goal と completion criteria は維持する。checkpoint は一時的な authoritative summary として扱い、必要に応じて `git status` や対象ファイルで再検証する。
 - handoff 前、中断前、milestone 完了時は `$codex-checkpoint-resume` を使って filesystem に state を残す。
+- 非自明な変更では root の `PLANS.md` に従い、永続化したい plan は `docs/plans/` に残す。
 
 ## Project Instructions
 - 最も近い `AGENTS.md` を常に優先する。
@@ -37,3 +38,16 @@
 - 長時間タスク、中断前、handoff 前、milestone 完了時は `$codex-checkpoint-resume` を使う。
 - 繰り返し発生した repo 固有ルールや failure は `$codex-memory-capture` で `~/.codex/memories` に記録する。
 - session 開始時は、対象 repo や task に関連する `~/.codex/memories/*-memory.md` があれば必要なものだけ確認する。
+
+## Mandatory Skill Usage
+- 調査開始時は `$codex-search-first`
+- dotfiles の validation 選定は `$dotfiles-config-validation`
+- 長時間タスク、resume、compact、handoff は `$codex-checkpoint-resume`
+- thread 継続 / fork / resume 判断が絡むときは `$codex-session-hygiene`
+- repo 固有 learnings の保存は `$codex-memory-capture`
+
+## Change Surface Matrix
+- `.codex/` を変えたら `docs/agent-harness-contract.md`, `PLANS.md`, `.agents/skills/` を確認する
+- `.agents/skills/` を変えたら `.bin/symlink.sh` と `.bin/validate_symlinks.sh` を確認する
+- symlink 管理を変えたら `task symlink` と `task validate-symlinks` を必ず実行する
+- Claude 側 harness を読むときは `.config/claude/references/workflow-guide.md` を参照し、Claude 固有 hook を Codex へ持ち込まない
