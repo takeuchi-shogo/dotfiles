@@ -220,6 +220,21 @@ dotfiles → home への個別 symlink で接続:
 | `create-pr-wait`      | PR 作成→CI 監視→失敗時自動修正→再 push   |
 | `interviewing-issues` | 曖昧な Issue を4段階インタビューで明確化 |
 
+### 開発オペレーション
+
+GitHub Projects・GTD・データ分析を統合した日々の開発運用スキル群。
+設定は `.claude/dev-ops.local.json`（ローカル専用・git管理外）に保存し、モノレポで複数チームが異なる設定を持てる。
+
+| スキル             | コマンド例                          | 説明                                                             |
+| ------------------ | ----------------------------------- | ---------------------------------------------------------------- |
+| `dev-ops-setup`    | `/dev-ops-setup`                    | プロジェクトのローカル設定を対話的にセットアップ                 |
+| `morning`          | `/morning`                          | 朝の計画: GitHub Issues/Projects/PR から今日のタスクを提案       |
+| `capture`          | `/capture APIが遅い件を調査`         | GTD 式即時キャプチャ: 思いつきを inbox Issue に即登録            |
+| `kanban`           | `/kanban start #15`                 | GitHub Projects カンバン操作: ステータス変更・進捗確認           |
+| `meeting-minutes`  | `/meeting-minutes <議事録テキスト>` | 議事録から決定事項・アクション抽出 → Issue 一括更新（承認ゲート付き） |
+| `weekly-review`    | `/weekly-review`                    | GTD 週次レビュー: inbox 処理・滞留検出・優先度見直し（対話形式） |
+| `dev-insights`     | `/dev-insights monthly`             | データ駆動分析: 曜日別パフォーマンス・リードタイム・滞留傾向     |
+
 ### Obsidian 連携
 
 | スキル                 | 説明                                       |
