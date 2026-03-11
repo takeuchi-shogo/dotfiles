@@ -11,17 +11,19 @@
 - **起動条件**: 50行以上の変更で常に起動
 - **信頼度スコア**: 80以上の指摘のみ報告
 
-### 言語専門レビューアー
+### 言語固有チェックリスト（code-reviewer に注入）
 
-| subagent_type      | 対象拡張子                   | 専門観点                                           |
-| ------------------ | ---------------------------- | -------------------------------------------------- |
-| `code-reviewer-ts` | `.ts`, `.tsx`, `.js`, `.jsx` | 型安全性、React パターン、Node.js サーバーサイド   |
-| `code-reviewer-go` | `.go`                        | Effective Go、エラーハンドリング、並行処理パターン |
-| `code-reviewer-py` | `.py`                        | 型ヒント、Pythonic イディオム、例外設計            |
-| `code-reviewer-rs` | `.rs`                        | 所有権、ライフタイム、Result/Option、unsafe 最小化 |
+言語専門の観点は独立エージェントではなく、`code-reviewer` のプロンプトにチェックリストを注入して適用する。
 
-- **起動条件**: 50行以上の変更で、該当拡張子のファイルが含まれる場合
-- **複数言語**: 変更ファイルに複数言語が含まれる場合、該当する全レビューアーを起動
+| 対象拡張子                   | 参照ファイル                                 | 専門観点                                           |
+| ---------------------------- | -------------------------------------------- | -------------------------------------------------- |
+| `.ts`, `.tsx`, `.js`, `.jsx` | `references/review-checklists/typescript.md` | 型安全性、React パターン、Node.js サーバーサイド   |
+| `.go`                        | `references/review-checklists/go.md`         | Effective Go、エラーハンドリング、並行処理パターン |
+| `.py`                        | `references/review-checklists/python.md`     | 型ヒント、Pythonic イディオム、例外設計            |
+| `.rs`                        | `references/review-checklists/rust.md`       | 所有権、ライフタイム、Result/Option、unsafe 最小化 |
+
+- **注入方法**: code-reviewer のプロンプトに該当チェックリストの内容を Read して含める
+- **複数言語**: 変更ファイルに複数言語が含まれる場合、該当する全チェックリストを注入
 
 ### codex-reviewer
 

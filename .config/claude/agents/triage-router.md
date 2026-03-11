@@ -66,7 +66,7 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 
 ## Routing Rules
 
-1. **レビューは常に3並列**: code-reviewer + code-reviewer-ma + code-reviewer-mu
+1. **レビューは常に3並列**: code-reviewer（言語チェックリスト注入）+ code-reviewer-ma + code-reviewer-mu
 2. **セキュリティ関連のコード変更**: 通常レビューに加えて security-reviewer を追加
 3. **言語固有の問題**: 専門エージェント（golang-pro, typescript-pro）を優先
 4. **不明確なタスク**: まず Explore エージェントで調査してから再度トリアージ

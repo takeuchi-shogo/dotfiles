@@ -77,21 +77,26 @@ dotfiles → home への個別 symlink で接続:
 
 タスクの種類に応じて専門エージェントに委譲する。`triage-router` が最適なエージェントを推薦。
 
-### コードレビュー系 (11個)
+### コードレビュー系 (7エージェント + 4言語チェックリスト)
 
 | エージェント            | 専門領域           | 用途                                                |
 | ----------------------- | ------------------ | --------------------------------------------------- |
-| `code-reviewer`         | 汎用レビュー       | 品質・セキュリティ・保守性の総合チェック            |
-| `code-reviewer-ts`      | TypeScript/React   | `.ts/.tsx` ファイルの型安全性・パターンチェック     |
-| `code-reviewer-py`      | Python             | 型ヒント・Pythonic イディオム・例外設計             |
-| `code-reviewer-go`      | Go                 | Effective Go・エラーハンドリング・並行処理パターン  |
-| `code-reviewer-rs`      | Rust               | 所有権・ライフタイム・unsafe 最小化                 |
+| `code-reviewer`         | 汎用レビュー       | 品質・セキュリティ・保守性の総合チェック（言語チェックリスト注入対応） |
 | `code-reviewer-ma`      | 簡潔スタイル       | 直接的なシニアエンジニアスタイルのレビュー          |
 | `code-reviewer-mu`      | 教育的スタイル     | 丁寧・建設的・教育的なレビュー                      |
 | `codex-reviewer`        | 深い推論           | Codex CLI を活用した ~100行以上のセカンドオピニオン |
 | `comment-analyzer`      | コメント品質       | ドキュメント・コメントの正確性と保守性分析          |
 | `silent-failure-hunter` | エラーハンドリング | サイレント障害・不適切な catch/fallback の検出      |
 | `test-analyzer`         | テスト品質         | テストカバレッジ・エッジケース・テスト設計の分析    |
+
+言語固有チェックリスト（`references/review-checklists/`）:
+
+| ファイル          | 対象拡張子              | 観点                                              |
+| ----------------- | ----------------------- | ------------------------------------------------- |
+| `typescript.md`   | `.ts/.tsx/.js/.jsx`     | 型安全性・React パターン・Node.js                 |
+| `python.md`       | `.py`                   | 型ヒント・Pythonic イディオム・例外設計           |
+| `go.md`           | `.go`                   | Effective Go・エラーハンドリング・並行処理        |
+| `rust.md`         | `.rs`                   | 所有権・ライフタイム・unsafe 最小化               |
 
 ### アーキテクチャ・設計系 (4個)
 

@@ -118,6 +118,7 @@ elif 両方の要素がある (一般概念 + プロジェクト固有の変形)
 | CLAUDE.md コア原則 | ✅ Shorthand References | — |
 | workflow-guide.md ルーティング | ✅ Terse Tables | — |
 | code-reviewer-ma/mu | ✅ Full Prose（プロジェクト固有） | — |
+| 言語チェックリスト (ts/py/go/rs) | references/ に移行済み（プレフィックス軽量化） | — |
 | rules/ | 要確認 | 一般知識→Breadcrumb に短縮可能か |
 
 ---
