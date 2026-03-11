@@ -26,6 +26,7 @@ const BIOME = whichSync("biome") ? "biome" : "npx --yes @biomejs/biome@latest";
 const OXLINT = whichSync("oxlint") ? "oxlint" : "npx --yes oxlint@latest";
 const RUFF = whichSync("ruff") || "ruff";
 const GOFMT = whichSync("gofmt") || "gofmt";
+const GOLANGCI_LINT = whichSync("golangci-lint");
 
 // --- Helpers ---
 function runCapture(cmd, timeout = 10000) {
@@ -102,12 +103,25 @@ function handleGo(filePath) {
 	const errors = [];
 	// 1. Format
 	runSilent(`${GOFMT} -w "${filePath}"`);
-	// 2. Vet (fast, built-in)
+	// 2. Lint — prefer golangci-lint if available, fallback to go vet
 	const dir = path.dirname(filePath);
-	const { ok, output } = runCapture(`go vet "${dir}/..." 2>&1`, 15000);
-	if (!ok && output) {
-		const lines = trimLines(output);
-		if (lines.length > 0) errors.push(...lines);
+	if (GOLANGCI_LINT) {
+		const { ok, output } = runCapture(
+			`${GOLANGCI_LINT} run --fix --new-from-rev=HEAD "${dir}/..." 2>&1`,
+			20000,
+		);
+		if (!ok && output) {
+			const issues = trimLines(output).filter(
+				(l) => !l.startsWith("level=") && !l.includes("congrats"),
+			);
+			if (issues.length > 0) errors.push(...issues);
+		}
+	} else {
+		const { ok, output } = runCapture(`go vet "${dir}/..." 2>&1`, 15000);
+		if (!ok && output) {
+			const lines = trimLines(output);
+			if (lines.length > 0) errors.push(...lines);
+		}
 	}
 	return errors;
 }
