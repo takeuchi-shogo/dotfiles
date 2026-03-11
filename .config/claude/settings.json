@@ -1,4 +1,5 @@
 {
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
 	"env": {
 		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
 		"CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
@@ -57,7 +58,13 @@
 			"Bash(git clean -f *)",
 			"Bash(git checkout -- *)",
 			"Bash(chmod 777 *)",
-			"Bash(git commit --no-verify *)"
+			"Bash(git commit --no-verify *)",
+			"Bash(curl *)",
+			"Bash(wget *)",
+			"Bash(sudo *)",
+			"Read(.env*)",
+			"Read(**/*.pem)",
+			"Read(**/*credentials*)"
 		]
 	},
 	"model": "opus",
@@ -70,7 +77,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-load.js"
+						"command": "node $HOME/.claude/scripts/runtime/session-load.js",
+						"timeout": 15
 					}
 				]
 			},
@@ -78,7 +86,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true"
+						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true",
+						"timeout": 10
 					}
 				]
 			}
@@ -88,15 +97,19 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/completion-gate.py"
+						"command": "python3 $HOME/.claude/scripts/policy/completion-gate.py",
+						"timeout": 60,
+						"statusMessage": "Completion gate..."
 					},
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-save.js"
+						"command": "node $HOME/.claude/scripts/runtime/session-save.js",
+						"timeout": 15
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
+						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
+						"timeout": 15
 					}
 				]
 			}
@@ -106,11 +119,13 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-save.js"
+						"command": "node $HOME/.claude/scripts/runtime/session-save.js",
+						"timeout": 15
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
+						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
+						"timeout": 15
 					}
 				]
 			}
@@ -120,7 +135,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/agent-router.py"
+						"command": "python3 $HOME/.claude/scripts/policy/agent-router.py",
+						"timeout": 10,
+						"statusMessage": "Agent routing..."
 					}
 				]
 			}
@@ -131,7 +148,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/policy/pre-commit-check.js"
+						"command": "node $HOME/.claude/scripts/policy/pre-commit-check.js",
+						"timeout": 15,
+						"statusMessage": "Commit message check..."
 					}
 				]
 			},
@@ -140,7 +159,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/protect-linter-config.py"
+						"command": "python3 $HOME/.claude/scripts/policy/protect-linter-config.py",
+						"timeout": 10,
+						"statusMessage": "Linter config guard..."
 					}
 				]
 			},
@@ -149,7 +170,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py"
+						"command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py",
+						"timeout": 10
 					}
 				]
 			}
@@ -160,19 +182,25 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/auto-format.js"
+						"command": "node $HOME/.claude/scripts/runtime/auto-format.js",
+						"timeout": 30,
+						"statusMessage": "Auto-formatting..."
 					},
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/suggest-compact.js"
+						"command": "node $HOME/.claude/scripts/runtime/suggest-compact.js",
+						"timeout": 10
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/golden-check.py"
+						"command": "python3 $HOME/.claude/scripts/policy/golden-check.py",
+						"timeout": 15,
+						"statusMessage": "Golden principles check..."
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py"
+						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py",
+						"timeout": 10
 					}
 				]
 			},
@@ -181,19 +209,25 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/output-offload.py"
+						"command": "python3 $HOME/.claude/scripts/runtime/output-offload.py",
+						"timeout": 15
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py"
+						"command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py",
+						"timeout": 15,
+						"statusMessage": "Error analysis..."
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py"
+						"command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py",
+						"timeout": 30,
+						"statusMessage": "Test analysis..."
 					},
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py"
+						"command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py",
+						"timeout": 15
 					}
 				]
 			}
@@ -203,7 +237,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js"
+						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js",
+						"timeout": 15
 					}
 				]
 			}
