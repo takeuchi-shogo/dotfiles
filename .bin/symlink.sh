@@ -15,6 +15,7 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.kiro/"
   "^\.playwright-mcp/"
   "^\.pytest_cache/"
+  "^\.ruff_cache/"
   "^\.skill-eval/"
   "^\.venv/"
   "^breakthroughs/"
@@ -81,6 +82,7 @@ CODEX_SHARED_PROJECT_SKILLS=(
   "dotfiles-config-validation"
   "codex-checkpoint-resume"
   "codex-memory-capture"
+  "codex-session-hygiene"
 )
 
 is_excluded() {

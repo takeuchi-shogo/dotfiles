@@ -37,7 +37,8 @@ def write_summary(entries: list[dict], summary_path: Path) -> None:
     for entry in entries[-30:]:
         grouped[entry["category"]].append(entry)
 
-    lines = ["# Dotfiles Codex Memory", ""]
+    title = summary_path.stem.replace("-", " ").title()
+    lines = [f"# {title}", ""]
     for category in sorted(grouped):
         lines.append(f"## {category}")
         for entry in grouped[category][-10:]:
@@ -52,6 +53,7 @@ def write_summary(entries: list[dict], summary_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--memory-name", default="dotfiles")
     parser.add_argument("--category", required=True)
     parser.add_argument("--pattern", required=True)
     parser.add_argument("--action", required=True)
@@ -61,8 +63,9 @@ def main() -> None:
 
     memory_dir = Path(args.memory_dir)
     memory_dir.mkdir(parents=True, exist_ok=True)
-    jsonl_path = memory_dir / "dotfiles-learnings.jsonl"
-    summary_path = memory_dir / "dotfiles-memory.md"
+    memory_name = args.memory_name.strip().lower().replace(" ", "-")
+    jsonl_path = memory_dir / f"{memory_name}-learnings.jsonl"
+    summary_path = memory_dir / f"{memory_name}-memory.md"
 
     entries = load_entries(jsonl_path)
     new_entry = {

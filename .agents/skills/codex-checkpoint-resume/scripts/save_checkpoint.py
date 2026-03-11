@@ -30,9 +30,17 @@ def build_checkpoint(args: argparse.Namespace) -> str:
         "",
         f"- Timestamp: {timestamp}",
         f"- Goal: {args.goal}",
+        f"- Phase: {args.phase}",
     ]
     if branch:
         lines.append(f"- Branch: {branch}")
+
+    if args.completion_criterion:
+        lines.extend(["", "## Completion Criteria"])
+        lines.extend(
+            [f"- {criterion}" for criterion in args.completion_criterion]
+        )
+
     lines.extend(
         [
             "",
@@ -52,6 +60,14 @@ def build_checkpoint(args: argparse.Namespace) -> str:
         lines.extend(["", "## Pending Commands"])
         lines.extend([f"- `{command}`" for command in args.command])
 
+    if args.verified:
+        lines.extend(["", "## Verified"])
+        lines.extend([f"- {item}" for item in args.verified])
+
+    if args.unverified:
+        lines.extend(["", "## Not Yet Verified"])
+        lines.extend([f"- {item}" for item in args.unverified])
+
     if args.risk:
         lines.extend(["", "## Open Risks"])
         lines.extend([f"- {risk}" for risk in args.risk])
@@ -59,21 +75,33 @@ def build_checkpoint(args: argparse.Namespace) -> str:
     if status:
         lines.extend(["", "## Git Status", "```", status, "```"])
 
-    resume_prompt = (
-        "Read tmp/codex-state/latest-checkpoint.md, confirm current git status, "
-        "and continue from the recorded Next Step."
-    )
-    lines.extend(["", "## Resume Prompt", resume_prompt, ""])
+    continuation_rules = [
+        "- Keep the same goal unless the user explicitly changes it.",
+        "- Keep the same completion criteria unless the user explicitly changes them.",
+        "- Treat this checkpoint as a summary for resume or compaction and re-check git/files when needed.",
+    ]
+    lines.extend(["", "## Continuation Rules", *continuation_rules])
+
+    resume_prompt = [
+        "Read tmp/codex-state/latest-checkpoint.md.",
+        "Confirm current git status and re-open the listed focus files if needed.",
+        "Continue from the recorded Next Step without changing the goal or completion criteria.",
+    ]
+    lines.extend(["", "## Resume Prompt", *resume_prompt, ""])
     return "\n".join(lines)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--goal", required=True)
+    parser.add_argument("--completion-criterion", action="append", default=[])
     parser.add_argument("--summary", required=True)
     parser.add_argument("--next-step", required=True, dest="next_step")
+    parser.add_argument("--phase", choices=["working", "final"], default="working")
     parser.add_argument("--file", action="append", default=[])
     parser.add_argument("--command", action="append", default=[])
+    parser.add_argument("--verified", action="append", default=[])
+    parser.add_argument("--unverified", action="append", default=[])
     parser.add_argument("--risk", action="append", default=[])
     parser.add_argument("--state-dir", default="tmp/codex-state")
     args = parser.parse_args()

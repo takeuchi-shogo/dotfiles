@@ -1,0 +1,3 @@
+display_name: Codex Session Hygiene
+short_description: Keep long-running Codex sessions stable across resume, compact, and handoff.
+default_prompt: Preserve goal and completion criteria while resuming or compacting long-running Codex tasks.

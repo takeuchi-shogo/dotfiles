@@ -9,6 +9,8 @@
 - 完了宣言の前に最小限の validation を実行する
 - 最新情報が必要な場合だけ Web / MCP を使う
 - 長時間タスクは中断前に checkpoint を残す
+- persistent personality と task ごとの output control を分離する
+- compact / resume 前後で goal と completion criteria を勝手に変えない
 
 ## Durable State Surfaces
 
@@ -46,6 +48,22 @@
   - review / verification / search-first skills
   - checkpoint-resume skill
   - memory-capture skill
+
+## Runtime Integration Notes
+
+- `personality`
+  - global default として安定した行動原則だけを置く
+  - 長さ、tone、表現形式、箇条書きの有無などは task prompt や skill で決める
+- `commentary` と `final`
+  - commentary は進捗共有と未検証項目の明示
+  - final は完了済み、検証済み、または未達成の gap の明示
+- compact / resume
+  - compact 前に checkpoint を残す
+  - resume 後も goal、completion criteria、pending validation は維持する
+  - checkpoint や compacted state は要約として使い、必要なら git / filesystem で再検証する
+- memory
+  - repo ごとの stable learnings は `~/.codex/memories/<slug>-memory.md` と `~/.codex/memories/<slug>-learnings.jsonl` に残す
+  - 一時的なログや transient failure は durable memory に昇格させない
 
 ## Rules
 

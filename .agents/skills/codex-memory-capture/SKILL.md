@@ -17,14 +17,15 @@ description: Lightweight durable memory workflow for Codex. Use when a repo-spec
 ## Workflow
 
 1. 覚える価値がある stable rule か確認する。
-2. category、pattern、action を短く決める。
+2. repo や領域を表す `memory-name`、category、pattern、action を短く決める。
 3. `scripts/capture_memory.py` を実行する。
-4. 次の session では `~/.codex/memories/dotfiles-memory.md` を確認する。
+4. 次の session では対応する `~/.codex/memories/<memory-name>-memory.md` を確認する。
 
 ## Command
 
 ```bash
 python3 .agents/skills/codex-memory-capture/scripts/capture_memory.py \
+  --memory-name dotfiles \
   --category validation \
   --pattern "validate-configs may skip optional tool checks" \
   --action "Treat missing optional binaries as skip, not failure" \
@@ -33,11 +34,12 @@ python3 .agents/skills/codex-memory-capture/scripts/capture_memory.py \
 
 ## Output
 
-- `~/.codex/memories/dotfiles-learnings.jsonl`
-- `~/.codex/memories/dotfiles-memory.md`
+- `~/.codex/memories/<memory-name>-learnings.jsonl`
+- `~/.codex/memories/<memory-name>-memory.md`
 
 ## Rule
 
 - 一度しか起きていないものは記録しない。
 - secret や一時的な状態は記録しない。
 - 既存 entry と重複する場合は追加しない。
+- `memory-name` は repo や workflow を表す安定した slug にする。

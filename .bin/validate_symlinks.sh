@@ -40,6 +40,7 @@ managed_links = [
     (home / ".codex/skills/dotfiles-config-validation", root / ".agents/skills/dotfiles-config-validation", ".codex/skills/dotfiles-config-validation"),
     (home / ".codex/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".codex/skills/codex-checkpoint-resume"),
     (home / ".codex/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".codex/skills/codex-memory-capture"),
+    (home / ".codex/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".codex/skills/codex-session-hygiene"),
 ]
 
 errors = []
