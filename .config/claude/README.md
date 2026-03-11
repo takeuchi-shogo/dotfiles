@@ -3,6 +3,20 @@
 dotfiles リポジトリで管理する Claude Code のグローバル設定。
 symlink 経由で `~/.claude/` に展開され、全プロジェクトで共有される。
 
+## 運用入口
+
+Claude Code の設定変更は、この README だけでなく以下も併せて参照する。
+
+- repo 共通 contract: [../../AGENTS.md](../../AGENTS.md)
+- plan contract: [../../PLANS.md](../../PLANS.md)
+- Claude 固有指示: [CLAUDE.md](CLAUDE.md)
+- 詳細 workflow: [references/workflow-guide.md](references/workflow-guide.md)
+- AI workflow 監査ガイド: [../../docs/guides/ai-workflow-audit.md](../../docs/guides/ai-workflow-audit.md)
+- playbook: [../../docs/playbooks/claude-config-changes.md](../../docs/playbooks/claude-config-changes.md)
+
+長時間タスクや複数ファイル変更では、`tmp/plans/` の一時 plan だけで終わらせず、
+必要に応じて `docs/plans/` に永続 plan を残す。
+
 ## アーキテクチャ概要
 
 ```
@@ -70,6 +84,13 @@ dotfiles → home への個別 symlink で接続:
 ```
 
 > **注意**: `references/` は個別 symlink されていない。スクリプトからは `Path(__file__).resolve().parent.parent / "references"` で参照する。
+
+### 変更時の最小検証
+
+- `task validate-configs`
+- `task validate-symlinks`
+
+symlink 管理まで変えた場合は `task symlink` も実行する。
 
 ---
 
@@ -281,6 +302,12 @@ Notification ─→ macOS 通知 + サウンド
 | モジュール          | 役割                                       |
 | ------------------- | ------------------------------------------ |
 | `session_events.py` | イベントの emit / flush / 永続化の共通基盤 |
+
+### Plan / Checkpoint の役割分担
+
+- plan: goal、scope、validation、decision を `PLANS.md` 契約で残す
+- checkpoint: session 再開用の runtime state を保存する
+- 長時間タスクでは両方を使う
 
 ---
 
