@@ -52,3 +52,9 @@
 - 変更した設定に対応する README やスクリプトを先に確認してから編集する。
 - 検証は変更対象に最も近いコマンドだけを実行し、無関係な全体変更は避ける。
 - `.codex/` や symlink 管理を変えたら `task validate-symlinks` を含める。
+
+## Harness Tooling
+- **リンター/フォーマッター**: Biome+Oxlint (TS/JS), Ruff (Python), golangci-lint (Go)。PostToolUse hook で自動実行される。
+- **リンター設定保護**: `.eslintrc*`, `biome.json`, `.prettierrc*` 等は変更禁止。コードを修正すること。
+- **テスト実行**: Stop hook がプロジェクトのテストを自動検出・実行する。テストが失敗していたら修正してから完了する。
+- **`--no-verify` 禁止**: pre-commit フックをバイパスしない。

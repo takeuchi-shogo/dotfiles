@@ -16,3 +16,8 @@
 - 変更は最小限にとどめ、既存の命名規則・構成・formatter に従う。
 - パッケージ追加や新規 utility の前に、既存の task、script、skill、MCP を確認する。
 - 同じ運用を 2 回以上繰り返したら、skill 化や AGENTS 追加を検討する。
+
+## Harness Rules
+- リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
+- `git commit --no-verify` 禁止。pre-commit フックをバイパスしない。
+- タスク完了前にテスト・lint を実行して通過を確認する。
