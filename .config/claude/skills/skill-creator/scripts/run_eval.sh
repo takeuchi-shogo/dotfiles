@@ -102,11 +102,16 @@ run_claude() {
   start_ms=$(python3 -c 'import time; print(int(time.time() * 1000))')
 
   # Run claude -p (|| true to capture exit code under set -e)
+  # Note: --skill flag doesn't exist; inject skill content via --append-system-prompt
   local exit_code=0
   if [[ -n "$skill_dir" ]]; then
+    local skill_content
+    skill_content=$(cat "${skill_dir}/SKILL.md")
     claude -p "$prompt" \
       --allowedTools "$ALLOWED_TOOLS" \
-      --skill "$skill_dir" \
+      --append-system-prompt "You have the following skill loaded. Follow its instructions:
+
+${skill_content}" \
       > "${output_dir}/outputs/response.md" 2>/dev/null || exit_code=$?
   else
     claude -p "$prompt" \
