@@ -1,217 +1,234 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
-    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
-  "includeCoAuthoredBy": false,
-  "permissions": {
-    "allow": [
-      "Bash(npm run *)",
-      "Bash(npx prettier *)",
-      "Bash(npx eslint *)",
-      "Bash(pnpm *)",
-      "Bash(bun *)",
-      "Bash(go build *)",
-      "Bash(go test *)",
-      "Bash(go run *)",
-      "Bash(go mod *)",
-      "Bash(git status *)",
-      "Bash(git log *)",
-      "Bash(git diff *)",
-      "Bash(git branch *)",
-      "Bash(git checkout *)",
-      "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(git stash *)",
-      "Bash(git remote *)",
-      "Bash(ls *)",
-      "Bash(which *)",
-      "Bash(node --version)",
-      "Bash(python3 --version)",
-      "Bash(go version)",
-      "Bash(git --version)",
-      "Bash(npm --version)",
-      "Bash(bun --version)",
-      "Bash(pnpm --version)",
-      "Bash(brew --version)",
-      "Bash(rustc --version)",
-      "Bash(cargo --version)",
-      "Bash(pwd)",
-      "Bash(brew list *)",
-      "Bash(brew info *)",
-      "Bash(codex exec *)",
-      "Bash(gemini *)"
-    ],
-    "deny": [
-      "Bash(rm -rf *)",
-      "Bash(git push --force *)",
-      "Bash(git reset --hard *)",
-      "Bash(git clean -f *)",
-      "Bash(git checkout -- *)",
-      "Bash(chmod 777 *)"
-    ]
-  },
-  "model": "opus",
-  "plansDirectory": "./tmp/plans",
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["playwright", "context7", "deepwiki"],
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/session-load.js"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/session-save.js"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/session-save.js"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/agent-router.py"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash(git commit *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/policy/pre-commit-check.js"
-          }
-        ]
-      },
-      {
-        "matcher": "WebSearch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/auto-format.js"
-          },
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/suggest-compact.js"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/golden-check.py"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"'; afplay /System/Library/Sounds/Glass.aiff &"
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh",
-    "padding": 0
-  },
-  "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true,
-    "superpowers@superpowers-marketplace": true,
-    "frontend-design@claude-code-plugins": true,
-    "code-simplifier@claude-plugins-official": true,
-    "playground@claude-plugins-official": true,
-    "pr-review-toolkit@claude-code-plugins": true,
-    "datadog@kw-marketplace": true
-  },
-  "language": "japanese",
-  "effortLevel": "high"
+	"env": {
+		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+		"CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
+		"CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+	},
+	"attribution": {
+		"commit": "",
+		"pr": ""
+	},
+	"includeCoAuthoredBy": false,
+	"permissions": {
+		"allow": [
+			"Bash(npm run *)",
+			"Bash(npx prettier *)",
+			"Bash(npx eslint *)",
+			"Bash(pnpm *)",
+			"Bash(bun *)",
+			"Bash(go build *)",
+			"Bash(go test *)",
+			"Bash(go run *)",
+			"Bash(go mod *)",
+			"Bash(git status *)",
+			"Bash(git log *)",
+			"Bash(git diff *)",
+			"Bash(git branch *)",
+			"Bash(git checkout *)",
+			"Bash(git add *)",
+			"Bash(git commit *)",
+			"Bash(git stash *)",
+			"Bash(git remote *)",
+			"Bash(ls *)",
+			"Bash(which *)",
+			"Bash(node --version)",
+			"Bash(python3 --version)",
+			"Bash(go version)",
+			"Bash(git --version)",
+			"Bash(npm --version)",
+			"Bash(bun --version)",
+			"Bash(pnpm --version)",
+			"Bash(brew --version)",
+			"Bash(rustc --version)",
+			"Bash(cargo --version)",
+			"Bash(pwd)",
+			"Bash(brew list *)",
+			"Bash(brew info *)",
+			"Bash(codex exec *)",
+			"Bash(gemini *)",
+			"Bash(ruff *)",
+			"Bash(npx oxlint *)",
+			"Bash(npx @biomejs/biome *)"
+		],
+		"deny": [
+			"Bash(rm -rf *)",
+			"Bash(git push --force *)",
+			"Bash(git reset --hard *)",
+			"Bash(git clean -f *)",
+			"Bash(git checkout -- *)",
+			"Bash(chmod 777 *)",
+			"Bash(git commit --no-verify *)"
+		]
+	},
+	"model": "opus",
+	"plansDirectory": "./tmp/plans",
+	"enableAllProjectMcpServers": true,
+	"enabledMcpjsonServers": ["playwright", "context7", "deepwiki"],
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/session-load.js"
+					}
+				]
+			},
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true"
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/completion-gate.py"
+					},
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/session-save.js"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
+					}
+				]
+			}
+		],
+		"SessionEnd": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/session-save.js"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py"
+					}
+				]
+			}
+		],
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/agent-router.py"
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash(git commit *)",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/policy/pre-commit-check.js"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/protect-linter-config.py"
+					}
+				]
+			},
+			{
+				"matcher": "WebSearch",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/auto-format.js"
+					},
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/suggest-compact.js"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/golden-check.py"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py"
+					}
+				]
+			},
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py"
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py"
+					}
+				]
+			}
+		],
+		"PreCompact": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js"
+					}
+				]
+			}
+		],
+		"Notification": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "osascript -e 'display notification \"Claude Code が入力を待っています\" with title \"Claude Code\"'; afplay /System/Library/Sounds/Glass.aiff &"
+					}
+				]
+			}
+		]
+	},
+	"statusLine": {
+		"type": "command",
+		"command": "~/.claude/statusline.sh",
+		"padding": 0
+	},
+	"enabledPlugins": {
+		"gopls-lsp@claude-plugins-official": true,
+		"superpowers@superpowers-marketplace": true,
+		"frontend-design@claude-code-plugins": true,
+		"code-simplifier@claude-plugins-official": true,
+		"playground@claude-plugins-official": true,
+		"pr-review-toolkit@claude-code-plugins": true,
+		"datadog@kw-marketplace": true
+	},
+	"language": "japanese",
+	"effortLevel": "high"
 }
