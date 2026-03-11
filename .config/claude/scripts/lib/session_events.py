@@ -7,6 +7,7 @@ Usage (from other hooks):
     from session_events import emit_event
     emit_event("error", {"message": "TypeError", "command": "npm test"})
 """
+
 import json
 import logging
 import os
@@ -16,34 +17,47 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 
-IMPORTANCE_RULES: list[tuple[str, re.Pattern, float]] = [
-    ("high", re.compile(r"EACCES|Permission denied", re.I), 0.9),
-    ("high", re.compile(r"segfault|SIGSEGV|OOM|out of memory", re.I), 1.0),
-    ("high", re.compile(r"GP-00[1-5]"), 0.8),
-    ("high", re.compile(r"security|vulnerability|injection", re.I), 0.9),
-    ("medium", re.compile(r"Cannot find module|ModuleNotFoundError", re.I), 0.5),
-    ("medium", re.compile(r"TypeError|ReferenceError", re.I), 0.5),
-    ("medium", re.compile(r"timeout|ETIMEDOUT", re.I), 0.6),
-    ("low", re.compile(r"(?<!\w)warning(?:s)?(?:\s*:|\s)", re.I), 0.2),
-    ("low", re.compile(r"deprecated", re.I), 0.3),
+IMPORTANCE_RULES: list[tuple[str, re.Pattern, float, str]] = [
+    ("high", re.compile(r"EACCES|Permission denied", re.I), 0.9, "FM-006"),
+    ("high", re.compile(r"segfault|SIGSEGV|OOM|out of memory", re.I), 1.0, "FM-009"),
+    ("high", re.compile(r"GP-002"), 0.8, "FM-005"),
+    ("high", re.compile(r"GP-003"), 0.8, "FM-003"),
+    ("high", re.compile(r"GP-004"), 0.8, "FM-002"),
+    ("high", re.compile(r"GP-005"), 0.8, "FM-004"),
+    ("high", re.compile(r"GP-001"), 0.8, "FM-003"),
+    ("high", re.compile(r"security|vulnerability|injection", re.I), 0.9, "FM-010"),
+    (
+        "medium",
+        re.compile(r"Cannot find module|ModuleNotFoundError", re.I),
+        0.5,
+        "FM-007",
+    ),
+    ("medium", re.compile(r"TypeError.*(?:undefined|null|nil)", re.I), 0.5, "FM-001"),
+    ("medium", re.compile(r"TypeError|ReferenceError", re.I), 0.5, "FM-008"),
+    ("medium", re.compile(r"timeout|ETIMEDOUT", re.I), 0.6, "FM-009"),
+    ("low", re.compile(r"(?<!\w)warning(?:s)?(?:\s*:|\s)", re.I), 0.2, ""),
+    ("low", re.compile(r"deprecated", re.I), 0.3, ""),
 ]
 
 BASE_IMPORTANCE: dict[str, float] = {
-    "error": 0.5, "quality": 0.6, "pattern": 0.4, "correction": 0.7,
+    "error": 0.5,
+    "quality": 0.6,
+    "pattern": 0.4,
+    "correction": 0.7,
 }
 
 RULE_CONFIDENCE = 0.8
 BASE_CONFIDENCE = 0.5
 
 
-def compute_importance(category: str, data: dict) -> tuple[float, float]:
-    """ルールベースで importance と confidence を計算する。"""
+def compute_importance(category: str, data: dict) -> tuple[float, float, str]:
+    """ルールベースで importance, confidence, failure_mode を計算する。"""
     searchable = " ".join(str(v) for v in data.values())
-    for _level, pattern, score in IMPORTANCE_RULES:
+    for _level, pattern, score, fm in IMPORTANCE_RULES:
         if pattern.search(searchable):
-            return score, RULE_CONFIDENCE
+            return score, RULE_CONFIDENCE, fm
     base = BASE_IMPORTANCE.get(category, 0.5)
-    return base, BASE_CONFIDENCE
+    return base, BASE_CONFIDENCE, ""
 
 
 def _get_data_dir() -> Path:
@@ -52,10 +66,12 @@ def _get_data_dir() -> Path:
     テスト時に AUTOEVOLVE_DATA_DIR を差し替えられるよう、
     呼び出しごとに環境変数を読む。
     """
-    return Path(os.environ.get(
-        "AUTOEVOLVE_DATA_DIR",
-        os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
-    ))
+    return Path(
+        os.environ.get(
+            "AUTOEVOLVE_DATA_DIR",
+            os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
+        )
+    )
 
 
 def _setup_logger() -> logging.Logger:
@@ -103,10 +119,16 @@ def _now_iso() -> str:
 
 
 def emit_event(category: str, data: dict) -> None:
-    """セッション中のイベントを一時ファイルに追記する（スコア付き）。"""
+    """セッション中のイベントを一時ファイルに追記する（スコア付き）。
+
+    data に failure_mode / failure_type を含めると優先される。
+    含めない場合は IMPORTANCE_RULES から自動判定する。
+    """
     logger = _setup_logger()
     try:
-        importance, confidence = compute_importance(category, data)
+        importance, confidence, auto_fm = compute_importance(category, data)
+        failure_mode = data.pop("failure_mode", None) or auto_fm
+        failure_type = data.pop("failure_type", "generalization")
         path = _temp_path()
         path.parent.mkdir(parents=True, exist_ok=True)
         entry = {
@@ -115,6 +137,8 @@ def emit_event(category: str, data: dict) -> None:
             **data,
             "importance": round(importance, 2),
             "confidence": round(confidence, 2),
+            "failure_mode": failure_mode,
+            "failure_type": failure_type,
             "scored_by": "rule",
             "promotion_status": "pending",
         }
@@ -172,6 +196,61 @@ def append_to_learnings(filename: str, data: dict) -> None:
             logger.error("append_to_learnings failed: %s", exc)
         except Exception:
             pass
+
+
+def emit_review_finding(finding: dict) -> None:
+    """レビュー指摘を review-findings.jsonl に保存する。
+
+    finding には以下を含む:
+      id, reviewer, file, line, confidence, failure_mode, finding, failure_type
+    """
+    append_to_learnings("review-findings", finding)
+
+
+def emit_review_feedback(finding_id: str, outcome: str, reason: str = "") -> None:
+    """レビュー指摘に対するフィードバック（accepted/ignored）を記録する。
+
+    outcome: "accepted" | "ignored" | "manual_rejected"
+    """
+    append_to_learnings(
+        "review-feedback",
+        {
+            "finding_id": finding_id,
+            "outcome": outcome,
+            "reason": reason,
+        },
+    )
+
+
+def read_pending_findings() -> list[dict]:
+    """未処理のレビュー指摘を読み込む。"""
+    findings_path = _get_data_dir() / "learnings" / "review-findings.jsonl"
+    feedback_path = _get_data_dir() / "learnings" / "review-feedback.jsonl"
+    if not findings_path.exists():
+        return []
+    resolved_ids: set[str] = set()
+    if feedback_path.exists():
+        with open(feedback_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entry = json.loads(line)
+                        resolved_ids.add(entry.get("finding_id", ""))
+                    except json.JSONDecodeError:
+                        continue
+    pending = []
+    with open(findings_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    entry = json.loads(line)
+                    if entry.get("id", "") not in resolved_ids:
+                        pending.append(entry)
+                except json.JSONDecodeError:
+                    continue
+    return pending
 
 
 def append_to_metrics(data: dict) -> None:
