@@ -3,6 +3,7 @@ name: autonomous
 description: >
   複雑なタスクをセッション跨ぎで自律実行する。タスク分解→並列/逐次実行→進捗管理。
   claude -p ヘッドレスモードで子セッションを生成し、task_list.md で進捗を追跡。
+  並列タスクは worktree で隔離し、共有状態の破損を防止。
   長時間のリファクタリング、マイグレーション、大規模実装に使用。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
@@ -41,6 +42,25 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ├── sessions/             # 各セッションの出力
 └── run.lock              # 排他制御用ロック
 ```
+
+### Worktree 隔離（並列実行時）
+
+並列タスクを実行する場合、各タスクを git worktree で隔離する:
+
+```bash
+# タスクごとに worktree を作成
+git worktree add .autonomous/{task-name}/worktrees/task-{n} -b autonomous/{task-name}/task-{n}
+```
+
+**隔離ルール**（"The Self-Driving Codebase" Isolated Compute 原則）:
+- 並列タスク間で同じファイルを変更しない
+- 各 worktree は独立したブランチで作業
+- 完了後にメインブランチへマージ → worktree を削除
+- コンフリクト発生時は停止して報告
+
+**隔離が不要なケース**:
+- 逐次実行（1タスクずつ順番に実行）
+- 同一ファイルに触らないことが明らかな場合
 
 task_list.md を作成し、**ユーザーの承認を得てから** Step 3 に進む。
 
@@ -88,6 +108,7 @@ cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 - **Budget cap**: セッション毎の最大コスト（デフォルト $5.00）
 - **Max sessions**: 無限ループ防止（デフォルト 10回）
 - **Progress persistence**: 途中で停止しても task_list.md で再開可能
+- **Worktree 隔離**: 並列実行時は git worktree で各タスクを分離（共有状態の破損防止）
 
 ## Anti-Patterns
 
@@ -95,3 +116,4 @@ cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 - 単純なタスクに /autonomous を使う（→ 直接実行で十分）
 - ロックファイルを無視して並列実行する
 - セッション出力を確認せずに次に進む
+- 並列タスクで同じファイルを複数エージェントが同時に変更する（→ worktree で隔離）

@@ -3,7 +3,7 @@ name: review
 description: >
   コード変更のレビューを実行。変更規模に応じてレビューアーを自動選択・並列起動し、結果を統合する。
   コード変更後の Review 段階で使用、または /review で手動起動。
-  Do NOT use when a specific language reviewer (code-reviewer-ts, code-reviewer-go, etc.) is explicitly requested.
+  言語固有チェックリストは references/review-checklists/ に配置。code-reviewer のプロンプトに注入して使用。
 allowed-tools: Read, Bash, Grep, Glob, Agent
 ---
 
@@ -37,22 +37,24 @@ git diff --name-only HEAD
 
 ### レビュアー構成（行数ベース）
 
-| 変更規模 | 構成                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| ~10行    | レビュー省略（Verify のみ）                                                                       |
-| ~50行    | `code-reviewer` + 言語専門 + `codex-reviewer`（3並列）                                            |
-| ~200行   | `code-reviewer` + 言語専門 + `codex-reviewer` + `code-reviewer-ma` or `code-reviewer-mu`（4並列） |
-| 200行超  | `code-reviewer` + 言語専門 + `codex-reviewer` + `ma` + `mu`（5並列）+ スペシャリスト              |
+| 変更規模 | 構成                                                                                                       |
+| -------- | ---------------------------------------------------------------------------------------------------------- |
+| ~10行    | レビュー省略（Verify のみ）                                                                                |
+| ~50行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`（2並列）                                       |
+| ~200行   | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `code-reviewer-ma` or `code-reviewer-mu`（3並列） |
+| 200行超  | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `ma` + `mu`（4並列）+ スペシャリスト         |
 
-### 言語専門レビューアー（拡張子で自動選択）
+### 言語固有チェックリスト（プロンプト注入）
 
-| 拡張子              | レビューアー                 |
-| ------------------- | ---------------------------- |
-| `.ts/.tsx/.js/.jsx` | `code-reviewer-ts`           |
-| `.go`               | `code-reviewer-go`           |
-| `.py`               | `code-reviewer-py`           |
-| `.rs`               | `code-reviewer-rs`           |
-| 複数言語混在        | 該当する全レビューアーを起動 |
+`code-reviewer` のプロンプトに、該当言語のチェックリストを Read して注入する:
+
+| 拡張子              | 参照ファイル                                  |
+| ------------------- | --------------------------------------------- |
+| `.ts/.tsx/.js/.jsx` | `references/review-checklists/typescript.md`  |
+| `.go`               | `references/review-checklists/go.md`          |
+| `.py`               | `references/review-checklists/python.md`      |
+| `.rs`               | `references/review-checklists/rust.md`        |
+| 複数言語混在        | 該当する全チェックリストをプロンプトに含める  |
 
 ### コンテンツベースのスペシャリスト自動検出
 
@@ -68,6 +70,20 @@ git diff --name-only HEAD
 | nil/ポインタ操作   | `nil-path-reviewer`     | `*`, `nil`, `Option`, `.Get()`, ポインタ型フィールドの追加/変更    |
 | spec file 存在     | `product-reviewer`      | `docs/specs/*.prompt.md` がリポジトリに存在                        |
 | UI 変更            | `design-reviewer`       | `.tsx`, `.css`, `.scss`, `.html`, `.vue`, `.svelte` のファイル変更 |
+
+### 戦略的整合性チェック（"On the Loop" レビュー）
+
+"The Self-Driving Codebase" の知見: 「技術的に正しいが戦略的に間違っている」変更を検出する。
+
+**spec file が存在する場合** (`docs/specs/*.prompt.md`):
+- `product-reviewer` を**必須**レビューアーとして追加（行数に関わらず、50行以上で適用）
+- プロンプトに spec file のパスを含め、acceptance criteria との整合性を検証
+
+**product-reviewer への追加指示**:
+- 変更が spec の acceptance criteria を満たしているか
+- スコープクリープ（spec にない機能の追加）がないか
+- spec が意図する問題を実際に解決しているか
+- 技術的に正しくても、ユーザー課題の解決から外れていないか
 
 ## Step 3: Dispatch
 
@@ -94,6 +110,7 @@ git diff --name-only HEAD
 5. **信頼度フィルタ**: confidence < 80 の指摘を除外
 6. **既存コード除外**: diff の追加行以外への指摘を除外
 7. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
+8. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
 
 ## Anti-Patterns
 
