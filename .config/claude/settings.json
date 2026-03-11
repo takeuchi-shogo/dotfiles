@@ -181,6 +181,10 @@
 				"hooks": [
 					{
 						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/runtime/output-offload.py"
+					},
+					{
+						"type": "command",
 						"command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py"
 					},
 					{

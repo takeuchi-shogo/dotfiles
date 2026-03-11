@@ -9,6 +9,7 @@ Ref: Harness Engineering Best Practices 2026 — "Completion Gates (Stop)"
 Triggered by: hooks.Stop
 Output: JSON with additionalContext on stdout (if tests fail)
 """
+
 from __future__ import annotations
 
 import json
@@ -20,6 +21,12 @@ import tempfile
 MAX_RETRIES = 2
 COUNTER_DIR = os.path.join(tempfile.gettempdir(), "claude-completion-gate")
 COUNTER_FILE = os.path.join(COUNTER_DIR, "retries")
+
+# Ralph Loop — active plan detection
+PLAN_DIRS = [
+    os.path.join(os.getcwd(), "docs", "plans", "active"),
+    os.path.join(os.getcwd(), "tmp", "plans"),
+]
 
 
 def _get_retry_count() -> int:
@@ -111,6 +118,25 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
         return True, ""
 
 
+def _find_incomplete_plan() -> tuple[str, list[str]] | None:
+    """Find active plan with unchecked items. Returns (plan_file, pending_items)."""
+    import glob
+
+    for plan_dir in PLAN_DIRS:
+        if not os.path.isdir(plan_dir):
+            continue
+        for plan_file in glob.glob(os.path.join(plan_dir, "*.md")):
+            try:
+                with open(plan_file) as f:
+                    lines = f.readlines()
+            except OSError:
+                continue
+            pending = [ln.strip() for ln in lines if ln.strip().startswith("- [ ]")]
+            if pending:
+                return (os.path.basename(plan_file), pending)
+    return None
+
+
 def main() -> None:
     retries = _get_retry_count()
 
@@ -123,9 +149,42 @@ def main() -> None:
         )
         return
 
+    # --- Ralph Loop: check for incomplete active plans ---
+    incomplete = _find_incomplete_plan()
+    if incomplete:
+        plan_name, pending = incomplete
+        shown = pending[:5]
+        remaining_count = len(pending) - len(shown)
+
+        ctx_parts = [
+            f"[Ralph Loop] アクティブプラン '{plan_name}' に未完了ステップがあります:",
+            "",
+        ]
+        ctx_parts.extend(shown)
+        if remaining_count > 0:
+            ctx_parts.append(f"  ...他 {remaining_count} 件")
+        ctx_parts.extend(
+            [
+                "",
+                "タスクを続行してください。完了不要なら、プランを completed/ に移動してから停止してください。",
+            ]
+        )
+
+        _set_retry_count(retries + 1)
+        json.dump(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": "Stop",
+                    "additionalContext": "\n".join(ctx_parts),
+                }
+            },
+            sys.stdout,
+        )
+        return
+
+    # --- Test gate ---
     test_cmd = _detect_test_command()
     if not test_cmd:
-        # No tests detected — allow stop
         _reset_retries()
         return
 
