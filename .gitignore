@@ -35,3 +35,6 @@ skills-lock.json
 # Benchmark/research artifacts (skill-audit等で生成される一時ファイル)
 .claude/react/
 .claude/research/
+
+# Context knowledge base (personal learning notes)
+.context/
