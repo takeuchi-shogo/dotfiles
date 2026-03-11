@@ -29,6 +29,26 @@ Before ANY commit:
 - **`.claudeignore`**: 補助的防御層として `.env`, `*.pem`, `*.key` 等を遮断（ただし完全ではない）
 - **コード検査**: AI 生成コードに `print(os.environ)` 等の情報漏洩パターンがないか確認
 
+## Claude Code Ecosystem Security
+
+脅威 DB: `references/claude-code-threats.md`
+
+### MCP サーバー導入ルール
+
+- 信頼できないソースの MCP サーバーを許可しない（GitHub 100+ stars、アクティブメンテナンス、公式推奨を基準）
+- バージョンは exact で固定（`^` や `~` 禁止）、更新時は差分レビュー必須
+- 既知 CVE に該当する MCP サーバーは使用停止（脅威 DB §1 参照）
+
+### 外部リポジトリの .claude/ フォルダ
+
+- `git clone` した外部リポジトリの `.claude/` は信頼しない — agents, hooks, settings.json, CLAUDE.md を検査してから使用
+- `allowed-tools: ["Bash"]` の無制限許可、外部 URL への送信パターン（`curl`, `wget`）、難読化（`eval`, `base64 -d`）を検出対象とする
+
+### スキル導入時の注意
+
+- 外部スキルは導入前にコードを確認（Snyk 調査: スキルの 36.82% にセキュリティ欠陥）
+- 環境変数の外部送信、動的コード実行、機密ディレクトリへのアクセスがないか確認
+
 ## Security Response Protocol
 
 If security issue found:
