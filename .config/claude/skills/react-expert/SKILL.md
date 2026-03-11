@@ -16,7 +16,28 @@ This skill produces exhaustive documentation research on any React API or concep
 - "I know this API does X" → Find source evidence first
 - "Common pattern is Y" → Verify in test files
 - Generating example code → Must have source file reference
+
+**Accuracy Rules (always enforced, even without source access):**
+- **"deprecated" は公式リリースノートで明記されている場合のみ使用する**。「不要になった」「代替がある」は deprecated と同義ではない
+- API の状態は "deprecated" / "legacy" / "available but no longer necessary" / "experimental" を正確に区別する
+- 確信度が低い主張には「要検証」マークを付ける
+- 内部実装の詳細（ファイバーレーン、優先度数値等）は未検証なら省略する
 </CRITICAL>
+
+## Lite Mode（ソース検証不可時のフォールバック）
+
+React リポジトリへのアクセスやエージェント生成ができない環境（`claude -p`、ツール制限時等）では以下に従う:
+
+1. **Full Workflow（Step 1-5）は実行しない** — 不完全な研究より正確な既存知識の方が有用
+2. **知識を提供するが、検証レベルを明示する**:
+   - `[Verified]` — React 公式ドキュメントや広く知られた事実
+   - `[High Confidence]` — 複数のソースで裏付けられる知識
+   - `[Needs Verification]` — 正確性に自信がない主張
+3. **ソース参照の代替**: PR番号やコミットハッシュを知っている場合は記載するが、「出典不明」のまま断定しない
+4. **事実誤認を避けるための追加チェック**:
+   - deprecation 主張 → 「React 公式のリリースノートで明記されているか？」
+   - 動作の変更 → 「どのバージョンで変わったか正確に言えるか？」
+   - 言えない場合は「React 19 で変更された可能性がある（要検証）」のように記述
 
 ## Invocation
 
