@@ -39,6 +39,21 @@
   - compaction reminders
   - agent routing and learnings flush
 
+### Hook 閾値サマリー（Obliviousness 対策）
+
+エージェントが自分を保護しているインフラの具体的なパラメータ:
+
+| Hook | 閾値 | 動作 |
+|------|------|------|
+| `output-offload.py` | 150行 or 6000文字超 | 全文を `/tmp/claude-tool-outputs/` に退避 |
+| `golden-check.py` | 5分クールダウン/file:rule | 同一ファイル+ルールの重複警告を抑制 |
+| `checkpoint_manager.py` | 15編集 / 60%コンテキスト / 30分 | いずれかで自動チェックポイント（5分クールダウン） |
+| `suggest-compact.js` | 同一ファイル3回/10分 | 編集ループ検出。30/50編集でコンパクション提案 |
+| `completion-gate.py` | MAX_RETRIES=2 | Ralph Loop + テスト失敗を2回まで差し戻し |
+| `completion-gate.py` | 10編集以上 | Review Gate: `/review` 実行を提案（アドバイザリー） |
+| `pre-commit-check.js` | パターンマッチ | `sk-`, `ghp_`, `AKIA` 等のシークレットをブロック |
+| `protect-linter-config.py` | ファイル名一致 | `.eslintrc*`, `biome.json` 等の変更をブロック |
+
 ## Codex-Specific Harness
 
 - 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.agents/skills/`

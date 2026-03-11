@@ -84,6 +84,7 @@ All tests must pass before committing.
 
 - **制約**: シークレットをハードコードしない。ユーザー入力を直接埋め込まない
 - **適用**: 全コード変更
+- **施行**: Hybrid — `pre-commit-check.js` が `sk-`, `ghp_`, `AKIA` 等のシークレットパターンを検出しコミットをブロック。`permissions.deny` が `.env*`, `*.pem`, `*credentials*` の読み取りを禁止。加えてプロンプト注入
 
 ```
 Never hardcode secrets or credentials. Use environment variables or secret managers.

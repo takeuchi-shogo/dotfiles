@@ -162,6 +162,11 @@
 						"command": "python3 $HOME/.claude/scripts/policy/protect-linter-config.py",
 						"timeout": 10,
 						"statusMessage": "Linter config guard..."
+					},
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/search-first-gate.py",
+						"timeout": 5
 					}
 				]
 			},

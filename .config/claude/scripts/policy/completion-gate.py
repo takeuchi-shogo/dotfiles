@@ -28,6 +28,16 @@ PLAN_DIRS = [
     os.path.join(os.getcwd(), "tmp", "plans"),
 ]
 
+# Review Gate — edit count threshold for review reminder
+REVIEW_EDIT_THRESHOLD = 10
+EDIT_COUNTER_FILE = os.path.join(
+    os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+    ),
+    "edit-counter.json",
+)
+
 
 def _get_retry_count() -> int:
     try:
@@ -137,6 +147,29 @@ def _find_incomplete_plan() -> tuple[str, list[str]] | None:
     return None
 
 
+def _check_review_gate() -> str | None:
+    """Check if session had significant edits without review.
+
+    Reads edit-counter.json (managed by suggest-compact.js).
+    Returns a reminder message if edits exceed threshold, else None.
+    This is advisory only — does not block stop.
+    """
+    try:
+        with open(EDIT_COUNTER_FILE) as f:
+            counter = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+    edit_count = counter.get("count", 0)
+    if edit_count < REVIEW_EDIT_THRESHOLD:
+        return None
+
+    return (
+        f"[Review Gate] このセッションで {edit_count} 回の編集がありました。"
+        "`/review` でコードレビューを実行することを推奨します。"
+    )
+
+
 def main() -> None:
     retries = _get_retry_count()
 
@@ -172,12 +205,7 @@ def main() -> None:
 
         _set_retry_count(retries + 1)
         json.dump(
-            {
-                "hookSpecificOutput": {
-                    "hookEventName": "Stop",
-                    "additionalContext": "\n".join(ctx_parts),
-                }
-            },
+            {"decision": "block", "reason": "\n".join(ctx_parts)},
             sys.stdout,
         )
         return
@@ -186,6 +214,10 @@ def main() -> None:
     test_cmd = _detect_test_command()
     if not test_cmd:
         _reset_retries()
+        # Advisory: suggest review if many edits (no tests to run)
+        review_msg = _check_review_gate()
+        if review_msg:
+            json.dump({"systemMessage": review_msg}, sys.stdout)
         return
 
     success, output = _run_tests(test_cmd)
@@ -193,6 +225,10 @@ def main() -> None:
     if success:
         _reset_retries()
         print(f"[Completion Gate] テスト通過 ({test_cmd})", file=sys.stderr)
+        # Advisory: suggest review if many edits
+        review_msg = _check_review_gate()
+        if review_msg:
+            json.dump({"systemMessage": review_msg}, sys.stdout)
         return
 
     # Tests failed — increment retry counter and report
@@ -211,12 +247,7 @@ def main() -> None:
     ]
 
     json.dump(
-        {
-            "hookSpecificOutput": {
-                "hookEventName": "Stop",
-                "additionalContext": "\n".join(ctx_lines),
-            }
-        },
+        {"decision": "block", "reason": "\n".join(ctx_lines)},
         sys.stdout,
     )
 
