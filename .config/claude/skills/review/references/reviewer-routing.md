@@ -27,7 +27,7 @@
 
 - **subagent_type**: `codex-reviewer`
 - **観点**: Codex (gpt-5.4) による深い推論ベースのセカンドオピニオン
-- **起動条件**: 100行以上の変更
+- **起動条件**: 50行以上の変更（code-reviewer と同時起動）
 - **特記**: `/codex-review` スキルとは別。こちらは Agent として並列起動される
 
 ### code-reviewer-ma / code-reviewer-mu

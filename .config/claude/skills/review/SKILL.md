@@ -40,8 +40,7 @@ git diff --name-only HEAD
 | 変更規模 | 構成                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------- |
 | ~10行    | レビュー省略（Verify のみ）                                                                       |
-| ~50行    | `code-reviewer` + 言語専門（2並列）                                                               |
-| ~100行   | `code-reviewer` + 言語専門 + `codex-reviewer`（3並列）                                            |
+| ~50行    | `code-reviewer` + 言語専門 + `codex-reviewer`（3並列）                                            |
 | ~200行   | `code-reviewer` + 言語専門 + `codex-reviewer` + `code-reviewer-ma` or `code-reviewer-mu`（4並列） |
 | 200行超  | `code-reviewer` + 言語専門 + `codex-reviewer` + `ma` + `mu`（5並列）+ スペシャリスト              |
 
