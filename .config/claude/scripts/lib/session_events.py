@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from lib.storage import get_data_dir as _storage_get_data_dir
+from storage import get_data_dir as _storage_get_data_dir
 
 
 IMPORTANCE_RULES: list[tuple[str, re.Pattern, float, str]] = [

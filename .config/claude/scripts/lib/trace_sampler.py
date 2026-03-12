@@ -12,7 +12,7 @@ Usage:
 from __future__ import annotations
 
 
-from lib.storage import get_data_dir, read_jsonl
+from storage import get_data_dir, read_jsonl
 
 EXCLUDED_FILES = {"review-findings.jsonl", "review-feedback.jsonl"}
 CATEGORIES = ("error", "quality", "pattern", "correction")

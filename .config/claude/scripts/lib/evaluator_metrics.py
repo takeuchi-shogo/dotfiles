@@ -8,7 +8,7 @@ failure mode recurrence in learnings.
 from __future__ import annotations
 
 
-from lib.storage import get_data_dir, read_jsonl
+from storage import get_data_dir, read_jsonl
 
 RECURRING_THRESHOLD = 3
 
