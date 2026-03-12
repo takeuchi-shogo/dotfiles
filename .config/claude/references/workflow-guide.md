@@ -206,6 +206,13 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - タスク完了後は `/compact` または新セッションで切り替える
 - 例外: 密接に関連するタスク（同一機能のフロント + バック等）は同一セッションでOK
 
+### Worktree 分離
+
+- 並列で別 task を走らせるときは `git worktree` を使って filesystem も分離する
+- 片方の task が symlink、formatter、checkpoint、生成物を更新しても、もう片方に影響を漏らさない
+- 1 task 1 session に加えて、1 branch 1 worktree を基本とする
+- 運用詳細は `docs/playbooks/worktree-based-tasking.md` を参照する
+
 ---
 
 ## EPD ワークフロー（Engineering, Product & Design）

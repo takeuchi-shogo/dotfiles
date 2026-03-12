@@ -19,6 +19,7 @@
 - compact / resume 後も、元の goal と completion criteria は維持する。checkpoint は一時的な authoritative summary として扱い、必要に応じて `git status` や対象ファイルで再検証する。
 - handoff 前、中断前、milestone 完了時は `$codex-checkpoint-resume` を使って filesystem に state を残す。
 - 非自明な変更では root の `PLANS.md` に従い、永続化したい plan は `docs/plans/` に残す。
+- 並列で別 task を進めるときは worktree を使って branch と filesystem を分離する。
 
 ## Project Instructions
 - 最も近い `AGENTS.md` を常に優先する。
@@ -51,3 +52,4 @@
 - `.agents/skills/` を変えたら `.bin/symlink.sh` と `.bin/validate_symlinks.sh` を確認する
 - symlink 管理を変えたら `task symlink` と `task validate-symlinks` を必ず実行する
 - Claude 側 harness を読むときは `.config/claude/references/workflow-guide.md` を参照し、Claude 固有 hook を Codex へ持ち込まない
+- selected project skill は `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する

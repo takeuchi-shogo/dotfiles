@@ -19,6 +19,7 @@
 - `SessionStart` / `SessionEnd` hook が session-state と learnings を保存・復元する。
 - `.eslintrc*`, `biome.json`, `.prettierrc*` などの lint config は保護対象。設定ではなくコードを直す。
 - `git commit --no-verify` は禁止。
+- global permissions と MCP は保守的な default を使い、強い権限や追加 MCP は trusted repo / local override で広げる。
 
 ## Plan Contract
 
@@ -33,6 +34,7 @@
 - 完了前検証は `verification-before-completion` 系 workflow に従う。
 - 長時間タスクや中断前は `/checkpoint` を使い、必要なら `docs/plans/` も更新する。
 - 仕様が曖昧なまま実装に入らず、必要なら `/spec` や `/spike` を使う。
+- 並列で別 task を走らせるときは worktree を使って session と filesystem を分離する。
 
 ## Change Surface Matrix
 

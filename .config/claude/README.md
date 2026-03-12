@@ -11,6 +11,7 @@ Claude Code の設定変更は、この README だけでなく以下も併せて
 - plan contract: [../../PLANS.md](../../PLANS.md)
 - Claude 固有指示: [CLAUDE.md](CLAUDE.md)
 - 詳細 workflow: [references/workflow-guide.md](references/workflow-guide.md)
+- skill inventory: [references/skill-inventory.md](references/skill-inventory.md)
 - AI workflow 監査ガイド: [../../docs/guides/ai-workflow-audit.md](../../docs/guides/ai-workflow-audit.md)
 - playbook: [../../docs/playbooks/claude-config-changes.md](../../docs/playbooks/claude-config-changes.md)
 
@@ -91,6 +92,12 @@ dotfiles → home への個別 symlink で接続:
 - `task validate-symlinks`
 
 symlink 管理まで変えた場合は `task symlink` も実行する。
+
+### MCP デフォルト
+
+- global default は保守的にし、常時有効は `context7` を基本とする
+- `playwright` や `deepwiki` は trusted repo や task 固有の必要があるときに有効化する
+- global で全 project MCP を自動有効化しない
 
 ---
 
@@ -202,6 +209,8 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 ## スキル (20+)
 
 スキルは知識ベース+ワークフロー定義。エージェントが `skills:` で読み込んで使用する。
+
+運用上は [references/skill-inventory.md](references/skill-inventory.md) の tier を優先する。通常の coding task では `Core Workflow` を先に使い、domain skill や personal ops skill は必要時だけ使う。
 
 ### コア
 

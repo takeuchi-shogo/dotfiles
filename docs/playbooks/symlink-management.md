@@ -30,6 +30,6 @@ home 側へ公開する managed symlink を変更するときの playbook。
 
 ## Watchouts
 
-- `.agents/skills/` は generic に home へ出さず、`~/.codex/skills/` へ個別公開する
+- `.agents/skills/` は generic に home へ出さず、`~/.codex/skills/` と `~/.agents/skills/` へ個別公開する
 - cache、test artifact、temporary file を home に展開しない
 - 既存の非 symlink ファイルは上書きせず warning 扱いにする

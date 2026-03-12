@@ -14,6 +14,7 @@
 
 - `.config/claude/CLAUDE.md`
 - `.config/claude/settings.json`
+- `.config/claude/settings.local.json`
 - `.config/claude/scripts/`
 - `.config/claude/skills/`
 - `.config/claude/commands/`
@@ -22,9 +23,11 @@
 
 1. hook / skill / command / reference のどこを変えるか先に切り分ける
 2. workflow guide と設定の整合を確認する
-3. hook を足すなら timeout、失敗時の挙動、対象 matcher を明示する
-4. skill や command を足すなら、参照先 script / reference も揃える
-5. symlink される設定なら home 側公開も確認する
+3. `settings.json` は保守的な global default、`settings.local.json` は local override として責務を分ける
+4. MCP はまず `context7` を基本にし、`playwright` や `deepwiki` は必要時だけ有効化する
+5. hook を足すなら timeout、失敗時の挙動、対象 matcher を明示する
+6. skill や command を足すなら、参照先 script / reference も揃える
+7. symlink される設定なら home 側公開も確認する
 
 ## Minimum Validation
 

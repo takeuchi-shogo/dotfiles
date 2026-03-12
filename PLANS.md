@@ -64,6 +64,7 @@
 - 想定外を見つけたら `Surprises & Discoveries` に残す
 - 重要な方針変更は `Decision Log` に残す
 - 中断前は checkpoint と plan の両方を最新化する
+- 並列で別 task を進めるときは worktree で filesystem を分離する
 
 ## Agent Notes
 

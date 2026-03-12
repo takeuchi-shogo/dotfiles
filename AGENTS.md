@@ -15,6 +15,7 @@
 - 永続化する plan は `docs/plans/YYYY-MM-DD-<topic>-plan.md` に置く。
 - Claude Code の一時 plan は `tmp/plans/` に置かれてもよいが、長時間タスクや handoff 対象は `docs/plans/` に昇格する。
 - harness 変更、複数ディレクトリ変更、30 分以上の作業見込みでは plan を必須とする。
+- 並列で別 task を進めるときは worktree を使って branch と filesystem を分離する。
 
 ## Working Rules
 - 日本語で応答する。コード・コマンド・技術用語は英語のままでよい。
@@ -38,6 +39,7 @@
 
 ## Codex Skills
 - project-local skills は `.agents/skills/` に置く。
+- selected skill は compatibility のため `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する。
 - まず使う候補:
   - `$codex-search-first`: 実装前の既存資産調査
   - `$ai-workflow-audit`: harness 改善や repo 横断共有で、skill / memory / script の昇格先を決める
@@ -99,3 +101,4 @@
 - `docs/playbooks/codex-config-changes.md`
 - `docs/playbooks/claude-config-changes.md`
 - `docs/playbooks/symlink-management.md`
+- `docs/playbooks/worktree-based-tasking.md`

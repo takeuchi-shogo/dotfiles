@@ -26,6 +26,8 @@
   - Codex の short-term checkpoint surface
 - `~/.codex/memories/`
   - Codex の durable memory surface
+- `~/.codex/skills/`, `~/.agents/skills/`
+  - Codex skill discovery の compatibility surface
 - `~/.claude/session-state/`, `~/.claude/agent-memory/`
   - Claude の checkpoint / learnings surface
 

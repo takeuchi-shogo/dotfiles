@@ -8,6 +8,7 @@ DOTFILES_DIR="$HOME/dotfiles"
 
 SYMLINK_EXCLUDE_FILES=(
   "^README\.md$"
+  "^PLANS\.md$"
   "^Taskfile\.yml$"
   "^\.mcp\.json$"
   "^\.claudeignore$"
@@ -15,6 +16,7 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.kiro/"
   "^\.playwright-mcp/"
   "^\.pytest_cache/"
+  "^\.research/"
   "^\.ruff_cache/"
   "^\.skill-eval/"
   "^\.venv/"
@@ -36,7 +38,8 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/zsh/"    # ディレクトリ全体でシンボリックリンクするため除外
   "^\.config/claude/" # ~/.claude/ へカスタムシンボリックリンクするため除外
   "^\.claude/"        # プロジェクトローカルの設定は除外
-  "^\.agents/"        # project-local skills は ~/.codex/skills へ個別共有するため除外
+  "^\.context/"      # project-local context files は home へ展開しない
+  "^\.agents/"        # project-local skills は ~/.codex/skills と ~/.agents/skills へ個別共有するため除外
   "^\.codex/"         # ~/.codex/ へカスタムシンボリックリンクするため除外
 )
 
@@ -84,6 +87,30 @@ CODEX_SHARED_PROJECT_SKILLS=(
   "codex-memory-capture"
   "codex-session-hygiene"
 )
+
+share_skill_directory() {
+  local target="$1"
+  local link="$2"
+
+  if [ ! -d "$target" ]; then
+    echo "Warning: skill $target not found. Skipping." >&2
+    return 0
+  fi
+
+  if [ -d "$link" ] && [ ! -L "$link" ]; then
+    echo "Warning: $link exists and is not a symlink. Skipping." >&2
+    return 0
+  fi
+
+  if [ -L "$link" ]; then
+    if [ "$(readlink "$link")" = "$target" ]; then
+      return 0
+    fi
+    ln -sfvn "$target" "$link"
+  else
+    ln -sv "$target" "$link"
+  fi
+}
 
 is_excluded() {
   local file="$1"
@@ -275,54 +302,20 @@ create_codex_symlinks() {
   local claude_skills_dir="$DOTFILES_DIR/.config/claude/skills"
   local project_skills_dir="$DOTFILES_DIR/.agents/skills"
   local codex_skills_dir="$dest_dir/skills"
+  local agents_skills_dir="$HOME/.agents/skills"
   mkdir -p "$codex_skills_dir"
+  mkdir -p "$agents_skills_dir"
 
   for skill in "${CODEX_SHARED_CLAUDE_SKILLS[@]}"; do
     local target="$claude_skills_dir/$skill"
-    local link="$codex_skills_dir/$skill"
-
-    if [ ! -d "$target" ]; then
-      echo "Warning: Claude skill $target not found. Skipping." >&2
-      continue
-    fi
-
-    if [ -d "$link" ] && [ ! -L "$link" ]; then
-      echo "Warning: $link exists and is not a symlink. Skipping." >&2
-      continue
-    fi
-
-    if [ -L "$link" ]; then
-      if [ "$(readlink "$link")" = "$target" ]; then
-        continue
-      fi
-      ln -sfvn "$target" "$link"
-    else
-      ln -sv "$target" "$link"
-    fi
+    share_skill_directory "$target" "$codex_skills_dir/$skill"
+    share_skill_directory "$target" "$agents_skills_dir/$skill"
   done
 
   for skill in "${CODEX_SHARED_PROJECT_SKILLS[@]}"; do
     local target="$project_skills_dir/$skill"
-    local link="$codex_skills_dir/$skill"
-
-    if [ ! -d "$target" ]; then
-      echo "Warning: project skill $target not found. Skipping." >&2
-      continue
-    fi
-
-    if [ -d "$link" ] && [ ! -L "$link" ]; then
-      echo "Warning: $link exists and is not a symlink. Skipping." >&2
-      continue
-    fi
-
-    if [ -L "$link" ]; then
-      if [ "$(readlink "$link")" = "$target" ]; then
-        continue
-      fi
-      ln -sfvn "$target" "$link"
-    else
-      ln -sv "$target" "$link"
-    fi
+    share_skill_directory "$target" "$codex_skills_dir/$skill"
+    share_skill_directory "$target" "$agents_skills_dir/$skill"
   done
 }
 

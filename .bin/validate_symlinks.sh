@@ -41,6 +41,17 @@ managed_links = [
     (home / ".codex/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".codex/skills/codex-checkpoint-resume"),
     (home / ".codex/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".codex/skills/codex-memory-capture"),
     (home / ".codex/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".codex/skills/codex-session-hygiene"),
+    (home / ".agents/skills/frontend-design", root / ".config/claude/skills/frontend-design", ".agents/skills/frontend-design"),
+    (home / ".agents/skills/react-best-practices", root / ".config/claude/skills/react-best-practices", ".agents/skills/react-best-practices"),
+    (home / ".agents/skills/senior-architect", root / ".config/claude/skills/senior-architect", ".agents/skills/senior-architect"),
+    (home / ".agents/skills/senior-backend", root / ".config/claude/skills/senior-backend", ".agents/skills/senior-backend"),
+    (home / ".agents/skills/senior-frontend", root / ".config/claude/skills/senior-frontend", ".agents/skills/senior-frontend"),
+    (home / ".agents/skills/codex-search-first", root / ".agents/skills/codex-search-first", ".agents/skills/codex-search-first"),
+    (home / ".agents/skills/codex-verification-before-completion", root / ".agents/skills/codex-verification-before-completion", ".agents/skills/codex-verification-before-completion"),
+    (home / ".agents/skills/dotfiles-config-validation", root / ".agents/skills/dotfiles-config-validation", ".agents/skills/dotfiles-config-validation"),
+    (home / ".agents/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".agents/skills/codex-checkpoint-resume"),
+    (home / ".agents/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".agents/skills/codex-memory-capture"),
+    (home / ".agents/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".agents/skills/codex-session-hygiene"),
 ]
 
 errors = []

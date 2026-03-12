@@ -23,7 +23,7 @@
 1. goal、scope、validation を plan に書く
 2. 既存 skill / profile / MCP / memory を確認する
 3. 変更面に応じて `.codex/` と `.agents/skills/` の両方を更新する
-4. skill を追加したら symlink 公開対象も更新する
+4. skill を追加したら `~/.codex/skills/` と `~/.agents/skills/` の公開対象も更新する
 5. validation を実行する
 
 ## Minimum Validation
@@ -36,4 +36,4 @@
 
 - `personality` と task ごとの output control を混ぜない
 - Claude 固有 hook を Codex 側へ持ち込まない
-- 新しい skill を追加したのに `~/.codex/skills/` 公開を忘れない
+- 新しい skill を追加したのに `~/.codex/skills/` と `~/.agents/skills/` の公開を忘れない

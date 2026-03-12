@@ -25,11 +25,10 @@
 			"Bash(git log *)",
 			"Bash(git diff *)",
 			"Bash(git branch *)",
-			"Bash(git checkout *)",
 			"Bash(git add *)",
 			"Bash(git commit *)",
-			"Bash(git stash *)",
-			"Bash(git remote *)",
+			"Bash(git worktree list)",
+			"Bash(git worktree list *)",
 			"Bash(ls *)",
 			"Bash(which *)",
 			"Bash(node --version)",
@@ -69,8 +68,8 @@
 	},
 	"model": "opus",
 	"plansDirectory": "./tmp/plans",
-	"enableAllProjectMcpServers": true,
-	"enabledMcpjsonServers": ["playwright", "context7", "deepwiki"],
+	"enableAllProjectMcpServers": false,
+	"enabledMcpjsonServers": ["context7"],
 	"hooks": {
 		"SessionStart": [
 			{

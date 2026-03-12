@@ -2,11 +2,5 @@
   "env": {
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
     "DISABLE_COST_WARNINGS": "1"
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "playwright",
-    "context7",
-    "deepwiki"
-  ]
+  }
 }
