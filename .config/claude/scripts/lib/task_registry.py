@@ -3,6 +3,7 @@
 
 import json
 import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -15,18 +16,10 @@ REGISTRY_PATH = Path(
 
 
 def _next_id() -> str:
+    """UUID サフィックスで TOCTOU レースを回避しつつ、人間可読な日付プレフィックスを保持。"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    seq = 1
-    if REGISTRY_PATH.exists():
-        for line in REGISTRY_PATH.read_text().splitlines():
-            try:
-                entry = json.loads(line)
-                if entry.get("id", "").startswith(f"tr-{today}-"):
-                    num = int(entry["id"].split("-")[-1])
-                    seq = max(seq, num + 1)
-            except (json.JSONDecodeError, ValueError):
-                continue
-    return f"tr-{today}-{seq:04d}"
+    short_uuid = uuid.uuid4().hex[:6]
+    return f"tr-{today}-{short_uuid}"
 
 
 def register(

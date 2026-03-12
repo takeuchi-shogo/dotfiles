@@ -30,13 +30,17 @@ TASK_NAME=$(basename "$TASK_DIR")
 ENTRY_ID=""
 if [[ -f "$REGISTRY_SCRIPT" ]]; then
   LIB_DIR=$(dirname "$REGISTRY_SCRIPT")
-  ENTRY_ID=$(python3 -c "
-import sys; sys.path.insert(0, '${LIB_DIR}')
+  ENTRY_ID=$(LIB_DIR="$LIB_DIR" TASK_NAME="$TASK_NAME" PROGRESS="$PROGRESS" python3 - <<'PYEOF'
+import sys, os
+sys.path.insert(0, os.environ["LIB_DIR"])
 from task_registry import register
-print(register('async', 'autonomous', '${TASK_NAME}', output_path='${PROGRESS}'))
-") || true
+print(register("async", "autonomous", os.environ["TASK_NAME"], output_path=os.environ["PROGRESS"]))
+PYEOF
+  ) 2>/dev/null
   if [[ -n "$ENTRY_ID" ]]; then
     echo "Registry entry: $ENTRY_ID"
+  else
+    echo "WARNING: Failed to register task in registry" >&2
   fi
 fi
 
@@ -57,10 +61,11 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
   PROMPT=$(sed "s|{task_list_content}|${TASK_CONTENT}|g; s|{work_dir}|$(pwd)|g" \
     "${TASK_DIR}/executor-prompt.md" 2>/dev/null || echo "$TASK_CONTENT")
 
+  SESSION_EXIT=0
   claude -p "$PROMPT" \
     --allowedTools "Read,Write,Edit,Bash,Glob,Grep" \
     --max-cost "$BUDGET" \
-    > "${SESSION_LOG}/session-${i}.md" 2>&1 || true
+    > "${SESSION_LOG}/session-${i}.md" 2>&1 || SESSION_EXIT=$?
 
   # Detect which tasks were completed in this session
   AFTER_DONE=$(grep -c '^\- \[x\]' "$TASK_LIST" 2>/dev/null || echo 0)
@@ -70,18 +75,27 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
   TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   echo "Session $i completed: +${COMPLETED_THIS} tasks done, ${REMAINING} remaining"
 
+  # Determine session status
+  if [[ "$SESSION_EXIT" -ne 0 && "$COMPLETED_THIS" -eq 0 ]]; then
+    SESSION_STATUS="failed (exit code: ${SESSION_EXIT})"
+  else
+    SESSION_STATUS="completed"
+  fi
+
   # Structured progress entry
   {
     echo "### Session $i — ${TIMESTAMP}"
     echo ""
-    echo "- **Status**: completed"
+    echo "- **Status**: ${SESSION_STATUS}"
     echo "- **Tasks completed this session**: ${COMPLETED_THIS}"
     echo "- **Total progress**: ${AFTER_DONE}/${TOTAL_TASKS}"
     echo "- **Output**: session-${i}.md"
     if [[ "$COMPLETED_THIS" -gt 0 ]]; then
       echo "- **Newly completed**:"
-      # Extract task names that are now checked (compare before/after)
-      grep '^\- \[x\]' "$TASK_LIST" | tail -n "$COMPLETED_THIS" | sed 's/^/  /'
+      # diff でチェック済みタスクを比較（順序非依存）
+      diff <(grep '^\- \[x\]' "$TASK_LIST" 2>/dev/null | head -n "$BEFORE_DONE" | sort) \
+           <(grep '^\- \[x\]' "$TASK_LIST" 2>/dev/null | sort) \
+        | grep '^>' | sed 's/^> /  /' || true
     fi
     echo ""
   } >> "$PROGRESS"
@@ -90,12 +104,18 @@ done
 # --- タスクレジストリ更新 ---
 if [[ -n "$ENTRY_ID" && -f "$REGISTRY_SCRIPT" ]]; then
   LIB_DIR=$(dirname "$REGISTRY_SCRIPT")
-  python3 -c "
-import sys; sys.path.insert(0, '${LIB_DIR}')
+  # 残タスクがあれば failed、なければ completed
+  if grep -q '^\- \[ \]' "$TASK_LIST" 2>/dev/null; then
+    FINAL_STATUS="failed"
+  else
+    FINAL_STATUS="completed"
+  fi
+  LIB_DIR="$LIB_DIR" ENTRY_ID="$ENTRY_ID" FINAL_STATUS="$FINAL_STATUS" PROGRESS="$PROGRESS" python3 - <<'PYEOF' 2>/dev/null || echo "WARNING: Failed to update registry" >&2
+import sys, os
+sys.path.insert(0, os.environ["LIB_DIR"])
 from task_registry import update_status
-update_status('${ENTRY_ID}', 'completed', output_path='${PROGRESS}')
-" || true
+update_status(os.environ["ENTRY_ID"], os.environ["FINAL_STATUS"], output_path=os.environ["PROGRESS"])
+PYEOF
 fi
 
-rm -f "$LOCK_FILE"
 echo "Autonomous execution finished."

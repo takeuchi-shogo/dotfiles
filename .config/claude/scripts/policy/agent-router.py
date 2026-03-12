@@ -86,11 +86,9 @@ GEMINI_KEYWORDS_EN = [
 ]
 
 # --- 委譲パターン推奨 ---
+# NOTE: 「調べて」「リサーチ」「research」「investigate」は GEMINI_KEYWORDS と重複するため除外
+# Gemini が Priority 3 で先にマッチするため、ここに含めても dead branch になる
 ASYNC_KEYWORDS = [
-    r"調べて",
-    r"リサーチ",
-    r"research",
-    r"investigate",
     r"バックグラウンド",
     r"background",
     r"並列",
@@ -225,6 +223,9 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
-        # Non-blocking — never prevent user input
-        pass
+    except Exception as e:
+        # Non-blocking — never prevent user input, but log for debugging
+        import traceback
+
+        sys.stderr.write(f"[agent-router] unexpected error: {e}\n")
+        sys.stderr.write(traceback.format_exc())
