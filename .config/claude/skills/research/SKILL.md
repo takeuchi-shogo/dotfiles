@@ -45,6 +45,13 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 
 ## Step 3: Execute
 
+### フレーミング注入
+
+各サブタスクのプロンプト先頭に **Async フレーミング**（`references/subagent-framing.md`）を付加する:
+
+> あなたは非同期サブエージェントです。結果はユーザーに直接報告されます。
+> 背景・分析・結論を含む自己完結的なレポートを作成してください。ソースや根拠を明記してください。
+
 ### ツール優先度
 
 1. **MCP ツール**: brave-search, context7（インストール済みの場合）
