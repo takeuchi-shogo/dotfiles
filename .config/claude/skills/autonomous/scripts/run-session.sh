@@ -23,6 +23,23 @@ trap 'rm -f "$LOCK_FILE"' EXIT
 
 mkdir -p "$SESSION_LOG"
 
+# --- タスクレジストリ登録 ---
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REGISTRY_SCRIPT="${SCRIPT_DIR}/../../scripts/lib/task_registry.py"
+TASK_NAME=$(basename "$TASK_DIR")
+ENTRY_ID=""
+if [[ -f "$REGISTRY_SCRIPT" ]]; then
+  LIB_DIR=$(dirname "$REGISTRY_SCRIPT")
+  ENTRY_ID=$(python3 -c "
+import sys; sys.path.insert(0, '${LIB_DIR}')
+from task_registry import register
+print(register('async', 'autonomous', '${TASK_NAME}', output_path='${PROGRESS}'))
+") || true
+  if [[ -n "$ENTRY_ID" ]]; then
+    echo "Registry entry: $ENTRY_ID"
+  fi
+fi
+
 for i in $(seq 1 "$MAX_SESSIONS"); do
   # Check if all tasks are done
   if ! grep -q '^\- \[ \]' "$TASK_LIST" 2>/dev/null; then
@@ -69,6 +86,16 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
     echo ""
   } >> "$PROGRESS"
 done
+
+# --- タスクレジストリ更新 ---
+if [[ -n "$ENTRY_ID" && -f "$REGISTRY_SCRIPT" ]]; then
+  LIB_DIR=$(dirname "$REGISTRY_SCRIPT")
+  python3 -c "
+import sys; sys.path.insert(0, '${LIB_DIR}')
+from task_registry import update_status
+update_status('${ENTRY_ID}', 'completed', output_path='${PROGRESS}')
+" || true
+fi
 
 rm -f "$LOCK_FILE"
 echo "Autonomous execution finished."
