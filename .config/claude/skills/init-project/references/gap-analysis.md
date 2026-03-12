@@ -75,7 +75,8 @@ Layer 1 + Layer 3 + (Layer 4 or 5)     → L
 | L1 のみ | S |
 | L1 + L4 | M |
 | L1 + L2 | M |
-| L1 + L2 + L4 | M（L 候補） |
+| L1 + L2 + L4 | M → L アップグレード推奨（L3 hooks 追加で L に格上げ可能） |
+| L1 + L2 + L3 | L（L4/L5 推奨だが L として扱う） |
 | L1 + L3 + L4 | L |
 | L1 + L3 + L5 | L |
 | L1 + L2 + L3 + L4 + L5 | L（フルスペック） |
