@@ -141,13 +141,19 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 タスクをサブエージェントに委譲する際の3パターン。詳細は **`references/subagent-delegation-guide.md`** を参照。
 
-| パターン | 方式 | 使い所 |
-|---|---|---|
-| **Sync** | Agent ツール | 結果が次のステップに必要（レビュー、分析、テスト） |
-| **Async** | `claude -p` / `run_in_background` | 独立した長時間タスク（リサーチ、自律実行） |
-| **Scheduled** | CronCreate / cron | 将来の特定時刻に実行（日次分析、フォローアップ） |
+| パターン | 方式 | 使い所 | フレーミング |
+|---|---|---|---|
+| **Sync** | Agent ツール | 結果が次のステップに必要（レビュー、分析、テスト） | 簡潔に返す |
+| **Async** | `claude -p` / `run_in_background` | 独立した長時間タスク（リサーチ、自律実行） | 自己完結的に返す |
+| **Scheduled** | CronCreate / cron | 将来の特定時刻に実行（日次分析、フォローアップ） | ライブデータ優先 |
 
 **判断基準**: 結果が必要 → Sync、独立タスク → Async、後で → Scheduled、迷ったら → Async
+
+**自動推奨**: `agent-router.py` がキーワードから Async/Scheduled を自動検出し、additionalContext で推奨する
+
+**成果物追跡**: `task-registry.jsonl` で Async/Scheduled の成果物パスとステータスを追跡（`references/task-registry-schema.md`）
+
+**フレーミングテンプレート**: `references/subagent-framing.md`
 
 ---
 
