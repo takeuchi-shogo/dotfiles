@@ -56,7 +56,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 サブタスクが3つ以上の場合、`claude -p` で並列実行する:
 
 ```bash
-# 各サブタスクを .research/{name}/prompts/{n}.md に保存
+# 各サブタスクを .research/{name}/prompts/{n}.md に保存（一時ワークスペース）
 # 並列で実行
 for i in $(seq 1 $N); do
   claude -p "$(cat .research/{name}/prompts/${i}.md)" \
@@ -71,11 +71,13 @@ wait
 ### ディレクトリ構造
 
 ```
-.research/{name}/
-├── prompts/           # サブタスクプロンプト
-├── child_outputs/     # 子プロセス出力
-├── logs/              # 実行ログ
-└── final_report.md    # 最終レポート
+.research/{name}/          # 一時ワークスペース（.gitignore 対象）
+├── prompts/               # サブタスクプロンプト
+├── child_outputs/         # 子プロセス出力
+└── logs/                  # 実行ログ
+
+docs/research/             # 最終レポートの保存先（git 管理）
+└── YYYY-MM-DD-{name}.md
 ```
 
 ## Step 4: Aggregate
@@ -94,7 +96,8 @@ wait
 2. 矛盾する情報を特定・注記
 3. 不足情報のギャップを明示
 
-最終レポートを `.research/{name}/final_report.md` に保存。
+最終レポートを `docs/research/YYYY-MM-DD-{name}.md` に保存。
+`.research/{name}/` の中間ファイルはそのまま残す（.gitignore 対象）。
 
 ## Scale-Aware Execution
 

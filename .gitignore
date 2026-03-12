@@ -36,6 +36,9 @@ skills-lock.json
 .claude/react/
 .claude/research/
 
+# Research working directory (中間ファイル。最終レポートは docs/research/ に保存)
+.research/
+
 # Reviewer eval results (実行ごとに生成されるローカルデータ)
 .config/claude/scripts/eval/results/
 
