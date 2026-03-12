@@ -105,7 +105,7 @@ autoevolve-runner.sh → 毎朝3時に /improve を実行
 「5分ごとに deploy の status を確認して」
 ```
 
-**トレードオフ**: タスク記述はスケジュール時に固定される。キャンセル・変更が難しい。将来のセッションでハンドルを参照する仕組みは未整備。
+**トレードオフ**: タスク記述はスケジュール時に固定される。キャンセル・変更が難しい。`task-registry.jsonl` でタスク ID・ステータス・成果物パスを追跡可能（`references/task-registry-schema.md` 参照）。
 
 ---
 
@@ -152,6 +152,42 @@ autoevolve-runner.sh → 毎朝3時に /improve を実行
 | 3-8 | `claude -p` 並列 | Async |
 | 9+ | 2バッチ順次実行 | Async（メモリ保護） |
 | 後で | CronCreate / cron | Scheduled |
+
+---
+
+## フレーミング注入
+
+サブエージェント起動時に、パターンに応じたフレーミング命令をプロンプト先頭に注入する。
+テンプレートは **`references/subagent-framing.md`** に集約。
+
+| パターン | フレーミング | 注入先 |
+|---|---|---|
+| Sync | 簡潔に返す（親が統合） | `/review` の Dispatch ステップ |
+| Async | 自己完結的レポート（ユーザーへ直接報告） | `/research` の Execute、`/autonomous` の executor-prompt |
+| Scheduled | ライブデータ優先（実行時の状態で分析） | CronCreate のプロンプト |
+
+---
+
+## タスクレジストリ
+
+Async/Scheduled サブエージェントの成果物を追跡する軽量レジストリ。
+スキーマは **`references/task-registry-schema.md`** を参照。
+
+- **保存先**: `~/.claude/agent-memory/task-registry.jsonl`
+- **ユーティリティ**: `scripts/lib/task_registry.py`（`register()`, `update_status()`, `get_latest()`, `list_active()`）
+- **自動連携**: `/autonomous` の `run-session.sh` がセッション開始/完了時に自動登録・更新
+- **環境変数**: `TASK_REGISTRY_PATH` でパスを差し替え可能（テスト用）
+
+---
+
+## 自動パターン推奨
+
+`agent-router.py`（UserPromptSubmit hook）がユーザー入力のキーワードから委譲パターンを自動推奨する。
+
+- **Scheduled キーワード**: 「あとで」「明日」「定期的」「schedule」等 → CronCreate / /loop を推奨
+- **Async キーワード**: 「調べて」「リサーチ」「バックグラウンド」「並列」等 → run_in_background / /research を推奨
+- **優先順位**: Scheduled > Async（両方マッチした場合は Scheduled を優先）
+- **性質**: アドバイザリー（additionalContext で提案するのみ、強制しない）
 
 ---
 
