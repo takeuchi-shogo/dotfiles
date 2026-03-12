@@ -1,0 +1,95 @@
+{
+	"description": "レビューエージェント評価用の Synthetic Tuples。各タプルは意図的にバグを含むコードと、検出すべきレビューアー・failure_mode を定義する。",
+	"tuples": [
+		{
+			"id": "eval-001",
+			"language": "typescript",
+			"failure_mode": "FM-002",
+			"severity": "critical",
+			"expected_reviewer": "silent-failure-hunter",
+			"description": "Empty catch block suppresses API error",
+			"code": "async function fetchUser(id: string) {\n  try {\n    const res = await fetch(`/api/users/${id}`);\n    return await res.json();\n  } catch (e) {\n    // TODO: handle later\n  }\n}"
+		},
+		{
+			"id": "eval-002",
+			"language": "go",
+			"failure_mode": "FM-001",
+			"severity": "critical",
+			"expected_reviewer": "code-reviewer",
+			"description": "Nil pointer dereference without guard",
+			"code": "func GetUserName(u *User) string {\n\treturn u.Name // u may be nil\n}"
+		},
+		{
+			"id": "eval-003",
+			"language": "typescript",
+			"failure_mode": "FM-004",
+			"severity": "high",
+			"expected_reviewer": "type-design-analyzer",
+			"description": "Unsafe any type usage",
+			"code": "function processData(input: any): any {\n  return input.value.nested.field;\n}"
+		},
+		{
+			"id": "eval-004",
+			"language": "python",
+			"failure_mode": "FM-005",
+			"severity": "high",
+			"expected_reviewer": "security-reviewer",
+			"description": "SQL injection via string formatting",
+			"code": "def get_user(name: str) -> dict:\n    query = f\"SELECT * FROM users WHERE name = '{name}'\"\n    return db.execute(query).fetchone()"
+		},
+		{
+			"id": "eval-005",
+			"language": "typescript",
+			"failure_mode": "FM-001",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Optional chaining missing on nullable access",
+			"code": "interface Config { database?: { host: string } }\nfunction getHost(config: Config): string {\n  return config.database.host;\n}"
+		},
+		{
+			"id": "eval-006",
+			"language": "go",
+			"failure_mode": "FM-002",
+			"severity": "critical",
+			"expected_reviewer": "silent-failure-hunter",
+			"description": "Error return value ignored",
+			"code": "func SaveConfig(path string, data []byte) {\n\tos.WriteFile(path, data, 0644)\n}"
+		},
+		{
+			"id": "eval-007",
+			"language": "typescript",
+			"failure_mode": "FM-010",
+			"severity": "critical",
+			"expected_reviewer": "security-reviewer",
+			"description": "XSS via innerHTML",
+			"code": "function renderComment(comment: string) {\n  document.getElementById('output')!.innerHTML = comment;\n}"
+		},
+		{
+			"id": "eval-008",
+			"language": "go",
+			"failure_mode": "FM-005",
+			"severity": "medium",
+			"expected_reviewer": "code-reviewer",
+			"description": "HTTP handler with no input validation",
+			"code": "func handler(w http.ResponseWriter, r *http.Request) {\n\tid := r.URL.Query().Get(\"id\")\n\tuser, _ := db.GetUser(id)\n\tjson.NewEncoder(w).Encode(user)\n}"
+		},
+		{
+			"id": "eval-009",
+			"language": "python",
+			"failure_mode": "FM-002",
+			"severity": "high",
+			"expected_reviewer": "silent-failure-hunter",
+			"description": "Bare except with pass",
+			"code": "def parse_config(path: str) -> dict:\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except:\n        pass\n    return {}"
+		},
+		{
+			"id": "eval-010",
+			"language": "rust",
+			"failure_mode": "FM-002",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Unwrap on Result without context",
+			"code": "fn read_config() -> Config {\n    let content = std::fs::read_to_string(\"config.toml\").unwrap();\n    toml::from_str(&content).unwrap()\n}"
+		}
+	]
+}

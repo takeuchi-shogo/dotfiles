@@ -103,6 +103,34 @@ scoring-rules.md の昇格ルールに従い:
 
 昇格候補は insights/analysis-YYYY-MM-DD.md の「昇格提案」セクションに記載。
 
+### 8. レビューフィードバック分析
+
+`learnings/review-findings.jsonl` と `learnings/review-feedback.jsonl` を突き合わせ、
+レビューアーの精度を分析する。
+
+```bash
+# フィードバック集計
+echo "=== feedback outcomes ==="
+cat ~/.claude/agent-memory/learnings/review-feedback.jsonl | jq -r '.outcome' | sort | uniq -c | sort -rn
+```
+
+分析観点:
+
+- **レビューアー別 accept_rate**: `accepted / (accepted + ignored)` — 各レビューアーの指摘精度
+- **failure_mode 別 accept_rate**: FM-XXX ごとの受入率 — どの失敗モードの検出が有効か
+- **confidence 閾値の妥当性**: confidence スコアと accept_rate の相関 — 80 の閾値は適切か
+
+### 9. Axial Coding（失敗モード再分類）
+
+`learnings/errors.jsonl` のエントリが50件以上蓄積されたら、Axial Coding を実行する。
+
+1. 同じ `failure_mode` 内のエントリをグループ化
+2. グループ内で意味的に異なるパターンがないか LLM で判定
+3. 新しい FM 候補を `insights/failure-taxonomy-proposals.md` に出力
+4. 既存の FM の定義を修正すべき場合は提案として記載
+
+理論的飽和の判定: 直近3回の分析で新しい FM 候補がゼロなら飽和と判断。
+
 ## 出力フォーマット
 
 ### insights/analysis-YYYY-MM-DD.md
@@ -137,6 +165,16 @@ scoring-rules.md の昇格ルールに従い:
 ### 優先度中
 
 - [ ] ...
+
+## レビューアー精度（Evaluator Metrics）
+
+| レビューアー | 指摘数 | accepted | ignored | accept_rate |
+| ------------ | ------ | -------- | ------- | ----------- |
+| ...          | ...    | ...      | ...     | ...         |
+
+| failure_mode | 指摘数 | accepted | ignored | accept_rate |
+| ------------ | ------ | -------- | ------- | ----------- |
+| ...          | ...    | ...      | ...     | ...         |
 
 ## クロスカテゴリ相関
 

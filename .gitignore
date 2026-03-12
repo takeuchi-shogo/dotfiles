@@ -36,5 +36,8 @@ skills-lock.json
 .claude/react/
 .claude/research/
 
+# Reviewer eval results (実行ごとに生成されるローカルデータ)
+.config/claude/scripts/eval/results/
+
 # Context knowledge base (personal learning notes)
 .context/
