@@ -13,6 +13,34 @@ allowed-tools: Read, Bash, Grep, Glob, Agent
 
 以下の手順を **必ず順番に** 実行すること。
 
+### Step 0: トレースレビュー（Open Coding）
+
+人間がトレースを直接読む儀式。"Error Analysis: The Highest-ROI Activity in AI Engineering" に基づく。
+
+```bash
+python3 -c "
+import sys, os
+sys.path.insert(0, os.path.expanduser('~/.claude/scripts'))
+from lib.trace_sampler import sample_recent_traces, sample_unclassified_traces, format_for_review
+traces = sample_recent_traces(n=20)
+print('=== 直近 20 トレース ===')
+print(format_for_review(traces))
+print()
+unclassified = sample_unclassified_traces()
+print(f'=== 未分類トレース: {len(unclassified)} 件 ===')
+if unclassified[:5]:
+    print(format_for_review(unclassified[:5]))
+"
+```
+
+**ユーザーに以下を提示**:
+
+1. 上記スクリプトの出力テーブルを表示
+2. 「以下のトレースを確認してください。気になるパターン・驚き・想定外の動作はありますか？」と質問
+3. ユーザーの回答を `open_coding_notes` として保持し、Step 4 の autolearn プロンプトに渡す
+
+**データがない場合またはユーザーがスキップを希望した場合**: 「自動分析のみ実行します」と報告し Step 1 に進む。
+
 ### Step 1: データ可用性チェック
 
 学習データ・メトリクスが存在するか確認する:
@@ -88,6 +116,12 @@ python3 "$HOME/.claude/scripts/experiment-tracker.py" measure-all
 
 ```
 あなたは「{カテゴリ}」の分析担当です。
+
+## ユーザーの Open Coding メモ（Step 0）
+
+{open_coding_notes があれば挿入、なければ「メモなし（自動分析のみ）」}
+
+このメモに含まれるパターンや驚きを、分析の優先事項として考慮してください。
 
 ~/.claude/agent-memory/ 配下のデータを分析し、以下を特定してください:
 1. 繰り返しパターン（3回以上）

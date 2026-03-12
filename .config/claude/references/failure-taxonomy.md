@@ -118,3 +118,32 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **review**: 各レビューアーが指摘に `failure_mode` (FM-XXX) を付与
 - **autolearn**: `failure-taxonomy.md` を参照し、Axial Coding で taxonomy を更新提案
 - **拡張**: 50件以上の learnings 蓄積後に autolearn が新しい FM 候補を提案（理論的飽和まで）
+
+---
+
+## 帰納的検証プロセス（Error Analysis 記事ベース）
+
+FM-001〜FM-010 はトップダウンで設計された初期分類である。
+運用データの蓄積に伴い、以下のプロセスで帰納的に検証・更新する。
+
+> 着想元: "Error Analysis: The Highest-ROI Activity in AI Engineering" — Shankar & Husain
+
+### Open Coding → Axial Coding サイクル
+
+1. `/improve` の Step 0 で人間が直近トレースを読み、驚き・パターンをメモ（Open Coding）
+2. autolearn の Task 9（Axial Coding）が未分類トレースをクラスタリング
+3. 新しい FM 候補を `insights/failure-taxonomy-proposals.md` に出力
+4. 人間が FM の追加・統合・削除を判断
+
+### 理論的飽和の判定
+
+- 直近 3 回の `/improve` 実行で新しい FM 候補がゼロ → **飽和**
+- 飽和後は既存 FM の precision/recall 改善にフォーカス
+- 飽和状態は `insights/taxonomy-saturation.md` に記録
+
+### 合成トレース（将来拡張）
+
+プロダクションデータが不足する場合、以下の次元で合成シナリオを生成:
+- 言語 × エラー種別 × コンテキストサイズ
+- hook が正しく検出するか検証
+- 未検出パターンを FM に追加

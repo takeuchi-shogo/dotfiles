@@ -103,22 +103,27 @@ scoring-rules.md の昇格ルールに従い:
 
 昇格候補は insights/analysis-YYYY-MM-DD.md の「昇格提案」セクションに記載。
 
-### 8. レビューフィードバック分析
+### 8. Evaluator 精度測定（TPR/TNR）
 
-`learnings/review-findings.jsonl` と `learnings/review-feedback.jsonl` を突き合わせ、
-レビューアーの精度を分析する。
+`evaluator_metrics.py` ライブラリを使い、全 Evaluator の精度を定量化する。
 
 ```bash
-# フィードバック集計
-echo "=== feedback outcomes ==="
-cat ~/.claude/agent-memory/learnings/review-feedback.jsonl | jq -r '.outcome' | sort | uniq -c | sort -rn
+python3 -c "
+import sys, os
+sys.path.insert(0, os.path.expanduser('~/.claude/scripts'))
+from lib.evaluator_metrics import compute_reviewer_accuracy, compute_fm_accuracy, compute_hook_effectiveness, format_evaluator_report
+r = compute_reviewer_accuracy()
+f = compute_fm_accuracy()
+h = compute_hook_effectiveness()
+print(format_evaluator_report(r, f, h))
+"
 ```
 
 分析観点:
-
-- **レビューアー別 accept_rate**: `accepted / (accepted + ignored)` — 各レビューアーの指摘精度
-- **failure_mode 別 accept_rate**: FM-XXX ごとの受入率 — どの失敗モードの検出が有効か
-- **confidence 閾値の妥当性**: confidence スコアと accept_rate の相関 — 80 の閾値は適切か
+- **accept_rate < 70% のレビューアー** → 指摘精度が低い。プロンプト改善候補
+- **accept_rate < 70% の FM** → 検出ルールが不適切。ルール見直し候補
+- **recurring = YES の FM** → hook は検出するが防げていない。根本対策が必要
+- **accept_rate 高 + recurring** → 検出精度は良いが再発する。specification failure の可能性
 
 ### 9. Axial Coding（失敗モード再分類）
 
@@ -130,6 +135,51 @@ cat ~/.claude/agent-memory/learnings/review-feedback.jsonl | jq -r '.outcome' | 
 4. 既存の FM の定義を修正すべき場合は提案として記載
 
 理論的飽和の判定: 直近3回の分析で新しい FM 候補がゼロなら飽和と判断。
+
+### 10. Specification vs Generalization Failure 分岐分析
+
+failure_type ごとにグループ化し、改善アクションを分岐する。
+
+```bash
+python3 -c "
+import json, os
+from pathlib import Path
+data_dir = Path(os.environ.get('AUTOEVOLVE_DATA_DIR', os.path.expanduser('~/.claude/agent-memory')))
+spec_count = gen_count = 0
+spec_fms = {}
+gen_fms = {}
+for jsonl in (data_dir / 'learnings').glob('*.jsonl'):
+    if jsonl.name.startswith('review-'):
+        continue
+    with open(jsonl) as f:
+        for line in f:
+            line = line.strip()
+            if not line: continue
+            try: e = json.loads(line)
+            except: continue
+            ft = e.get('failure_type', 'generalization')
+            fm = e.get('failure_mode', '')
+            if ft == 'specification':
+                spec_count += 1
+                if fm: spec_fms[fm] = spec_fms.get(fm, 0) + 1
+            else:
+                gen_count += 1
+                if fm: gen_fms[fm] = gen_fms.get(fm, 0) + 1
+print(f'Specification failures: {spec_count}')
+print(f'Generalization failures: {gen_count}')
+print(f'Spec FMs: {dict(sorted(spec_fms.items(), key=lambda x: -x[1]))}')
+print(f'Gen FMs: {dict(sorted(gen_fms.items(), key=lambda x: -x[1]))}')
+"
+```
+
+改善アクション分岐:
+
+| failure_type | アクション | 改善対象 |
+|---|---|---|
+| specification | プロンプト・ルール改善 | CLAUDE.md, skills/*.md, agents/*.md, rules/ |
+| generalization | Evaluator 強化 | hooks, golden-check patterns, error-fix-guides |
+
+各タイプの top-3 FM を特定し、改善提案セクションに「Spec/Gen 別アクション」として記載する。
 
 ## 出力フォーマット
 
