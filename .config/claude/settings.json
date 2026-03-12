@@ -48,7 +48,12 @@
 			"Bash(gemini *)",
 			"Bash(ruff *)",
 			"Bash(npx oxlint *)",
-			"Bash(npx @biomejs/biome *)"
+			"Bash(npx @biomejs/biome *)",
+			"Bash(*gh-unresolved-threads*)",
+			"Bash(gh pr view *)",
+			"Bash(gh pr checks *)",
+			"Bash(gh pr diff *)",
+			"Bash(gh pr list *)"
 		],
 		"deny": [
 			"Bash(rm -rf *)",
@@ -142,6 +147,16 @@
 			}
 		],
 		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "jq -r '.tool_input.command // empty' | grep -qE 'git add (-A|--all|[.]$|[.] )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"一括追加は禁止です。ファイルを個別に確認し、必要なものだけ追加してください\"}}' || true",
+						"timeout": 5
+					}
+				]
+			},
 			{
 				"matcher": "Bash(git commit *)",
 				"hooks": [

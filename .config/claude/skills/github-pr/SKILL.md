@@ -1,0 +1,43 @@
+---
+name: github-pr
+description: >
+  PRセルフレビュー・レビューコメント対応・マージ判断。
+  「セルフレビューして」「PR確認して」「コメント対応して」「マージしていい？」で発動。
+allowed-tools: Bash(*gh-unresolved-threads*), Bash(gh pr *), Bash(gh api graphql *)
+---
+
+# GitHub PR
+
+PR品質を繰り返しチェックし、マージ判断を行う。
+
+## 開発フローとスキルの役割
+
+1. 実装・push・PR作成（`/pull-request` or `/create-pr-wait`）
+2. **セルフレビュー** → ready にしてレビュー依頼
+3. レビュワーからコメント → **レビューコメント対応**
+4. **セルフレビュー**（都度実行）
+5. レビュワーから Approve
+6. **セルフレビュー**（最終確認）
+7. **マージ** → リリース・動作確認
+
+太字の箇所でこのスキルを使用。
+
+## ルール
+
+- **レビュー後のrebase禁止**: レビュワーからコメントを受けた後はrebaseしない。コミットツリーが変わるとレビュー後の差分が追跡不能になる
+- **PR description更新は確認不要**: 実装が正。実装と乖離したdescriptionの修正は常に正しいため、ユーザー確認なしで実行してよい
+
+## ルーティング
+
+ユーザーの意図に応じて参照先を切り替える:
+
+- **セルフレビュー**（「セルフレビューして」「PR確認して」）→ [self-review.md](self-review.md)
+- **レビューコメント対応**（「コメント対応して」「レビュー対応して」）→ [review-response.md](review-response.md)
+- **マージ判断**（「マージしていい？」「マージして」）→ [merge.md](merge.md)
+
+## 関連スキル
+
+- `/pull-request` — PR作成
+- `/create-pr-wait` — PR作成 + CI監視
+- `/review` — コード変更のレビュー（コミット前）
+- `github-pr`（本スキル）— PR提出後のライフサイクル管理
