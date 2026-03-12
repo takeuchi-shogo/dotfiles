@@ -156,7 +156,7 @@ for jsonl in (data_dir / 'learnings').glob('*.jsonl'):
             line = line.strip()
             if not line: continue
             try: e = json.loads(line)
-            except: continue
+            except json.JSONDecodeError: continue
             ft = e.get('failure_type', 'generalization')
             fm = e.get('failure_mode', '')
             if ft == 'specification':

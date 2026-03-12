@@ -11,28 +11,17 @@ Usage:
 
 from __future__ import annotations
 
-import json
-import os
-from pathlib import Path
+
+from lib.storage import get_data_dir, read_jsonl
 
 EXCLUDED_FILES = {"review-findings.jsonl", "review-feedback.jsonl"}
 CATEGORIES = ("error", "quality", "pattern", "correction")
 MESSAGE_TRUNCATE_LEN = 60
 
 
-def _get_data_dir() -> Path:
-    """Return the data directory, respecting AUTOEVOLVE_DATA_DIR for tests."""
-    return Path(
-        os.environ.get(
-            "AUTOEVOLVE_DATA_DIR",
-            os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
-        )
-    )
-
-
 def _read_all_traces() -> list[dict]:
     """Read all traces from learnings/*.jsonl, excluding review files."""
-    learnings_dir = _get_data_dir() / "learnings"
+    learnings_dir = get_data_dir() / "learnings"
     if not learnings_dir.exists():
         return []
 
@@ -41,14 +30,8 @@ def _read_all_traces() -> list[dict]:
         if jsonl_file.name in EXCLUDED_FILES:
             continue
         try:
-            with open(jsonl_file, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        try:
-                            traces.append(json.loads(line))
-                        except json.JSONDecodeError:
-                            continue
+            for entry in read_jsonl(jsonl_file):
+                traces.append(entry)
         except OSError:
             continue
     return traces
@@ -80,9 +63,8 @@ def sample_recent_traces(n: int = 20) -> list[dict]:
         cat = trace.get("category", "unknown")
         by_category.setdefault(cat, []).append(trace)
 
-    # Balanced sampling: distribute n evenly across present categories
+    # Build present categories: known first, then unexpected
     present_categories = [c for c in CATEGORIES if c in by_category]
-    # Also include any unexpected categories
     for cat in by_category:
         if cat not in present_categories:
             present_categories.append(cat)
@@ -96,12 +78,14 @@ def sample_recent_traces(n: int = 20) -> list[dict]:
     # Round-robin allocation
     quota_per_cat = max(1, n // len(present_categories))
     leftover_cats: list[str] = []
+    taken_per_cat: dict[str, int] = {}
 
     for cat in present_categories:
         available = by_category.get(cat, [])
         take = min(quota_per_cat, len(available), remaining)
         sampled.extend(available[:take])
         remaining -= take
+        taken_per_cat[cat] = take
         if len(available) > take:
             leftover_cats.append(cat)
 
@@ -110,7 +94,7 @@ def sample_recent_traces(n: int = 20) -> list[dict]:
         for cat in leftover_cats:
             if remaining <= 0:
                 break
-            already_taken = quota_per_cat
+            already_taken = taken_per_cat[cat]
             available = by_category.get(cat, [])
             extra = available[already_taken : already_taken + remaining]
             sampled.extend(extra)
@@ -159,7 +143,8 @@ def format_for_review(traces: list[dict]) -> str:
         ts = trace.get("timestamp", "")
         # Shorten ISO timestamp to datetime portion
         if "T" in ts:
-            ts = ts.split("T")[0] + " " + ts.split("T")[1][:8]
+            date_part, time_part = ts.split("T", 1)
+            ts = date_part + " " + time_part[:8]
         category = trace.get("category", "")
         fm = trace.get("failure_mode", "")
         importance = trace.get("importance", "")

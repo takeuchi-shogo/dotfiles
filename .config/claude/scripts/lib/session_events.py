@@ -10,11 +10,12 @@ Usage (from other hooks):
 
 import json
 import logging
-import os
 import re
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
+from lib.storage import get_data_dir as _storage_get_data_dir
 
 
 IMPORTANCE_RULES: list[tuple[str, re.Pattern, float, str]] = [
@@ -66,12 +67,7 @@ def _get_data_dir() -> Path:
     テスト時に AUTOEVOLVE_DATA_DIR を差し替えられるよう、
     呼び出しごとに環境変数を読む。
     """
-    return Path(
-        os.environ.get(
-            "AUTOEVOLVE_DATA_DIR",
-            os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
-        )
-    )
+    return _storage_get_data_dir()
 
 
 def _setup_logger() -> logging.Logger:

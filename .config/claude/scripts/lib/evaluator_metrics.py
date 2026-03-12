@@ -5,45 +5,22 @@ and review-feedback.jsonl, and measures hook effectiveness by tracking
 failure mode recurrence in learnings.
 """
 
-import json
-import os
-from pathlib import Path
+from __future__ import annotations
 
 
-def _get_data_dir() -> Path:
-    """Return the data directory, respecting AUTOEVOLVE_DATA_DIR override."""
-    return Path(
-        os.environ.get(
-            "AUTOEVOLVE_DATA_DIR",
-            os.path.join(os.environ.get("HOME", ""), ".claude", "agent-memory"),
-        )
-    )
+from lib.storage import get_data_dir, read_jsonl
 
-
-def _read_jsonl(path: Path) -> list[dict]:
-    """Read a JSONL file and return a list of parsed entries."""
-    if not path.exists():
-        return []
-    entries = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    entries.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
-    return entries
+RECURRING_THRESHOLD = 3
 
 
 def _load_findings() -> list[dict]:
     """Load review findings from learnings/review-findings.jsonl."""
-    return _read_jsonl(_get_data_dir() / "learnings" / "review-findings.jsonl")
+    return read_jsonl(get_data_dir() / "learnings" / "review-findings.jsonl")
 
 
 def _load_feedback() -> list[dict]:
     """Load review feedback from learnings/review-feedback.jsonl."""
-    return _read_jsonl(_get_data_dir() / "learnings" / "review-feedback.jsonl")
+    return read_jsonl(get_data_dir() / "learnings" / "review-feedback.jsonl")
 
 
 def _build_feedback_map(feedback: list[dict]) -> dict[str, str]:
@@ -55,12 +32,13 @@ def _build_feedback_map(feedback: list[dict]) -> dict[str, str]:
     }
 
 
-def compute_reviewer_accuracy() -> dict[str, dict]:
-    """Compute per-reviewer accept rate by cross-referencing findings and feedback.
+def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
+    """Compute per-group accept rate by cross-referencing findings and feedback.
 
-    Returns a dict keyed by reviewer name:
-        {"code-reviewer": {"total": N, "accepted": N, "ignored": N, "accept_rate": 0.X}, ...}
+    Groups findings by the given key_field (e.g. "reviewer" or "failure_mode"),
+    then computes accept/ignore counts and rate for each group.
 
+    Entries with empty key_field values are skipped.
     Returns an empty dict if no data is available.
     """
     findings = _load_findings()
@@ -69,29 +47,38 @@ def compute_reviewer_accuracy() -> dict[str, dict]:
         return {}
 
     feedback_map = _build_feedback_map(feedback)
-    reviewers: dict[str, dict] = {}
+    groups: dict[str, dict] = {}
 
     for finding in findings:
         finding_id = finding.get("id", "")
-        reviewer = finding.get("reviewer", "")
-        if not finding_id or not reviewer or finding_id not in feedback_map:
+        key = finding.get(key_field, "")
+        if not finding_id or not key or finding_id not in feedback_map:
             continue
 
-        if reviewer not in reviewers:
-            reviewers[reviewer] = {"total": 0, "accepted": 0, "ignored": 0}
+        if key not in groups:
+            groups[key] = {"total": 0, "accepted": 0, "ignored": 0}
 
         outcome = feedback_map[finding_id]
-        reviewers[reviewer]["total"] += 1
+        groups[key]["total"] += 1
         if outcome == "accepted":
-            reviewers[reviewer]["accepted"] += 1
+            groups[key]["accepted"] += 1
         elif outcome == "ignored":
-            reviewers[reviewer]["ignored"] += 1
+            groups[key]["ignored"] += 1
 
-    for stats in reviewers.values():
+    for stats in groups.values():
         total = stats["total"]
         stats["accept_rate"] = round(stats["accepted"] / total, 4) if total > 0 else 0.0
 
-    return reviewers
+    return groups
+
+
+def compute_reviewer_accuracy() -> dict[str, dict]:
+    """Compute per-reviewer accept rate by cross-referencing findings and feedback.
+
+    Returns a dict keyed by reviewer name:
+        {"code-reviewer": {"total": N, "accepted": N, "ignored": N, "accept_rate": 0.X}, ...}
+    """
+    return _compute_accuracy_by("reviewer")
 
 
 def compute_fm_accuracy() -> dict[str, dict]:
@@ -99,38 +86,8 @@ def compute_fm_accuracy() -> dict[str, dict]:
 
     Same as compute_reviewer_accuracy but grouped by failure_mode.
     Entries with empty failure_mode are skipped.
-
-    Returns an empty dict if no data is available.
     """
-    findings = _load_findings()
-    feedback = _load_feedback()
-    if not findings or not feedback:
-        return {}
-
-    feedback_map = _build_feedback_map(feedback)
-    fms: dict[str, dict] = {}
-
-    for finding in findings:
-        finding_id = finding.get("id", "")
-        fm = finding.get("failure_mode", "")
-        if not finding_id or not fm or finding_id not in feedback_map:
-            continue
-
-        if fm not in fms:
-            fms[fm] = {"total": 0, "accepted": 0, "ignored": 0}
-
-        outcome = feedback_map[finding_id]
-        fms[fm]["total"] += 1
-        if outcome == "accepted":
-            fms[fm]["accepted"] += 1
-        elif outcome == "ignored":
-            fms[fm]["ignored"] += 1
-
-    for stats in fms.values():
-        total = stats["total"]
-        stats["accept_rate"] = round(stats["accepted"] / total, 4) if total > 0 else 0.0
-
-    return fms
+    return _compute_accuracy_by("failure_mode")
 
 
 def compute_hook_effectiveness() -> dict[str, dict]:
@@ -138,30 +95,31 @@ def compute_hook_effectiveness() -> dict[str, dict]:
 
     Reads all JSONL files under learnings/ (excluding review-findings.jsonl
     and review-feedback.jsonl), counts occurrences per failure_mode, and
-    flags any FM with 3+ occurrences as recurring.
+    flags any FM with RECURRING_THRESHOLD+ occurrences as recurring.
 
     Returns:
         {"FM-001": {"count": N, "recurring": bool}, ...}
 
     Returns an empty dict if no data is available.
     """
-    learnings_dir = _get_data_dir() / "learnings"
+    learnings_dir = get_data_dir() / "learnings"
     if not learnings_dir.exists():
         return {}
 
     exclude = {"review-findings.jsonl", "review-feedback.jsonl"}
     fm_counts: dict[str, int] = {}
 
-    for jsonl_file in learnings_dir.glob("*.jsonl"):
+    for jsonl_file in sorted(learnings_dir.glob("*.jsonl")):
         if jsonl_file.name in exclude:
             continue
-        for entry in _read_jsonl(jsonl_file):
+        for entry in read_jsonl(jsonl_file):
             fm = entry.get("failure_mode", "")
             if fm:
                 fm_counts[fm] = fm_counts.get(fm, 0) + 1
 
     return {
-        fm: {"count": count, "recurring": count >= 3} for fm, count in fm_counts.items()
+        fm: {"count": count, "recurring": count >= RECURRING_THRESHOLD}
+        for fm, count in fm_counts.items()
     }
 
 
@@ -183,6 +141,7 @@ def format_evaluator_report(
     lines: list[str] = []
 
     # Section 1: Reviewer Accuracy
+    # Note: "Total" counts only findings with matched feedback entries.
     lines.append("## Reviewer Accuracy\n")
     if reviewer_acc:
         lines.append("| Reviewer | Total | Accepted | Ignored | Accept Rate |")

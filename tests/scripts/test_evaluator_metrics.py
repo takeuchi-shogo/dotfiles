@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -19,6 +20,7 @@ class TestEvaluatorMetrics:
         os.environ["AUTOEVOLVE_DATA_DIR"] = self.tmpdir
 
     def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
         if self.original_env is None:
             os.environ.pop("AUTOEVOLVE_DATA_DIR", None)
         else:
@@ -119,6 +121,20 @@ class TestEvaluatorMetrics:
         assert "FM-002" in result
         assert result["FM-002"]["count"] == 1
         assert result["FM-002"]["recurring"] is False
+
+    def test_compute_hook_effectiveness_boundary(self):
+        """count=2 should NOT be recurring (threshold is 3)."""
+        from lib.evaluator_metrics import compute_hook_effectiveness
+
+        learnings = [
+            {"failure_mode": "FM-003", "category": "error", "message": "a"},
+            {"failure_mode": "FM-003", "category": "error", "message": "b"},
+        ]
+        self._write_jsonl("errors.jsonl", learnings)
+
+        result = compute_hook_effectiveness()
+        assert result["FM-003"]["count"] == 2
+        assert result["FM-003"]["recurring"] is False
 
     def test_empty_data(self):
         from lib.evaluator_metrics import (

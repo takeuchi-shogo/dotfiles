@@ -1,8 +1,9 @@
 import json
 import os
+import shutil
 import sys
 import tempfile
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(
@@ -43,6 +44,7 @@ class TestTraceSampler:
         self.learnings_dir.mkdir(parents=True, exist_ok=True)
 
     def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
         if self.original_env is None:
             os.environ.pop("AUTOEVOLVE_DATA_DIR", None)
         else:
@@ -100,6 +102,16 @@ class TestTraceSampler:
         assert all("finding" not in m for m in messages)
         assert all("feedback" not in m for m in messages)
         assert len(result) == 5
+
+    def test_sample_recent_traces_n_less_than_categories(self):
+        """n < number of categories should return at most n items."""
+        from lib.trace_sampler import sample_recent_traces
+
+        for cat in ("error", "quality", "pattern", "correction"):
+            self._write_jsonl(f"{cat}.jsonl", [_make_trace(cat, f"msg-{cat}")])
+
+        result = sample_recent_traces(n=1)
+        assert len(result) <= 1
 
     # --- sample_unclassified_traces ---
 
