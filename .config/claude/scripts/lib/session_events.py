@@ -266,3 +266,72 @@ def append_to_metrics(data: dict) -> None:
             logger.error("append_to_metrics failed: %s", exc)
         except Exception:
             pass
+
+
+def emit_skill_event(event_type: str, data: dict) -> None:
+    """スキルライフサイクルイベントを記録する。
+
+    event_type: "invocation" | "outcome"
+    data には skill_name を必須で含む。
+    """
+    if "skill_name" not in data:
+        raise ValueError("skill_name is required in data")
+    logger = _setup_logger()
+    try:
+        path = _temp_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "timestamp": _now_iso(),
+            "category": "skill",
+            "type": event_type,
+            **data,
+        }
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        logger.debug("skill_event: %s %s", event_type, data.get("skill_name"))
+    except ValueError:
+        raise
+    except Exception as exc:
+        try:
+            logger.error("emit_skill_event failed: %s", exc)
+        except Exception:
+            pass
+
+
+def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
+    """セッション中のイベントからスキルの複合スコアを計算する。
+
+    スコア計算:
+      base = 0.5
+      + 0.5 (タスク正常完了 = デフォルト想定)
+      - 0.3/件 (エラー発生)
+      - 0.5 (テスト失敗)
+      - 0.2/件 (レビュー Critical/Important)
+      - 0.1/件 (GP違反)
+    → clamp(0.0, 1.0)
+    """
+    score = 1.0  # base(0.5) + completion(0.5)
+
+    errors = [e for e in session_events if e.get("category") == "error"]
+    score -= 0.3 * len(errors)
+
+    test_failures = [e for e in session_events if e.get("test_passed") is False]
+    if test_failures:
+        score -= 0.5
+
+    gp_violations = [
+        e
+        for e in session_events
+        if e.get("category") == "quality" and e.get("rule", "").startswith("GP-")
+    ]
+    score -= 0.1 * len(gp_violations)
+
+    review_criticals = [
+        e
+        for e in session_events
+        if e.get("category") == "quality"
+        and e.get("review_severity") in ("critical", "important")
+    ]
+    score -= 0.2 * len(review_criticals)
+
+    return max(0.0, min(1.0, round(score, 2)))

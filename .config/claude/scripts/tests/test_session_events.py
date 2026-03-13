@@ -13,9 +13,11 @@ from session_events import (
     BASE_CONFIDENCE,
     RULE_CONFIDENCE,
     compute_importance,
+    compute_skill_score,
     emit_event,
     emit_review_feedback,
     emit_review_finding,
+    emit_skill_event,
     flush_session,
     read_pending_findings,
 )
@@ -335,3 +337,106 @@ class TestReviewFinding:
         pending = read_pending_findings()
         assert len(pending) == 1
         assert pending[0]["id"] == "rf-b"
+
+
+# --- skill tracking テスト ---
+
+
+class TestEmitSkillEvent:
+    """スキル実行イベントの記録テスト。"""
+
+    def test_emit_skill_invocation(self, tmp_path):
+        emit_skill_event(
+            "invocation",
+            {
+                "skill_name": "review",
+                "session_id": "test-session-001",
+            },
+        )
+        session_file = tmp_path / "current-session.jsonl"
+        assert session_file.exists()
+
+        entry = json.loads(session_file.read_text().strip())
+        assert entry["category"] == "skill"
+        assert entry["type"] == "invocation"
+        assert entry["skill_name"] == "review"
+
+    def test_emit_skill_event_requires_skill_name(self, tmp_path):
+        with pytest.raises(ValueError, match="skill_name"):
+            emit_skill_event("invocation", {"session_id": "abc"})
+
+    def test_emit_skill_outcome(self, tmp_path):
+        emit_skill_event(
+            "outcome",
+            {
+                "skill_name": "search-first",
+                "score": 0.35,
+                "error_count": 2,
+                "gp_violations": 1,
+                "review_criticals": 0,
+                "test_passed": False,
+            },
+        )
+        session_file = tmp_path / "current-session.jsonl"
+        entry = json.loads(session_file.read_text().strip())
+        assert entry["category"] == "skill"
+        assert entry["type"] == "outcome"
+        assert entry["score"] == 0.35
+
+
+class TestComputeSkillScore:
+    """スキルの複合スコア計算テスト。"""
+
+    def test_perfect_session(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+        ]
+        score = compute_skill_score(events, "review")
+        assert score == 1.0  # base(0.5) + completion(0.5), clamp
+
+    def test_session_with_errors(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+            {"category": "error", "message": "TypeError"},
+            {"category": "error", "message": "ReferenceError"},
+        ]
+        score = compute_skill_score(events, "review")
+        assert score == pytest.approx(0.4)  # 0.5 + 0.5 - 0.3*2 = 0.4
+
+    def test_session_with_test_failure(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+            {"category": "pattern", "message": "test_failed", "test_passed": False},
+        ]
+        score = compute_skill_score(events, "review")
+        assert score == pytest.approx(0.5)  # 0.5 + 0.5 - 0.5 = 0.5
+
+    def test_session_with_gp_violations(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+            {"category": "quality", "rule": "GP-001"},
+            {"category": "quality", "rule": "GP-003"},
+            {"category": "quality", "rule": "GP-004"},
+        ]
+        score = compute_skill_score(events, "review")
+        assert score == pytest.approx(0.7)  # 0.5 + 0.5 - 0.1*3 = 0.7
+
+    def test_score_clamps_to_zero(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "bad-skill"},
+            {"category": "error", "message": "err1"},
+            {"category": "error", "message": "err2"},
+            {"category": "error", "message": "err3"},
+            {"category": "pattern", "message": "test_failed", "test_passed": False},
+        ]
+        score = compute_skill_score(events, "bad-skill")
+        assert score == 0.0  # 0.5 + 0.5 - 0.9 - 0.5 < 0 → clamp
+
+    def test_review_criticals_penalty(self):
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "rpi"},
+            {"category": "quality", "review_severity": "critical"},
+            {"category": "quality", "review_severity": "important"},
+        ]
+        score = compute_skill_score(events, "rpi")
+        assert score == pytest.approx(0.6)  # 0.5 + 0.5 - 0.2*2 = 0.6
