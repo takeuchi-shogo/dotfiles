@@ -1,6 +1,6 @@
 # .claudeignore テンプレート
 
-constitution-factory が新プロジェクトの `.claudeignore` を生成する際のベース。
+document-factory (mode: constitution) が新プロジェクトの `.claudeignore` を生成する際のベース。
 検出された Tech Stack に応じて該当セクションを組み合わせる。
 
 ---

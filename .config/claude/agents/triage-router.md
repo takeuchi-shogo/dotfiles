@@ -24,7 +24,7 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 | アーキテクチャ設計 | `backend-architect`                                       | API設計, DB設計, システム構成, マイクロサービス                  |
 | Next.js 設計       | `nextjs-architecture-expert`                              | App Router, RSC, Server Components, SSR, ISR                     |
 | フロントエンド実装 | `frontend-developer`                                      | React, コンポーネント, UI, CSS, スタイル                         |
-| コードレビュー     | `code-reviewer` + `code-reviewer-ma` + `code-reviewer-mu` | レビュー, review, 品質チェック                                   |
+| コードレビュー     | `code-reviewer` + `golang-reviewer` + `codex-reviewer`    | レビュー, review, 品質チェック                                   |
 | テスト作成         | `test-engineer`                                           | テスト, test, coverage, TDD                                      |
 | デバッグ           | `debugger`                                                | バグ, エラー, 原因調査, 動かない                                 |
 | ビルドエラー       | `build-fixer`                                             | ビルド失敗, 型エラー, コンパイル, 依存関係                       |
@@ -66,7 +66,7 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 
 ## Routing Rules
 
-1. **レビューは常に3並列**: code-reviewer（言語チェックリスト注入）+ code-reviewer-ma + code-reviewer-mu
+1. **レビューは常に3並列**: code-reviewer（言語チェックリスト注入）+ golang-reviewer（Go変更時）+ codex-reviewer（50行超）
 2. **セキュリティ関連のコード変更**: 通常レビューに加えて security-reviewer を追加
 3. **言語固有の問題**: 専門エージェント（golang-pro, typescript-pro）を優先
 4. **不明確なタスク**: まず Explore エージェントで調査してから再度トリアージ

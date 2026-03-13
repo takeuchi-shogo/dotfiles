@@ -10,18 +10,18 @@
 
 | ファイル | 生成方法 |
 |---|---|
-| `CLAUDE.md` | constitution-factory |
-| `.claudeignore` | constitution-factory |
+| `CLAUDE.md` | document-factory (mode: constitution) |
+| `.claudeignore` | document-factory (mode: constitution) |
 
 ### M（Standard）
 
 | ファイル | 生成方法 |
 |---|---|
-| `CLAUDE.md` | constitution-factory |
-| `.claudeignore` | constitution-factory |
-| `references/workflow-guide.md` | constitution-factory |
+| `CLAUDE.md` | document-factory (mode: constitution) |
+| `.claudeignore` | document-factory (mode: constitution) |
+| `references/workflow-guide.md` | document-factory (mode: constitution) |
 | `.claude/rules/{lang}.md` | 直接生成 |
-| `docs/architecture.md` | context-factory |
+| `docs/architecture.md` | document-factory (mode: context) |
 
 ### L（Production）
 
@@ -32,15 +32,15 @@ M の全ファイルに加え:
 | `.claude/rules/common/security.md` | 直接生成 |
 | `.claude/rules/common/testing.md` | 直接生成 |
 | `.claude/settings.json` | 直接生成（基本 hooks） |
-| `docs/decisions/001-template.md` | context-factory |
-| `src/{risky}/CLAUDE.md` | context-factory（検出時のみ） |
+| `docs/decisions/001-template.md` | document-factory (mode: context) |
+| `src/{risky}/CLAUDE.md` | document-factory (mode: context)（検出時のみ） |
 | `.github/workflows/` | setup-background-agents（CI 有りの場合） |
 
 ---
 
 ## ファクトリ委譲プロンプト
 
-### constitution-factory
+### document-factory (mode: constitution)
 
 **S レベル:**
 ```
@@ -60,7 +60,7 @@ M の全ファイルに加え:
 - references/workflow-guide.md で詳細ワークフローを補完
 ```
 
-### context-factory（architecture.md）
+### document-factory (mode: context)（architecture.md）
 
 ```
 以下のプロジェクトの docs/architecture.md を生成してください。
@@ -70,7 +70,7 @@ M の全ファイルに加え:
 - Breadcrumb パターンで標準概念は簡潔に
 ```
 
-### context-factory（Local CLAUDE.md）
+### document-factory (mode: context)（Local CLAUDE.md）
 
 ```
 以下のリスキーモジュールの Local CLAUDE.md を生成してください。
@@ -80,7 +80,7 @@ M の全ファイルに加え:
 - フォーマット: ## Gotchas / ## Invariants / ## 変更時の注意
 ```
 
-### context-factory（ADR テンプレート）
+### document-factory (mode: context)（ADR テンプレート）
 
 ```
 docs/decisions/001-template.md に ADR テンプレートを生成してください。
@@ -103,27 +103,27 @@ Agent tool ではなく Skill tool を使用すること（setup-background-agen
 
 ### S
 ```
-constitution-factory (直列)
+document-factory (mode: constitution) (直列)
 ```
 
 ### M
 ```
-┌─ constitution-factory (CLAUDE.md + .claudeignore + workflow-guide)
+┌─ document-factory (mode: constitution) (CLAUDE.md + .claudeignore + workflow-guide)
 │
-├─ context-factory (docs/architecture.md)           ← 並列
+├─ document-factory (mode: context) (docs/architecture.md)           ← 並列
 │
 └─ [完了後] rules/{lang}.md を直接生成              ← 直列
 ```
 
 ### L
 ```
-┌─ constitution-factory (CLAUDE.md + .claudeignore + workflow-guide)
+┌─ document-factory (mode: constitution) (CLAUDE.md + .claudeignore + workflow-guide)
 │
-├─ context-factory (docs/architecture.md)           ← 並列
+├─ document-factory (mode: context) (docs/architecture.md)           ← 並列
 │
-├─ context-factory (Local CLAUDE.md)                ← 並列
+├─ document-factory (mode: context) (Local CLAUDE.md)                ← 並列
 │
-├─ context-factory (ADR テンプレート)               ← 並列
+├─ document-factory (mode: context) (ADR テンプレート)               ← 並列
 │
 ├─ setup-background-agents (CI 有りの場合)          ← 並列
 │

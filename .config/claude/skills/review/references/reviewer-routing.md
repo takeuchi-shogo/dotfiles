@@ -32,12 +32,12 @@
 - **起動条件**: 50行以上の変更（code-reviewer と同時起動）
 - **特記**: `/codex-review` スキルとは別。こちらは Agent として並列起動される
 
-### code-reviewer-ma / code-reviewer-mu
+### golang-reviewer
 
-- **subagent_type**: `code-reviewer-ma`（簡潔・直接的）/ `code-reviewer-mu`（丁寧・教育的）
-- **観点**: 異なるレビュースタイルによる多角的評価
-- **起動条件**: 200行以上の変更
-- **使い分け**: 200行前後は ma or mu のどちらか1つ、200行超は両方
+- **subagent_type**: `golang-reviewer`
+- **観点**: Go 固有の命名規約、nil/Option 安全性、アーキテクチャ、テスト網羅性
+- **起動条件**: Go ファイル（`.go`）の変更が含まれる場合
+- **スタイル**: デフォルト MA（簡潔・直接的）。プロンプトで MU（建設的・教育的）に切り替え可能
 
 ## スペシャリストレビューアー（コンテンツベースで追加）
 

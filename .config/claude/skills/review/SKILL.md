@@ -41,8 +41,8 @@ git diff --name-only HEAD
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | ~10行    | レビュー省略（Verify のみ）                                                                                |
 | ~50行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`（2並列）                                       |
-| ~200行   | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `code-reviewer-ma` or `code-reviewer-mu`（3並列） |
-| 200行超  | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `ma` + `mu`（4並列）+ スペシャリスト         |
+| ~200行   | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `golang-reviewer`（Go変更時、3並列）          |
+| 200行超  | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `golang-reviewer`（Go変更時）+ スペシャリスト |
 
 ### 言語固有チェックリスト（プロンプト注入）
 

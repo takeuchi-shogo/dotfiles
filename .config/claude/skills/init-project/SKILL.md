@@ -119,14 +119,14 @@ find . -maxdepth 3 -type d \( \
 
 | レベル | 委譲先 | 実行方式 |
 |---|---|---|
-| **S** | constitution-factory（CLAUDE.md + .claudeignore） | 直列 |
-| **M** | constitution-factory + context-factory（architecture.md） | 並列 → rules 直接生成（直列） |
-| **L** | M + context-factory（Local CLAUDE.md, ADR） + setup-background-agents | 並列 → rules + hooks 直接生成（直列） |
+| **S** | document-factory (mode: constitution)（CLAUDE.md + .claudeignore） | 直列 |
+| **M** | document-factory (mode: constitution) + document-factory (mode: context)（architecture.md） | 並列 → rules 直接生成（直列） |
+| **L** | M + document-factory (mode: context)（Local CLAUDE.md, ADR） + setup-background-agents | 並列 → rules + hooks 直接生成（直列） |
 
 ### 委譲パターン
 
-- **constitution-factory**: `subagent_type: constitution-factory` で Agent tool を使用
-- **context-factory**: `subagent_type: context-factory` で Agent tool を使用
+- **document-factory (mode: constitution)**: `subagent_type: document-factory` で Agent tool を使用。プロンプトに `mode: constitution` を指定
+- **document-factory (mode: context)**: `subagent_type: document-factory` で Agent tool を使用。プロンプトに `mode: context` を指定
 - **setup-background-agents**: Skill tool で `/setup-background-agents` を呼び出し（L レベル、CI 有りの場合のみ）
 - **直接生成**: Agent tool を介さず、オーケストレータ自身が Write ツールで生成する。コンテキストが既にメモリ内にあり、サブエージェント起動のオーバーヘッドが不釣り合いな場合に選択
 

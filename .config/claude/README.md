@@ -110,8 +110,7 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 | エージェント            | 専門領域           | 用途                                                |
 | ----------------------- | ------------------ | --------------------------------------------------- |
 | `code-reviewer`         | 汎用レビュー       | 品質・セキュリティ・保守性の総合チェック（言語チェックリスト注入対応） |
-| `code-reviewer-ma`      | 簡潔スタイル       | 直接的なシニアエンジニアスタイルのレビュー          |
-| `code-reviewer-mu`      | 教育的スタイル     | 丁寧・建設的・教育的なレビュー                      |
+| `golang-reviewer`       | Go コードレビュー  | MA/MU スタイル切替可能な Go 専門レビュー            |
 | `codex-reviewer`        | 深い推論           | Codex CLI を活用した ~100行以上のセカンドオピニオン |
 | `comment-analyzer`      | コメント品質       | ドキュメント・コメントの正確性と保守性分析          |
 | `silent-failure-hunter` | エラーハンドリング | サイレント障害・不適切な catch/fallback の検出      |
@@ -132,7 +131,7 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 | ---------------------------- | ---------------------------------------------------------------- |
 | `backend-architect`          | RESTful API・マイクロサービス・DB スキーマ・スケーラビリティ設計 |
 | `nextjs-architecture-expert` | Next.js App Router・Server Components・パフォーマンス最適化      |
-| `context-factory`            | プロジェクトサブシステムの仕様書・コンテキスト文書を自動生成     |
+| `document-factory`            | ドキュメント生成（agent/constitution/context モード）          |
 | `type-design-analyzer`       | 型設計のカプセル化・不変条件・型安全性を評価                     |
 
 ### 実装・デバッグ系 (6個)
@@ -168,16 +167,13 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 | ---------------------- | ------------------------------------------------- |
 | `gemini-explore`       | Gemini CLI の 1M コンテキストを活用した大規模分析 |
 | `triage-router`        | タスク分類と最適エージェント推薦                  |
-| `agent-factory`        | 新しいエージェント定義ファイルの自動生成          |
-| `constitution-factory` | プロジェクト固有 CLAUDE.md の自動生成             |
+| `document-factory`     | ドキュメント生成（agent/constitution/context モード）|
 
-### AutoEvolve 系 (3個)
+### AutoEvolve 系 (1個)
 
 | エージェント         | 役割                                                           |
 | -------------------- | -------------------------------------------------------------- |
-| `autoevolve`         | セッションデータを元に設定変更を `autoevolve/*` ブランチに提案 |
-| `autolearn`          | パターン分析、プロジェクトプロファイル生成                     |
-| `knowledge-gardener` | 知識ベースの重複排除・陳腐化除去・昇格提案                     |
+| `autoevolve-core`    | Analyze / Improve / Garden 3フェーズ統合（AutoEvolve 全機能）  |
 
 ### その他 (1個)
 
@@ -413,13 +409,12 @@ Notification ─→ macOS 通知 + サウンド
 │ golden-      │──emit──▶tmp │──▶ jsonl     │             │
 │ check.py     │       file  └──────────────┘             ▼
 └──────────────┘                                   ┌──────────────┐
-                                                   │  autolearn   │→ insights/
-                  ~/.claude/agent-memory/           ├──────────────┤
-                  ├── learnings/*.jsonl             │  knowledge-  │→ 整理・昇格
-                  ├── metrics/                     │  gardener    │
-                  ├── insights/                    ├──────────────┤
-                  └── logs/autoevolve.log           │  autoevolve  │→ autoevolve/*
-                                                   └──────────────┘   ブランチ
+                                                   │ autoevolve-  │→ insights/
+                  ~/.claude/agent-memory/           │ core         │→ 整理・昇格
+                  ├── learnings/*.jsonl             │ (3 phases)   │→ autoevolve/*
+                  ├── metrics/                     │              │   ブランチ
+                  ├── insights/                    └──────────────┘
+                  └── logs/autoevolve.log
                                                           ▲
                                                    improve-policy.md
                                                    (人間が方向を操る)
@@ -438,8 +433,8 @@ Notification ─→ macOS 通知 + サウンド
 
 ```
 生データ (jsonl)
-  → 3回以上出現 → insights/ に整理 (autolearn)
-  → 確信度高 → MEMORY.md に追記 (knowledge-gardener が提案)
+  → 3回以上出現 → insights/ に整理 (autoevolve-core)
+  → 確信度高 → MEMORY.md に追記 (autoevolve-core が提案)
   → 汎用性高 → skill / rule に昇格 (人間が承認)
 ```
 

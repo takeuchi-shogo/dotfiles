@@ -116,8 +116,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 
 - **hooks**: `session_events.py` が `IMPORTANCE_RULES` のパターンマッチ時に `failure_mode` を付与
 - **review**: 各レビューアーが指摘に `failure_mode` (FM-XXX) を付与
-- **autolearn**: `failure-taxonomy.md` を参照し、Axial Coding で taxonomy を更新提案
-- **拡張**: 50件以上の learnings 蓄積後に autolearn が新しい FM 候補を提案（理論的飽和まで）
+- **autoevolve-core**: `failure-taxonomy.md` を参照し、Axial Coding で taxonomy を更新提案
+- **拡張**: 50件以上の learnings 蓄積後に autoevolve-core が新しい FM 候補を提案（理論的飽和まで）
 
 ---
 
@@ -131,7 +131,7 @@ FM-001〜FM-010 はトップダウンで設計された初期分類である。
 ### Open Coding → Axial Coding サイクル
 
 1. `/improve` の Step 0 で人間が直近トレースを読み、驚き・パターンをメモ（Open Coding）
-2. autolearn の Task 9（Axial Coding）が未分類トレースをクラスタリング
+2. autoevolve-core の Task 9（Axial Coding）が未分類トレースをクラスタリング
 3. 新しい FM 候補を `insights/failure-taxonomy-proposals.md` に出力
 4. 人間が FM の追加・統合・削除を判断
 

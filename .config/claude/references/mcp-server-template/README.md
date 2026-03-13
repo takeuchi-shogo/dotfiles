@@ -74,4 +74,4 @@ mcp run server.py
 
 ## ファクトリーエージェントとの連携
 
-`constitution-factory` や `agent-factory` がプロジェクトセットアップ時にこのテンプレートをコピーし、プロジェクトに合わせてカスタマイズする。
+`document-factory (mode: constitution)` や `document-factory` がプロジェクトセットアップ時にこのテンプレートをコピーし、プロジェクトに合わせてカスタマイズする。

@@ -120,9 +120,9 @@ Layer 1 + Layer 3 + (Layer 4 or 5)     → L
 
 ### S → M
 
-1. constitution-factory に `references/workflow-guide.md` 生成を委譲
+1. document-factory (mode: constitution) に `references/workflow-guide.md` 生成を委譲
 2. 検出言語に応じて `.claude/rules/{lang}.md` を直接生成
-3. context-factory に `docs/architecture.md` 生成を委譲
+3. document-factory (mode: context) に `docs/architecture.md` 生成を委譲
 
 ### M → L
 
