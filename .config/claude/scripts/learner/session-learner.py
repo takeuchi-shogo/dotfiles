@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 """AutoEvolve session learner — flushes session events to persistent storage.
 
 Triggered by: hooks.Stop / hooks.SessionEnd
 Input: stdin passthrough
 Output: stdout passthrough
 """
-import json
 import logging
 import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
-from session_events import append_to_learnings, append_to_metrics, flush_session
+from session_events import (
+    append_to_learnings,
+    append_to_metrics,
+    compute_skill_score,
+    flush_session,
+)
 
 
 def build_session_summary(cwd: str | None = None) -> dict:
@@ -30,7 +35,9 @@ def build_session_summary(cwd: str | None = None) -> dict:
     # Score summary
     all_importance = [e.get("importance", 0.5) for e in events]
     high_count = sum(1 for i in all_importance if i >= 0.8)
-    avg_importance = sum(all_importance) / len(all_importance) if all_importance else 0.0
+    avg_importance = (
+        sum(all_importance) / len(all_importance) if all_importance else 0.0
+    )
 
     return {
         "project": project,
@@ -42,6 +49,7 @@ def build_session_summary(cwd: str | None = None) -> dict:
         "corrections": len(corrections),
         "high_importance_count": high_count,
         "avg_importance": round(avg_importance, 2),
+        "_events": events,
         "_errors": errors,
         "_quality": quality,
         "_patterns": patterns,
@@ -74,6 +82,49 @@ def process_session(cwd: str | None = None) -> None:
     for pattern in summary["_patterns"]:
         entry = {k: v for k, v in pattern.items() if k != "category"}
         append_to_learnings("patterns", entry)
+
+    # スキル実行データの集計
+    events = summary["_events"]
+    errors = summary["_errors"]
+    quality = summary["_quality"]
+    project = summary["project"]
+    skill_invocations = [
+        e
+        for e in events
+        if e.get("category") == "skill" and e.get("type") == "invocation"
+    ]
+    for inv in skill_invocations:
+        skill_name = inv.get("skill_name", "")
+        if not skill_name:
+            continue
+        score = compute_skill_score(events, skill_name)
+        error_count = len(errors)
+        gp_violations = len([e for e in quality if e.get("rule", "").startswith("GP-")])
+        review_criticals = len(
+            [
+                e
+                for e in quality
+                if e.get("review_severity") in ("critical", "important")
+            ]
+        )
+        test_passed = not any(e.get("test_passed") is False for e in events)
+        append_to_learnings(
+            "skill-executions",
+            {
+                "skill_name": skill_name,
+                "score": score,
+                "error_count": error_count,
+                "gp_violations": gp_violations,
+                "review_criticals": review_criticals,
+                "test_passed": test_passed,
+                "project": project,
+            },
+        )
+        logger.info(
+            "session-learner: skill '%s' score=%.2f",
+            skill_name,
+            score,
+        )
 
     metrics = {
         "project": summary["project"],
