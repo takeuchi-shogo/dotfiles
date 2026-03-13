@@ -289,8 +289,6 @@ def emit_skill_event(event_type: str, data: dict) -> None:
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
         logger.debug("skill_event: %s %s", event_type, data.get("skill_name"))
-    except ValueError:
-        raise
     except Exception as exc:
         try:
             logger.error("emit_skill_event failed: %s", exc)
