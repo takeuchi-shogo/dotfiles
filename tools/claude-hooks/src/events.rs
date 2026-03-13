@@ -1,0 +1,121 @@
+use regex::Regex;
+use std::io::Write;
+use std::path::PathBuf;
+
+struct Rule {
+    pattern: Regex,
+    score: f64,
+    failure_mode: &'static str,
+}
+
+fn importance_rules() -> Vec<Rule> {
+    vec![
+        Rule {
+            pattern: Regex::new(r"(?i)EACCES|Permission denied").unwrap(),
+            score: 0.9,
+            failure_mode: "FM-006",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)segfault|SIGSEGV|OOM|out of memory").unwrap(),
+            score: 1.0,
+            failure_mode: "FM-009",
+        },
+        Rule {
+            pattern: Regex::new(r"GP-00[1-5]").unwrap(),
+            score: 0.8,
+            failure_mode: "FM-005",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)security|vulnerability|injection").unwrap(),
+            score: 0.9,
+            failure_mode: "FM-010",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)Cannot find module|ModuleNotFoundError").unwrap(),
+            score: 0.5,
+            failure_mode: "FM-007",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)TypeError|ReferenceError").unwrap(),
+            score: 0.5,
+            failure_mode: "FM-008",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)timeout|ETIMEDOUT").unwrap(),
+            score: 0.6,
+            failure_mode: "FM-009",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)\bwarnings?\s*:").unwrap(),
+            score: 0.2,
+            failure_mode: "",
+        },
+        Rule {
+            pattern: Regex::new(r"(?i)deprecated").unwrap(),
+            score: 0.3,
+            failure_mode: "",
+        },
+    ]
+}
+
+fn base_importance(category: &str) -> f64 {
+    match category {
+        "error" => 0.5,
+        "quality" => 0.6,
+        "pattern" => 0.4,
+        "correction" => 0.7,
+        _ => 0.5,
+    }
+}
+
+fn compute_importance(category: &str, searchable: &str) -> (f64, f64, String) {
+    let rules = importance_rules();
+    for rule in &rules {
+        if rule.pattern.is_match(searchable) {
+            return (rule.score, 0.8, rule.failure_mode.to_string());
+        }
+    }
+    (base_importance(category), 0.5, String::new())
+}
+
+fn get_data_dir() -> PathBuf {
+    if let Ok(dir) = std::env::var("AUTOEVOLVE_DATA_DIR") {
+        return PathBuf::from(dir);
+    }
+    PathBuf::from(crate::io::home_dir())
+        .join(".claude")
+        .join("agent-memory")
+}
+
+/// Emit a session event to current-session.jsonl (compatible with session_events.py).
+pub fn emit_event(category: &str, data: &serde_json::Value) {
+    let dir = get_data_dir();
+    let path = dir.join("current-session.jsonl");
+
+    if std::fs::create_dir_all(&dir).is_err() {
+        return;
+    }
+
+    let searchable = data.to_string();
+    let (importance, confidence, failure_mode) = compute_importance(category, &searchable);
+
+    let entry = serde_json::json!({
+        "timestamp": crate::io::iso_now(),
+        "category": category,
+        "importance": (importance * 100.0).round() / 100.0,
+        "confidence": (confidence * 100.0).round() / 100.0,
+        "failure_mode": failure_mode,
+        "failure_type": "generalization",
+        "scored_by": "rule",
+        "promotion_status": "pending",
+        "data": data,
+    });
+
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+    {
+        let _ = writeln!(f, "{}", entry);
+    }
+}

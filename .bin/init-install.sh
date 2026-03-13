@@ -262,6 +262,33 @@ setup_claude_plugins() {
 }
 
 # =============================================================================
+# Claude Hooks (Rust)
+# =============================================================================
+build_claude_hooks() {
+  section "Claude Hooks"
+
+  local hooks_dir="$DOTFILES_DIR/tools/claude-hooks"
+
+  if [ ! -d "$hooks_dir" ]; then
+    warn "claude-hooks directory not found, skipping..."
+    return
+  fi
+
+  if ! command_exists cargo; then
+    log "cargo is not installed, skipping claude-hooks build (https://rustup.rs/)"
+    return
+  fi
+
+  log "Building claude-hooks..."
+  if ! (cd "$hooks_dir" && cargo build --release); then
+    warn "Failed to build claude-hooks"
+    return
+  fi
+
+  log "claude-hooks built successfully"
+}
+
+# =============================================================================
 # Start Services
 # =============================================================================
 start_services() {
@@ -295,6 +322,7 @@ The following has been set up:
   ✅ Sheldon plugins
   ✅ Starship prompt
   ✅ Claude Code plugins
+  ✅ Claude hooks (Rust binary)
 
 Next steps:
   1. Restart your terminal (or run: exec zsh)
@@ -330,6 +358,7 @@ EOF
   create_symlinks
   setup_sheldon      # After symlinks so config exists
   setup_starship
+  build_claude_hooks    # After brew (needs cargo)
   setup_claude_plugins  # After symlinks so settings.json exists
   start_services
   print_summary

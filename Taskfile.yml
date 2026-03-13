@@ -26,6 +26,17 @@ tasks:
     cmds:
       - brew update && brew upgrade && brew cleanup
 
+  build-hooks:
+    desc: Build claude-hooks Rust binary
+    dir: ~/dotfiles/tools/claude-hooks
+    cmds:
+      - cargo build --release
+    sources:
+      - src/**/*.rs
+      - Cargo.toml
+    generates:
+      - target/release/claude-hooks
+
   validate:
     desc: Run all dotfiles validation checks
     cmds:

@@ -44,3 +44,6 @@ skills-lock.json
 
 # Context knowledge base (personal learning notes)
 .context/
+
+# Rust build artifacts
+tools/claude-hooks/target/

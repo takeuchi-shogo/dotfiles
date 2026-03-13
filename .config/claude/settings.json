@@ -152,7 +152,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "jq -r '.tool_input.command // empty' | grep -qE 'git add (-A|--all|[.]$|[.] )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"一括追加は禁止です。ファイルを個別に確認し、必要なものだけ追加してください\"}}' || true",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-bash",
 						"timeout": 5
 					}
 				]
@@ -162,9 +162,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/policy/pre-commit-check.js",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-commit",
 						"timeout": 15,
-						"statusMessage": "Commit message check..."
+						"statusMessage": "Commit check..."
 					}
 				]
 			},
@@ -173,14 +173,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/protect-linter-config.py",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-edit",
 						"timeout": 10,
-						"statusMessage": "Linter config guard..."
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/search-first-gate.py",
-						"timeout": 5
+						"statusMessage": "Pre-edit check..."
 					}
 				]
 			},
@@ -189,7 +184,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/search-first-gate.py",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-search",
 						"timeout": 5
 					}
 				]
@@ -199,7 +194,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/suggest-gemini.py",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-websearch",
 						"timeout": 10
 					}
 				]
@@ -211,25 +206,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/auto-format.js",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-edit",
 						"timeout": 30,
-						"statusMessage": "Auto-formatting..."
-					},
-					{
-						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/suggest-compact.js",
-						"timeout": 10
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/golden-check.py",
-						"timeout": 15,
-						"statusMessage": "Golden principles check..."
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_manager.py",
-						"timeout": 10
+						"statusMessage": "Format + check..."
 					}
 				]
 			},
@@ -238,31 +217,9 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/output-offload.py",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/error-to-codex.py",
-						"timeout": 15,
-						"statusMessage": "Error analysis..."
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/post-test-analysis.py",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-bash",
 						"timeout": 30,
-						"statusMessage": "Test analysis..."
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/lifecycle/plan-lifecycle.py",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/review-feedback-tracker.py",
-						"timeout": 15,
-						"statusMessage": "Review feedback tracking..."
+						"statusMessage": "Analysis..."
 					}
 				]
 			}
