@@ -38,19 +38,11 @@ MANY SMALL FILES > FEW LARGE FILES:
 
 ## Error Handling
 
-ALWAYS handle errors explicitly:
-- Handle errors at every level
-- User-friendly messages in UI-facing code
-- Detailed error context in server logs
-- Never silently swallow errors
+→ 詳細は `rules/common/error-handling.md` を参照
 
 ## Input Validation
 
-ALWAYS validate at system boundaries:
-- Validate all user input before processing
-- Use schema-based validation (zod, pydantic, etc.)
-- Fail fast with clear error messages
-- Never trust external data
+→ 詳細は `rules/common/security.md` の入力バリデーションセクションを参照
 
 ## Code Quality Checklist
 
