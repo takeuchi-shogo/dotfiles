@@ -2,7 +2,7 @@
 name: security-reviewer
 description: "Deep-dive OWASP Top 10 security analysis (complements code-reviewer's surface checks). Use PROACTIVELY when code handles user input, authentication, API endpoints, or sensitive data. Performs systematic vulnerability scanning: secrets detection, injection patterns, crypto safety, access control audit."
 tools: Read, Bash, Glob, Grep
-model: sonnet
+model: opus
 memory: user
 permissionMode: plan
 maxTurns: 15

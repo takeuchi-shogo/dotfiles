@@ -2,7 +2,7 @@
 name: gemini-explore
 description: "Gemini CLI の 1M コンテキストを活用した大規模コードベース分析・外部リサーチ・マルチモーダル処理エージェント。Claude の 200K では不足する場合や、Google Search grounding によるリサーチ、PDF/動画/音声の読み取りに使用。"
 tools: Bash, Read, Glob, Grep
-model: sonnet
+model: haiku
 memory: user
 permissionMode: plan
 maxTurns: 10

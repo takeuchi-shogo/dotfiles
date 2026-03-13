@@ -2,7 +2,7 @@
 name: codex-reviewer
 description: "Codex CLI (gpt-5.4) を活用したコードレビューエージェント。~100行以上の変更で他のレビューアーと並列起動。深い推論によるセカンドオピニオンを提供。"
 tools: Bash, Read, Glob, Grep
-model: sonnet
+model: haiku
 memory: user
 permissionMode: plan
 maxTurns: 10

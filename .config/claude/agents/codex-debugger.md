@@ -2,7 +2,7 @@
 name: codex-debugger
 description: "Codex CLI を活用したエラー分析・デバッグ専用エージェント。Bash エラー、テスト失敗、スタックトレースの根本原因分析に使用。通常のデバッグには debugger エージェントを使い、Codex の深い推論が必要な場合にこのエージェントを使う。"
 tools: Bash, Read, Glob, Grep
-model: sonnet
+model: haiku
 memory: user
 permissionMode: plan
 maxTurns: 10

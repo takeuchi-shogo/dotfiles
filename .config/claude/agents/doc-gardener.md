@@ -2,7 +2,7 @@
 name: doc-gardener
 description: "ドキュメント陳腐化を検出・修正するメンテナンスエージェント。doc-garden-check hook からの警告を受け、ドキュメントの更新・修正を行う。"
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: sonnet
+model: haiku
 memory: user
 permissionMode: plan
 maxTurns: 15

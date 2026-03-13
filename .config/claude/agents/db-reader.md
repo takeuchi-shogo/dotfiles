@@ -2,7 +2,7 @@
 name: db-reader
 description: "データベースの読み取り専用調査。SELECT, SHOW, DESCRIBE のみ許可。書き込みクエリは一切実行しない。"
 tools: Read, Bash, Glob, Grep
-model: sonnet
+model: haiku
 memory: user
 permissionMode: plan
 maxTurns: 10
