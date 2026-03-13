@@ -6,20 +6,17 @@ Skill tool が呼ばれた時に skill 名を自動記録する。
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
-from hook_utils import output_passthrough
+from hook_utils import check_tool, load_hook_input, output_passthrough, run_hook
 from session_events import emit_skill_event
 
 
 def main() -> None:
-    data = json.loads(sys.stdin.read())
-
-    tool_name = data.get("tool_name", "")
-    if tool_name != "Skill":
+    data = load_hook_input()
+    if not data or not check_tool(data, "Skill"):
         output_passthrough(data)
         return
 
@@ -27,15 +24,10 @@ def main() -> None:
     skill_name = tool_input.get("skill", "")
 
     if skill_name:
-        emit_skill_event(
-            "invocation",
-            {
-                "skill_name": skill_name,
-            },
-        )
+        emit_skill_event("invocation", {"skill_name": skill_name})
 
     output_passthrough(data)
 
 
 if __name__ == "__main__":
-    main()
+    run_hook("skill-tracker", main)
