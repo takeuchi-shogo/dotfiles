@@ -41,7 +41,7 @@ task update       # Homebrew パッケージの更新
 | [.config/starship.toml](.config/starship.toml) | プロンプト | |
 | [.config/sheldon/](.config/sheldon/) | zsh プラグインマネージャ | |
 | [.config/sketchybar/](.config/sketchybar/) | ステータスバー | |
-| [.config/claude/](.config/claude/) | Claude Code 設定 | [README](.config/claude/README.md) |
+| [.config/claude/](.config/claude/) | Claude Code AI ハーネス | [README](.config/claude/README.md) |
 | [.codex/](.codex/) | Codex CLI 設定 | |
 | [.config/git/](.config/git/) | Git 設定 | |
 | [.config/gh/](.config/gh/) | GitHub CLI | |
