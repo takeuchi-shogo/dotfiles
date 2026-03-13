@@ -57,6 +57,16 @@ for f in errors.jsonl quality.jsonl patterns.jsonl; do
   fi
 done
 
+for f in skill-executions.jsonl skill-benchmarks.jsonl; do
+  path="$HOME/.claude/agent-memory/learnings/$f"
+  if [ -f "$path" ]; then
+    count=$(wc -l < "$path" | tr -d ' ')
+    echo "✓ learnings/$f: ${count} 件"
+  else
+    echo "- learnings/$f: 未作成"
+  fi
+done
+
 metrics="$HOME/.claude/agent-memory/metrics/session-metrics.jsonl"
 if [ -f "$metrics" ]; then
   count=$(wc -l < "$metrics" | tr -d ' ')
@@ -110,7 +120,7 @@ python3 "$HOME/.claude/scripts/experiment-tracker.py" measure-all
 | **errors**     | `learnings/errors.jsonl` の繰り返しエラーパターン分析                |
 | **quality**    | `learnings/quality.jsonl` の品質違反パターン分析                     |
 | **agents**     | `metrics/session-metrics.jsonl` のエージェント効率分析               |
-| **skills**     | `learnings/patterns.jsonl` + メトリクスからスキル改善候補の分析      |
+| **skills**     | `learnings/skill-executions.jsonl` + `learnings/skill-benchmarks.jsonl` からスキル健全性分析（トレンド/閾値判定/失敗パターン/クロスデータ相関） |
 
 各エージェントへのプロンプトには以下を含める:
 
