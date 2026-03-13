@@ -44,6 +44,8 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 | `learnings/quality.jsonl` | 品質違反 |
 | `learnings/patterns.jsonl` | 成功パターン |
 | `metrics/session-metrics.jsonl` | セッション統計 |
+| `learnings/skill-executions.jsonl` | スキル実行スコア |
+| `learnings/skill-benchmarks.jsonl` | スキル A/B テスト結果 |
 
 データディレクトリ: `~/.claude/agent-memory/`（`AUTOEVOLVE_DATA_DIR` で上書き可能）
 
@@ -55,6 +57,17 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 4. **クロスカテゴリ相関**: errors × quality, errors × patterns の共起分析
 5. **Evaluator 精度測定**: accept_rate < 70% のレビューアー/FM → プロンプト改善候補
 6. **Spec/Gen 分岐分析**: failure_type ごとにアクション分岐
+7. **スキル健全性分析**: `skill-executions.jsonl` + `skill-benchmarks.jsonl` を分析
+   - **トレンド分析**: スキルごとに直近10回の score 平均と前10回を比較
+   - **閾値判定**:
+     - Healthy: 平均 score >= 0.6
+     - Degraded: 平均 score 0.4-0.6、または前期比 -0.1 以上の低下
+     - Failing: 平均 score < 0.4、または直近5回中4回以上が score < 0.4
+   - **失敗パターン特定**: Degraded/Failing スキルの紐づくエラー・GP違反を分析
+   - **クロスデータ相関**: skill-benchmarks の A/B 結果と実行スコアを突き合わせ
+     - A/B retire + 実行スコア低 → 強い改善根拠
+     - A/B keep + 実行スコア低 → 環境変化による劣化
+     - 実行データなし → 不要スキル候補
 
 ### 出力
 
@@ -77,6 +90,35 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 | **高** | 同じエラー/違反が5回以上 | error-fix-guides / golden-principles に追加 |
 | **中** | プロジェクト固有パターンが3回以上 | エージェント定義にコンテキスト追加 |
 | **低** | 1-2回のみの観察 | 記録のみ、変更しない |
+| **高** | スキル Failing + 実行5回以上 | SKILL.md の修正案を `autoevolve/*` ブランチに作成 |
+| **中** | スキル Degraded + トレンド低下 | SKILL.md の修正案を `autoevolve/*` ブランチに作成 |
+| **低** | スキル実行5回未満 | 記録のみ、データ不足 |
+
+### スキル改善の修正パターン
+
+Failing/Degraded スキルに対する修正案の生成手順:
+
+1. 対象 SKILL.md を読む
+2. insights の失敗パターン分析結果を参照
+3. skill-benchmarks.jsonl の A/B データを参照
+4. 失敗パターンに基づいて修正を決定:
+
+| 失敗パターン | 修正アクション |
+|-------------|---------------|
+| トリガー過剰 (他のタスクで誤発火) | description の条件を絞る |
+| トリガー不足 (呼ばれるべき時に呼ばれない) | description にキーワード追加 |
+| instruction で失敗多発 | 該当ステップの書き換え/条件追加 |
+| 環境変化 (ツール非推奨等) | ツール参照の更新 |
+| ベースモデルで十分 (A/B delta < 0) | retire 提案 ([DEPRECATED] 付与) |
+
+5. `autoevolve/YYYY-MM-DD-skill-{name}` ブランチにコミット
+6. コミットメッセージに根拠データを含める
+
+### スキル改善の安全制約
+
+- 実行5回以上が改善提案の最低条件
+- retire 提案時はまず description に `[DEPRECATED]` を付与
+- 次回 audit で改善なければ削除提案にエスカレート
 
 ### ブランチ作成と変更
 
@@ -141,6 +183,7 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 - 繰り返しエラー: N 件
 - 頻出品質違反: N 件
 - 改善提案: N 件
+- スキル健全性: Failing N 件 / Degraded N 件 / Healthy N 件
 
 ## Improve フェーズ
 - ブランチ: autoevolve/YYYY-MM-DD-{topic}
