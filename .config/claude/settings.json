@@ -222,6 +222,16 @@
 						"statusMessage": "Analysis..."
 					}
 				]
+			},
+			{
+				"matcher": "Skill",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/skill-tracker.py",
+						"timeout": 5
+					}
+				]
 			}
 		],
 		"PreCompact": [
