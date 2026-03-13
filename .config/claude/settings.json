@@ -139,8 +139,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/agent-router.py",
-						"timeout": 10,
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks user-prompt",
+						"timeout": 5,
 						"statusMessage": "Agent routing..."
 					}
 				]

@@ -33,9 +33,9 @@ SUBSYSTEMS = {
 ### 3. インストール & 起動
 
 ```bash
-pip install -e .
+uv pip install -e .
 # or
-pip install mcp[cli]
+uv pip install mcp[cli]
 mcp run server.py
 ```
 

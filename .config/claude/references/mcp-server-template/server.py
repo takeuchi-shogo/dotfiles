@@ -5,13 +5,12 @@ Copy this template and customize SUBSYSTEMS and AGENTS for your project.
 Based on "Codified Context" paper (Vasilopoulos, 2026).
 
 Usage:
-    pip install mcp[cli]
+    uv pip install mcp[cli]
     mcp run server.py
 """
 
 from mcp.server.fastmcp import FastMCP
 import subprocess
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -140,9 +139,7 @@ def search_codebase(query: str, subsystem: Optional[str] = None) -> str:
             args.append(path)
 
     try:
-        result = subprocess.run(
-            args, capture_output=True, text=True, cwd=PROJECT_ROOT
-        )
+        result = subprocess.run(args, capture_output=True, text=True, cwd=PROJECT_ROOT)
         if result.stdout.strip():
             return result.stdout.strip()
         return f"No results for '{query}'"
@@ -171,9 +168,7 @@ def get_recent_changes(days: int = 7, subsystem: Optional[str] = None) -> str:
         args.extend(SUBSYSTEMS[subsystem]["paths"])
 
     try:
-        result = subprocess.run(
-            args, capture_output=True, text=True, cwd=PROJECT_ROOT
-        )
+        result = subprocess.run(args, capture_output=True, text=True, cwd=PROJECT_ROOT)
         return result.stdout.strip() or "No recent changes"
     except Exception as e:
         return f"Error: {e}"
