@@ -85,46 +85,43 @@ def process_session(cwd: str | None = None) -> None:
 
     # スキル実行データの集計
     events = summary["_events"]
-    errors = summary["_errors"]
     quality = summary["_quality"]
-    project = summary["project"]
     skill_invocations = [
         e
         for e in events
         if e.get("category") == "skill" and e.get("type") == "invocation"
     ]
-    for inv in skill_invocations:
-        skill_name = inv.get("skill_name", "")
-        if not skill_name:
-            continue
-        score = compute_skill_score(events, skill_name)
-        error_count = len(errors)
-        gp_violations = len([e for e in quality if e.get("rule", "").startswith("GP-")])
-        review_criticals = len(
-            [
-                e
-                for e in quality
-                if e.get("review_severity") in ("critical", "important")
-            ]
+    if skill_invocations:
+        # セッション全体の集計値（ループ外で一度だけ計算）
+        error_count = len(summary["_errors"])
+        gp_violations = sum(1 for e in quality if e.get("rule", "").startswith("GP-"))
+        review_criticals = sum(
+            1 for e in quality if e.get("review_severity") in ("critical", "important")
         )
         test_passed = not any(e.get("test_passed") is False for e in events)
-        append_to_learnings(
-            "skill-executions",
-            {
-                "skill_name": skill_name,
-                "score": score,
-                "error_count": error_count,
-                "gp_violations": gp_violations,
-                "review_criticals": review_criticals,
-                "test_passed": test_passed,
-                "project": project,
-            },
-        )
-        logger.info(
-            "session-learner: skill '%s' score=%.2f",
-            skill_name,
-            score,
-        )
+
+        for inv in skill_invocations:
+            skill_name = inv.get("skill_name", "")
+            if not skill_name:
+                continue
+            score = compute_skill_score(events, skill_name)
+            append_to_learnings(
+                "skill-executions",
+                {
+                    "skill_name": skill_name,
+                    "score": score,
+                    "error_count": error_count,
+                    "gp_violations": gp_violations,
+                    "review_criticals": review_criticals,
+                    "test_passed": test_passed,
+                    "project": summary["project"],
+                },
+            )
+            logger.info(
+                "session-learner: skill '%s' score=%.2f",
+                skill_name,
+                score,
+            )
 
     metrics = {
         "project": summary["project"],
