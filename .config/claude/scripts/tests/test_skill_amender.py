@@ -8,7 +8,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from skill_amender import assess_health, parse_skill
+from skill_amender import (
+    AmendmentProposal,
+    SkillHealthReport,
+    assess_health,
+    classify_failure_pattern,
+    generate_proposal,
+    parse_skill,
+)
 
 
 @pytest.fixture
@@ -200,3 +207,98 @@ class TestAssessHealth:
         (learnings / "skill-executions.jsonl").write_text("\n".join(entries) + "\n")
         report = assess_health("new-skill", tmp_path)
         assert report.execution_count == 1
+
+
+class TestClassifyFailurePattern:
+    def test_failing_with_negative_benchmark(self):
+        report = SkillHealthReport(
+            skill_name="bad",
+            status="failing",
+            avg_score=0.2,
+            trend=-0.3,
+            execution_count=10,
+            benchmark_delta=-2.5,
+        )
+        assert classify_failure_pattern(report) == "deprecate"
+
+    def test_failing_without_benchmark(self):
+        report = SkillHealthReport(
+            skill_name="bad",
+            status="failing",
+            avg_score=0.3,
+            trend=-0.2,
+            execution_count=10,
+        )
+        assert classify_failure_pattern(report) == "edit_instruction"
+
+    def test_degraded_with_trend_decline(self):
+        report = SkillHealthReport(
+            skill_name="declining",
+            status="degraded",
+            avg_score=0.5,
+            trend=-0.15,
+            execution_count=10,
+        )
+        assert classify_failure_pattern(report) == "edit_instruction"
+
+    def test_healthy_returns_none(self):
+        report = SkillHealthReport(
+            skill_name="good",
+            status="healthy",
+            avg_score=0.8,
+            trend=0.0,
+            execution_count=10,
+        )
+        assert classify_failure_pattern(report) is None
+
+
+class TestGenerateProposal:
+    def test_generates_proposal_for_failing(
+        self, sample_skill, data_dir_with_executions
+    ):
+        manifest = parse_skill(sample_skill)
+        report = assess_health("bad-skill", data_dir_with_executions)
+        proposal = generate_proposal(manifest, report)
+        assert proposal is not None
+        assert isinstance(proposal, AmendmentProposal)
+        assert proposal.evidence["execution_count"] == 10
+
+    def test_returns_none_for_healthy(self, sample_skill, data_dir_with_executions):
+        manifest = parse_skill(sample_skill)
+        report = assess_health("good-skill", data_dir_with_executions)
+        proposal = generate_proposal(manifest, report)
+        assert proposal is None
+
+    def test_returns_none_for_insufficient_data(self, sample_skill, tmp_path):
+        manifest = parse_skill(sample_skill)
+        learnings = tmp_path / "learnings"
+        learnings.mkdir()
+        entries = [
+            json.dumps(
+                {
+                    "timestamp": f"2026-03-{10 + i:02d}T10:00:00Z",
+                    "skill_name": "few-runs",
+                    "score": 0.2,
+                    "project": "test",
+                }
+            )
+            for i in range(3)
+        ]
+        (learnings / "skill-executions.jsonl").write_text("\n".join(entries) + "\n")
+        report = assess_health("few-runs", tmp_path)
+        proposal = generate_proposal(manifest, report)
+        assert proposal is None
+
+    def test_deprecate_proposal(self, sample_skill, data_dir_with_executions):
+        manifest = parse_skill(sample_skill)
+        report = SkillHealthReport(
+            skill_name="bad-skill",
+            status="failing",
+            avg_score=0.2,
+            trend=-0.3,
+            execution_count=10,
+            benchmark_delta=-3.0,
+        )
+        proposal = generate_proposal(manifest, report)
+        assert proposal is not None
+        assert proposal.amendment_type == "deprecate"
