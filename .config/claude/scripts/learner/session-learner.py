@@ -41,6 +41,14 @@ def build_session_summary(cwd: str | None = None) -> dict:
         sum(all_importance) / len(all_importance) if all_importance else 0.0
     )
 
+    # Outcome classification (arXiv:2603.10600 Multi-Outcome Learning)
+    if errors and corrections:
+        outcome = "recovery"
+    elif errors:
+        outcome = "failure"
+    else:
+        outcome = "clean_success"
+
     return {
         "project": project,
         "cwd": cwd or os.getcwd(),
@@ -49,6 +57,7 @@ def build_session_summary(cwd: str | None = None) -> dict:
         "quality_issues": len(quality),
         "patterns_found": len(patterns),
         "corrections": len(corrections),
+        "outcome": outcome,
         "high_importance_count": high_count,
         "avg_importance": round(avg_importance, 2),
         "_events": events,
@@ -143,6 +152,8 @@ def process_session(cwd: str | None = None) -> None:
     if summary["total_events"] == 0:
         return
 
+    from tip_generalizer import generalize_entry
+
     logger.info(
         "session-learner: processing %d events for %s",
         summary["total_events"],
@@ -151,15 +162,52 @@ def process_session(cwd: str | None = None) -> None:
 
     for error in summary["_errors"]:
         entry = {k: v for k, v in error.items() if k != "category"}
+        entry = generalize_entry(entry)
         append_to_learnings("errors", entry)
 
     for issue in summary["_quality"]:
         entry = {k: v for k, v in issue.items() if k != "category"}
+        entry = generalize_entry(entry)
         append_to_learnings("quality", entry)
 
     for pattern in summary["_patterns"]:
         entry = {k: v for k, v in pattern.items() if k != "category"}
+        entry = generalize_entry(entry)
         append_to_learnings("patterns", entry)
+
+    # Recovery Tips: error→correction ペアを recovery-tips.jsonl に保存
+    # (arXiv:2603.10600 Contextual Learning Generator — Recovery Tips)
+    if summary["_errors"] and summary["_corrections"]:
+        from tip_generalizer import generalize_text
+
+        for error in summary["_errors"]:
+            err_msg = error.get("message", "")
+            if not err_msg:
+                continue
+            # 対応する correction を探す（時系列で最も近いもの）
+            err_ts = error.get("timestamp", "")
+            best_correction = None
+            for corr in summary["_corrections"]:
+                corr_ts = corr.get("timestamp", "")
+                if corr_ts >= err_ts:
+                    best_correction = corr
+                    break
+            if not best_correction:
+                best_correction = summary["_corrections"][-1]
+
+            recovery_action = best_correction.get("message", "") or best_correction.get(
+                "fix", ""
+            )
+            append_to_learnings(
+                "recovery-tips",
+                {
+                    "error_pattern": generalize_text(err_msg),
+                    "failure_mode": error.get("failure_mode", ""),
+                    "recovery_action": recovery_action,
+                    "trigger_condition": error.get("command", "")[:200],
+                    "importance": max(error.get("importance", 0.5), 0.7),
+                },
+            )
 
     # スキル実行データの集計
     events = summary["_events"]
@@ -244,6 +292,7 @@ def process_session(cwd: str | None = None) -> None:
         "quality_issues": summary["quality_issues"],
         "patterns_found": summary["patterns_found"],
         "corrections": summary["corrections"],
+        "outcome": summary["outcome"],
         "high_importance_count": summary["high_importance_count"],
         "avg_importance": summary["avg_importance"],
     }

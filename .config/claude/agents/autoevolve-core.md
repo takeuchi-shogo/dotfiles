@@ -46,12 +46,20 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 | `metrics/session-metrics.jsonl` | セッション統計 |
 | `learnings/skill-executions.jsonl` | スキル実行スコア |
 | `learnings/skill-benchmarks.jsonl` | スキル A/B テスト結果 |
+| `learnings/recovery-tips.jsonl` | エラー→回復ペア (Recovery Tips) |
 
 データディレクトリ: `~/.claude/agent-memory/`（`AUTOEVOLVE_DATA_DIR` で上書き可能）
 
 ### 分析タスク
 
 1. **エラーパターン分析**: 同じエラー3回以上 → 繰り返しエラーとして記録
+1.5. **因果帰属分析** (arXiv:2603.10600 Decision Attribution Analyzer):
+   繰り返しエラー（3回以上）に対して以下の3層分析を行う:
+   - **即時原因**: 直接トリガーした条件（エラーメッセージそのもの）
+   - **近因**: その条件を生んだ先行判断（どのコマンド/ツール操作が原因か）
+   - **根本原因**: なぜその判断がなされたか（知識不足? 仕様誤解? ツール制限?）
+   - **Prevention Steps**: 再発防止のための具体的アクション
+   分析結果は insights の「因果帰属分析」セクションに含める。
 2. **品質違反パターン分析**: 同じルール違反の繰り返し → 改善候補
 3. **プロジェクトプロファイル生成**: セッション数、平均エラー数、改善傾向
 4. **クロスカテゴリ相関**: errors × quality, errors × patterns の共起分析
@@ -68,6 +76,10 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
      - A/B retire + 実行スコア低 → 強い改善根拠
      - A/B keep + 実行スコア低 → 環境変化による劣化
      - 実行データなし → 不要スキル候補
+8. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
+   - 同じ error_pattern が3回以上 → error-fix-guides.md への自動追加候補
+   - generalized フィールドを使ってパターンマッチング
+   - recovery_action の有効性を検証（同じエラーの再発有無）
 
 ### プログラム的健全性判定
 
@@ -219,6 +231,8 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 - 頻出品質違反: N 件
 - 改善提案: N 件
 - スキル健全性: Failing N 件 / Degraded N 件 / Healthy N 件
+- 因果帰属分析: N 件（Prevention Steps 付き）
+- Recovery Tips: N 件（error-fix-guides 昇格候補 N 件）
 
 ## Improve フェーズ
 - ブランチ: autoevolve/YYYY-MM-DD-{topic}
