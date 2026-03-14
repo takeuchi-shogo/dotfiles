@@ -136,6 +136,14 @@ find . -maxdepth 3 -type d \( \
 - PostToolUse (Edit|Write): auto-format（検出した言語に応じたフォーマッタ）
 - 最小限の hooks のみ。過剰な自動化はしない
 
+### Context MCP サーバー（L のみ）
+
+Codified Context 論文に基づくプロジェクト固有の知識検索サーバーをセットアップ:
+
+1. `~/.claude/templates/context-mcp-server/` からテンプレートを `.claude/context-server/` にコピー
+2. `server.py` の `KNOWLEDGE_DIRS` をプロジェクト構造に合わせて調整
+3. `.claude/file-pattern-routes.json` をプロジェクトのファイル構造に合わせて生成（file-pattern-router hook 用）
+
 ---
 
 ## Phase 3: Verify（整合性チェック）

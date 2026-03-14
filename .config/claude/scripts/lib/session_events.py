@@ -335,6 +335,25 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
     return max(0.0, min(1.0, round(score, 2)))
 
 
+def emit_repeated_topic(
+    topic: str, file_patterns: list[str], session_count: int
+) -> None:
+    """Emit a repeated_topic event when the same domain knowledge appears 3+ times.
+
+    Based on Codified Context paper G4: "If you explained it twice, write it down."
+    """
+    emit_event(
+        "pattern",
+        {
+            "type": "repeated_topic",
+            "topic": topic,
+            "file_patterns": file_patterns,
+            "session_count": session_count,
+            "suggestion": "codify as reference or agent specification",
+        },
+    )
+
+
 def emit_skill_step(
     skill_name: str,
     step: int,

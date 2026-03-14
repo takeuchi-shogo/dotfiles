@@ -143,6 +143,10 @@ python3 "$HOME/.claude/scripts/experiment-tracker.py" measure-all
 
 **注意**: データが存在しないカテゴリはスキップする。存在するカテゴリのみ起動すること。
 
+**追加分析チェック（agents カテゴリ実行時）**:
+
+- **Knowledge Embedding Ratio チェック**: 各エージェント定義（`agents/*.md`）のドメイン知識比率を概算。ドメイン知識（Symptom-Cause-Fix テーブル、コードパターン、failure modes、設計制約）が全体の 50% 未満のエージェントを改善候補として報告。Codified Context 論文: "Over half of each specification's content is project-domain knowledge rather than behavioral instructions"
+
 ### Step 5: 知識整理とクロスカテゴリ分析
 
 **Agent ツールで `autoevolve-core` (phase: garden) エージェントを起動** し、以下を実行させる:

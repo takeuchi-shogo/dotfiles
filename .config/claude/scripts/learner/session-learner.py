@@ -131,6 +131,61 @@ def _update_playbook(summary: dict, logger: logging.Logger) -> None:
     logger.info("session-learner: updated playbook for %s", project)
 
 
+def _detect_repeated_topics(summary: dict, logger: logging.Logger) -> None:
+    """Detect topics that appear repeatedly across sessions.
+
+    Scans recent learnings for recurring file-path + error-pattern combinations.
+    If a topic appears in 3+ sessions, emits a codification suggestion.
+    Based on Codified Context paper G4: "If you explained it twice, write it down."
+    """
+    import json
+    from collections import Counter
+
+    from storage import get_data_dir
+
+    errors_path = get_data_dir() / "learnings" / "errors.jsonl"
+    if not errors_path.exists():
+        return
+
+    topic_counter: Counter[str] = Counter()
+    try:
+        lines = errors_path.read_text(encoding="utf-8").splitlines()
+        for line in lines[-50:]:
+            if not line.strip():
+                continue
+            try:
+                entry = json.loads(line)
+                data = entry.get("data", {})
+                file_path = data.get("file", data.get("path", ""))
+                error_type = data.get("type", data.get("error_type", ""))
+                if file_path:
+                    parts = Path(file_path).parts
+                    topic = (
+                        "/".join(parts[:3])
+                        if len(parts) >= 3
+                        else str(Path(file_path).parent)
+                    )
+                    if error_type:
+                        topic = f"{topic}:{error_type}"
+                    topic_counter[topic] += 1
+            except (json.JSONDecodeError, KeyError):
+                continue
+    except OSError:
+        return
+
+    for topic, count in topic_counter.items():
+        if count >= 3:
+            from session_events import emit_repeated_topic
+
+            file_patterns = [topic.split(":")[0]]
+            emit_repeated_topic(topic, file_patterns, count)
+            logger.info(
+                "session-learner: repeated topic detected: %s (%d occurrences)",
+                topic,
+                count,
+            )
+
+
 def _compute_skill_version(skill_name: str) -> str:
     """SKILL.md の内容ハッシュ先頭8文字を返す。見つからなければ空文字。"""
     skills_dir = Path.home() / ".claude" / "skills"
@@ -300,6 +355,9 @@ def process_session(cwd: str | None = None) -> None:
 
     # Project Playbook: プロジェクト固有の知見を蓄積
     _update_playbook(summary, logger)
+
+    # Repeated topic detection (Codified Context G4)
+    _detect_repeated_topics(summary, logger)
 
     logger.info(
         "session-learner: flushed %d errors, %d quality, %d patterns",

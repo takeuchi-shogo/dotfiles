@@ -76,6 +76,35 @@ else:
 " 2>/dev/null || true
 ```
 
+### Step 3.5: 未文書化サブシステム検出
+
+Codified Context 論文 Case Study 3 の知見: ドキュメント検索が0件を返すこと自体が「未文書化サブシステム」の発見シグナル。
+
+```bash
+python3 -c "
+from pathlib import Path
+src_dirs = [Path(c) for c in ['src','app','lib','pkg','internal','cmd'] if Path(c).is_dir()]
+if not src_dirs:
+    print('ソースディレクトリなし — スキップ'); exit(0)
+modules = set()
+for s in src_dirs:
+    for c in s.iterdir():
+        if c.is_dir() and not c.name.startswith(('.','_','node_modules')): modules.add(c.name)
+doc_dirs = [Path('docs'), Path('.claude/references'), Path('references')]
+documented = set()
+for d in doc_dirs:
+    if d.is_dir():
+        for f in d.rglob('*.md'): documented.add(f.stem.lower().replace('-','').replace('_',''))
+undoc = [m for m in sorted(modules) if not any(m.lower().replace('-','').replace('_','') in d for d in documented)]
+if undoc:
+    print(f'未文書化サブシステム ({len(undoc)} 件):')
+    for m in undoc: print(f'  - {m}')
+    print('  → document-factory エージェントで spec 生成を検討')
+else:
+    print('全サブシステム文書化済み ✓')
+" 2>/dev/null || true
+```
+
 ### Step 4: 深刻な問題への対応
 
 参照が壊れている場合は `doc-gardener` エージェントに修正を委譲する:
