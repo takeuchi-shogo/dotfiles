@@ -5,15 +5,20 @@ import tempfile
 import importlib
 from pathlib import Path
 
-scripts_dir = str(Path(__file__).resolve().parent.parent.parent / ".config" / "claude" / "scripts")
+scripts_dir = str(
+    Path(__file__).resolve().parent.parent.parent / ".config" / "claude" / "scripts"
+)
+lib_dir = os.path.join(scripts_dir, "lib")
+learner_dir = os.path.join(scripts_dir, "learner")
 sys.path.insert(0, scripts_dir)
+sys.path.insert(0, lib_dir)
 
 
 def _import_session_learner():
     """ハイフン付きファイル名 session-learner.py をインポートする。"""
     spec = importlib.util.spec_from_file_location(
         "session_learner",
-        os.path.join(scripts_dir, "session-learner.py"),
+        os.path.join(learner_dir, "session-learner.py"),
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -21,7 +26,6 @@ def _import_session_learner():
 
 
 class TestSessionLearner:
-
     def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
         os.environ["AUTOEVOLVE_DATA_DIR"] = self.tmpdir
@@ -31,6 +35,7 @@ class TestSessionLearner:
 
     def test_build_session_summary_with_events(self):
         from session_events import emit_event
+
         emit_event("error", {"message": "TypeError", "command": "npm test"})
         emit_event("error", {"message": "ReferenceError", "command": "node app.js"})
         emit_event("quality", {"rule": "GP-004", "file": "src/app.ts"})
@@ -51,6 +56,7 @@ class TestSessionLearner:
 
     def test_process_flushes_events_to_learnings(self):
         from session_events import emit_event
+
         emit_event("error", {"message": "TypeError", "command": "npm test"})
 
         session_learner = _import_session_learner()
@@ -68,3 +74,67 @@ class TestSessionLearner:
 
         metrics_path = Path(self.tmpdir) / "metrics" / "session-metrics.jsonl"
         assert not metrics_path.exists()
+
+    def test_session_outcome_clean_success(self):
+        session_learner = _import_session_learner()
+        summary = session_learner.build_session_summary(cwd="/tmp/test")
+        assert summary["outcome"] == "clean_success"
+
+    def test_session_outcome_failure(self):
+        from session_events import emit_event
+
+        emit_event("error", {"message": "TypeError", "command": "npm test"})
+        session_learner = _import_session_learner()
+        summary = session_learner.build_session_summary(cwd="/tmp/test")
+        assert summary["outcome"] == "failure"
+
+    def test_session_outcome_recovery(self):
+        from session_events import emit_event
+
+        emit_event("error", {"message": "TypeError", "command": "npm test"})
+        emit_event("correction", {"message": "Fixed TypeError"})
+        session_learner = _import_session_learner()
+        summary = session_learner.build_session_summary(cwd="/tmp/test")
+        assert summary["outcome"] == "recovery"
+
+    def test_process_adds_generalized_fields(self):
+        from session_events import emit_event
+
+        emit_event(
+            "error", {"message": "Error in /Users/test/app.ts", "command": "npm test"}
+        )
+        session_learner = _import_session_learner()
+        session_learner.process_session(cwd="/tmp/test")
+
+        errors_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
+        data = json.loads(errors_path.read_text().strip())
+        assert "generalized_message" in data
+        assert "/Users/test/" not in data["generalized_message"]
+
+    def test_recovery_tips_extracted(self):
+        from session_events import emit_event
+
+        emit_event(
+            "error", {"message": "TypeError: x is undefined", "command": "npm test"}
+        )
+        emit_event("correction", {"message": "Fixed by adding null check"})
+
+        session_learner = _import_session_learner()
+        session_learner.process_session(cwd="/tmp/test")
+
+        tips_path = Path(self.tmpdir) / "learnings" / "recovery-tips.jsonl"
+        assert tips_path.exists()
+        data = json.loads(tips_path.read_text().strip())
+        assert "TypeError" in data["error_pattern"]
+        assert data["recovery_action"] != ""
+
+    def test_no_recovery_tips_without_corrections(self):
+        from session_events import emit_event
+
+        emit_event("error", {"message": "TypeError", "command": "npm test"})
+
+        session_learner = _import_session_learner()
+        session_learner.process_session(cwd="/tmp/test")
+
+        tips_path = Path(self.tmpdir) / "learnings" / "recovery-tips.jsonl"
+        assert not tips_path.exists()
