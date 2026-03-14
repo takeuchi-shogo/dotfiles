@@ -248,6 +248,9 @@ def process_session(cwd: str | None = None) -> None:
     }
     append_to_metrics(metrics)
 
+    # Project Playbook: プロジェクト固有の知見を蓄積
+    _update_playbook(summary, logger)
+
     logger.info(
         "session-learner: flushed %d errors, %d quality, %d patterns",
         summary["errors_count"],

@@ -31,6 +31,19 @@
 - `~/.claude/session-state/`, `~/.claude/agent-memory/`
   - Claude の checkpoint / learnings surface
 
+## Scaffolding vs Harness 分離
+
+OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
+
+| 層 | フェーズ | 目的 | 実装 |
+|---|---|---|---|
+| **Scaffolding** | SessionStart (1回) | コールドスタート構築 — 状態復元、ツール登録 | `session-load.js`, `checkpoint_recover.py` |
+| **Harness** | ツール実行毎 | ランタイムオーケストレーション — ポリシー強制、品質ゲート | PreToolUse/PostToolUse/Stop hooks |
+
+- **Scaffolding は情報提供のみ** (stderr 出力) — ブロッキングしない
+- **Harness はポリシー強制** (exit code 2 でブロック可能)
+- 各フェーズは独立に最適化可能: scaffolding はコールドスタート遅延、harness は長期セッション生存率
+
 ## Claude-Specific Harness
 
 - 実装場所: `.config/claude/settings.json`, `.config/claude/scripts/`
@@ -55,6 +68,8 @@
 | `completion-gate.py` | 10編集以上 | Review Gate: `/review` 実行を提案（アドバイザリー） |
 | `pre-commit-check.js` | パターンマッチ | `sk-`, `ghp_`, `AKIA` 等のシークレットをブロック |
 | `protect-linter-config.py` | ファイル名一致 | `.eslintrc*`, `biome.json` 等の変更をブロック |
+| `check_gp_blocking` (Rust) | パターンマッチ | GP-004 (空catch) / GP-005 (any型) の編集をブロック |
+| `pre-compact-save.js` | PreCompact | 圧縮ガイダンス + アクティブプラン追跡 + offload索引 |
 
 ## Codex-Specific Harness
 
