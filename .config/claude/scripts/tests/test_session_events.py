@@ -18,6 +18,7 @@ from session_events import (
     emit_review_feedback,
     emit_review_finding,
     emit_skill_event,
+    emit_skill_step,
     flush_session,
     read_pending_findings,
 )
@@ -440,3 +441,37 @@ class TestComputeSkillScore:
         ]
         score = compute_skill_score(events, "rpi")
         assert score == pytest.approx(0.6)  # 0.5 + 0.5 - 0.2*2 = 0.6
+
+
+class TestEmitSkillStep:
+    """スキルステップの成否記録テスト。"""
+
+    def test_emit_step_success(self, tmp_path):
+        emit_skill_step("review", step=1, outcome="success")
+        session_file = tmp_path / "current-session.jsonl"
+        entry = json.loads(session_file.read_text().strip())
+        assert entry["category"] == "skill"
+        assert entry["type"] == "step_outcome"
+        assert entry["skill_name"] == "review"
+        assert entry["step"] == 1
+        assert entry["outcome"] == "success"
+
+    def test_emit_step_failed_with_error_ref(self, tmp_path):
+        emit_skill_step(
+            "react-expert",
+            step=3,
+            outcome="failed",
+            data={"error_ref": "2026-03-14T10:23:45Z", "tool_name": "WebFetch"},
+        )
+        session_file = tmp_path / "current-session.jsonl"
+        entry = json.loads(session_file.read_text().strip())
+        assert entry["outcome"] == "failed"
+        assert entry["step"] == 3
+        assert entry["error_ref"] == "2026-03-14T10:23:45Z"
+        assert entry["tool_name"] == "WebFetch"
+
+    def test_emit_step_skipped(self, tmp_path):
+        emit_skill_step("spike", step=2, outcome="skipped")
+        session_file = tmp_path / "current-session.jsonl"
+        entry = json.loads(session_file.read_text().strip())
+        assert entry["outcome"] == "skipped"

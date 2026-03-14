@@ -30,7 +30,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.4 \
-  --config model_reasoning_effort="high" \
+  --config model_reasoning_effort="xhigh" \
   --sandbox read-only \
   "$(cat <<'PROMPT'
 Review the recent git changes. Check these 6 items in order:
@@ -54,12 +54,7 @@ PROMPT
 
 ## reasoning_effort の選択
 
-| シナリオ               | 設定    | 理由                 |
-| ---------------------- | ------- | -------------------- |
-| 通常のコードレビュー   | `high`  | バランス良い分析     |
-| 大規模リファクタリング | `xhigh` | 広範囲の影響を深掘り |
-
-変更が200行を超える場合は `xhigh` を使用する。
+レビューは常に `xhigh` を使用する。深い推論による高品質なレビューが最優先。
 
 ## Language Protocol
 

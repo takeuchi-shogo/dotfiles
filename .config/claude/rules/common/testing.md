@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.go"
+  - "**/*.py"
+  - "**/*.rs"
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/*_test.*"
+---
+
 # Testing Requirements
 
 ## Test Coverage Target: 80%+

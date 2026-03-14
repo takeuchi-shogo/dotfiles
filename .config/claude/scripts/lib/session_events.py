@@ -333,3 +333,28 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
     score -= 0.2 * len(review_criticals)
 
     return max(0.0, min(1.0, round(score, 2)))
+
+
+def emit_skill_step(
+    skill_name: str,
+    step: int,
+    outcome: str,
+    data: dict | None = None,
+) -> None:
+    """スキル内の個別ステップの成否を記録する。
+
+    Args:
+        skill_name: スキル名
+        step: ステップ番号 (1-indexed)
+        outcome: "success" | "failed" | "skipped"
+        data: 追加情報 (error_ref, tool_name 等)
+    """
+    emit_skill_event(
+        "step_outcome",
+        {
+            "skill_name": skill_name,
+            "step": step,
+            "outcome": outcome,
+            **(data or {}),
+        },
+    )
