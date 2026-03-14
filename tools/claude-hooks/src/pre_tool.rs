@@ -126,9 +126,70 @@ fn check_search_first_edit(data: &serde_json::Value) -> Option<String> {
     )
 }
 
+fn check_gp_blocking(data: &serde_json::Value) {
+    let tool_name = data["tool_name"].as_str().unwrap_or("");
+    let file_path = data["tool_input"]["file_path"].as_str().unwrap_or("");
+
+    let ext = Path::new(file_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+
+    // Skip non-code files
+    if !["ts", "tsx", "js", "jsx", "go", "py", "rs"].contains(&ext.as_str()) {
+        return;
+    }
+
+    // Get the content being introduced
+    let content = if tool_name == "Write" {
+        data["tool_input"]["content"].as_str().unwrap_or("")
+    } else {
+        data["tool_input"]["new_string"].as_str().unwrap_or("")
+    };
+
+    if content.is_empty() {
+        return;
+    }
+
+    // GP-004: Empty error handlers — BLOCK
+    let empty_catch_patterns = [
+        Regex::new(r"catch\s*\([^)]*\)\s*\{\s*\}").unwrap(),
+        Regex::new(r"except\s*.*:\s*\n\s*pass").unwrap(),
+    ];
+    if empty_catch_patterns.iter().any(|p| p.is_match(content)) {
+        crate::io::deny(
+            "BLOCKED [GP-004]: 空の catch/except ブロックが検出されました。\n\
+             エラーを握り潰さず、適切にハンドリングしてください。\n\
+             WHY: 空の catch はエラーを隠蔽し、デバッグを困難にします。\n\
+             FIX: ログ出力、再スロー、または回復処理を追加してください。",
+        );
+    }
+
+    // GP-005: Unsafe types — BLOCK
+    let unsafe_type_patterns: Vec<Regex> = match ext.as_str() {
+        "ts" | "tsx" | "js" | "jsx" => vec![
+            Regex::new(r":\s*any\b").unwrap(),
+            Regex::new(r"\bas\s+any\b").unwrap(),
+        ],
+        "go" => vec![Regex::new(r"\binterface\{\}").unwrap()],
+        _ => vec![],
+    };
+    if unsafe_type_patterns.iter().any(|p| p.is_match(content)) {
+        crate::io::deny(
+            "BLOCKED [GP-005]: `any` または `interface{}` の使用が検出されました。\n\
+             具体的な型を使用し、型安全性を維持してください。\n\
+             WHY: any は型チェックを無効化し、ランタイムエラーの原因になります。\n\
+             FIX: 適切な型定義、unknown + 型ガード、ジェネリクスを使用してください。",
+        );
+    }
+}
+
 pub fn pre_edit(_raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // protect-linter-config (may call deny → exit 2)
     check_protect_linter(data);
+
+    // GP-004/GP-005 blocking check (may call deny → exit 2)
+    check_gp_blocking(data);
 
     // search-first-gate
     if let Some(ctx) = check_search_first_edit(data) {
