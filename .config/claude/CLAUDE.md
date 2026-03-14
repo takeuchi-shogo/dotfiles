@@ -20,6 +20,7 @@
 - `.eslintrc*`, `biome.json`, `.prettierrc*` などの lint config は保護対象。設定ではなくコードを直す。
 - `git commit --no-verify` は禁止。
 - global permissions と MCP は保守的な default を使い、強い権限や追加 MCP は trusted repo / local override で広げる。
+- コード変更は codex-reviewer と code-reviewer による並列レビューを受ける。初回から高品質なコードを書くこと。
 
 ## Plan Contract
 

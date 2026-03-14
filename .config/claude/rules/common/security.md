@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.go"
+  - "**/*.py"
+  - "**/*.rs"
+  - "**/Dockerfile*"
+  - "**/*.yaml"
+  - "**/*.yml"
+---
+
 # Security Guidelines
 
 ## Mandatory Security Checks

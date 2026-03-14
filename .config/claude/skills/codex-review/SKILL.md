@@ -20,7 +20,7 @@ git diff --stat
 ### 2. Codex CLI で構造化レビュー
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="high" --sandbox read-only "$(cat <<'PROMPT'
+codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="xhigh" --sandbox read-only "$(cat <<'PROMPT'
 Review the recent git changes. Check these 6 items in order:
 
 1. **Correctness**: Logic errors, off-by-one, null/nil dereference, race conditions
@@ -40,11 +40,10 @@ PROMPT
 
 ### reasoning_effort ガイド
 
-| シナリオ                   | 設定     | 理由                     |
-| -------------------------- | -------- | ------------------------ |
-| 通常のコードレビュー       | `high`   | バランス良い分析         |
-| 大規模リファクタリング     | `xhigh`  | 広範囲の影響を深掘り     |
-| CHANGELOG/ドキュメント生成 | `medium` | 生成タスクは深い推論不要 |
+| シナリオ                   | 設定     | 理由                       |
+| -------------------------- | -------- | -------------------------- |
+| コードレビュー（全種別）   | `xhigh`  | 深い推論で品質を最大化     |
+| CHANGELOG/ドキュメント生成 | `medium` | 生成タスクは深い推論不要   |
 
 ## CHANGELOG 自動生成
 
