@@ -43,6 +43,24 @@
 
 ---
 
+## Step 2.5: 追加ルールの適用判定
+
+タスクの性質に応じて、追加ルール（Extension）の適用を判定する:
+
+| ルールカテゴリ | 適用条件 | 参照先 |
+|---|---|---|
+| **Security Baseline** | ユーザー入力処理、認証、API エンドポイント | `review-checklists/security-baseline.md` |
+| **Brownfield 分析** | L 規模 + 既存コード変更 | `brownfield-analysis-template.md` |
+
+### 適用の判断
+
+- **自動適用**: `rules/` の `paths:` 条件に合致するルールは自動ロード
+- **手動確認**: 上記カテゴリに該当する可能性がある場合、ユーザーに確認:
+  「このタスクでは {カテゴリ} のルールを追加適用しますか？（推奨: はい）」
+- **記録**: 適用/非適用の判断を Plan の Decision Log に記録
+
+---
+
 ## Step 3: コードベース調査
 
 ### Minimal（S）

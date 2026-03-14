@@ -27,6 +27,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 5. **Dependency Security** — 脆弱な依存パッケージのチェック
 6. **Security Best Practices** — セキュアコーディングパターンの適用
 7. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `references/claude-code-threats.md`）
+8. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `references/review-checklists/security-baseline.md`）
 
 ## Review Workflow
 

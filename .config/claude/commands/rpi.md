@@ -21,6 +21,7 @@ user-invocable: true
 
 タスクの意図が曖昧なら、実装に入る前に質問する。
 → `rules/common/overconfidence-prevention.md` の原則に従う。
+→ 調査深度に応じて追加ルールの適用を判定する（`references/research-checklist.md` Step 2.5）。
 
 ### Step 2: 深度決定
 
