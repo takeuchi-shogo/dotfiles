@@ -289,7 +289,7 @@ class TestGenerateProposal:
         proposal = generate_proposal(manifest, report)
         assert proposal is None
 
-    def test_deprecate_proposal(self, sample_skill, data_dir_with_executions):
+    def test_deprecate_proposal(self, sample_skill):
         manifest = parse_skill(sample_skill)
         report = SkillHealthReport(
             skill_name="bad-skill",

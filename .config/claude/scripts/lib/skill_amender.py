@@ -75,8 +75,9 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
                 multiline_value = []
                 continue
 
-            if (value.startswith('"') and value.endswith('"')) or (
-                value.startswith("'") and value.endswith("'")
+            if len(value) >= 2 and (
+                (value.startswith('"') and value.endswith('"'))
+                or (value.startswith("'") and value.endswith("'"))
             ):
                 value = value[1:-1]
 
@@ -165,6 +166,7 @@ def assess_health(skill_name: str, data_dir: Path | None = None) -> SkillHealthR
     skill_benchmarks = [b for b in benchmarks if b.get("skill") == skill_name]
     benchmark_delta = None
     if skill_benchmarks:
+        skill_benchmarks.sort(key=lambda b: b.get("timestamp", ""))
         latest = skill_benchmarks[-1]
         benchmark_delta = latest.get("delta")
 
@@ -207,7 +209,12 @@ class AmendmentProposal:
 
 
 def classify_failure_pattern(report: SkillHealthReport) -> str | None:
-    """健全性レポートから修正タイプを分類する。healthy なら None。"""
+    """健全性レポートから修正タイプを分類する。healthy なら None。
+
+    Phase 1 では edit_instruction と deprecate のみ実装。
+    narrow_description, expand_description, update_tool_ref は
+    将来の failure pattern 分析で追加予定。
+    """
     if report.status == "healthy":
         return None
     if report.benchmark_delta is not None and report.benchmark_delta < 0:

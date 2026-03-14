@@ -131,7 +131,7 @@ def _compute_skill_version(skill_name: str) -> str:
     try:
         content = skill_file.read_text(encoding="utf-8")
         return hashlib.sha256(content.encode()).hexdigest()[:8]
-    except Exception:
+    except OSError:
         return ""
 
 
@@ -200,10 +200,11 @@ def process_session(cwd: str | None = None) -> None:
                 }
             )
 
-            # Extended fields: related_error_ids
-            related_error_ids = [
-                e.get("timestamp", "") for e in summary["_errors"] if e.get("timestamp")
-            ]
+            # Extended fields: related_error_ids (スキルスコープのエラーのみ)
+            error_refs_from_steps = {
+                e.get("error_ref") for e in step_outcomes if e.get("error_ref")
+            }
+            related_error_ids = sorted(error_refs_from_steps)
 
             # Extended fields: related_tools
             related_tools = sorted(
