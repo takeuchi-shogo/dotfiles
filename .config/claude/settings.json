@@ -71,8 +71,7 @@
 			"Read(**/*credentials*)"
 		]
 	},
-	"model": "opus",
-	"plansDirectory": "./tmp/plans",
+	"model": "opus[1m]",
 	"enableAllProjectMcpServers": false,
 	"enabledMcpjsonServers": ["context7"],
 	"hooks": {
@@ -274,7 +273,7 @@
 	},
 	"enabledPlugins": {
 		"gopls-lsp@claude-plugins-official": true,
-		"superpowers@superpowers-marketplace": true,
+		"superpowers@claude-plugins-official": true,
 		"frontend-design@claude-code-plugins": true,
 		"code-simplifier@claude-plugins-official": true,
 		"playground@claude-plugins-official": true,
@@ -283,5 +282,6 @@
 		"claude-md-management@claude-plugins-official": true
 	},
 	"language": "japanese",
-	"effortLevel": "high"
+	"effortLevel": "high",
+	"plansDirectory": "./tmp/plans"
 }
