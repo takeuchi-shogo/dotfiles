@@ -69,6 +69,30 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
      - A/B keep + 実行スコア低 → 環境変化による劣化
      - 実行データなし → 不要スキル候補
 
+### プログラム的健全性判定
+
+`skill_amender.py` を使って定量的に健全性を判定する:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from skill_amender import assess_health
+from pathlib import Path
+from storage import get_data_dir
+
+data_dir = get_data_dir()
+skills_dir = Path.home() / '.claude' / 'skills'
+for skill_dir in sorted(skills_dir.iterdir()):
+    skill_file = skill_dir / 'SKILL.md'
+    if skill_file.exists():
+        report = assess_health(skill_dir.name, data_dir)
+        if report.execution_count > 0:
+            print(f'{report.status:>10} {report.avg_score:.2f} ({report.trend:+.2f}) [{report.execution_count:>3} runs] {report.skill_name}')
+"
+```
+
+この出力を insights の「スキル健全性分析」セクションに含める。
+
 ### 出力
 
 `insights/analysis-YYYY-MM-DD.md` — 繰り返しエラー、頻出品質違反、プロジェクト統計、改善提案、昇格提案
@@ -119,6 +143,17 @@ Failing/Degraded スキルに対する修正案の生成手順:
 - 実行5回以上が改善提案の最低条件
 - retire 提案時はまず description に `[DEPRECATED]` を付与
 - 次回 audit で改善なければ削除提案にエスカレート
+
+### 修正後の自動検証（Improve→Audit 接続）
+
+スキル SKILL.md を修正したブランチを作成した後、以下を自動実行する:
+
+1. 修正対象スキルの健全性を `skill_amender.assess_health()` で確認
+2. skill-audit の A/B テストを対象スキルのみで実行
+3. delta をレポートの「改善提案」セクションに含める:
+   - delta > +2pp → 「merge 推奨」
+   - delta ±2pp → 「効果不明、追加データ待ち」
+   - delta < -2pp → 「revert 推奨」（improve-policy Rule 8）
 
 ### ブランチ作成と変更
 
