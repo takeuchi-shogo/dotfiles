@@ -4,23 +4,26 @@
 # Lefthook handles per-commit batch validation.
 
 pre-commit:
-  parallel: true
   commands:
     biome-format:
       glob: "*.{ts,tsx,js,jsx,json,css}"
-      run: biome format --write {staged_files} && git add {staged_files}
+      run: npx --yes @biomejs/biome@latest format --write {staged_files}
+      stage_fixed: true
     oxlint:
       glob: "*.{ts,tsx,js,jsx}"
-      run: oxlint {staged_files}
+      run: npx --yes oxlint@latest {staged_files}
     ruff-format:
       glob: "*.py"
-      run: ruff format {staged_files} && git add {staged_files}
+      run: ruff format {staged_files}
+      stage_fixed: true
     ruff-check:
       glob: "*.py"
-      run: ruff check --fix {staged_files} && git add {staged_files}
+      run: ruff check --fix {staged_files}
+      stage_fixed: true
     gofmt:
       glob: "*.go"
-      run: gofmt -w {staged_files} && git add {staged_files}
+      run: gofmt -w {staged_files}
+      stage_fixed: true
 
 commit-msg:
   commands:
