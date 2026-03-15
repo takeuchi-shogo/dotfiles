@@ -27,7 +27,7 @@ function tryRun(cmd, timeoutMs) {
 			timeout: timeoutMs || 15000,
 			stdio: ["pipe", "pipe", "pipe"],
 		}).trim();
-	} catch (_e) {
+	} catch {
 		return null;
 	}
 }
@@ -40,7 +40,7 @@ function findBundlePath() {
 	let npmRoot;
 	try {
 		npmRoot = execSync("npm root -g", { encoding: "utf-8" }).trim();
-	} catch (_e) {
+	} catch {
 		return null;
 	}
 
