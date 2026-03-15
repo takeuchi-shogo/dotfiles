@@ -61,6 +61,63 @@ function trimLines(text, max = 20) {
 		.slice(0, max);
 }
 
+// --- Lint rule WHY/FIX guides (inline for speed) ---
+// Ref: references/lint-rule-guides.md (full version)
+const LINT_GUIDES = {
+	// TypeScript/JavaScript (Oxlint)
+	"no-explicit-any": {
+		why: "型安全性の喪失 → GP-005 違反",
+		fix: "unknown + type guard、ジェネリクス <T>、または具体型を使用",
+	},
+	"no-unused-vars": {
+		why: "デッドコードは可読性低下とバンドルサイズ増加",
+		fix: "未使用の変数・import を削除。意図的なら _ プレフィックス",
+	},
+	"no-console": {
+		why: "プロダクションコードの console.log は情報漏洩リスク",
+		fix: "logger を使用、またはデバッグ完了後に削除",
+	},
+	eqeqeq: {
+		why: "== は暗黙の型変換で予期しない真偽値を返す",
+		fix: "=== (厳密等価) を使用",
+	},
+	// Python (Ruff)
+	E501: {
+		why: "長すぎる行は可読性を著しく下げる",
+		fix: "変数抽出、改行、文字列の分割",
+	},
+	F401: {
+		why: "未使用 import はロード時間とメモリを浪費",
+		fix: "import 行を削除",
+	},
+	F841: {
+		why: "未使用変数はデッドコードの兆候",
+		fix: "変数を使用するか _ で破棄",
+	},
+	E711: {
+		why: "== None より is None が Python イディオム",
+		fix: "is None / is not None を使用",
+	},
+	// Go (golangci-lint)
+	errcheck: {
+		why: "エラー戻り値の無視は silent failure — GP-004 違反",
+		fix: 'if err != nil { return fmt.Errorf("...: %w", err) }',
+	},
+	gosec: {
+		why: "セキュリティ脆弱性の自動検出",
+		fix: "指摘に従いセキュアな代替手段を使用",
+	},
+};
+
+function enrichWithGuide(errorLine) {
+	for (const [rule, guide] of Object.entries(LINT_GUIDES)) {
+		if (errorLine.includes(rule)) {
+			return `${errorLine}\n    WHY: ${guide.why}\n    FIX: ${guide.fix}`;
+		}
+	}
+	return errorLine;
+}
+
 // --- Per-language format + lint ---
 function handleTypeScript(filePath) {
 	const errors = [];
@@ -174,9 +231,9 @@ process.stdin.on("end", () => {
 			const ctx = [
 				`[Auto-Lint] ${tool} が ${path.basename(filePath)} で問題を検出:`,
 				"",
-				...errors.map((e) => `  ${e}`),
+				...errors.map((e) => `  ${enrichWithGuide(e)}`),
 				"",
-				"FIX: 上記の lint エラーを修正してください。リンター設定は変更せず、コードを修正すること。",
+				"上記の lint エラーを修正してください。リンター設定は変更せず、コードを修正すること。",
 			].join("\n");
 
 			process.stdout.write(
