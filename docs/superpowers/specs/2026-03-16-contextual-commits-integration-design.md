@@ -116,16 +116,17 @@ Base branch detection:
 #### Mode 2: Scope query — `/recall auth`
 
 ```bash
-git log --all --grep="(${SCOPE}" --format="%H%n%s%n%b%n---COMMIT_END---"
+git log --all --fixed-strings --grep="(${SCOPE}" --format="%H%n%s%n%b%n---COMMIT_END---"
 ```
 
+Uses `--fixed-strings` to treat `(` as literal character, not regex metacharacter.
 Prefix matching: `auth` matches `auth`, `auth-tokens`, `auth-library`.
 Output grouped by action type, chronological within each group.
 
 #### Mode 3: Action+scope query — `/recall rejected(auth)`
 
 ```bash
-git log --all --grep="${ACTION}(${SCOPE}" --format="%H%n%s%n%b%n---COMMIT_END---"
+git log --all --fixed-strings --grep="${ACTION}(${SCOPE}" --format="%H%n%s%n%b%n---COMMIT_END---"
 ```
 
 Flat chronological list with commit subject for provenance.
@@ -161,12 +162,37 @@ git log ${BASE_BRANCH}..HEAD --format="%b" \
 ```
 
 **Design constraints**:
-- stderr output only (non-blocking, informational)
+- **stdout output** (additionalContext) — Boundaries are "don't do this" signals
+  that the agent MUST know about. stdout injects them into Claude's context,
+  ensuring the agent sees rejected approaches and constraints before working.
+  This differs from session-load.js's stderr hints (informational for user).
 - 2-second timeout on git command
 - try-catch: silently skip on failure
 - 0 results → omit `⚠️ Boundaries:` section entirely
 - Only `rejected()` and `constraint()` — these are "don't do this" signals
   worth showing automatically. intent/decision/learned require manual `/recall`
+
+**Base branch detection in JavaScript** (same logic as `/recall`, implemented in JS):
+```javascript
+const { execSync } = require('child_process');
+function detectBaseBranch(currentBranch) {
+  // 1. Try upstream tracking branch
+  try {
+    const upstream = execSync('git rev-parse --abbrev-ref @{upstream}', { encoding: 'utf8' }).trim();
+    return upstream.replace(/^origin\//, '');
+  } catch {}
+  // 2. Fallback: repository default branch
+  try {
+    const ref = execSync('git symbolic-ref refs/remotes/origin/HEAD', { encoding: 'utf8' }).trim();
+    return ref.replace(/^refs\/remotes\/origin\//, '');
+  } catch {}
+  return 'main';
+}
+```
+
+Note: The nearest-local-branch-by-distance algorithm (used in `/recall`) is omitted
+from session-load.js to keep startup fast. The 2-step fallback covers >95% of cases.
+Use `require('os').homedir()` instead of `process.env.HOME` for robustness.
 
 ### 4. AutoEvolve One-Way Bridge
 
@@ -182,19 +208,25 @@ git log ${BASE_BRANCH}..HEAD --format="%b" \
 | `decision()` | Not transferred | Git history is sufficient |
 | `constraint()` | Not transferred | Project-specific, git history is authoritative |
 
-**Mechanism**: Call `emit_event()` from `/commit` command via bash:
+**Mechanism**: Call `emit_event()` from `/commit` command via bash, using environment
+variables to avoid shell injection (action line content may contain quotes/special chars):
 ```bash
-python3 -c "
-import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+CC_TYPE="rejected" CC_SCOPE="oauth-library" CC_DETAIL="auth0-sdk — session model incompatible" \
+python3 - <<'PYEOF'
+import sys, os
+sys.path.insert(0, os.path.join(os.path.expanduser('~'), '.claude/scripts/lib'))
 from session_events import emit_event
 emit_event('pattern', {
-    'type': 'rejected',
-    'scope': '${SCOPE}',
-    'detail': '${DETAIL}',
+    'type': os.environ['CC_TYPE'],
+    'scope': os.environ['CC_SCOPE'],
+    'detail': os.environ['CC_DETAIL'],
     'source': 'contextual-commit'
 })
-"
+PYEOF
 ```
+
+The heredoc with single-quoted delimiter (`<<'PYEOF'`) prevents shell expansion inside
+the Python code. Data flows through environment variables only.
 
 **Identification**: All emitted events carry `"source": "contextual-commit"` field
 for downstream filtering by `autoevolve-core`.
