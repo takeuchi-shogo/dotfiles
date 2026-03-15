@@ -50,3 +50,26 @@ npx agent-browser             # Rust CLI、コールドスタートなし
 - Mobile: mobile-mcp / XcodeBuild MCP
 - Desktop: Terminator (Windows) / macos-ui-automation-mcp (macOS)
 - CLI: stdout/stderr (bats-core / pexpect)
+
+## API/バックエンド E2E: Hurl
+
+プレーンテキスト形式の HTTP テストツール。エージェントが読み書きしやすい。
+
+```hurl
+POST http://localhost:3000/api/users
+Content-Type: application/json
+{
+  "name": "Test User",
+  "email": "test@example.com"
+}
+HTTP 201
+[Asserts]
+jsonpath "$.id" exists
+```
+
+| 特徴 | 詳細 |
+|------|------|
+| 形式 | プレーンテキスト（Rust バイナリ、libcurl ベース） |
+| CI 統合 | ネイティブ対応、JUnit XML 出力 |
+| 変数 | `--variable` でリクエスト間の状態引き継ぎ |
+| 推奨用途 | REST API のスモークテスト、契約テスト |
