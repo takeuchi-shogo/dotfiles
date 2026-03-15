@@ -6,7 +6,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const STATE_FILE = path.join(
-	process.env.HOME,
+	require("os").homedir(),
 	".claude",
 	"session-state",
 	"last-session.json",
@@ -78,7 +78,7 @@ function detectTools() {
 function loadLearningsForProfile(profile) {
 	const dataDir =
 		process.env.AUTOEVOLVE_DATA_DIR ||
-		path.join(process.env.HOME, ".claude", "agent-memory");
+		path.join(require("os").homedir(), ".claude", "agent-memory");
 	const learningsDir = path.join(dataDir, "learnings");
 
 	if (!fs.existsSync(learningsDir)) return;
@@ -211,6 +211,72 @@ function loadLearningsForProfile(profile) {
 	process.stderr.write(lines.join("\n") + "\n");
 }
 
+function detectBaseBranch() {
+	try {
+		const upstream = execSync(
+			"git rev-parse --abbrev-ref @{upstream} 2>/dev/null",
+			{
+				encoding: "utf8",
+				timeout: 2000,
+			},
+		).trim();
+		return upstream.replace(/^origin\//, "");
+	} catch {}
+	try {
+		const ref = execSync(
+			"git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null",
+			{
+				encoding: "utf8",
+				timeout: 2000,
+			},
+		).trim();
+		return ref.replace(/^refs\/remotes\/origin\//, "");
+	} catch {}
+	return "main";
+}
+
+function loadBoundaries() {
+	try {
+		const currentBranch = execSync("git branch --show-current 2>/dev/null", {
+			encoding: "utf8",
+			timeout: 2000,
+		}).trim();
+		if (!currentBranch) return;
+
+		const baseBranch = detectBaseBranch();
+		if (currentBranch === baseBranch) return;
+
+		// Check if there are commits ahead of base
+		const aheadCount = execSync(
+			`git log ${baseBranch}..HEAD --oneline 2>/dev/null | wc -l`,
+			{ encoding: "utf8", timeout: 2000 },
+		).trim();
+		if (parseInt(aheadCount, 10) === 0) return;
+
+		// Extract rejected() and constraint() lines from branch commits
+		const bodies = execSync(
+			`git log ${baseBranch}..HEAD --format="%b" 2>/dev/null`,
+			{ encoding: "utf8", timeout: 2000 },
+		);
+		const boundaries = bodies
+			.split("\n")
+			.filter((line) => /^(rejected|constraint)\(/.test(line))
+			.slice(0, 5);
+
+		if (boundaries.length === 0) return;
+
+		const lines = ["\u26a0\ufe0f Boundaries:"];
+		for (const b of boundaries) {
+			lines.push(`  ${b}`);
+		}
+
+		// stdout = additionalContext for Claude (agent MUST know these)
+		process.stdout.write(lines.join("\n") + "\n");
+	} catch {
+		// Non-blocking — silently skip on any error
+	}
+}
+
 // Read stdin and pass through
 let data = "";
 process.stdin.on("data", (chunk) => {
@@ -223,7 +289,7 @@ process.stdin.on("end", () => {
 	let profile = "task-aware";
 	try {
 		const cpPath = path.join(
-			process.env.HOME,
+			require("os").homedir(),
 			".claude",
 			"session-state",
 			"last-checkpoint.json",
@@ -237,5 +303,6 @@ process.stdin.on("end", () => {
 	}
 
 	loadLearningsForProfile(profile);
+	loadBoundaries();
 	process.stdout.write(data);
 });
