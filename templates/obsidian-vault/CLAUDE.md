@@ -36,6 +36,7 @@
 - `#type/permanent` — パーマネントノート
 - `#type/literature` — 文献ノート
 - `#type/project` — プロジェクトノート
+- `#type/moc` — Map of Content（テーマ別索引）
 - `#topic/xxx` — トピック別タグ
 
 ## Linking Rules
