@@ -13,6 +13,7 @@ import os
 import re
 import sys
 import time
+from difflib import SequenceMatcher
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
@@ -189,6 +190,78 @@ def check_unsafe_types(content: str, file_path: str = "") -> str | None:
     return None
 
 
+def check_ghost_file(file_path: str, tool_name: str) -> str | None:
+    """Detect creation of new files when similar files already exist (GP-009).
+
+    Only triggers for Write tool (new file creation).
+    """
+    if tool_name != "Write":
+        return None
+    if os.path.exists(file_path):
+        return None  # Overwrite of existing file, not ghost
+
+    dir_path = os.path.dirname(file_path)
+    basename = os.path.basename(file_path)
+    name_without_ext = os.path.splitext(basename)[0].lower()
+
+    if not dir_path or not os.path.isdir(dir_path):
+        return None
+
+    try:
+        existing = os.listdir(dir_path)
+    except OSError:
+        return None
+
+    for existing_file in existing:
+        existing_name = os.path.splitext(existing_file)[0].lower()
+        ratio = SequenceMatcher(None, name_without_ext, existing_name).ratio()
+        if ratio > 0.7 and existing_file != basename:
+            return (
+                f"[GP-009] 類似名のファイル `{existing_file}` が同ディレクトリに存在します。"
+                "新規作成ではなく既存ファイルの修正を検討してください。"
+            )
+    return None
+
+
+def check_comment_ratio(content: str, file_path: str = "") -> str | None:
+    """Detect excessive comment-to-code ratio (GP-010).
+
+    Warns when comment lines exceed 40% of total non-empty lines.
+    Skips files under 20 lines (too small to judge).
+    """
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext in (".md", ".txt", ".json", ".yaml", ".yml", ".toml"):
+        return None  # Non-code files
+
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    if len(lines) < 20:
+        return None
+
+    comment_markers = {
+        ".py": ("#",),
+        ".ts": ("//",),
+        ".tsx": ("//",),
+        ".js": ("//",),
+        ".jsx": ("//",),
+        ".go": ("//",),
+        ".rs": ("//",),
+        ".sh": ("#",),
+        ".bash": ("#",),
+    }
+    markers = comment_markers.get(ext, ("//", "#"))
+    comment_count = sum(1 for line in lines if any(line.startswith(m) for m in markers))
+    ratio = comment_count / len(lines)
+
+    if ratio > 0.4:
+        pct = int(ratio * 100)
+        return (
+            f"[GP-010] コメント比率が {pct}% と高すぎます（閾値: 40%）。"
+            "コードが自己文書化されるよう、冗長なコメントを削除してください。"
+        )
+    return None
+
+
 def main() -> None:
     data = load_hook_input()
     if not data:
@@ -218,6 +291,8 @@ def main() -> None:
         ("GP-003", check_dependency_file(file_path)),
         ("GP-004", check_empty_catch(content)),
         ("GP-005", check_unsafe_types(content, file_path)),
+        ("GP-009", check_ghost_file(file_path, tool_name)),
+        ("GP-010", check_comment_ratio(content, file_path)),
     ]
 
     for rule, warn in checks:
