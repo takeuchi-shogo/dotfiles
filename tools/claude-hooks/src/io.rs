@@ -22,8 +22,41 @@ pub fn context(event_name: &str, msg: &str) {
 }
 
 pub fn deny(reason: &str) -> ! {
+    // Security audit log — record every deny event
+    audit_log_deny(reason);
     eprintln!("{}", reason);
     std::process::exit(2);
+}
+
+/// Append a deny event to the security audit log (JSONL).
+fn audit_log_deny(reason: &str) {
+    let log_dir = std::path::PathBuf::from(home_dir())
+        .join(".claude")
+        .join("agent-memory")
+        .join("security");
+    if std::fs::create_dir_all(&log_dir).is_err() {
+        return;
+    }
+    let log_path = log_dir.join("audit.jsonl");
+
+    let entry = serde_json::json!({
+        "timestamp": iso_now(),
+        "event": "deny",
+        "reason": &reason[..reason.len().min(500)],
+        "session_id": std::env::var("CLAUDE_SESSION_ID").unwrap_or_default(),
+        "cwd": std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    });
+
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+    {
+        use std::io::Write;
+        let _ = writeln!(f, "{}", entry);
+    }
 }
 
 pub fn home_dir() -> String {

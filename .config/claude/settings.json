@@ -66,12 +66,21 @@
 			"Bash(curl *)",
 			"Bash(wget *)",
 			"Bash(sudo *)",
+			"Bash(ssh *)",
+			"Bash(scp *)",
+			"Bash(nc *)",
+			"Bash(ncat *)",
+			"Bash(netcat *)",
 			"Read(.env*)",
 			"Read(**/*.pem)",
 			"Read(**/*credentials*)",
 			"Read(**/token*.json)",
 			"Read(**/*secret*)",
-			"Read(**/*.key)"
+			"Read(**/*.key)",
+			"Read(~/.ssh/**)",
+			"Read(~/.aws/**)",
+			"Write(~/.ssh/**)",
+			"Write(~/.aws/**)"
 		]
 	},
 	"model": "opus[1m]",
@@ -282,7 +291,8 @@
 		"playground@claude-plugins-official": true,
 		"pr-review-toolkit@claude-code-plugins": true,
 		"datadog@kw-marketplace": true,
-		"claude-md-management@claude-plugins-official": true
+		"claude-md-management@claude-plugins-official": true,
+		"rust-analyzer-lsp@claude-plugins-official": true
 	},
 	"language": "japanese",
 	"effortLevel": "high",
