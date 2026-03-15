@@ -58,3 +58,23 @@ tasks:
     desc: Validate key symlinks managed by dotfiles
     cmds:
       - ~/dotfiles/.bin/validate_symlinks.sh
+
+  upgrade-claude:
+    desc: Upgrade Claude Code and apply system prompt patches
+    cmds:
+      - npm update -g @anthropic-ai/claude-code
+      - node ~/dotfiles/tools/system-prompt-patcher/patch-cli.js
+      - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js
+    preconditions:
+      - test -f ~/dotfiles/tools/system-prompt-patcher/patch-cli.js
+
+  patch-claude:
+    desc: Apply system prompt patches without upgrading
+    cmds:
+      - node ~/dotfiles/tools/system-prompt-patcher/patch-cli.js
+      - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js
+
+  restore-claude:
+    desc: Restore Claude Code to vanilla (unpatched) state
+    cmds:
+      - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js --restore
