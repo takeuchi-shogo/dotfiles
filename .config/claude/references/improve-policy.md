@@ -119,6 +119,21 @@ autoresearch の原則: 「0.001 の改善 + 20 行の追加 → 不採用」「
 `experiment_tracker.py export-tsv` で全実験の俯瞰ビューを出力する。
 autoresearch の results.tsv に倣い、1 行 1 実験のフラットな TSV 形式。
 
+## インフラメトリクス
+
+Knowledge-to-Code Ratio やメンテナンスコストなど、インフラ全体の健全性を追跡する指標。
+Codified Context 論文のベンチマーク（24.2%、~1-2時間/週）を参考値として使用。
+
+| メトリクス | 計測方法 | 参考値 |
+|----------|---------|--------|
+| Knowledge-to-Code Ratio | `(agents + references + rules 行数) / プロジェクトコード行数` | 24.2% |
+| Agent ドメイン知識比率 | `ドメイン知識行数 / エージェント総行数` | ≥ 50% |
+| Spec Staleness | `/check-health` の陳腐化警告数 | 0 |
+| Maintenance Cost | セッション中の spec 更新時間 | ~5分/セッション |
+
+これらは `/improve` サイクルのダッシュボードに含め、傾向を追跡する。
+Agent の挙動が不安定なときは spec の欠落・陳腐化のシグナルとして扱う。
+
 ## 現在のフォーカス
 
 全カテゴリを高頻度で改善する（2026-03-10 設定）
