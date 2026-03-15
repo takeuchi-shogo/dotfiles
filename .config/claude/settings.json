@@ -68,7 +68,10 @@
 			"Bash(sudo *)",
 			"Read(.env*)",
 			"Read(**/*.pem)",
-			"Read(**/*credentials*)"
+			"Read(**/*credentials*)",
+			"Read(**/token*.json)",
+			"Read(**/*secret*)",
+			"Read(**/*.key)"
 		]
 	},
 	"model": "opus[1m]",
