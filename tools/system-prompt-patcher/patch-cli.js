@@ -63,11 +63,6 @@ function buildVariableAwareRegex(findText) {
 	let pattern = escaped.replace(/\s+/g, "\\s+");
 
 	// プレースホルダーを \w+ に復元
-	// エスケープで \0 が \\0 になっている可能性があるので両方対応
-	const escapedPlaceholder = placeholder
-		.replace(/\0/g, "\\\\\\0")
-		.replace(/[.*+?^${}()|[\]]/g, "\\$&");
-	// 安全にリテラルマッチ
 	pattern = pattern.split(escapeForSplit(placeholder)).join("(\\w+)");
 
 	return new RegExp(pattern, "g");
