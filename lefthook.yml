@@ -1,0 +1,34 @@
+# https://github.com/evilmartians/lefthook
+# Pre-commit hooks for polyglot dotfiles repository
+# Claude Code hooks (PostToolUse) handle per-edit linting;
+# Lefthook handles per-commit batch validation.
+
+pre-commit:
+  parallel: true
+  commands:
+    biome-format:
+      glob: "*.{ts,tsx,js,jsx,json,css}"
+      run: biome format --write {staged_files} && git add {staged_files}
+    oxlint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: oxlint {staged_files}
+    ruff-format:
+      glob: "*.py"
+      run: ruff format {staged_files} && git add {staged_files}
+    ruff-check:
+      glob: "*.py"
+      run: ruff check --fix {staged_files} && git add {staged_files}
+    gofmt:
+      glob: "*.go"
+      run: gofmt -w {staged_files} && git add {staged_files}
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: |
+        MSG=$(head -1 {1})
+        if ! echo "$MSG" | grep -qE '^(✨|🐛|📝|♻️|🔧|🚀|⬆️|🔒|✅|🏗️|🗑️|🎨|⚡) (feat|fix|docs|refactor|chore|ci|perf|security|test|build|revert|style|perf)(\(.+\))?: .+'; then
+          echo "❌ Commit message must follow: <emoji> <type>(<scope>): <description>"
+          echo "   Example: ✨ feat: add new feature"
+          exit 1
+        fi
