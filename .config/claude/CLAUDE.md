@@ -7,12 +7,18 @@
 
 ## IMPORTANT ルール
 
-- サブエージェント・スキルを積極的に活用する（単独で完結させず、専門エージェントに委譲）
-- コード変更後のレビューは `/review` スキルのワークフローに従う（変更規模に応じてレビューアーを自動選択・並列起動・結果統合）
+<agent_delegation>
+タスクが並列実行可能、独立したコンテキストが必要、または専門知識が必要な場合にサブエージェントに委譲する。
+単純なタスク、逐次操作、単一ファイル編集では直接作業する。
+</agent_delegation>
+
+<review_policy>
+コード変更後のレビューは `/review` スキルのワークフローに従う（変更規模に応じてレビューアーを自動選択・並列起動・結果統合）。
+</review_policy>
+
 - 日本語で応答する
 
-## Harness Guarantees
-
+<harness_guarantees>
 - Claude 固有の harness contract は `docs/agent-harness-contract.md` を前提にする。
 - `PostToolUse` hook が formatter / policy check / checkpoint を補助する。
 - `Stop` hook が completion gate を実行し、失敗したテストは追加コンテキストとして差し戻す。
@@ -21,21 +27,26 @@
 - `git commit --no-verify` は禁止。
 - global permissions と MCP は保守的な default を使い、強い権限や追加 MCP は trusted repo / local override で広げる。
 - コード変更は codex-reviewer と code-reviewer による並列レビューを受ける。初回から高品質なコードを書くこと。
+</harness_guarantees>
 
-## Plan Contract
+<plan_contract>
 
 - 非自明な変更では root の `PLANS.md` に従う。
 - Claude Code の `plansDirectory` は `tmp/plans/` だが、長時間タスク、handoff、または将来参照したい plan は `docs/plans/` に昇格する。
 - harness 変更、複数ディレクトリ変更、30 分以上の作業見込みでは plan を必須とする。
 
-## Mandatory Skill / Command Usage
+</plan_contract>
+
+<mandatory_skills>
 
 - 調査開始時は `/check-health` と `search-first` 系の workflow を優先する。
 - 非自明なコード変更後のレビューは `/review` を使う。
 - 完了前検証は `verification-before-completion` 系 workflow に従う。
 - 長時間タスクや中断前は `/checkpoint` を使い、必要なら `docs/plans/` も更新する。
-- 仕様が曖昧なまま実装に入らず、必要なら `/spec` や `/spike` を使う。
+- 仕様が曖昧なまま実装に入らず、`/spec` や `/spike` を使う。
 - 並列で別 task を走らせるときは worktree を使って session と filesystem を分離する。
+
+</mandatory_skills>
 
 ## Change Surface Matrix
 
@@ -76,23 +87,25 @@ Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
 
 ---
 
-## コア原則
+<core_principles>
 
 - **シンプリシティ ファースト (KISS)**: 変更はできる限りシンプルに。コードへの影響を最小限に。「動作させるために最もシンプルな方法は何か」を常に問う
 - **YAGNI**: 今必要なコードのみ書く。「将来使うかも」で汎用化しない。3回繰り返されるまで抽象化しない
 - **DRY**: 同じロジックを複数箇所に書かない。ただし、似ているだけで文脈が異なるコードの無理な共通化は避ける
 - **手抜きなし**: 根本原因を探る。一時しのぎの修正はしない。シニア開発者の基準で
 - **最小インパクト**: 必要な箇所だけ触る。バグを持ち込まない
-- **検索してから実装**: 既存の解決策がないか必ず確認してからコードを書く
+- **検索してから実装**: 既存の解決策がないか確認してからコードを書く
 - **壊れたら即STOP**: そのまま突き進まず、再プランする
 - **エレガンスの追求**: 些細でない変更では「もっと良い方法は？」と一度立ち止まる。ただし過度な設計はNG
 - **自律的バグ解決**: ログ・エラー・テストを自分で調べ、ユーザーのコンテキスト切り替えをゼロにする
 - **生データ優先のデバッグ**: バグ修正時は、ユーザーの解釈ではなく生のエラーログ・スタックトレース・CI出力を直接分析する
-- **修正時の3点説明**: コードを修正・変更したら、必ず以下の3点をユーザーに明示する:
+- **修正時の3点説明**: コードを修正・変更したら、以下の3点をユーザーに明示する:
   1. **原因**: なぜその問題が起きていたか（根本原因）
   2. **修正内容**: 何をどう変えたか（具体的な変更）
   3. **効果**: この修正でどう変わるか（ビフォーアフター）
 - **ドキュメント＝インフラ**: エージェントが依存する仕様書は耐荷重構造物。コード変更時に同期更新を怠ると silent failure を招く。「2回説明したら書き下ろせ」— 同じドメイン知識を繰り返しセッション横断で説明している場合は spec/reference に codify する
+
+</core_principles>
 
 ---
 
