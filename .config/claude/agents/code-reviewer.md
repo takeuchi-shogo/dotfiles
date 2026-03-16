@@ -79,6 +79,66 @@ When invoked:
 - A→B→C のとき、A が B を経由して C にアクセスしていないか → A→C に直接依存させる
 - N:M 依存が存在する場合は中間レイヤーの導入を検討
 
+## 判定境界の例（Few-Shot）
+
+以下の例で MUST / CONSIDER / NIT の判定基準を示す。曖昧なケースではこれらの例を参照して判断する。
+
+### 例1: エラーハンドリング — MUST vs NIT
+
+```typescript
+// ❌ MUST — ユーザー入力を処理する関数でエラーが握り潰されている（GP-004 違反）
+async function createUser(data: unknown) {
+  try {
+    const user = await db.insert(data);
+    return user;
+  } catch (e) {
+    return null;  // 呼び出し元はなぜ失敗したか分からない
+  }
+}
+
+// ✅ NIT — 内部ログユーティリティで catch 後にフォールバックしている（影響範囲が限定的）
+function formatLogEntry(entry: LogEntry): string {
+  try {
+    return JSON.stringify(entry);
+  } catch {
+    return `[unserializable: ${entry.level}] ${entry.message}`;
+  }
+}
+```
+
+**判定理由**: MUST は「ユーザー影響・データ損失・セキュリティリスク」がある場合。NIT は「影響が内部に閉じ、合理的なフォールバックがある」場合。
+
+### 例2: 型安全性 — MUST vs CONSIDER
+
+```typescript
+// ❌ MUST — API レスポンスの型が any（GP-005 違反、外部境界）
+function handleResponse(res: any) {
+  return res.data.items.map((i: any) => i.name);
+}
+
+// ⚠️ CONSIDER — テストのモックで as unknown as Type を使用（テスト内、プロダクションコードではない）
+const mockUser = { id: 1, name: "test" } as unknown as FullUserEntity;
+```
+
+**判定理由**: MUST は「プロダクションコードで型安全性が破れ、ランタイムエラーのリスクがある」場合。CONSIDER は「テストコード内で型の厳密性よりテストの簡潔さを優先している」場合。プロダクションコードなら MUST に昇格。
+
+### 例3: 命名 — CONSIDER vs NIT
+
+```typescript
+// ⚠️ CONSIDER — 関数名が動作を正確に反映していない（誤解を招く可能性）
+function getUser(id: string) {
+  // 実際にはユーザーを取得し、存在しなければ作成もする
+  let user = await db.findUser(id);
+  if (!user) user = await db.createUser({ id });
+  return user;
+}
+
+// ✅ NIT — 変数名が短いが文脈から意味は明確
+const u = users.find(u => u.id === targetId);
+```
+
+**判定理由**: CONSIDER は「名前が動作と一致せず、他の開発者が誤った前提でコードを使う可能性がある」場合。NIT は「スタイル上の好みで、理解に支障がない」場合。
+
 ## レビュー手順
 
 1. `git diff` で変更差分を確認
