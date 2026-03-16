@@ -47,6 +47,51 @@ function loadState() {
 	}
 }
 
+/**
+ * HANDOFF.md を検索して読み込む。
+ * 24時間以内のものがあれば stderr に出力し true を返す。
+ * @returns {boolean} HANDOFF.md が有効だった場合 true
+ */
+function loadHandoff() {
+	const cwd = process.cwd();
+	const home = require("os").homedir();
+	// 検索パス: cwd直下 → cwd/tmp/ → ~/dotfiles/tmp/
+	const candidates = [
+		path.join(cwd, "HANDOFF.md"),
+		path.join(cwd, "tmp", "HANDOFF.md"),
+		path.join(home, "dotfiles", "tmp", "HANDOFF.md"),
+	];
+
+	for (const filePath of candidates) {
+		try {
+			if (!fs.existsSync(filePath)) continue;
+			const stat = fs.statSync(filePath);
+			const ageMs = Date.now() - stat.mtimeMs;
+			const ageHours = ageMs / (1000 * 60 * 60);
+
+			if (ageHours > 24) {
+				process.stderr.write(
+					`[Handoff] ${filePath} は ${Math.round(ageHours)}時間前のものです（24時間超過 — スキップ）\n`,
+				);
+				continue;
+			}
+
+			const content = fs.readFileSync(filePath, "utf8").trim();
+			if (!content) continue;
+
+			const lines = [
+				`[Handoff] 前セッションからの引き継ぎ (${Math.round(ageHours * 10) / 10}時間前, ${filePath}):`,
+				content,
+			];
+			process.stderr.write(lines.join("\n") + "\n");
+			return true;
+		} catch {
+			// ファイル読み込みエラーは無視
+		}
+	}
+	return false;
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -283,7 +328,11 @@ process.stdin.on("data", (chunk) => {
 	data += chunk;
 });
 process.stdin.on("end", () => {
-	loadState();
+	// HANDOFF.md があればセッション状態の復元をスキップ（引き継ぎ情報で十分）
+	const hasHandoff = loadHandoff();
+	if (!hasHandoff) {
+		loadState();
+	}
 
 	// Load profile from last checkpoint or task-aware
 	let profile = "task-aware";
