@@ -1,8 +1,8 @@
 ---
 name: research
 description: >
-  マルチエージェント並列リサーチ。研究テーマを分解し、claude -p 子プロセスで並列実行、
-  結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
+  マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に
+  自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
   Do NOT use for simple single-query searches — use WebSearch or gemini skill instead.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
@@ -36,12 +36,27 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ```
 ## リサーチ計画: {topic}
 
-| # | サブ目標 | 手法 | 推定時間 |
-|---|---------|------|---------|
-| 1 | {goal}  | {tool} | ~N min |
+| # | サブ目標 | モデル | 手法 | 推定時間 |
+|---|---------|--------|------|---------|
+| 1 | {goal}  | {model} | {tool} | ~N min |
 ```
 
-**ユーザーの承認なしに Step 3 に進んではいけない。**
+### モデル自動割り当て
+
+各サブタスクの性質に基づき、最適なモデルを**自動選択**する（人間の判断不要）:
+
+| サブタスクの性質 | モデル | 理由 |
+|----------------|--------|------|
+| 外部エコシステム、代替案比較、ライブラリ調査、コミュニティ動向、セキュリティ脆弱性の動向 | **Gemini** | Google Search grounding + 1M コンテキスト |
+| 設計判断、トレードオフ分析、リスク評価、アーキテクチャ比較 | **Codex** | 深い推論 (reasoning_effort=high) |
+| コードベース分析、一般的な調査、ドキュメント読解 | **claude -p** | デフォルト |
+
+**ルール**:
+- 3サブタスク以上あれば、最低1つは Gemini に割り当てる（外部視点の確保）
+- Gemini/Codex が利用不可の場合は claude -p にフォールバック
+- 同一トピックを異なるモデルに割り当てない（重複回避）
+
+**ユーザーの承認なしに Step 3 に進んではいけない。** モデル割り当ても含めて確認を得ること。
 
 ## Step 3: Execute
 
@@ -52,28 +67,41 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 > あなたは非同期サブエージェントです。結果はユーザーに直接報告されます。
 > 背景・分析・結論を含む自己完結的なレポートを作成してください。ソースや根拠を明記してください。
 
-### ツール優先度
+### ツール（各モデル共通）
 
-1. **MCP ツール**: brave-search, context7（インストール済みの場合）
-2. **WebFetch/WebSearch**: 標準ツール
-3. **gemini CLI**: 大規模分析が必要な場合（`gemini -p "..." 2>/dev/null`）
+- **MCP ツール**: brave-search, context7（インストール済みの場合）
+- **WebFetch/WebSearch**: 標準ツール
 
-### 並列実行
+### マルチモデル並列実行
 
-サブタスクが3つ以上の場合、`claude -p` で並列実行する:
+Step 2 のモデル割り当てに基づき、各サブタスクを適切なモデルで実行する:
 
 ```bash
-# 各サブタスクを .research/{name}/prompts/{n}.md に保存（一時ワークスペース）
-# 並列で実行
-for i in $(seq 1 $N); do
-  claude -p "$(cat .research/{name}/prompts/${i}.md)" \
-    --allowedTools "Read,WebFetch,WebSearch,Bash,Grep,Glob" \
-    > .research/{name}/child_outputs/${i}.md 2>/dev/null &
-done
+# claude -p サブタスク
+claude -p "$(cat .research/{name}/prompts/${i}.md)" \
+  --allowedTools "Read,WebFetch,WebSearch,Bash,Grep,Glob" \
+  > .research/{name}/child_outputs/${i}.md 2>/dev/null &
+
+# Gemini サブタスク
+gemini --approval-mode plan \
+  -p "$(cat .research/{name}/prompts/${i}.md)" \
+  > .research/{name}/child_outputs/${i}.md 2>/dev/null &
+
+# Codex サブタスク
+codex exec --skip-git-repo-check -m gpt-5.4 \
+  --config model_reasoning_effort="high" \
+  --sandbox read-only \
+  "$(cat .research/{name}/prompts/${i}.md)" \
+  > .research/{name}/child_outputs/${i}.md 2>/dev/null &
+
 wait
 ```
 
 サブタスクが2つ以下の場合は Agent ツールで並列実行する（子プロセス不要）。
+
+### フォールバック
+
+モデルがエラーや空出力を返した場合、claude -p で同じプロンプトを再実行する。
 
 ### ディレクトリ構造
 
@@ -92,8 +120,9 @@ docs/research/             # 最終レポートの保存先（git 管理）
 全子プロセスの出力を読み取り、以下を生成:
 
 - Executive Summary（3-5文）
-- 各サブ目標の結果（ソース付き）
+- 各サブ目標の結果（ソース付き、**使用モデルを明記**）
 - 発見事項のクロスリファレンス
+- **クロスモデル分析**: 異なるモデルが同じトピックに言及している場合、合意・相違を注記
 
 ## Step 5: Polish
 
