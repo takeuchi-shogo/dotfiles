@@ -24,7 +24,17 @@
 
 ### Suggestion（参考）
 
-> confidence ≥ 80 の指摘のみ表示。80未満はフィルタ済み。
+> confidence ≥ 80 の指摘のみ表示。
+
+（該当する指摘がある場合のみ表示）
+
+### Watch（要注意 — 参考情報）
+
+> confidence 60-79 の指摘。判定 (PASS/NEEDS_FIX/BLOCK) には影響しない。
+> フィードバックにより将来の閾値調整に活用される。
+
+- **[{score}]** **[{レビューアー名}]** `{file}:{line}` — {指摘内容}
+  → {推奨修正}
 
 （該当する指摘がある場合のみ表示）
 
@@ -32,9 +42,9 @@
 
 {PASS / NEEDS_FIX / BLOCK}
 
-- **PASS**: 指摘なし、または Suggestion のみ。次のステップへ進んでよい
-- **NEEDS_FIX**: Important 以上の指摘あり。修正後に再レビュー推奨
-- **BLOCK**: Critical な指摘あり。修正必須
+- **PASS**: Critical・Important の指摘なし。Watch のみ、または指摘なし
+- **NEEDS_FIX**: Important が3件以上。修正後に再レビュー推奨
+- **BLOCK**: Critical が1件以上。修正必須
 ```
 
 ## 統合ルール
@@ -55,7 +65,8 @@
 | ---------------------------------------- | -------------- | ---------- |
 | MUST, Critical, CRITICAL, 90-100         | **Critical**   | ≥90        |
 | CONSIDER, Important, HIGH, 80-89         | **Important**  | ≥80        |
-| （80未満はフィルタ済みのため出力しない） | —              | <80 除外   |
+| Watch, MEDIUM, 60-79                     | **Watch**      | ≥60        |
+| （60未満はフィルタ済みのため出力しない） | —              | <60 除外   |
 
 ### 指摘がない場合
 
