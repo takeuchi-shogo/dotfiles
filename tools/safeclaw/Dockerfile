@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     jq \
     tmux \
-    sudo \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
@@ -34,9 +33,8 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # Claude Code
 RUN npm install -g @anthropic-ai/claude-code
 
-# Create non-root user
-RUN useradd -m -s /bin/bash -G sudo claude \
-    && echo "claude ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/claude
+# Create non-root user (no sudo — container isolation is the security boundary)
+RUN useradd -m -s /bin/bash claude
 
 # Container-specific Claude settings
 COPY config/.claude-container/settings.json /home/claude/.claude/settings.json
