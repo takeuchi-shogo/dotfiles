@@ -199,6 +199,74 @@ def record_cross_impact(exp_id: str, cross_impact: dict) -> None:
     _save_registry(experiments)
 
 
+def build_proposer_context(
+    target_skill: str,
+    limit: int = 20,
+    archive_days: int = 60,
+) -> str:
+    """対象スキル関連のフィードバック履歴を Proposer 注入用テキストに整形。
+
+    Args:
+        target_skill: 対象スキル名
+        limit: 直近エントリの最大件数
+        archive_days: これ以上古いエントリはサマリー化
+
+    Returns:
+        markdown テーブル形式のフィードバック履歴
+    """
+    registry_path = _registry_path()
+    if not registry_path.exists():
+        return "_フィードバック履歴なし_"
+
+    entries = []
+    with open(registry_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            entry = json.loads(line)
+            if entry.get("target_skill") == target_skill or (
+                entry.get("category") == "skills"
+                and target_skill in " ".join(entry.get("files_changed", []))
+            ):
+                entries.append(entry)
+
+    if not entries:
+        return f"_{target_skill} に関連するフィードバック履歴なし_"
+
+    entries.sort(key=lambda e: e.get("created_at", ""), reverse=True)
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=archive_days)
+    cutoff_iso = cutoff.isoformat()
+
+    recent = [e for e in entries if e.get("created_at", "") >= cutoff_iso][:limit]
+    archived = [e for e in entries if e.get("created_at", "") < cutoff_iso]
+
+    lines = ["## フィードバック履歴", ""]
+    if recent:
+        lines.append("| ID | 提案 | 結果 | delta | 理由 |")
+        lines.append("|---|---|---|---|---|")
+        for e in recent:
+            exp_id = e.get("id", "?")
+            hypothesis = e.get("hypothesis", "?")[:40]
+            status = e.get("status", "?")
+            vr = e.get("validation_result", {})
+            delta = vr.get("ab_delta", "-")
+            reason = (
+                e.get("outcome_reason", "-")[:30] if e.get("outcome_reason") else "-"
+            )
+            lines.append(f"| {exp_id} | {hypothesis} | {status} | {delta} | {reason} |")
+
+    if archived:
+        lines.append("")
+        lines.append(
+            f"_+ {len(archived)} 件のアーカイブ済みエントリ（{archive_days} 日以上前）_"
+        )
+
+    return "\n".join(lines)
+
+
 def measure_effect(exp_id: str) -> dict:
     """マージ済み実験の効果を測定する。
 
@@ -366,6 +434,13 @@ def main():
     # measure-all サブコマンド
     subparsers.add_parser("measure-all", help="Measure all merged experiments")
 
+    # proposer-context サブコマンド
+    proposer_ctx = subparsers.add_parser(
+        "proposer-context", help="Build proposer context for a skill"
+    )
+    proposer_ctx.add_argument("--skill", required=True, help="Target skill name")
+    proposer_ctx.add_argument("--limit", type=int, default=20)
+
     args = parser.parse_args()
 
     if args.command == "record":
@@ -409,6 +484,9 @@ def main():
             verdict = result.get("verdict", "?")
             change = result.get("change_pct", "N/A")
             print(f"{exp['id']}: {verdict} (change: {change}%)")
+
+    elif args.command == "proposer-context":
+        print(build_proposer_context(args.skill, args.limit))
 
 
 if __name__ == "__main__":
