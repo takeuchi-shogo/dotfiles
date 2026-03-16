@@ -208,6 +208,16 @@ class AmendmentProposal:
     evidence: dict = field(default_factory=dict)
 
 
+@dataclass
+class GateResult:
+    """セミオートゲートの判定結果。"""
+
+    verdict: Literal["auto_accept", "auto_reject", "pending_review"]
+    ab_delta: float | None = None
+    score_delta: float | None = None
+    reason: str = ""
+
+
 def classify_failure_pattern(report: SkillHealthReport) -> str | None:
     """健全性レポートから修正タイプを分類する。healthy なら None。
 
@@ -269,4 +279,62 @@ def generate_proposal(
             "benchmark_delta": report.benchmark_delta,
             "failure_patterns": report.failure_patterns,
         },
+    )
+
+
+# --- セミオートゲート（EvoSkill 統合）--- #
+
+_HIGH_IMPACT_PATTERNS = re.compile(r"(skills/.*/SKILL\.md|agents/.*\.md)")
+
+GATE_ACCEPT_THRESHOLD_PP = 2.0
+GATE_REJECT_THRESHOLD_PP = -2.0
+
+
+def gate_proposal(
+    proposal: AmendmentProposal,
+    report: SkillHealthReport,
+    benchmark_delta: float | None = None,
+) -> GateResult:
+    """セミオートゲート: A/B delta に基づきスキル改善提案を判定。
+
+    +2pp 以上  → auto_accept（ただし高影響ファイルは pending_review に格下げ）
+    -2pp 以下  → auto_reject
+    間 or 未測定 → pending_review
+    """
+    if benchmark_delta is None:
+        return GateResult(
+            verdict="pending_review",
+            ab_delta=None,
+            score_delta=report.trend,
+            reason="A/B テスト未実施",
+        )
+
+    if benchmark_delta <= GATE_REJECT_THRESHOLD_PP:
+        return GateResult(
+            verdict="auto_reject",
+            ab_delta=benchmark_delta,
+            score_delta=report.trend,
+            reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値 {GATE_REJECT_THRESHOLD_PP}pp 以下",
+        )
+
+    if benchmark_delta >= GATE_ACCEPT_THRESHOLD_PP:
+        if proposal.amendment_type in ("edit_instruction", "deprecate"):
+            return GateResult(
+                verdict="pending_review",
+                ab_delta=benchmark_delta,
+                score_delta=report.trend,
+                reason=f"A/B delta {benchmark_delta:+.1f}pp — 高影響変更のため人間レビュー必須",
+            )
+        return GateResult(
+            verdict="auto_accept",
+            ab_delta=benchmark_delta,
+            score_delta=report.trend,
+            reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値 {GATE_ACCEPT_THRESHOLD_PP}pp 以上",
+        )
+
+    return GateResult(
+        verdict="pending_review",
+        ab_delta=benchmark_delta,
+        score_delta=report.trend,
+        reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値内、人間レビュー推奨",
     )
