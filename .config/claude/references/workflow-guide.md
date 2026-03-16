@@ -89,8 +89,8 @@ Plan 策定後、実装前に潜在リスクを洗い出すゲート。
 
 | タスク規模 | リスク分析の構成 |
 |---|---|
-| **M** | `edge-case-analysis` スキル（Claude の幅）。セキュリティ・並行処理・アーキテクチャ変更を含む場合は `codex-risk-reviewer` も追加 |
-| **L** | `edge-case-analysis` + `codex-risk-reviewer` を**並列起動**（幅 + 深さ） |
+| **M** | `edge-case-analysis` + `codex-risk-reviewer` を**並列起動**（幅 + 深さ） |
+| **L** | 同上 + Plan 批評（下記「Plan Second Opinion」参照） |
 
 **起動方法**:
 - `edge-case-analysis` スキルを直接実行（Claude の幅: データフロー、nil パス、境界値）
