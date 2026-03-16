@@ -1,6 +1,5 @@
 //! PostToolUse/* — fires on ALL tool calls.
-//! Currently: doom-loop detection.
-//! Future: exploration spiral, context pressure, artifact index.
+//! Detections: doom-loop, exploration spiral, context pressure, artifact index.
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -9,6 +8,14 @@ const DOOM_LOOP_WINDOW: usize = 20;
 const DOOM_LOOP_THRESHOLD: usize = 3;
 const DOOM_LOOP_COOLDOWN: f64 = 300.0;
 const TTL_SECS: f64 = 2.0 * 3600.0;
+
+// ── exploration spiral constants ────────────────────────────────────
+const EXPLORATION_THRESHOLD: usize = 5;
+const READ_TOOLS: &[&str] = &["Read", "Grep", "Glob", "WebFetch", "WebSearch"];
+const ACTION_TOOLS: &[&str] = &["Edit", "Write", "Bash", "Agent", "Skill"];
+
+// ── context pressure constants ──────────────────────────────────────
+const CONTEXT_PRESSURE_STALE_SECS: f64 = 60.0;
 
 // ── doom-loop detection ─────────────────────────────────────────────
 
@@ -158,6 +165,210 @@ fn check_doom_loop(tool_name: &str, data: &serde_json::Value) -> Option<String> 
     }
 }
 
+// ── exploration spiral detection ────────────────────────────────────
+
+fn check_exploration_spiral(tool_name: &str) -> Option<String> {
+    let now = crate::io::now_secs();
+    let state_path = crate::io::state_dir().join("exploration-tracker.json");
+    let mut state = crate::io::read_json_state(&state_path);
+
+    // TTL reset
+    let last_reset = state["lastReset"].as_f64().unwrap_or(now);
+    if now - last_reset > TTL_SECS {
+        state = serde_json::json!({
+            "consecutive_reads": 0,
+            "warned": false,
+            "lastReset": now
+        });
+    }
+
+    let mut consecutive_reads = state["consecutive_reads"].as_u64().unwrap_or(0);
+    let mut warned = state["warned"].as_bool().unwrap_or(false);
+
+    if ACTION_TOOLS.contains(&tool_name) {
+        // Action tool resets the counter
+        consecutive_reads = 0;
+        warned = false;
+    } else if READ_TOOLS.contains(&tool_name) {
+        consecutive_reads += 1;
+    }
+    // Non-categorized tools: don't change counter
+
+    state["consecutive_reads"] = serde_json::json!(consecutive_reads);
+    state["warned"] = serde_json::json!(warned);
+    if state["lastReset"].is_null() {
+        state["lastReset"] = serde_json::json!(now);
+    }
+
+    let result = if consecutive_reads >= EXPLORATION_THRESHOLD as u64 && !warned {
+        state["warned"] = serde_json::json!(true);
+
+        crate::events::emit_event(
+            "pattern",
+            &serde_json::json!({
+                "type": "exploration_spiral",
+                "consecutive_reads": consecutive_reads,
+            }),
+        );
+
+        Some(format!(
+            "[Exploration Spiral] 読み取りツールが{}回連続しています（Edit/Write/Bash なし）。\n\
+             十分な情報が集まっているなら、行動に移ってください。情報が不足なら、具体的に何を探しているか明確にしてください。",
+            consecutive_reads
+        ))
+    } else {
+        None
+    };
+
+    crate::io::write_json_state(&state_path, &state);
+    result
+}
+
+// ── context pressure monitor ───────────────────────────────────────
+
+fn check_context_pressure() -> Option<String> {
+    let now = crate::io::now_secs();
+    let state_dir = crate::io::state_dir();
+
+    // Read pressure data written by statusline
+    let pressure_path = state_dir.join("context-pressure.json");
+    let pressure = crate::io::read_json_state(&pressure_path);
+
+    let used_pct = match pressure["used_pct"].as_f64() {
+        Some(v) => v,
+        None => return None,
+    };
+
+    let ts = pressure["ts"].as_f64().unwrap_or(0.0);
+    if now - ts > CONTEXT_PRESSURE_STALE_SECS {
+        return None; // stale data
+    }
+
+    // Read warned state
+    let warned_path = state_dir.join("context-pressure-warned.json");
+    let mut warned = crate::io::read_json_state(&warned_path);
+
+    // TTL reset
+    let last_reset = warned["lastReset"].as_f64().unwrap_or(now);
+    if now - last_reset > TTL_SECS {
+        warned = serde_json::json!({
+            "warned_80": false,
+            "warned_90": false,
+            "warned_95": false,
+            "lastReset": now
+        });
+    }
+
+    let warned_80 = warned["warned_80"].as_bool().unwrap_or(false);
+    let warned_90 = warned["warned_90"].as_bool().unwrap_or(false);
+    let warned_95 = warned["warned_95"].as_bool().unwrap_or(false);
+
+    // Higher thresholds take priority
+    let result = if used_pct >= 95.0 && !warned_95 {
+        warned["warned_95"] = serde_json::json!(true);
+        warned["warned_90"] = serde_json::json!(true);
+        warned["warned_80"] = serde_json::json!(true);
+
+        crate::events::emit_event(
+            "pattern",
+            &serde_json::json!({
+                "type": "context_pressure",
+                "used_pct": used_pct,
+                "threshold": 95,
+            }),
+        );
+
+        Some(format!(
+            "[Context Pressure] コンテキスト使用率 {:.0}% — 緊急。\n\
+             即座に /checkpoint で状態を保存し、新セッションに切り替えてください。",
+            used_pct
+        ))
+    } else if used_pct >= 90.0 && !warned_90 {
+        warned["warned_90"] = serde_json::json!(true);
+        warned["warned_80"] = serde_json::json!(true);
+
+        crate::events::emit_event(
+            "pattern",
+            &serde_json::json!({
+                "type": "context_pressure",
+                "used_pct": used_pct,
+                "threshold": 90,
+            }),
+        );
+
+        Some(format!(
+            "[Context Pressure] コンテキスト使用率 {:.0}% — 危険。\n\
+             サブエージェントに委譲するか /compact を実行してください。",
+            used_pct
+        ))
+    } else if used_pct >= 80.0 && !warned_80 {
+        warned["warned_80"] = serde_json::json!(true);
+
+        Some(format!(
+            "[Context Pressure] コンテキスト使用率 {:.0}%。\n\
+             Read に offset/limit を指定し、Bash 出力を grep/head/tail でフィルタしてください。",
+            used_pct
+        ))
+    } else if used_pct >= 70.0 {
+        eprintln!("[Context Pressure] {:.0}% — approaching threshold", used_pct);
+        None
+    } else {
+        None
+    };
+
+    if warned["lastReset"].is_null() {
+        warned["lastReset"] = serde_json::json!(now);
+    }
+    crate::io::write_json_state(&warned_path, &warned);
+    result
+}
+
+// ── artifact index ─────────────────────────────────────────────────
+
+fn record_artifact(tool_name: &str, data: &serde_json::Value) {
+    let input = &data["tool_input"];
+
+    let (action, file) = match tool_name {
+        "Read" => {
+            let file = input["file_path"].as_str().unwrap_or("").to_string();
+            ("read", file)
+        }
+        "Edit" => {
+            let file = input["file_path"].as_str().unwrap_or("").to_string();
+            ("modified", file)
+        }
+        "Write" => {
+            let file_str = input["file_path"].as_str().unwrap_or("");
+            let action = if std::path::Path::new(file_str).exists() {
+                "modified"
+            } else {
+                "created"
+            };
+            (action, file_str.to_string())
+        }
+        "Grep" | "Glob" => {
+            let path = input["path"].as_str().unwrap_or("");
+            let file = if path.is_empty() {
+                ".".to_string()
+            } else {
+                path.to_string()
+            };
+            ("searched", file)
+        }
+        _ => return, // Skip non-tracked tools
+    };
+
+    let entry = serde_json::json!({
+        "ts": crate::io::iso_now(),
+        "tool": tool_name,
+        "action": action,
+        "file": file,
+    });
+
+    let index_path = crate::io::state_dir().join("artifact-index.jsonl");
+    crate::io::append_jsonl(&index_path, &entry, 1000);
+}
+
 // ── main entry ──────────────────────────────────────────────────────
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -168,7 +379,15 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
         contexts.push(ctx);
     }
 
-    // (exploration spiral, context pressure, artifact index will be added in later tasks)
+    if let Some(ctx) = check_exploration_spiral(tool_name) {
+        contexts.push(ctx);
+    }
+
+    if let Some(ctx) = check_context_pressure() {
+        contexts.push(ctx);
+    }
+
+    record_artifact(tool_name, data);
 
     if contexts.is_empty() {
         crate::io::passthrough(raw);
