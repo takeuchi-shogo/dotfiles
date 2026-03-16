@@ -155,4 +155,20 @@ try {
 	// Non-critical — checkpoint failure shouldn't block compaction
 }
 
+// ── 7. Set HANDOFF request flag ─────────────────────────────────
+try {
+	const stateDir = path.join(process.env.HOME, ".claude", "session-state");
+	if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
+	fs.writeFileSync(
+		path.join(stateDir, "handoff-requested.json"),
+		JSON.stringify({
+			timestamp: new Date().toISOString(),
+			reason: "pre-compact",
+			git_branch: branch || "(unknown)",
+		}),
+	);
+} catch {
+	// Non-critical
+}
+
 console.log(JSON.stringify(state, null, 2));

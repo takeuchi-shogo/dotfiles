@@ -261,7 +261,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js",
+						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js && bash $HOME/dotfiles/tools/half-clone/half-clone.sh",
 						"timeout": 15
 					}
 				]

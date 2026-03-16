@@ -92,6 +92,45 @@ function loadHandoff() {
 	return false;
 }
 
+/**
+ * PreCompact 時に設定された handoff-requested フラグを検出し、
+ * HANDOFF.md の生成を促すメッセージを表示する。
+ * フラグは一度表示したら削除する（ワンショット）。
+ */
+function checkHandoffRequest() {
+	const flagPath = path.join(
+		require("os").homedir(),
+		".claude",
+		"session-state",
+		"handoff-requested.json",
+	);
+
+	try {
+		if (!fs.existsSync(flagPath)) return;
+
+		const data = JSON.parse(fs.readFileSync(flagPath, "utf8"));
+		const ageMs = Date.now() - new Date(data.timestamp).getTime();
+		const ageHours = ageMs / (1000 * 60 * 60);
+
+		// 24時間超過なら削除してスキップ
+		if (ageHours > 24) {
+			fs.unlinkSync(flagPath);
+			return;
+		}
+
+		process.stderr.write(
+			`[Handoff] HANDOFF.md の生成が必要です（${data.reason || "pre-compact"}）。` +
+				`/checkpoint を実行するか、tmp/HANDOFF.md に作業状態を保存してください。` +
+				` (branch: ${data.git_branch || "(unknown)"})\n`,
+		);
+
+		// ワンショット: 一度表示したら削除
+		fs.unlinkSync(flagPath);
+	} catch {
+		// Non-critical — ignore errors
+	}
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -331,6 +370,7 @@ process.stdin.on("end", () => {
 	// HANDOFF.md があればセッション状態の復元をスキップ（引き継ぎ情報で十分）
 	const hasHandoff = loadHandoff();
 	if (!hasHandoff) {
+		checkHandoffRequest(); // HANDOFF.md がない場合のみチェック
 		loadState();
 	}
 
