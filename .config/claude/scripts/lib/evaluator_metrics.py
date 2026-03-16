@@ -56,7 +56,13 @@ def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
             continue
 
         if key not in groups:
-            groups[key] = {"total": 0, "accepted": 0, "ignored": 0}
+            groups[key] = {
+                "total": 0,
+                "accepted": 0,
+                "ignored": 0,
+                "watch_useful": 0,
+                "watch_noise": 0,
+            }
 
         outcome = feedback_map[finding_id]
         groups[key]["total"] += 1
@@ -64,6 +70,10 @@ def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
             groups[key]["accepted"] += 1
         elif outcome == "ignored":
             groups[key]["ignored"] += 1
+        elif outcome == "watch_useful":
+            groups[key]["watch_useful"] += 1
+        elif outcome == "watch_noise":
+            groups[key]["watch_noise"] += 1
 
     for stats in groups.values():
         total = stats["total"]
