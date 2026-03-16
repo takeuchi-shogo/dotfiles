@@ -122,7 +122,9 @@ govulncheck ./... 2>/dev/null || true
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
-Perform a deep security analysis of the recent git changes. Focus on:
+Perform a deep security analysis of the recent git changes.
+First run: git diff HEAD~1 HEAD to understand the scope of changes.
+Then focus on:
 
 1. **Attack vector mapping**: Identify all entry points and trace data flow from untrusted sources
 2. **Privilege escalation paths**: Check for authorization bypass or role confusion

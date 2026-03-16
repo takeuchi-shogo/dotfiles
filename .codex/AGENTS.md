@@ -41,7 +41,7 @@
 - session 開始時は、対象 repo や task に関連する `~/.codex/memories/*-memory.md` があれば必要なものだけ確認する。
 
 ## Security Analysis
-- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec -p security "..."`
+- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.4 -p security "..."`
 - 対象: 認証・認可ロジック、暗号化・トークン管理、外部入力処理、依存関係の変更
 - 攻撃ベクトルのマッピング、権限昇格パス、暗号の弱点、レースコンディション、サプライチェーンリスクを分析する
 - Claude 側の `security-reviewer` エージェントの表面チェックを補完する深い推論として位置づける
