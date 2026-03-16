@@ -267,6 +267,47 @@ def build_proposer_context(
     return "\n".join(lines)
 
 
+def select_next_target(
+    degraded_skills: list[str],
+) -> str | None:
+    """ラウンドロビンで次の改善対象スキルを選定。
+
+    直近の H で最も長く改善されていないスキルを優先。
+    全対象を 1 回ずつ探索してから 2 周目へ。
+
+    Args:
+        degraded_skills: degraded/failing スキル名リスト
+
+    Returns:
+        次の対象スキル名。対象がなければ None
+    """
+    if not degraded_skills:
+        return None
+
+    registry_path = _registry_path()
+    if not registry_path.exists():
+        return degraded_skills[0]
+
+    last_proposed: dict[str, str] = {}
+    with open(registry_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            entry = json.loads(line)
+            skill = entry.get("target_skill")
+            if skill and skill in degraded_skills:
+                ts = entry.get("created_at", "")
+                if ts > last_proposed.get(skill, ""):
+                    last_proposed[skill] = ts
+
+    never_proposed = [s for s in degraded_skills if s not in last_proposed]
+    if never_proposed:
+        return never_proposed[0]
+
+    return min(last_proposed, key=last_proposed.get)
+
+
 def measure_effect(exp_id: str) -> dict:
     """マージ済み実験の効果を測定する。
 
@@ -434,6 +475,14 @@ def main():
     # measure-all サブコマンド
     subparsers.add_parser("measure-all", help="Measure all merged experiments")
 
+    # next-target サブコマンド
+    next_target = subparsers.add_parser(
+        "next-target", help="Select next evolution target (round-robin)"
+    )
+    next_target.add_argument(
+        "--skills", required=True, help="Comma-separated degraded skill names"
+    )
+
     # proposer-context サブコマンド
     proposer_ctx = subparsers.add_parser(
         "proposer-context", help="Build proposer context for a skill"
@@ -484,6 +533,11 @@ def main():
             verdict = result.get("verdict", "?")
             change = result.get("change_pct", "N/A")
             print(f"{exp['id']}: {verdict} (change: {change}%)")
+
+    elif args.command == "next-target":
+        skills = [s.strip() for s in args.skills.split(",")]
+        result = select_next_target(skills)
+        print(result or "NO_TARGET")
 
     elif args.command == "proposer-context":
         print(build_proposer_context(args.skill, args.limit))
