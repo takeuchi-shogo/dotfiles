@@ -170,6 +170,102 @@ def _check_review_gate() -> str | None:
     )
 
 
+# Test file naming conventions per language
+_TEST_FILE_MAPPINGS = {
+    ".ts": [".test.ts", ".spec.ts"],
+    ".tsx": [".test.tsx", ".spec.tsx"],
+    ".js": [".test.js", ".spec.js"],
+    ".jsx": [".test.jsx", ".spec.jsx"],
+    ".go": ["_test.go"],
+    ".py": ["test_{name}.py", "{name}_test.py"],
+    ".rs": [],  # Rust uses inline #[cfg(test)]
+}
+
+
+def _check_test_coverage_for_changes() -> str | None:
+    """Check if changed source files have corresponding test files (advisory)."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=os.getcwd(),
+        )
+        if result.returncode != 0:
+            return None
+        changed = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+    except Exception:
+        return None
+
+    if not changed:
+        return None
+
+    uncovered: list[str] = []
+    cwd = os.getcwd()
+
+    for filepath in changed:
+        base, ext = os.path.splitext(filepath)
+        name = os.path.basename(base)
+
+        # Skip test files, configs, docs themselves
+        if any(
+            filepath.endswith(s)
+            for s in (
+                "_test.go",
+                ".test.ts",
+                ".test.tsx",
+                ".test.js",
+                ".test.jsx",
+                ".spec.ts",
+                ".spec.tsx",
+                ".spec.js",
+                ".spec.jsx",
+            )
+        ) or name.startswith("test_"):
+            continue
+        if ext in (".md", ".json", ".yaml", ".yml", ".toml", ".lock", ".css", ".html"):
+            continue
+
+        suffixes = _TEST_FILE_MAPPINGS.get(ext)
+        if suffixes is None:
+            continue
+
+        # Check if any test file exists
+        has_test = False
+        dirpath = os.path.dirname(filepath)
+
+        for suffix in suffixes:
+            if "{name}" in suffix:
+                test_name = suffix.replace("{name}", name)
+            else:
+                test_name = name + suffix
+
+            # Check same directory
+            if os.path.exists(os.path.join(cwd, dirpath, test_name)):
+                has_test = True
+                break
+
+            # Check __tests__ subdirectory
+            tests_dir = os.path.join(cwd, dirpath, "__tests__")
+            if os.path.exists(os.path.join(tests_dir, test_name)):
+                has_test = True
+                break
+
+        if not has_test:
+            uncovered.append(filepath)
+
+    if not uncovered:
+        return None
+
+    files_str = ", ".join(f"`{f}`" for f in uncovered[:5])
+    extra = f" 他{len(uncovered) - 5}件" if len(uncovered) > 5 else ""
+    return (
+        f"[Test Coverage] テストファイルが見つからない変更: {files_str}{extra}。"
+        "対応するテストの追加を検討してください。"
+    )
+
+
 def main() -> None:
     retries = _get_retry_count()
 
@@ -225,10 +321,16 @@ def main() -> None:
     if success:
         _reset_retries()
         print(f"[Completion Gate] テスト通過 ({test_cmd})", file=sys.stderr)
-        # Advisory: suggest review if many edits
+        # Advisory messages (non-blocking)
+        advisories: list[str] = []
         review_msg = _check_review_gate()
         if review_msg:
-            json.dump({"systemMessage": review_msg}, sys.stdout)
+            advisories.append(review_msg)
+        coverage_msg = _check_test_coverage_for_changes()
+        if coverage_msg:
+            advisories.append(coverage_msg)
+        if advisories:
+            json.dump({"systemMessage": "\n".join(advisories)}, sys.stdout)
         return
 
     # Tests failed — increment retry counter and report

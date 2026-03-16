@@ -71,6 +71,7 @@ git diff --name-only HEAD
 | nil/ポインタ操作   | `nil-path-reviewer`     | `*`, `nil`, `Option`, `.Get()`, ポインタ型フィールドの追加/変更    |
 | spec file 存在     | `product-reviewer`      | `docs/specs/*.prompt.md` がリポジトリに存在                        |
 | UI 変更            | `design-reviewer`       | `.tsx`, `.css`, `.scss`, `.html`, `.vue`, `.svelte` のファイル変更 |
+| L規模/API境界変更  | `longevity-reviewer`    | 200行以上の変更、または API 境界ファイル（handler, controller, api, endpoint, route, server）の変更 |
 
 ### Gemini セキュリティレビュー（3-way レビュー、~200行以上）
 

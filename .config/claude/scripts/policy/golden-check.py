@@ -275,6 +275,37 @@ def check_ghost_file(file_path: str, tool_name: str) -> str | None:
     return None
 
 
+_EXPORT_SIGNATURE_RE = re.compile(
+    r"^export\s+(?:default\s+)?(?:function|const|type|interface|class|enum)\s+\w+",
+    re.MULTILINE,
+)
+
+
+def _check_breaking_change_full(
+    old_string: str, new_string: str, file_path: str
+) -> str | None:
+    """Full breaking change check comparing old and new strings."""
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in (".ts", ".tsx", ".js", ".jsx"):
+        return None
+
+    old_exports = _EXPORT_SIGNATURE_RE.findall(old_string)
+    if not old_exports:
+        return None
+
+    # Check if any export signature was modified
+    new_exports = _EXPORT_SIGNATURE_RE.findall(new_string)
+    if old_exports != new_exports:
+        changed = [sig.strip() for sig in old_exports if sig not in new_exports]
+        if changed:
+            preview = changed[0][:80]
+            return (
+                f"[GP-011] export されたシグネチャの変更を検出: `{preview}`。"
+                "呼び出し元への影響を確認してください（`git grep` で参照元を検索）。"
+            )
+    return None
+
+
 def check_comment_ratio(content: str, file_path: str = "") -> str | None:
     """Detect excessive comment-to-code ratio (GP-010).
 
@@ -338,6 +369,16 @@ def main() -> None:
 
     warnings: list[str] = []
 
+    # GP-011: Breaking change detection (Edit only, needs old_string)
+    breaking_change_warning = None
+    if tool_name == "Edit":
+        old_string = tool_input.get("old_string", "")
+        new_string = tool_input.get("new_string", "")
+        if old_string and new_string:
+            breaking_change_warning = _check_breaking_change_full(
+                old_string, new_string, file_path
+            )
+
     checks: list[tuple[str, str | None]] = [
         ("GP-002", check_boundary_validation(content, file_path)),
         ("GP-003", check_dependency_file(file_path)),
@@ -345,6 +386,7 @@ def main() -> None:
         ("GP-005", check_unsafe_types(content, file_path)),
         ("GP-009", check_ghost_file(file_path, tool_name)),
         ("GP-010", check_comment_ratio(content, file_path)),
+        ("GP-011", breaking_change_warning),
     ]
 
     for rule, warn in checks:

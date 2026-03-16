@@ -122,6 +122,20 @@ Update public documentation affected by your code changes.
 Do not modify documentation for code you did not change.
 ```
 
+## C-011: Regression 防止の制約
+
+- **制約**: 既存テストを全て通過させること。テストを削除・無効化して通過させることは禁止
+- **適用**: 全コード変更（特に autonomous / background agent 実行時）
+- **関連**: C-006 の強化版。C-006 は「テストを書け・消すな」の基本規約。C-011 は「full suite 実行・weaken 禁止・コード側を直せ」の厳格版
+- **背景**: SWE-CI ベンチマーク (arXiv:2603.03823) で 75% のモデルが既存コードを壊すことが判明。テスト削除による偽の成功が主要パターン
+
+```
+All existing tests must pass after your changes. Do not delete, skip, or
+weaken existing tests to make them pass. If a test fails, fix the code
+(not the test) unless the test itself is wrong — and explain why.
+Run the full test suite, not just tests for changed files.
+```
+
 ---
 
 ## クイックリファレンス: ユースケース別推奨制約
@@ -135,3 +149,4 @@ Do not modify documentation for code you did not change.
 | 機能実装 | + C-006 |
 | 並列エージェント | + C-008 |
 | ドキュメント影響あり | + C-010 |
+| 全コード変更（特に autonomous） | + C-011 |
