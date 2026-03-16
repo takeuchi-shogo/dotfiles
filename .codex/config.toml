@@ -28,6 +28,11 @@ model_reasoning_summary = "auto"
 sandbox_mode = "read-only"
 web_search = "live"
 
+[profiles.security]
+model_reasoning_effort = "xhigh"
+model_reasoning_summary = "detailed"
+sandbox_mode = "read-only"
+
 [profiles.resume]
 model_reasoning_effort = "high"
 model_reasoning_summary = "detailed"

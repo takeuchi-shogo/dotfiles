@@ -56,9 +56,32 @@ PROMPT
 )" 2>/dev/null
 ```
 
+## セキュリティ特化レビュー
+
+認証・暗号・入力処理の変更時に使用。`profiles.security`（xhigh + read-only）を利用:
+
+```bash
+codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
+Deep security review of the recent git changes. Analyze:
+
+1. **Injection**: SQL/NoSQL/OS command/LDAP injection via untrusted input
+2. **Auth & Access Control**: Broken authentication, missing authorization checks, privilege escalation
+3. **Cryptography**: Weak algorithms, hardcoded keys, improper key management, IV/nonce reuse
+4. **Data Exposure**: Secrets in logs/responses, PII leakage, missing encryption at rest/transit
+5. **Supply Chain**: Unpinned dependencies, known CVEs, typosquatting risk
+
+Output format — one line per finding:
+[CRITICAL/HIGH/MEDIUM/LOW] file:line - vulnerability description + attack scenario
+
+If no issues found, output "SECURE — no vulnerabilities detected."
+PROMPT
+)" 2>/dev/null
+```
+
 ## いつ使うか
 
 - 大規模リファクタリング後のセカンドオピニオン
 - リリース前の最終レビュー
 - CHANGELOG.md の更新が必要なとき
 - 200行超の変更で code-reviewer + 言語専門レビューアーに追加して使用
+- **セキュリティ特化**: 認証・暗号・API エンドポイント・依存関係の変更時

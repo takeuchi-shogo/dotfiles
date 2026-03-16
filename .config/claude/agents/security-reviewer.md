@@ -116,6 +116,36 @@ govulncheck ./... 2>/dev/null || true
 
 問題がなければ "Security Review: PASSED" と表示。
 
+## Codex Deep-Dive（オプション）
+
+表面チェックで潜在的な問題を検出した場合、Codex CLI の深い推論で補完する:
+
+```bash
+codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
+Perform a deep security analysis of the recent git changes. Focus on:
+
+1. **Attack vector mapping**: Identify all entry points and trace data flow from untrusted sources
+2. **Privilege escalation paths**: Check for authorization bypass or role confusion
+3. **Cryptographic weaknesses**: Key management, algorithm selection, IV/nonce reuse
+4. **Race conditions**: TOCTOU, concurrent access to shared state without locking
+5. **Supply chain risks**: Dependency integrity, typosquatting, version pinning
+
+For each finding, provide:
+- Severity: CRITICAL/HIGH/MEDIUM/LOW
+- Attack scenario (how an attacker would exploit it)
+- Remediation with code example
+
+Output "SECURE — no vulnerabilities detected." if clean.
+PROMPT
+)" 2>/dev/null
+```
+
+**使い分け**: 表面チェックで十分な場合は Codex を呼ばない。以下の場合に Codex を併用する:
+- 認証・認可ロジックの変更
+- 暗号化・トークン管理の変更
+- 外部入力を処理するエンドポイントの追加・変更
+- サプライチェーン（依存関係）の大幅な変更
+
 ## Key Principles
 
 1. **Defense in Depth** — 複数層のセキュリティ

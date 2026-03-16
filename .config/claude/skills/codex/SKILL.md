@@ -44,7 +44,7 @@ description: >
 | `gpt-5.2`      | **Flagship model**: General-purpose software engineering                  | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
 | `gpt-5.2-mini` | Cost-efficient coding (4x more usage allowance)                           | 400K input / 128K output | Near SOTA performance, $0.25/$2.00                |
 
-**GPT-5.3-codex Advantages**: Codex CLI に最適化されたモデル。高精度コード生成、改善されたツール使用、低遅延。`gpt-5.2` ベースの強化版。
+**gpt-5.4 Advantages**: Codex CLI に最適化された最新モデル。高精度コード生成、改善されたツール使用、低遅延。セキュリティ分析や深い推論タスクに最適。
 
 **Reasoning Effort Levels**:
 

@@ -40,6 +40,12 @@
 - 繰り返し発生した repo 固有ルールや failure は `$codex-memory-capture` で `~/.codex/memories` に記録する。
 - session 開始時は、対象 repo や task に関連する `~/.codex/memories/*-memory.md` があれば必要なものだけ確認する。
 
+## Security Analysis
+- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec -p security "..."`
+- 対象: 認証・認可ロジック、暗号化・トークン管理、外部入力処理、依存関係の変更
+- 攻撃ベクトルのマッピング、権限昇格パス、暗号の弱点、レースコンディション、サプライチェーンリスクを分析する
+- Claude 側の `security-reviewer` エージェントの表面チェックを補完する深い推論として位置づける
+
 ## Mandatory Skill Usage
 - 調査開始時は `$codex-search-first`
 - dotfiles の validation 選定は `$dotfiles-config-validation`
