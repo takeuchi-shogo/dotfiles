@@ -39,10 +39,10 @@ git diff --name-only HEAD
 
 | 変更規模 | 構成                                                                                                       |
 | -------- | ---------------------------------------------------------------------------------------------------------- |
-| ~10行    | レビュー省略（Verify のみ）                                                                                |
-| ~50行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`（2並列）                                       |
-| ~200行   | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `golang-reviewer`（Go変更時、3並列）          |
-| 200行超  | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `golang-reviewer`（Go変更時）+ スペシャリスト |
+| ~10行    | レビュー省略（Verify のみ）                                                                                                       |
+| ~50行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時のみ）       |
+| ~200行   | 上記 + `golang-reviewer`（Go変更時）                                                                                              |
+| 200行超  | 上記全て + スペシャリスト                                                                                                         |
 
 ### 言語固有チェックリスト（プロンプト注入）
 
@@ -110,14 +110,16 @@ git diff --name-only HEAD
 
 統合ルール:
 
-1. **重複排除**: 同じファイル・行への指摘が複数ある場合、最も具体的なものを残す
-2. **重要度順**: Critical → Important → Suggestion の順に整理
-3. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「参考」を付与
-4. **判定**: 全体として修正が必要かどうかを明示する
-5. **信頼度フィルタ**: confidence < 80 の指摘を除外
-6. **既存コード除外**: diff の追加行以外への指摘を除外
-7. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
-8. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
+1. **セマンティック重複排除**: 同一ファイル ±10行以内 + 同一 failure_mode の指摘は最高信頼度の1件に統合。統合元は「(他 N 件のレビューアーも同様の指摘)」と注記
+2. **信頼度ブースト**: 複数の独立したレビューアーが同じ問題を指摘した場合、信頼度を `max(scores) + 5`（上限100）に引き上げ
+3. **対立検出**: 同じ箇所で矛盾する指摘がある場合、両方残して `[CONFLICT]` タグを付与
+4. **重要度順**: Critical → Important → Watch の順に整理
+5. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「要注意」を付与
+6. **判定**: Critical が1件以上 → BLOCK。Important が3件以上 → NEEDS_FIX。それ以外 → PASS。Watch は判定に影響しない
+7. **信頼度フィルタ**: confidence < 60 の指摘を除外
+8. **既存コード除外**: diff の追加行以外への指摘を除外
+9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
+10. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
 
 ## Step 5: Findings Persistence（フィードバックループ）
 
