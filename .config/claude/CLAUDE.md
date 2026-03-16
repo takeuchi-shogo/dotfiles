@@ -104,6 +104,7 @@ Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check
   2. **修正内容**: 何をどう変えたか（具体的な変更）
   3. **効果**: この修正でどう変わるか（ビフォーアフター）
 - **ドキュメント＝インフラ**: エージェントが依存する仕様書は耐荷重構造物。コード変更時に同期更新を怠ると silent failure を招く。「2回説明したら書き下ろせ」— 同じドメイン知識を繰り返しセッション横断で説明している場合は spec/reference に codify する
+- **探索は広く、理解は深く**: ファイル探索時は precision（見たものの正確な理解）に偏りやすい。意識的に recall（見るべきファイルの網羅）を上げる。config/registry → エントリポイント → 個別モジュールの順で探索する
 
 </core_principles>
 
