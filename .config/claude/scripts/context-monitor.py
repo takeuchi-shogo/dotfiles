@@ -180,6 +180,25 @@ def main():
         # Get context usage directly from data
         context_info = get_context_from_data(data)
 
+        # Write context pressure to state file for hooks (post-any reads this)
+        if context_info:
+            import time
+
+            pressure_dir = os.environ.get(
+                "CLAUDE_SESSION_STATE_DIR",
+                os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+            )
+            try:
+                os.makedirs(pressure_dir, exist_ok=True)
+                pressure_file = os.path.join(pressure_dir, "context-pressure.json")
+                with open(pressure_file, "w") as f:
+                    json.dump(
+                        {"used_pct": context_info["percent"], "ts": time.time()}, f
+                    )
+            except OSError as e:
+                # Non-critical: hook will skip stale data if write fails
+                sys.stderr.write(f"[context-monitor] pressure write failed: {e}\n")
+
         # Get git branch
         git_branch = get_git_branch(workspace)
 

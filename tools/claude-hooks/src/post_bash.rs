@@ -122,6 +122,45 @@ fn load_fix_guides() -> Vec<(String, String, String)> {
     guides
 }
 
+// ── error 6-category classification ─────────────────────────────────
+
+fn classify_error(output: &str) -> &'static str {
+    let lower = output.to_lowercase();
+    if lower.contains("permission denied") || lower.contains("eacces") || lower.contains("operation not permitted") {
+        "PermissionDenied"
+    } else if (lower.contains("no such file") || lower.contains("enoent")) && !lower.contains("module") {
+        "FileNotFound"
+    } else if lower.contains("file has changed") || lower.contains("content mismatch") || lower.contains("stale") {
+        "EditMismatch"
+    } else if lower.contains("syntaxerror") || lower.contains("parse error") || lower.contains("unexpected token") {
+        "SyntaxError"
+    } else if lower.contains("rate limit") || lower.contains("429") || lower.contains("too many requests") {
+        "RateLimit"
+    } else if lower.contains("timeout") || lower.contains("etimedout") || lower.contains("timed out") {
+        "Timeout"
+    } else {
+        ""
+    }
+}
+
+fn recovery_template(category: &str) -> &'static str {
+    match category {
+        "PermissionDenied" =>
+            "リカバリ: ファイルの権限を確認してください。sudo は使わず、適切なパスに書き込むか chmod で最小限の権限を設定してください。",
+        "FileNotFound" =>
+            "リカバリ: ファイルパスを確認してください。Glob ツールで正しいパスを検索してから再試行してください。",
+        "EditMismatch" =>
+            "リカバリ: ファイルが変更されています。Read ツールで最新の内容を取得してから、再度 Edit してください。",
+        "SyntaxError" =>
+            "リカバリ: エラーの行番号を Read ツールで確認し、構文エラーを修正してください。",
+        "RateLimit" =>
+            "リカバリ: レート制限に達しました。別のタスクに切り替えるか、しばらく待ってから再試行してください。",
+        "Timeout" =>
+            "リカバリ: コマンドがタイムアウトしました。処理を分割するか、run_in_background で実行してください。",
+        _ => "",
+    }
+}
+
 fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
     let cmd_lower = command.trim().to_lowercase();
     if IGNORE_COMMANDS.iter().any(|ic| cmd_lower.starts_with(ic)) {
@@ -166,6 +205,13 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
             }
             break;
         }
+    }
+
+    // 6-category recovery template
+    let category = classify_error(output);
+    let recovery = recovery_template(category);
+    if !recovery.is_empty() {
+        parts.push(recovery.to_string());
     }
 
     parts.push("codex-debugger エージェントを使用してこのエラーの根本原因を分析できます。".to_string());
