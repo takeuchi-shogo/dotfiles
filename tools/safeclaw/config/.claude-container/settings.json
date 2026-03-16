@@ -1,0 +1,9 @@
+{
+	"model": "sonnet",
+	"permissions": {
+		"allow": ["Bash(*)", "Edit(*)", "Write(*)"],
+		"deny": []
+	},
+	"hooks": {},
+	"language": "japanese"
+}
