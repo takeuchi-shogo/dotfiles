@@ -199,6 +199,44 @@ def _compute_skill_version(skill_name: str) -> str:
         return ""
 
 
+def _detect_critical_failure_step(events: list[dict]) -> dict | None:
+    """Identify the Critical Failure Step (CFS) in a session trajectory.
+
+    The CFS is the first high-importance error after which no recovery occurs.
+    Inspired by AgentRx (Microsoft Research): "the first unrecoverable error."
+
+    Returns a dict with cfs_index, failure_mode, message, cascade_length,
+    or None if no CFS is found.
+    """
+    CFS_IMPORTANCE_THRESHOLD = 0.7
+    for i, event in enumerate(events):
+        if event.get("category") != "error":
+            continue
+        if event.get("importance", 0) < CFS_IMPORTANCE_THRESHOLD:
+            continue
+        # Check if any subsequent event indicates recovery
+        subsequent = events[i + 1 :]
+        has_recovery = any(
+            e.get("category") == "correction"
+            or (
+                e.get("category") == "error"
+                and e.get("importance", 0) < CFS_IMPORTANCE_THRESHOLD
+                and e.get("failure_mode") == event.get("failure_mode")
+            )
+            for e in subsequent
+        )
+        if not has_recovery:
+            return {
+                "cfs_index": i,
+                "failure_mode": event.get("failure_mode", ""),
+                "message": event.get("message", ""),
+                "importance": event.get("importance", 0),
+                "cascade_length": len(subsequent),
+                "total_events": len(events),
+            }
+    return None
+
+
 def process_session(cwd: str | None = None) -> None:
     """セッションデータを処理し、永続ストレージに書き出す。"""
     logger = logging.getLogger("autoevolve")
@@ -339,6 +377,24 @@ def process_session(cwd: str | None = None) -> None:
                 score,
             )
 
+    # Critical Failure Step (CFS) detection — AgentRx-inspired
+    # Identify the first unrecoverable error in the session trajectory
+    cfs = _detect_critical_failure_step(events)
+    cfs_data = {}
+    if cfs:
+        append_to_learnings("critical-failure-steps", cfs)
+        logger.info(
+            "session-learner: CFS detected at index %d (FM=%s): %s",
+            cfs["cfs_index"],
+            cfs["failure_mode"],
+            cfs["message"][:80],
+        )
+        cfs_data = {
+            "cfs_index": cfs["cfs_index"],
+            "cfs_failure_mode": cfs["failure_mode"],
+            "cfs_cascade_length": cfs["cascade_length"],
+        }
+
     metrics = {
         "project": summary["project"],
         "cwd": summary["cwd"],
@@ -350,6 +406,7 @@ def process_session(cwd: str | None = None) -> None:
         "outcome": summary["outcome"],
         "high_importance_count": summary["high_importance_count"],
         "avg_importance": summary["avg_importance"],
+        **cfs_data,
     }
     append_to_metrics(metrics)
 

@@ -19,6 +19,7 @@ from storage import get_data_dir as _storage_get_data_dir
 
 
 IMPORTANCE_RULES: list[tuple[str, re.Pattern, float, str]] = [
+    # --- Code quality failures (FM-001~010) ---
     ("high", re.compile(r"EACCES|Permission denied", re.I), 0.9, "FM-006"),
     ("high", re.compile(r"segfault|SIGSEGV|OOM|out of memory", re.I), 1.0, "FM-009"),
     ("high", re.compile(r"GP-002"), 0.8, "FM-005"),
@@ -38,6 +39,42 @@ IMPORTANCE_RULES: list[tuple[str, re.Pattern, float, str]] = [
     ("medium", re.compile(r"timeout|ETIMEDOUT", re.I), 0.6, "FM-009"),
     ("low", re.compile(r"(?<!\w)warning(?:s)?(?:\s*:|\s)", re.I), 0.2, ""),
     ("low", re.compile(r"deprecated", re.I), 0.3, ""),
+    # --- Agent behavior failures (FM-011~015, AgentRx-inspired) ---
+    (
+        "high",
+        re.compile(r"incomplete.+plan|uncompleted.+step|plan.+adherence", re.I),
+        0.8,
+        "FM-011",
+    ),
+    (
+        "medium",
+        re.compile(
+            r"No such file or directory|ENOENT|404 Not Found|does not exist", re.I
+        ),
+        0.6,
+        "FM-012",
+    ),
+    (
+        "medium",
+        re.compile(r"tool.+misinterpret|output.+misread|re-?running same", re.I),
+        0.6,
+        "FM-013",
+    ),
+    (
+        "high",
+        re.compile(r"intent.+misalign|違う|そうじゃな|ではなく|not what I asked", re.I),
+        0.8,
+        "FM-014",
+    ),
+    (
+        "high",
+        re.compile(
+            r"premature.+action|without.+confirm|確認なし.+実行|dangerous.+without",
+            re.I,
+        ),
+        0.9,
+        "FM-015",
+    ),
 ]
 
 BASE_IMPORTANCE: dict[str, float] = {
