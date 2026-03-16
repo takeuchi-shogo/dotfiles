@@ -90,6 +90,186 @@
 			"expected_reviewer": "code-reviewer",
 			"description": "Unwrap on Result without context",
 			"code": "fn read_config() -> Config {\n    let content = std::fs::read_to_string(\"config.toml\").unwrap();\n    toml::from_str(&content).unwrap()\n}"
+		},
+		{
+			"id": "eval-011",
+			"language": "go",
+			"failure_mode": "FM-003",
+			"severity": "high",
+			"expected_reviewer": "edge-case-hunter",
+			"description": "Off-by-one in slice bounds",
+			"code": "func getLastN(items []string, n int) []string {\n\treturn items[len(items)-n-1:]\n}"
+		},
+		{
+			"id": "eval-012",
+			"language": "typescript",
+			"failure_mode": "FM-003",
+			"severity": "high",
+			"expected_reviewer": "edge-case-hunter",
+			"description": "Empty array not handled",
+			"code": "function getAverage(nums: number[]): number {\n  const sum = nums.reduce((a, b) => a + b, 0);\n  return sum / nums.length;\n}"
+		},
+		{
+			"id": "eval-013",
+			"language": "python",
+			"failure_mode": "FM-003",
+			"severity": "medium",
+			"expected_reviewer": "edge-case-hunter",
+			"description": "Zero-length string not guarded",
+			"code": "def first_char(s: str) -> str:\n    return s[0]"
+		},
+		{
+			"id": "eval-014",
+			"language": "go",
+			"failure_mode": "FM-006",
+			"severity": "critical",
+			"expected_reviewer": "code-reviewer",
+			"description": "Goroutine leak from unbuffered channel",
+			"code": "func process(items []int) {\n\tch := make(chan int)\n\tfor _, item := range items {\n\t\tgo func(v int) {\n\t\t\tch <- v * 2\n\t\t}(item)\n\t}\n\tfmt.Println(<-ch)\n}"
+		},
+		{
+			"id": "eval-015",
+			"language": "typescript",
+			"failure_mode": "FM-006",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Race condition on shared mutable state",
+			"code": "let counter = 0;\nasync function increment() {\n  const current = counter;\n  await delay(10);\n  counter = current + 1;\n}\nPromise.all([increment(), increment(), increment()]);"
+		},
+		{
+			"id": "eval-016",
+			"language": "python",
+			"failure_mode": "FM-006",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Thread-unsafe shared list mutation",
+			"code": "import threading\nresults = []\ndef worker(item):\n    results.append(process(item))\nthreads = [threading.Thread(target=worker, args=(i,)) for i in range(100)]\nfor t in threads: t.start()\nfor t in threads: t.join()"
+		},
+		{
+			"id": "eval-017",
+			"language": "go",
+			"failure_mode": "FM-007",
+			"severity": "high",
+			"expected_reviewer": "cross-file-reviewer",
+			"description": "Function signature changed but caller not updated",
+			"code": "// user.go - signature changed from (id string) to (id string, includeDeleted bool)\nfunc GetUser(id string, includeDeleted bool) (*User, error) {\n\treturn &User{}, nil\n}\n\n// handler.go - still using old signature\n// user, err := GetUser(r.URL.Query().Get(\"id\"))"
+		},
+		{
+			"id": "eval-018",
+			"language": "typescript",
+			"failure_mode": "FM-007",
+			"severity": "high",
+			"expected_reviewer": "cross-file-reviewer",
+			"description": "Exported type changed but consumers not updated",
+			"code": "// types.ts - field renamed from 'name' to 'displayName'\nexport interface User {\n  id: string;\n  displayName: string; // was: name\n  email: string;\n}\n\n// profile.tsx - still using old field name\n// <h1>{user.name}</h1>"
+		},
+		{
+			"id": "eval-019",
+			"language": "python",
+			"failure_mode": "FM-007",
+			"severity": "medium",
+			"expected_reviewer": "cross-file-reviewer",
+			"description": "Config key renamed but reader not updated",
+			"code": "# config.py - key changed from 'db_url' to 'database_url'\nDEFAULT_CONFIG = {\n    'database_url': 'sqlite:///db.sqlite3',\n    'debug': False,\n}\n\n# app.py - still reading old key\n# db_url = config.get('db_url')"
+		},
+		{
+			"id": "eval-020",
+			"language": "go",
+			"failure_mode": "FM-008",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Error context lost in wrapping",
+			"code": "func loadConfig(path string) (*Config, error) {\n\tdata, err := os.ReadFile(path)\n\tif err != nil {\n\t\treturn nil, errors.New(\"failed to load config\")\n\t}\n\treturn parseConfig(data)\n}"
+		},
+		{
+			"id": "eval-021",
+			"language": "typescript",
+			"failure_mode": "FM-008",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Error message misleading - swallows original error",
+			"code": "async function saveUser(user: User): Promise<void> {\n  try {\n    await db.insert(user);\n  } catch (e) {\n    throw new Error('Failed to save user');\n  }\n}"
+		},
+		{
+			"id": "eval-022",
+			"language": "python",
+			"failure_mode": "FM-008",
+			"severity": "medium",
+			"expected_reviewer": "code-reviewer",
+			"description": "Retry without backoff or max attempts",
+			"code": "def fetch_data(url: str) -> dict:\n    while True:\n        try:\n            return requests.get(url).json()\n        except requests.RequestException:\n            time.sleep(1)"
+		},
+		{
+			"id": "eval-023",
+			"language": "go",
+			"failure_mode": "FM-009",
+			"severity": "critical",
+			"expected_reviewer": "code-reviewer",
+			"description": "File handle not closed on error path",
+			"code": "func processFile(path string) error {\n\tf, err := os.Open(path)\n\tif err != nil {\n\t\treturn err\n\t}\n\tdata, err := io.ReadAll(f)\n\tif err != nil {\n\t\treturn err\n\t}\n\tf.Close()\n\treturn process(data)\n}"
+		},
+		{
+			"id": "eval-024",
+			"language": "typescript",
+			"failure_mode": "FM-009",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "EventListener not removed causing memory leak",
+			"code": "function setupTracker(element: HTMLElement) {\n  const handler = (e: MouseEvent) => track(e.clientX, e.clientY);\n  element.addEventListener('mousemove', handler);\n}"
+		},
+		{
+			"id": "eval-025",
+			"language": "python",
+			"failure_mode": "FM-009",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Database connection not closed in error path",
+			"code": "def query_users(db_url: str) -> list:\n    conn = sqlite3.connect(db_url)\n    cursor = conn.cursor()\n    cursor.execute('SELECT * FROM users')\n    results = cursor.fetchall()\n    conn.close()\n    return results"
+		},
+		{
+			"id": "eval-026",
+			"language": "go",
+			"failure_mode": "FM-010",
+			"severity": "critical",
+			"expected_reviewer": "code-reviewer",
+			"description": "Inverted boolean condition",
+			"code": "func isAuthorized(user *User, resource string) bool {\n\tif !user.HasRole(\"admin\") || !user.HasPermission(resource) {\n\t\treturn true\n\t}\n\treturn false\n}"
+		},
+		{
+			"id": "eval-027",
+			"language": "typescript",
+			"failure_mode": "FM-010",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Short-circuit evaluation logic error",
+			"code": "function canAccess(user: User | null, isPublic: boolean): boolean {\n  return user != null && isPublic || user?.isAdmin;\n}"
+		},
+		{
+			"id": "eval-028",
+			"language": "python",
+			"failure_mode": "FM-010",
+			"severity": "high",
+			"expected_reviewer": "code-reviewer",
+			"description": "Mutable default argument",
+			"code": "def add_item(item: str, items: list = []) -> list:\n    items.append(item)\n    return items"
+		},
+		{
+			"id": "eval-029",
+			"language": "go",
+			"failure_mode": "FM-001",
+			"severity": "critical",
+			"expected_reviewer": "code-reviewer",
+			"description": "Nil map write panic",
+			"code": "func collectTags(items []Item) map[string]int {\n\tvar counts map[string]int\n\tfor _, item := range items {\n\t\tfor _, tag := range item.Tags {\n\t\t\tcounts[tag]++\n\t\t}\n\t}\n\treturn counts\n}"
+		},
+		{
+			"id": "eval-030",
+			"language": "python",
+			"failure_mode": "FM-005",
+			"severity": "critical",
+			"expected_reviewer": "security-reviewer",
+			"description": "Command injection via subprocess",
+			"code": "import subprocess\ndef run_lint(filename: str) -> str:\n    result = subprocess.run(f'eslint {filename}', shell=True, capture_output=True, text=True)\n    return result.stdout"
 		}
 	]
 }
