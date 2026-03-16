@@ -96,5 +96,76 @@ class TestSessionLearnerScoring(unittest.TestCase):
         self.assertIn("Bash", entry["related_tools"])
 
 
+class TestCriticalFailureStep(unittest.TestCase):
+    """CFS (Critical Failure Step) detection tests — AgentRx-inspired."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+        os.environ["AUTOEVOLVE_DATA_DIR"] = self.tmpdir
+
+    def tearDown(self):
+        import shutil
+
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+        os.environ.pop("AUTOEVOLVE_DATA_DIR", None)
+
+    def test_cfs_detected_for_unrecovered_error(self):
+        from session_events import emit_event
+
+        learner = import_module("session-learner")
+
+        emit_event("error", {"message": "Permission denied", "command": "npm install"})
+        emit_event("error", {"message": "build failed", "command": "npm run build"})
+        learner.process_session(cwd=self.tmpdir)
+
+        cfs_path = Path(self.tmpdir) / "learnings" / "critical-failure-steps.jsonl"
+        self.assertTrue(cfs_path.exists())
+
+        with open(cfs_path) as f:
+            entry = json.loads(f.readline())
+
+        self.assertEqual(entry["cfs_index"], 0)
+        self.assertEqual(entry["failure_mode"], "FM-006")
+        self.assertIn("cascade_length", entry)
+
+    def test_no_cfs_when_recovery_occurs(self):
+        from session_events import emit_event
+
+        learner = import_module("session-learner")
+
+        emit_event("error", {"message": "Permission denied", "command": "npm install"})
+        emit_event("correction", {"message": "fixed permissions", "fix": "chmod"})
+        learner.process_session(cwd=self.tmpdir)
+
+        cfs_path = Path(self.tmpdir) / "learnings" / "critical-failure-steps.jsonl"
+        self.assertFalse(cfs_path.exists())
+
+    def test_no_cfs_for_low_importance_errors(self):
+        from session_events import emit_event
+
+        learner = import_module("session-learner")
+
+        emit_event("error", {"message": "warning: unused variable", "command": "lint"})
+        learner.process_session(cwd=self.tmpdir)
+
+        cfs_path = Path(self.tmpdir) / "learnings" / "critical-failure-steps.jsonl"
+        self.assertFalse(cfs_path.exists())
+
+    def test_cfs_included_in_metrics(self):
+        from session_events import emit_event
+
+        learner = import_module("session-learner")
+
+        emit_event("error", {"message": "OOM killed", "command": "build"})
+        learner.process_session(cwd=self.tmpdir)
+
+        metrics_path = Path(self.tmpdir) / "metrics" / "session-metrics.jsonl"
+        with open(metrics_path) as f:
+            entry = json.loads(f.readline())
+
+        self.assertIn("cfs_index", entry)
+        self.assertEqual(entry["cfs_failure_mode"], "FM-009")
+
+
 if __name__ == "__main__":
     unittest.main()

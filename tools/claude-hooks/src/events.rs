@@ -46,6 +46,21 @@ fn importance_rules() -> Vec<Rule> {
             failure_mode: "FM-009",
         },
         Rule {
+            pattern: Regex::new(r"doom.loop|doom_loop").unwrap(),
+            score: 0.7,
+            failure_mode: "FM-011",
+        },
+        Rule {
+            pattern: Regex::new(r"exploration.spiral|exploration_spiral").unwrap(),
+            score: 0.5,
+            failure_mode: "FM-012",
+        },
+        Rule {
+            pattern: Regex::new(r"context.pressure|context_pressure").unwrap(),
+            score: 0.8,
+            failure_mode: "FM-013",
+        },
+        Rule {
             pattern: Regex::new(r"(?i)\bwarnings?\s*:").unwrap(),
             score: 0.2,
             failure_mode: "",

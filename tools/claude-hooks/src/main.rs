@@ -1,5 +1,6 @@
 mod events;
 mod io;
+mod post_any;
 mod post_bash;
 mod post_edit;
 mod pre_tool;
@@ -19,6 +20,7 @@ fn main() {
     let subcmd = args.get(1).map(|s| s.as_str()).unwrap_or("");
 
     let result = match subcmd {
+        "post-any" => post_any::run(&raw, &data),
         "post-bash" => post_bash::run(&raw, &data),
         "post-edit" => post_edit::run(&raw, &data),
         "pre-edit" => pre_tool::pre_edit(&raw, &data),

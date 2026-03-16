@@ -91,6 +91,50 @@ UNSAFE_TYPE_PATTERNS = [
     re.compile(r"\binterface\{\}"),
 ]
 
+# GP-002 Guard: Only apply boundary validation to input-boundary files
+# AgentRx-inspired guarded evaluation — constraints apply only in relevant context
+_BOUNDARY_FILE_KEYWORDS = (
+    "handler",
+    "controller",
+    "api",
+    "endpoint",
+    "cmd",
+    "route",
+    "server",
+    "middleware",
+    "view",
+)
+
+# GP-005 Guard: Skip type safety checks in test files
+_TEST_FILE_PATTERNS = (
+    "_test.go",
+    ".test.ts",
+    ".test.tsx",
+    ".test.js",
+    ".test.jsx",
+    ".spec.ts",
+    ".spec.tsx",
+    ".spec.js",
+    ".spec.jsx",
+    "_test.py",
+    "test_",
+)
+
+
+def _is_boundary_file(file_path: str) -> bool:
+    """Check if a file is at an input boundary (handler, controller, etc.)."""
+    lower = file_path.lower()
+    return any(kw in lower for kw in _BOUNDARY_FILE_KEYWORDS)
+
+
+def _is_test_file(file_path: str) -> bool:
+    """Check if a file is a test file."""
+    basename = os.path.basename(file_path).lower()
+    return any(
+        basename.endswith(p) or basename.startswith(p) for p in _TEST_FILE_PATTERNS
+    )
+
+
 # GP-002: Boundary validation — raw input used without validation
 RAW_INPUT_PATTERNS: dict[str, list[re.Pattern[str]]] = {
     "js": [
@@ -129,9 +173,13 @@ def _strip_comment_lines(content: str, ext: str) -> str:
 def check_boundary_validation(content: str, file_path: str = "") -> str | None:
     """Detect raw external input access without boundary validation (GP-002).
 
-    Heuristic check — may miss validated access patterns.
+    Guarded: Only applies to input-boundary files (handler, controller, etc.).
     Strips comment lines to reduce false positives.
     """
+    # Guard condition: skip non-boundary files (AgentRx guarded evaluation)
+    if file_path and not _is_boundary_file(file_path):
+        return None
+
     ext = os.path.splitext(file_path)[1].lower()
     if ext in (".ts", ".tsx", ".js", ".jsx"):
         patterns = RAW_INPUT_PATTERNS["js"]
@@ -173,6 +221,10 @@ def check_empty_catch(content: str) -> str | None:
 
 
 def check_unsafe_types(content: str, file_path: str = "") -> str | None:
+    # Guard condition: skip test files (AgentRx guarded evaluation)
+    if file_path and _is_test_file(file_path):
+        return None
+
     ext = os.path.splitext(file_path)[1].lower()
     patterns: list[re.Pattern[str]] = []
     if ext in (".ts", ".tsx", ".js", ".jsx"):

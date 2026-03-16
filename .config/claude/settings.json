@@ -254,6 +254,16 @@
 						"timeout": 5
 					}
 				]
+			},
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-any",
+						"timeout": 5,
+						"statusMessage": "Observing..."
+					}
+				]
 			}
 		],
 		"PreCompact": [

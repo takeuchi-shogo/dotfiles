@@ -89,6 +89,51 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: OWASP Top 10 に該当するパターンがないか (pass/fail)
 - **レビューアー**: `security-reviewer`
 
+### FM-011: Plan Adherence Failure
+
+- **定義**: 計画ステップの省略、計画外行動の実行
+- **検出パターン**: `completion-gate.py` の Ralph Loop で未完了ステップ検出、計画からの逸脱
+- **関連 GP**: —
+- **判定**: アクティブプランの全ステップが完了しているか (pass/fail)
+- **レビューアー**: `code-reviewer`
+- **着想**: AgentRx — Plan Adherence Failure
+
+### FM-012: Information Invention
+
+- **定義**: 存在しないファイル、API、事実の参照（ハルシネーション）
+- **検出パターン**: `No such file or directory`, `ENOENT`, `404 Not Found`, Read/Glob で対象が見つからない連続パターン
+- **関連 GP**: —
+- **判定**: 参照した情報が実在するか (pass/fail)
+- **レビューアー**: `code-reviewer`
+- **着想**: AgentRx — Invention of New Information
+
+### FM-013: Tool Output Misinterpretation
+
+- **定義**: コマンド出力やツール結果の誤読による不適切な後続アクション
+- **検出パターン**: 同一コマンドの短時間再実行、エラー直後の同一ファイル再編集
+- **関連 GP**: —
+- **判定**: ツール出力に基づく判断が正しいか (pass/fail)
+- **レビューアー**: `debugger`
+- **着想**: AgentRx — Misinterpretation of Tool Output
+
+### FM-014: Intent Misalignment
+
+- **定義**: ユーザーの意図を誤解し、要求と異なる作業を実行
+- **検出パターン**: ユーザーからの修正指示（「違う」「そうじゃなく」「〜ではなく」）、ユーザー否認パターン
+- **関連 GP**: —
+- **判定**: 実行した作業がユーザーの要求と一致するか (pass/fail)
+- **レビューアー**: `product-reviewer`
+- **着想**: AgentRx — Intent–Plan Misalignment
+
+### FM-015: Premature Action
+
+- **定義**: 確認なしに危険・不可逆な操作を実行
+- **検出パターン**: `git push`, `rm -rf`, `DROP TABLE` 等の危険操作を事前確認なしに実行
+- **関連 GP**: —
+- **判定**: 危険操作の前にユーザー確認を取得したか (pass/fail)
+- **レビューアー**: `code-reviewer`
+- **着想**: AgentRx の障害分類を拡張した独自カテゴリ
+
 ---
 
 ## Failure Type 分類
