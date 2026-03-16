@@ -1,0 +1,16 @@
+services:
+  claude:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: safeclaw-claude
+    container_name: safeclaw-claude-default
+    environment:
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+    volumes:
+      - ../../.config/claude/CLAUDE.md:/home/claude/.claude/CLAUDE.md:ro
+      - ../../.config/claude/references:/home/claude/.claude/references:ro
+      - ../../.config/claude/skills:/home/claude/.claude/skills:ro
+      - ../../.config/claude/agents:/home/claude/.claude/agents:ro
+    stdin_open: true
+    tty: true
