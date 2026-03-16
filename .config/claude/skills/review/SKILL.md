@@ -42,8 +42,8 @@ git diff --name-only HEAD
 | ~10行    | レビュー省略（Verify のみ）                                                                                                       |
 | ~30行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`                                                                        |
 | ~50行    | 上記 + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時のみ）                                                              |
-| ~200行   | 上記 + `golang-reviewer`（Go変更時）                                                                                              |
-| 200行超  | 上記全て + スペシャリスト                                                                                                         |
+| ~200行   | 上記 + `golang-reviewer`（Go変更時）+ **Gemini セキュリティレビュー**                                                              |
+| 200行超  | 上記全て + スペシャリスト（3-way: Claude + Codex + Gemini）                                                                        |
 
 ### 言語固有チェックリスト（プロンプト注入）
 
@@ -71,6 +71,18 @@ git diff --name-only HEAD
 | nil/ポインタ操作   | `nil-path-reviewer`     | `*`, `nil`, `Option`, `.Get()`, ポインタ型フィールドの追加/変更    |
 | spec file 存在     | `product-reviewer`      | `docs/specs/*.prompt.md` がリポジトリに存在                        |
 | UI 変更            | `design-reviewer`       | `.tsx`, `.css`, `.scss`, `.html`, `.vue`, `.svelte` のファイル変更 |
+
+### Gemini セキュリティレビュー（3-way レビュー、~200行以上）
+
+~200行以上の変更では、Codex(深さ) + Claude(幅) に加えて **Gemini(セキュリティ・エコシステム)** を投入する。
+3つの独立した視点で盲点を最小化する（claude-octopus の 3-way review パターン）。
+
+**Gemini への起動方法**: Agent ツールで `gemini-explore` エージェントを他レビューアーと並列起動。プロンプト例:
+
+> Review the following git diff from a security and ecosystem perspective.
+> Check: dependency risks, known CVE patterns, OWASP Top 10 violations,
+> better alternatives in the ecosystem, and community anti-patterns.
+> Output: [CRITICAL/HIGH/MEDIUM] file:line - description
 
 ### 戦略的整合性チェック（"On the Loop" レビュー）
 
@@ -121,6 +133,7 @@ git diff --name-only HEAD
 8. **既存コード除外**: diff の追加行以外への指摘を除外
 9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 10. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
+11. **合意率メトリクス**: 3-way レビュー（~200行以上）では、レビューアー間の合意率を算出する。同一箇所を2+レビューアーが指摘 → 合意。合意率 = 合意指摘数 / 全指摘数 × 100%。レポート末尾に `Agreement Rate: N%` を表示。合意率が50%未満なら `[LOW AGREEMENT]` 警告を付与し、人間の追加判断を促す
 
 ## Step 5: Findings Persistence（フィードバックループ）
 
