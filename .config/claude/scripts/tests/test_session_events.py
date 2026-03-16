@@ -475,3 +475,57 @@ class TestEmitSkillStep:
         session_file = tmp_path / "current-session.jsonl"
         entry = json.loads(session_file.read_text().strip())
         assert entry["outcome"] == "skipped"
+
+
+# --- AgentRx-inspired FM-011~015 テスト ---
+
+
+class TestAgentBehaviorFailureModes:
+    """FM-011~015: エージェント行動の失敗分類テスト。"""
+
+    def test_fm011_plan_adherence(self):
+        _score, _conf, fm = compute_importance(
+            "error", {"message": "incomplete plan: step 3 not executed"}
+        )
+        assert fm == "FM-011"
+
+    def test_fm012_information_invention_enoent(self):
+        _score, _conf, fm = compute_importance(
+            "error",
+            {"message": "ENOENT: no such file or directory, open '/src/foo.ts'"},
+        )
+        assert fm == "FM-012"
+
+    def test_fm012_information_invention_no_such_file(self):
+        _score, _conf, fm = compute_importance(
+            "error", {"message": "No such file or directory"}
+        )
+        assert fm == "FM-012"
+
+    def test_fm012_information_invention_404(self):
+        _score, _conf, fm = compute_importance("error", {"message": "404 Not Found"})
+        assert fm == "FM-012"
+
+    def test_fm012_does_not_exist(self):
+        _score, _conf, fm = compute_importance(
+            "error", {"message": "path /foo/bar does not exist"}
+        )
+        assert fm == "FM-012"
+
+    def test_fm014_intent_misalignment_ja(self):
+        _score, _conf, fm = compute_importance(
+            "correction", {"message": "違う、そうじゃなくて別のファイル"}
+        )
+        assert fm == "FM-014"
+
+    def test_fm014_intent_misalignment_en(self):
+        _score, _conf, fm = compute_importance(
+            "correction", {"message": "not what I asked for"}
+        )
+        assert fm == "FM-014"
+
+    def test_fm015_premature_action(self):
+        _score, _conf, fm = compute_importance(
+            "error", {"message": "premature action: git push without confirm"}
+        )
+        assert fm == "FM-015"
