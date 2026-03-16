@@ -101,6 +101,33 @@ pub fn write_json_state(path: &std::path::Path, data: &serde_json::Value) {
     let _ = std::fs::write(path, serde_json::to_string(data).unwrap_or_default());
 }
 
+/// Append a single JSON line to a JSONL file, creating parent dirs if needed.
+/// Enforces max_lines by dropping oldest 20% when exceeded.
+pub fn append_jsonl(path: &std::path::Path, entry: &serde_json::Value, max_lines: usize) {
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+
+    let existing = std::fs::read_to_string(path).unwrap_or_default();
+    let line_count = existing.lines().count();
+
+    if line_count >= max_lines {
+        let keep = max_lines - max_lines / 5;
+        let lines: Vec<&str> = existing.lines().collect();
+        let trimmed = lines[lines.len().saturating_sub(keep)..].join("\n");
+        let _ = std::fs::write(path, format!("{}\n{}\n", trimmed, entry));
+    } else {
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+        {
+            use std::io::Write;
+            let _ = writeln!(f, "{}", entry);
+        }
+    }
+}
+
 /// Get current UNIX timestamp as f64.
 pub fn now_secs() -> f64 {
     std::time::SystemTime::now()
