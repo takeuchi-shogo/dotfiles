@@ -156,6 +156,19 @@ Failing/Degraded スキルに対する修正案の生成手順:
 - retire 提案時はまず description に `[DEPRECATED]` を付与
 - 次回 audit で改善なければ削除提案にエスカレート
 
+### Proposer Anti-Patterns（EvoSkill arXiv:2603.02766 由来）
+
+スキル改善を提案する前に、以下に該当しないか確認する:
+
+- **AP-1: 既存スキルとの重複禁止** — 既存スキルが類似能力をカバーしている場合、新規作成ではなく EDIT を提案。skills/ 配下の SKILL.md description を走査して確認
+- **AP-2: 却下済み提案の無視禁止** — `build_proposer_context()` で rejected/reverted エントリを確認。類似提案をする場合は差分と成功根拠を明示
+- **AP-3: 狭すぎるスキル禁止** — failure_count < 3 の修正提案は不可。3 つ以上の失敗事例に共通する根本原因を対象にする
+- **AP-4: 既存能力との重複追加禁止** — 既存スキルが持つ能力と重複する機能を追加しない。重複する場合は統合を提案
+
+### フィードバック履歴の活用
+
+Phase 2 開始時に `experiment_tracker.py proposer-context --skill {target}` を実行し、過去の提案履歴を取得。このコンテキストを踏まえて提案を行う。
+
 ### 修正後の自動検証（Improve→Audit 接続）
 
 スキル SKILL.md を修正したブランチを作成した後、以下を自動実行する:
