@@ -15,9 +15,104 @@ Usage:
 import argparse
 import json
 import os
+import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
+
+# FM keyword mapping for output parsing
+FM_KEYWORDS: dict[str, list[str]] = {
+    "FM-001": [
+        "nil",
+        "null",
+        "undefined",
+        "optional",
+        "NullPointer",
+        "nil pointer",
+        "nil map",
+    ],
+    "FM-002": [
+        "silent",
+        "swallow",
+        "empty catch",
+        "bare except",
+        "ignored error",
+        "_ =",
+    ],
+    "FM-003": [
+        "off-by-one",
+        "boundary",
+        "empty array",
+        "zero-length",
+        "empty string",
+        "index out",
+        "zero division",
+        "divide by zero",
+    ],
+    "FM-004": ["any type", "unsafe cast", "type assertion", "as unknown"],
+    "FM-005": [
+        "injection",
+        "SQL",
+        "XSS",
+        "command injection",
+        "shell=True",
+        "innerHTML",
+    ],
+    "FM-006": [
+        "race condition",
+        "goroutine leak",
+        "shared state",
+        "thread-unsafe",
+        "concurrent",
+        "deadlock",
+    ],
+    "FM-007": [
+        "signature change",
+        "caller not updated",
+        "interface mismatch",
+        "import broken",
+        "field renamed",
+    ],
+    "FM-008": [
+        "error context",
+        "error message",
+        "retry without",
+        "backoff",
+        "infinite retry",
+        "lost context",
+    ],
+    "FM-009": [
+        "resource leak",
+        "not closed",
+        "defer",
+        "memory leak",
+        "cleanup",
+        "close()",
+    ],
+    "FM-010": [
+        "inverted",
+        "logic error",
+        "condition",
+        "short-circuit",
+        "mutable default",
+        "operator precedence",
+    ],
+}
+
+
+def parse_findings(output: str) -> dict:
+    """Parse reviewer output to extract finding count and matched FMs."""
+    finding_pattern = re.compile(r"(\[(?:MUST|CONSIDER|NIT|\d+)\]|[\w./]+:\d+\s*[—\-])")
+    findings = finding_pattern.findall(output)
+    findings_count = len(findings)
+
+    output_lower = output.lower()
+    matched_fms: list[str] = []
+    for fm, keywords in FM_KEYWORDS.items():
+        if any(kw.lower() in output_lower for kw in keywords):
+            matched_fms.append(fm)
+
+    return {"findings_count": findings_count, "matched_fms": matched_fms}
 
 
 def load_tuples(path: str) -> list[dict]:
@@ -87,7 +182,8 @@ def run_single_eval(tuple_data: dict, dry_run: bool = False) -> dict:
             "pass": False,
         }
 
-    detected = expected_fm in output
+    parsed = parse_findings(output)
+    detected = expected_fm in parsed["matched_fms"]
     return {
         "eval_id": eval_id,
         "description": description,
@@ -96,6 +192,8 @@ def run_single_eval(tuple_data: dict, dry_run: bool = False) -> dict:
         "status": "completed",
         "detected": detected,
         "pass": detected,
+        "findings_count": parsed["findings_count"],
+        "matched_fms": parsed["matched_fms"],
         "output_length": len(output),
     }
 
@@ -132,6 +230,27 @@ def generate_summary(results: list[dict], output_dir: Path) -> str:
     for fm, stats in sorted(by_fm.items()):
         rate = stats["passed"] / stats["total"] * 100 if stats["total"] else 0
         lines.append(f"| {fm} | {stats['total']} | {stats['passed']} | {rate:.0f}% |")
+
+    # Overall Recall/Precision/F1
+    total_expected = len(completed)
+    total_detected = len(passed)
+    total_findings = sum(r.get("findings_count", 0) for r in completed)
+    total_matched = sum(len(r.get("matched_fms", [])) for r in completed if r["pass"])
+
+    recall = total_detected / total_expected if total_expected else 0
+    precision = total_matched / total_findings if total_findings else 0
+    f1 = 2 * recall * precision / (recall + precision) if (recall + precision) else 0
+
+    lines.extend(
+        [
+            "",
+            "## Overall Metrics",
+            "",
+            f"- **Recall**: {recall:.1%} ({total_detected}/{total_expected})",
+            f"- **Precision**: {precision:.1%} ({total_matched}/{total_findings})",
+            f"- **F1**: {f1:.1%}",
+        ]
+    )
 
     lines.extend(["", "## Individual Results", ""])
     for r in results:
