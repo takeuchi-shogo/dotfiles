@@ -73,13 +73,13 @@
 
 | 規模  | 例                       | 必須段階                                                   |
 | ----- | ------------------------ | ---------------------------------------------------------- |
-| **S** | typo修正、1行変更        | Implement → Verify                                         |
-| **M** | 関数追加、バグ修正       | Plan → Implement → Test → Verify                           |
-| **L** | 新機能、リファクタリング | Plan → Implement → Test → Review → Verify → Security Check |
+| **S** | typo修正、1行変更        | Implement → Verify                                                        |
+| **M** | 関数追加、バグ修正       | Plan → Risk Analysis → Implement → Test → Verify                          |
+| **L** | 新機能、リファクタリング | Plan → Risk Analysis → Implement → Test → Review → Verify → Security Check |
 
 ```
-Plan -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
-失敗時: テスト/レビュー/検証/セキュリティ指摘 → Implement に戻る
+Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
+失敗時: リスク分析で CRITICAL → Plan 修正、テスト/レビュー/検証/セキュリティ指摘 → Implement に戻る
 ```
 
 詳細なプロセス・エージェントルーティング・メモリシステム・トークン予算は
