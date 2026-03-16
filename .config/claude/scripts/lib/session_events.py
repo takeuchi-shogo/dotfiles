@@ -206,6 +206,8 @@ def flush_session() -> list[dict]:
                         pass
                     continue
     path.unlink(missing_ok=True)
+    # Normalize Rust hook nested format to flat format for all downstream consumers
+    events = [_normalize_event(e) for e in events]
     try:
         logger.info("flush: %d events collected", len(events))
     except Exception:
@@ -333,8 +335,28 @@ def emit_skill_event(event_type: str, data: dict) -> None:
             pass
 
 
+def _normalize_event(event: dict) -> dict:
+    """Rust hook のネスト形式（data キー）をフラット化する。
+
+    Rust events.rs: {"category": "error", "data": {"message": ..., "command": ...}}
+    Python session_events.py: {"category": "error", "message": ..., "command": ...}
+    両形式を統一して扱えるようにする（CRIT-001 修正）。
+
+    トップレベルキー（category, importance 等）は data 内の同名キーで
+    上書きされない（トップレベル優先）。
+    """
+    if "data" in event and isinstance(event["data"], dict):
+        normalized = dict(event["data"])
+        normalized.update({k: v for k, v in event.items() if k != "data"})
+        return normalized
+    return event
+
+
 def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
     """セッション中のイベントからスキルの複合スコアを計算する。
+
+    Rust hook (events.rs) と Python hook (session_events.py) の
+    両方のイベント形式に対応する（_normalize_event で統一）。
 
     スコア計算:
       base = 0.5
@@ -345,25 +367,26 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
       - 0.1/件 (GP違反)
     → clamp(0.0, 1.0)
     """
+    normalized = [_normalize_event(e) for e in session_events]
     score = 1.0  # base(0.5) + completion(0.5)
 
-    errors = [e for e in session_events if e.get("category") == "error"]
+    errors = [e for e in normalized if e.get("category") == "error"]
     score -= 0.3 * len(errors)
 
-    test_failures = [e for e in session_events if e.get("test_passed") is False]
+    test_failures = [e for e in normalized if e.get("test_passed") is False]
     if test_failures:
         score -= 0.5
 
     gp_violations = [
         e
-        for e in session_events
+        for e in normalized
         if e.get("category") == "quality" and e.get("rule", "").startswith("GP-")
     ]
     score -= 0.1 * len(gp_violations)
 
     review_criticals = [
         e
-        for e in session_events
+        for e in normalized
         if e.get("category") == "quality"
         and e.get("review_severity") in ("critical", "important")
     ]

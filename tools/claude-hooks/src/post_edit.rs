@@ -300,7 +300,39 @@ fn strip_comments(content: &str, ext: &str) -> String {
     }
 }
 
+/// Paths excluded from golden principles checks.
+/// Infrastructure, docs, and config files generate false positives (CRIT-004).
+const GP_EXCLUDE_PATTERNS: &[&str] = &[
+    "/.worktrees/",
+    "/scripts/",
+    "/agent-memory/",
+    "/node_modules/",
+    "/.git/",
+];
+
+const GP_EXCLUDE_EXTENSIONS: &[&str] = &["md", "toml", "yml", "yaml"];
+
+fn is_gp_excluded(file_path: &str) -> bool {
+    // Check path patterns
+    if GP_EXCLUDE_PATTERNS
+        .iter()
+        .any(|pat| file_path.contains(pat))
+    {
+        return true;
+    }
+    // Check file extensions
+    let ext = Path::new(file_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+    GP_EXCLUDE_EXTENSIONS.contains(&ext.as_str())
+}
+
 fn check_golden_principles(content: &str, file_path: &str) -> Vec<String> {
+    if is_gp_excluded(file_path) {
+        return Vec::new();
+    }
+
     let ext = Path::new(file_path)
         .extension()
         .map(|e| e.to_string_lossy().to_lowercase())

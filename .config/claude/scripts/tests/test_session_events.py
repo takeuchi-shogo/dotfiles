@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 from session_events import (
     BASE_CONFIDENCE,
     RULE_CONFIDENCE,
+    _normalize_event,
     compute_importance,
     compute_skill_score,
     emit_event,
@@ -441,6 +442,75 @@ class TestComputeSkillScore:
         ]
         score = compute_skill_score(events, "rpi")
         assert score == pytest.approx(0.6)  # 0.5 + 0.5 - 0.2*2 = 0.6
+
+    def test_rust_nested_events_are_normalized(self):
+        """CRIT-001: Rust hook の data ラップ形式でもスコアが正しく計算される。"""
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+            # Rust hook format: category + data wrapper
+            {
+                "category": "error",
+                "data": {"message": "TypeError", "command": "npm test"},
+            },
+            {
+                "category": "quality",
+                "data": {"rule": "GP-004", "file": "test.py"},
+            },
+        ]
+        score = compute_skill_score(events, "review")
+        # 1.0 - 0.3 (error) - 0.1 (GP violation) = 0.6
+        assert score == pytest.approx(0.6)
+
+    def test_mixed_rust_and_python_events(self):
+        """CRIT-001: Rust/Python 混在イベントでもスコアが正しく計算される。"""
+        events = [
+            # Python format (flat)
+            {"category": "error", "message": "err1"},
+            # Rust format (nested)
+            {"category": "error", "data": {"message": "err2", "command": "cargo"}},
+        ]
+        score = compute_skill_score(events, "test-skill")
+        # 1.0 - 0.3*2 = 0.4
+        assert score == pytest.approx(0.4)
+
+
+class TestNormalizeEvent:
+    """_normalize_event の単体テスト。"""
+
+    def test_flat_event_unchanged(self):
+        event = {"category": "error", "message": "TypeError"}
+        assert _normalize_event(event) == event
+
+    def test_nested_data_flattened(self):
+        event = {
+            "category": "error",
+            "importance": 0.5,
+            "data": {"message": "TypeError", "command": "npm test"},
+        }
+        result = _normalize_event(event)
+        assert result["category"] == "error"
+        assert result["message"] == "TypeError"
+        assert result["command"] == "npm test"
+        assert result["importance"] == 0.5
+        assert "data" not in result
+
+    def test_non_dict_data_unchanged(self):
+        event = {"category": "quality", "data": "string-value"}
+        assert _normalize_event(event) == event
+
+    def test_top_level_keys_not_overwritten_by_data(self):
+        """I-2: data 内のキーがトップレベルキーを上書きしないことを検証。"""
+        event = {
+            "category": "error",
+            "importance": 0.8,
+            "data": {"category": "pattern", "importance": 0.1, "message": "test"},
+        }
+        result = _normalize_event(event)
+        # Top-level keys must be preserved
+        assert result["category"] == "error"
+        assert result["importance"] == 0.8
+        # data-only keys are merged
+        assert result["message"] == "test"
 
 
 class TestEmitSkillStep:

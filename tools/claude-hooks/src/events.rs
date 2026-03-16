@@ -102,8 +102,54 @@ fn get_data_dir() -> PathBuf {
         .join("agent-memory")
 }
 
+/// Check if this event is a duplicate (same category + skill_name within the same second).
+/// Uses a JSON state file to track recently emitted keys.
+fn is_duplicate_emit(category: &str, data: &serde_json::Value) -> bool {
+    let now_sec = crate::io::now_secs() as u64;
+    let skill = data
+        .get("skill_name")
+        .and_then(|v| v.as_str())
+        .or_else(|| data.get("rule").and_then(|v| v.as_str()))
+        .unwrap_or("");
+    let file = data
+        .get("file")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    let key = format!("{}:{}:{}:{}", category, skill, file, now_sec);
+
+    let state_path = get_data_dir().join("current-session-dedup.json");
+    let mut seen: std::collections::HashSet<String> =
+        std::fs::read_to_string(&state_path)
+            .ok()
+            .and_then(|s| serde_json::from_str(&s).ok())
+            .unwrap_or_default();
+
+    if seen.contains(&key) {
+        return true;
+    }
+
+    seen.insert(key);
+    // Cap at 200 entries — HashSet order is non-deterministic, so this is
+    // not LRU but a simple size limit. Acceptable because worst case is
+    // a duplicate event in the JSONL (not data loss).
+    if seen.len() > 200 {
+        seen.clear();
+    }
+    // Only write if serialization succeeds; skip on failure to avoid
+    // writing empty string which would reset dedup state (I-1 fix).
+    if let Ok(serialized) = serde_json::to_string(&seen) {
+        let _ = std::fs::write(&state_path, serialized);
+    }
+    false
+}
+
 /// Emit a session event to current-session.jsonl (compatible with session_events.py).
+/// Deduplicates events with the same category+skill+file within the same second.
 pub fn emit_event(category: &str, data: &serde_json::Value) {
+    if is_duplicate_emit(category, data) {
+        return;
+    }
+
     let dir = get_data_dir();
     let path = dir.join("current-session.jsonl");
 
