@@ -91,6 +91,12 @@ def record_experiment(
     hypothesis: str,
     branch: str,
     files_changed: list[str],
+    proposal_type: str | None = None,
+    target_skill: str | None = None,
+    failure_evidence: dict | None = None,
+    validation_result: dict | None = None,
+    outcome_reason: str | None = None,
+    related_proposals: list[str] | None = None,
 ) -> dict:
     """新しい実験を記録する。
 
@@ -99,6 +105,12 @@ def record_experiment(
         hypothesis: 仮説の説明
         branch: 実験ブランチ名
         files_changed: 変更されたファイルのリスト
+        proposal_type: EvoSkill 提案種別 ("create" | "edit" | "deprecate")
+        target_skill: EvoSkill 対象スキル名
+        failure_evidence: EvoSkill 失敗エビデンス
+        validation_result: EvoSkill バリデーション結果
+        outcome_reason: EvoSkill 結果理由
+        related_proposals: EvoSkill 関連提案IDリスト
 
     Returns:
         記録された実験の dict
@@ -116,6 +128,18 @@ def record_experiment(
         "created_at": now,
         "updated_at": now,
     }
+
+    # EvoSkill H schema fields (optional)
+    for key, val in [
+        ("proposal_type", proposal_type),
+        ("target_skill", target_skill),
+        ("failure_evidence", failure_evidence),
+        ("validation_result", validation_result),
+        ("outcome_reason", outcome_reason),
+        ("related_proposals", related_proposals),
+    ]:
+        if val is not None:
+            experiment[key] = val
 
     # レジストリに追記
     path = _registry_path()
