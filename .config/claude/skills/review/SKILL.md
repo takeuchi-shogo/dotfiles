@@ -40,7 +40,8 @@ git diff --name-only HEAD
 | 変更規模 | 構成                                                                                                       |
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | ~10行    | レビュー省略（Verify のみ）                                                                                                       |
-| ~50行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer` + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時のみ）       |
+| ~30行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`                                                                        |
+| ~50行    | 上記 + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時のみ）                                                              |
 | ~200行   | 上記 + `golang-reviewer`（Go変更時）                                                                                              |
 | 200行超  | 上記全て + スペシャリスト                                                                                                         |
 

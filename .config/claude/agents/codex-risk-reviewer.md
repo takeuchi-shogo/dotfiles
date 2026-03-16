@@ -27,8 +27,8 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 
 ## When to Use This Agent
 
-- **M 規模タスク**: セキュリティ・並行処理・アーキテクチャ変更を含む場合
-- **L 規模タスク**: 常に起動（edge-case-analysis スキルと並列起動）
+- **M 規模タスク**: 常に起動（edge-case-analysis スキルと並列起動）
+- **L 規模タスク**: 常に起動 + Plan Second Opinion（clean context 批評）
 - **Plan が策定された直後**: 実装前のリスクゲート
 
 ## Workflow

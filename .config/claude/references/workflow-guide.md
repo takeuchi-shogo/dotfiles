@@ -93,9 +93,18 @@ Plan 策定後、実装前に潜在リスクを洗い出すゲート。
 | **L** | 同上 + Plan 批評（下記「Plan Second Opinion」参照） |
 
 **起動方法**:
-- `edge-case-analysis` スキルを直接実行（Claude の幅: データフロー、nil パス、境界値）
-- `codex-risk-reviewer` エージェントを Agent ツールで起動（Codex の深さ: セキュリティ、障害モード、競合状態、暗黙の前提）
-- L 規模では**1メッセージで並列起動**して時間を節約
+- `edge-case-analysis` + `codex-risk-reviewer` を**1メッセージで並列起動**（M/L 共通）
+
+**Plan Second Opinion（L 規模のみ）**:
+Plan 策定後に Codex の clean context で批評させる。メモリを持たないエージェントは同じバイアスに囚われないため、Plan の盲点を発見しやすい。
+
+```bash
+codex exec --skip-git-repo-check -m gpt-5.4 \
+  --config model_reasoning_effort="high" \
+  --sandbox read-only \
+  "Read the plan at {plan_path} and critique it. What assumptions are wrong? What could go wrong? What's missing?" \
+  2>/dev/null
+```
 
 **判定**:
 - CRITICAL リスクが見つかった場合 → Plan を修正してから Implement に進む
