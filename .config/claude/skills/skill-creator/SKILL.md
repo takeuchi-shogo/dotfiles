@@ -85,6 +85,23 @@ Based on the user interview, fill in these components:
 - No README.md inside the skill folder — all docs go in SKILL.md or references/
 - See `references/validation-checklist.md` for the full checklist and YAML reference
 
+### Security Scan
+
+Before testing, run the security scanner on the skill directory:
+
+```bash
+python3 $HOME/.claude/scripts/policy/skill-security-scan.py <path-to-skill-folder>
+```
+
+If any CRITICAL or HIGH findings are reported, fix them before proceeding.
+MEDIUM findings are advisory — review and address if appropriate.
+
+The scanner checks:
+- **G1 (Static)**: Dangerous code patterns (eval, exec, network access, fs destruction)
+- **G2 (Semantic)**: Prompt injection vectors (zero-width chars, RTL override, hidden instructions)
+
+Reference: arXiv:2603.11808 Four-Stage Verification Pipeline (G1-G4)
+
 ### Skill Writing Guide
 
 #### Anatomy of a Skill
