@@ -20,6 +20,7 @@ Before ANY commit:
 
 - [ ] No hardcoded secrets (API keys, passwords, tokens)
 - [ ] All user inputs validated
+- [ ] Validation assumptions still hold after decode/parse/normalize/render
 - [ ] SQL injection prevention (parameterized queries)
 - [ ] XSS prevention (sanitized HTML)
 - [ ] Authentication/authorization verified
@@ -107,3 +108,10 @@ If security issue found:
 3. Fix CRITICAL issues before continuing
 4. Rotate any exposed secrets
 5. Review codebase for similar issues
+
+## Review Heuristics
+
+- セキュリティレビューは findings list や scanner 出力を起点に固定しない
+- まず trust boundary、sensitive path、privileged action を整理する
+- validation や sanitization が存在しても、最終解釈地点で invariant が崩れていないか確認する
+- 可能なら command、exit code、test、log などの validation evidence を残す

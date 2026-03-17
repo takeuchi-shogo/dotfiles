@@ -19,9 +19,21 @@ description: Run OWASP Top 10 security review on recent code changes
 1. 引数なし: unstaged + staged の変更をセキュリティレビュー
 2. ブランチ名指定: 現在のブランチとの diff をセキュリティレビュー
 3. コミットハッシュ指定: 特定コミットの変更をセキュリティレビュー
-4. `git diff` で変更内容を取得し、OWASP Top 10 チェックリストで評価
+4. `git diff` で変更内容を取得し、まず trust boundary / sensitive path / transformation chain を確認する
+5. その後で OWASP Top 10、secrets、dependency、安全性の観点で評価する
 
 ## Security Checklist
+
+### Threat Model First
+
+最初に次を確認する:
+
+- untrusted input はどこから入るか
+- privileged action は何か
+- sensitive data はどこを通るか
+- validation / decode / parse / normalize / render の順序はどうなっているか
+
+チェックの有無だけではなく、**最終的に解釈される値まで constraint が保たれるか**を確認する。
 
 ### OWASP Top 10 Check
 
@@ -75,6 +87,7 @@ description: Run OWASP Top 10 security review on recent code changes
 - ユーザー入力にバリデーションスキーマ（zod, pydantic 等）が適用されているか
 - ファイルアップロードにサイズ・タイプ制限があるか
 - ホワイトリスト方式のバリデーションか（ブラックリストではなく）
+- decode / parse / normalize 後にも validation の前提が崩れていないか
 
 ### Claude Code Ecosystem Check
 
@@ -117,4 +130,6 @@ description: Run OWASP Top 10 security review on recent code changes
 ```
 
 CRITICAL/HIGH が見つかった場合は、コミット前に修正を強く推奨する。
+可能なら `git diff`、`npm audit`、`govulncheck` などこのコマンドで取得できた evidence を付ける。
+追加の repro が必要な場合は、後続レビューで実行すべきコマンドを提案する。
 問題がなければ "Security Review: PASSED" と表示。

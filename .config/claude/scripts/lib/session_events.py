@@ -414,6 +414,37 @@ def emit_repeated_topic(
     )
 
 
+def emit_proposal_verdict(
+    skill_name: str,
+    hypothesis: str,
+    verdict: str,  # "keep" | "revert"
+    metric_before: float,
+    metric_after: float,
+    iteration: int,
+    extra: dict | None = None,
+) -> None:
+    """AutoEvolve --evolve ループの提案判定結果を記録する。
+
+    autoresearch パターン: 各イテレーションの keep/revert を追跡し、
+    accept rate でエージェントの提案品質を定量化する。
+    """
+    delta = round(metric_after - metric_before, 4)
+    emit_event(
+        "proposal",
+        {
+            "type": "verdict",
+            "skill_name": skill_name,
+            "hypothesis": hypothesis,
+            "verdict": verdict,
+            "metric_before": metric_before,
+            "metric_after": metric_after,
+            "delta": delta,
+            "iteration": iteration,
+            **(extra or {}),
+        },
+    )
+
+
 def emit_skill_step(
     skill_name: str,
     step: int,

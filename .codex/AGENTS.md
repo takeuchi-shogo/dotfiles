@@ -44,6 +44,9 @@
 - セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.4 -p security "..."`
 - 対象: 認証・認可ロジック、暗号化・トークン管理、外部入力処理、依存関係の変更
 - 攻撃ベクトルのマッピング、権限昇格パス、暗号の弱点、レースコンディション、サプライチェーンリスクを分析する
+- findings list や scanner 出力を起点にしすぎず、まず trust boundary、sensitive path、decode/parse/normalize をまたぐ invariant を確認する
+- 「チェックがあるか」より「最終的に解釈される値まで constraint が保たれるか」を優先して見る
+- 可能なら再現コマンド、exit code、log など validation evidence を残し、推測だけで確定判定しない
 - Claude 側の `security-reviewer` エージェントの表面チェックを補完する深い推論として位置づける
 
 ## Mandatory Skill Usage

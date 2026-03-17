@@ -64,14 +64,20 @@ PROMPT
 codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
 Deep security review of the recent git changes. Analyze:
 
-1. **Injection**: SQL/NoSQL/OS command/LDAP injection via untrusted input
-2. **Auth & Access Control**: Broken authentication, missing authorization checks, privilege escalation
-3. **Cryptography**: Weak algorithms, hardcoded keys, improper key management, IV/nonce reuse
-4. **Data Exposure**: Secrets in logs/responses, PII leakage, missing encryption at rest/transit
-5. **Supply Chain**: Unpinned dependencies, known CVEs, typosquatting risk
+1. **Threat Model**: Trust boundaries, untrusted inputs, privileged actions, sensitive data paths
+2. **Invariant Breaks**: Checks that happen before decode/parse/normalize/render and may not hold at the final interpretation point
+3. **Injection**: SQL/NoSQL/OS command/LDAP injection via untrusted input
+4. **Auth & Access Control**: Broken authentication, missing authorization checks, privilege escalation
+5. **Cryptography**: Weak algorithms, hardcoded keys, improper key management, IV/nonce reuse
+6. **Data Exposure**: Secrets in logs/responses, PII leakage, missing encryption at rest/transit
+7. **Supply Chain**: Unpinned dependencies, known CVEs, typosquatting risk
 
 Output format — one line per finding:
 [CRITICAL/HIGH/MEDIUM/LOW] file:line - vulnerability description + attack scenario
+
+For each finding, include threat-model assumptions and validation evidence when possible.
+
+Treat scanner or audit findings as supporting evidence, not the starting point of the analysis.
 
 If no issues found, output "SECURE — no vulnerabilities detected."
 PROMPT
