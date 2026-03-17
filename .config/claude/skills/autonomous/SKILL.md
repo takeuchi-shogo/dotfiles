@@ -43,6 +43,22 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 └── run.lock              # 排他制御用ロック
 ```
 
+### タスクリストのフォーマット選択
+
+| フォーマット | 用途 | ファイル |
+|---|---|---|
+| **Markdown** (default) | シンプルなタスク (1-5個) | `task_list.md` |
+| **JSON** | 検証ステップ付き大規模タスク (6+個) | `task_list.json` |
+
+JSON フォーマットは以下の場合に使用する:
+- タスクが6個以上
+- 各タスクに明確な検証ステップがある（E2E テスト等）
+- `passes` フィールドで「完了」と「検証済み」を区別する必要がある
+
+スキーマ: `templates/task-list.schema.json`
+
+**重要**: JSON の `passes` フィールドは、検証ステップを全て実行し成功した場合のみ `true` に更新する。コードを書いただけでは `true` にしない。テストの削除・変更は禁止。
+
 ### Worktree 隔離（並列実行時）
 
 並列タスクを実行する場合、各タスクを git worktree で隔離する:

@@ -1,0 +1,44 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"name": { "type": "string" },
+		"status": { "enum": ["planned", "in_progress", "completed", "failed"] },
+		"created": { "type": "string", "format": "date-time" },
+		"tasks": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "integer" },
+					"description": { "type": "string" },
+					"category": {
+						"enum": ["functional", "infrastructure", "test", "docs"]
+					},
+					"verification_steps": {
+						"type": "array",
+						"items": { "type": "string" }
+					},
+					"passes": { "type": "boolean", "default": false },
+					"completed_at": { "type": ["string", "null"], "format": "date-time" },
+					"notes": { "type": "string", "default": "" }
+				},
+				"required": ["id", "description", "passes"]
+			}
+		},
+		"progress_log": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"timestamp": { "type": "string", "format": "date-time" },
+					"session": { "type": "integer" },
+					"task_id": { "type": "integer" },
+					"action": { "type": "string" },
+					"result": { "enum": ["success", "failure", "partial"] }
+				}
+			}
+		}
+	},
+	"required": ["name", "status", "tasks"]
+}

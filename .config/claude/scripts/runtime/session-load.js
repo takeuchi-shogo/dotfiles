@@ -167,6 +167,71 @@ function suggestTestBaseline() {
 	}
 }
 
+/**
+ * Run a fast baseline test check at session start.
+ * Reports test status via stderr so the agent knows the current state.
+ * Only runs if CLAUDE_BASELINE_CHECK=1 is set (opt-in).
+ * Timeout: 30s to avoid blocking session start.
+ *
+ * Article insight: "The agent would fix the existing breakage before
+ * touching anything new. This prevented the compounding problem where
+ * an agent starts a new feature on top of a broken foundation."
+ */
+function runBaselineCheck() {
+	if (process.env.CLAUDE_BASELINE_CHECK !== "1") return;
+
+	const cwd = process.cwd();
+	const testRunners = [
+		{ file: "package.json", cmd: "npm test", check: "scripts" },
+		{ file: "Makefile", cmd: "make test", check: "test:" },
+		{ file: "Taskfile.yml", cmd: "task test", check: "test:" },
+		{ file: "pyproject.toml", cmd: "uv run pytest --tb=line -q", check: null },
+		{ file: "go.mod", cmd: "go test ./... -short", check: null },
+		{ file: "Cargo.toml", cmd: "cargo test --quiet", check: null },
+	];
+
+	let testCmd = null;
+	for (const runner of testRunners) {
+		const filePath = path.join(cwd, runner.file);
+		try {
+			if (!fs.existsSync(filePath)) continue;
+			if (runner.check) {
+				const content = fs.readFileSync(filePath, "utf8");
+				if (!content.includes(runner.check)) continue;
+			}
+			testCmd = runner.cmd;
+			break;
+		} catch {
+			continue;
+		}
+	}
+
+	if (!testCmd) return;
+
+	try {
+		execSync(testCmd, {
+			timeout: 30000,
+			cwd,
+			stdio: ["pipe", "pipe", "pipe"],
+			env: { ...process.env, NO_COLOR: "1", CI: "1" },
+		});
+		process.stderr.write(
+			`[Baseline] ✓ テスト通過 (${testCmd}) — 安全に新しい作業を開始できます\n`,
+		);
+	} catch (err) {
+		const output = (err.stdout || "") + (err.stderr || "");
+		const lastLines = output.toString().split("\n").slice(-5).join("\n");
+		process.stderr.write(
+			`[Baseline] ✗ テスト失敗 (${testCmd}) — 新しい作業の前に既存の問題を修正してください\n` +
+				`${lastLines}\n`,
+		);
+		// additionalContext として stdout に出力 — エージェントはこの情報を無視できない
+		process.stdout.write(
+			`[Baseline FAILED] テストが壊れています。新機能の前にこれを修正してください: \`${testCmd}\`\n`,
+		);
+	}
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -429,6 +494,7 @@ process.stdin.on("end", () => {
 
 	loadLearningsForProfile(profile);
 	suggestTestBaseline();
+	runBaselineCheck();
 	loadBoundaries();
 	process.stdout.write(data);
 });
