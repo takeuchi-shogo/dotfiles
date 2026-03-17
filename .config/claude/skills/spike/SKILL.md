@@ -8,6 +8,8 @@ description: >
   テスト・lint 不要。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree
 user-invocable: true
+metadata:
+  pattern: pipeline
 ---
 
 # Spike: Prototype-First Development
@@ -116,3 +118,7 @@ spec の status を `abandoned` に更新し、worktree を削除する。
 - テストやリファクタリングに時間をかける（spike は検証が目的）
 - spec なしで spike する（何を検証するか不明確になる）
 - 長時間の spike（目安: 30分以内の作業量に収める）
+
+## Reference Files
+
+- `templates/spike-scaffold.md` — spike 開始時にコピーして使うテンプレート
