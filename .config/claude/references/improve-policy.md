@@ -75,6 +75,9 @@
 17. **ドリフトガード: 連続 reject 上限** — `--evolve` ループで 3 イテレーション連続 `revert` が発生した場合、ループを即時停止しユーザーにエスカレーションする。autoresearch 記事: "12時間放置でエージェントが別の問題を解き始めた"。連続 reject = 目的から逸脱のシグナル
 18. **ドリフトガード: 目的メトリクス後退検出** — `--evolve` ループの各イテレーションで、ベースラインスコアからの累積改善を追跡する。3 イテレーション経過後にベースラインを下回っている場合はループを停止し「戦略を再検討」を推奨する
 19. **単一変更規律** — `--evolve` ループの各イテレーションでは SKILL.md への変更を **1箇所のみ** に制限する。仮説を明記し、changelog に記録する。revert された仮説は同一表現で再試行しない。autoresearch 記事: "proposal quality dominates total cost" — 少数の精度の高い変更が多数の探索的変更に勝る
+20. **Proxy Metric 乖離検出（Goodhart 警告）** — skill 改善時にスコアが +5pp 以上上昇した場合、自動で「Why did score increase?」の説明を要求する。以下を追加チェック: (1) テスト難易度が下がっていないか（テスト行数の減少）、(2) assertion 数が減っていないか、(3) スコープが狭まっていないか（対象ファイル数の減少）。Goodhart's Law: 指標が目標になると指標としての機能を失う。検出は `scripts/policy/gaming-detector.py` が実行
+21. **Self-referential Improvement 禁止** — AutoEvolve が自身の評価基準（`improve-policy.md`, `skill-benchmarks.jsonl`, `benchmark-dimensions.md`）を直接変更することを禁止する。評価基準の変更は必ず人間の承認を必要とする。Bengio 論文: エージェントが自身の報酬関数を変更できる場合、reward tampering が最適戦略になり得る
+22. **Metric Diversity 要件** — skill 改善の評価は単一メトリクスではなく最低2つの独立指標で判定する。例: 実行時間 + ユーザー満足度、テスト通過率 + コードレビュースコア。単一メトリクスへの過度な最適化は specification gaming の温床になる
 
 ### 品質基準
 
