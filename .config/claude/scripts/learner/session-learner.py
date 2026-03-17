@@ -116,7 +116,8 @@ def _update_playbook(summary: dict, logger: logging.Logger) -> None:
     if playbook_path.exists():
         existing = playbook_path.read_text(encoding="utf-8")
     if not existing:
-        existing = f"# {project} Playbook\n\nProject-specific learnings (auto-accumulated).\n\n"
+        header_body = "Project-specific learnings (auto-accumulated)."
+        existing = f"# {project} Playbook\n\n{header_body}\n\n"
 
     new_content = existing.rstrip() + "\n" + "\n".join(entries) + "\n"
 
@@ -235,6 +236,40 @@ def _detect_critical_failure_step(events: list[dict]) -> dict | None:
                 "total_events": len(events),
             }
     return None
+
+
+def _compute_proposal_metrics(events: list[dict]) -> dict:
+    """Proposal verdict イベントから accept_rate と連続 reject 数を計算する。
+
+    autoresearch 記事の知見: accept_rate がエージェントの提案品質を示す。
+    GPT-5.4: 67%, Spark: 17%。連続 reject はドリフトのシグナル。
+    """
+    proposals = [
+        e
+        for e in events
+        if e.get("category") == "proposal" and e.get("type") == "verdict"
+    ]
+    if not proposals:
+        return {}
+
+    keeps = sum(1 for p in proposals if p.get("verdict") == "keep")
+    total = len(proposals)
+
+    # 末尾からの連続 revert 数（ドリフト検出用）
+    consecutive_rejects = 0
+    for p in reversed(proposals):
+        if p.get("verdict") == "revert":
+            consecutive_rejects += 1
+        else:
+            break
+
+    return {
+        "proposal_count": total,
+        "accept_count": keeps,
+        "reject_count": total - keeps,
+        "accept_rate": round(keeps / total, 2) if total > 0 else 0.0,
+        "consecutive_rejects": consecutive_rejects,
+    }
 
 
 def process_session(cwd: str | None = None) -> None:
@@ -395,6 +430,14 @@ def process_session(cwd: str | None = None) -> None:
             "cfs_cascade_length": cfs["cascade_length"],
         }
 
+    # Proposal quality tracking (autoresearch pattern)
+    proposal_metrics = _compute_proposal_metrics(events)
+    if proposal_metrics:
+        for p in [e for e in events if e.get("category") == "proposal"]:
+            append_to_learnings(
+                "proposal-verdicts", {k: v for k, v in p.items() if k != "category"}
+            )
+
     metrics = {
         "project": summary["project"],
         "cwd": summary["cwd"],
@@ -406,6 +449,7 @@ def process_session(cwd: str | None = None) -> None:
         "outcome": summary["outcome"],
         "high_importance_count": summary["high_importance_count"],
         "avg_importance": summary["avg_importance"],
+        **proposal_metrics,
         **cfs_data,
     }
     append_to_metrics(metrics)

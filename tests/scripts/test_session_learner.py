@@ -138,3 +138,33 @@ class TestSessionLearner:
 
         tips_path = Path(self.tmpdir) / "learnings" / "recovery-tips.jsonl"
         assert not tips_path.exists()
+
+    def test_proposal_accept_rate_tracking(self):
+        """Proposal verdict events are aggregated into accept_rate metric."""
+        from session_events import emit_proposal_verdict
+
+        # 3 keep, 1 revert → accept_rate = 0.75
+        for i, v in enumerate(["keep", "keep", "revert", "keep"], 1):
+            emit_proposal_verdict(
+                "test-skill", f"hyp-{i}", v, 0.5, 0.6 if v == "keep" else 0.4, i
+            )
+
+        sl = _import_session_learner()
+        summary = sl.build_session_summary(cwd=self.tmpdir)
+        proposals = [e for e in summary["_events"] if e.get("category") == "proposal"]
+        assert len(proposals) == 4
+
+    def test_proposal_accept_rate_in_metrics(self):
+        """Accept rate appears in session metrics when proposals exist."""
+        import pytest
+        from session_events import emit_proposal_verdict
+
+        emit_proposal_verdict("s", "h", "keep", 0.5, 0.7, 1)
+        emit_proposal_verdict("s", "h", "revert", 0.7, 0.6, 2)
+
+        sl = _import_session_learner()
+        summary = sl.build_session_summary(cwd=self.tmpdir)
+        pm = sl._compute_proposal_metrics(summary["_events"])
+        assert pm["proposal_count"] == 2
+        assert pm["accept_rate"] == pytest.approx(0.5)
+        assert pm["consecutive_rejects"] == 1
