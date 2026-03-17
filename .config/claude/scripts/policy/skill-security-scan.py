@@ -46,8 +46,18 @@ G1_PATTERNS = [
     ),
     (r"\brequests\.\w+\s*\(", "HIGH", "requests.*", "ネットワークアクセス (requests)"),
     (r"\bsocket\.\w+\s*\(", "HIGH", "socket.*", "ソケット通信 (socket)"),
-    (r"\bcurl\b", "HIGH", "curl", "外部コマンド (curl)"),
-    (r"\bwget\b", "HIGH", "wget", "外部コマンド (wget)"),
+    (
+        r"""(?:subprocess|os\.system|os\.popen|`).*\bcurl\b""",
+        "HIGH",
+        "curl",
+        "外部コマンド (curl)",
+    ),
+    (
+        r"""(?:subprocess|os\.system|os\.popen|`).*\bwget\b""",
+        "HIGH",
+        "wget",
+        "外部コマンド (wget)",
+    ),
 ]
 
 # G1 対象拡張子
@@ -94,22 +104,43 @@ G2_EXTENSIONS = {".md", ".txt", ".yaml", ".yml", ".json", ".toml"} | G1_EXTENSIO
 
 MAX_FILE_SIZE = 1 * 1024 * 1024  # 1MB
 
+# Comment prefixes by extension — G1 patterns in comment lines are skipped
+_COMMENT_PREFIXES = {
+    ".py": ("#",),
+    ".sh": ("#",),
+    ".bash": ("#",),
+    ".zsh": ("#",),
+    ".rb": ("#",),
+    ".pl": ("#",),
+    ".js": ("//", "*"),
+    ".ts": ("//", "*"),
+}
+
+
+def _is_comment_line(line, ext):
+    """Return True if the line is a comment in the given language."""
+    prefixes = _COMMENT_PREFIXES.get(ext)
+    if not prefixes:
+        return False
+    stripped = line.lstrip()
+    return any(stripped.startswith(p) for p in prefixes)
+
 
 def scan_file(filepath, findings):
     """Scan a single file for G1/G2 patterns."""
+    ext = os.path.splitext(filepath)[1].lower()
+    if ext not in G1_EXTENSIONS and ext not in G2_EXTENSIONS:
+        return
+
     try:
         size = os.path.getsize(filepath)
         if size > MAX_FILE_SIZE:
             return
         with open(filepath, "rb") as f:
             raw = f.read(512)
-            if b"\x00" in raw and not filepath.endswith(tuple(G2_EXTENSIONS)):
+            if b"\x00" in raw and ext not in G2_EXTENSIONS:
                 return  # likely binary
     except OSError:
-        return
-
-    ext = os.path.splitext(filepath)[1].lower()
-    if ext not in G1_EXTENSIONS and ext not in G2_EXTENSIONS:
         return
 
     try:
@@ -125,7 +156,10 @@ def scan_file(filepath, findings):
         patterns.extend(("G2", p) for p in G2_PATTERNS)
 
     for line_num, line in enumerate(lines, 1):
+        is_comment = _is_comment_line(line, ext)
         for category, (regex, severity, pattern_name, message) in patterns:
+            if category == "G1" and is_comment:
+                continue
             if re.search(regex, line):
                 findings.append(
                     {
