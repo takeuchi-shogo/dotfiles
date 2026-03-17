@@ -9,6 +9,8 @@ description: >
   Do NOT use for: 既存 CLAUDE.md の修正のみ（claude-md-management を使用）、
   背景エージェントのみ（setup-background-agents を使用）。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+metadata:
+  pattern: pipeline+inversion
 ---
 
 # Init Project
@@ -154,6 +156,7 @@ Codified Context 論文に基づくプロジェクト固有の知識検索サー
 2. **.claudeignore**: 技術スタックに適合していることを確認
 3. **参照整合性**: CLAUDE.md 内のファイル参照が実在することを確認
 4. **Local CLAUDE.md**: リスキーモジュールの実際の内容を反映していることを確認
+5. **最小性**: CLAUDE.md がアクション可能な指示のみを含み、コードベース概要や冗長な説明を含まないことを確認
 
 ```bash
 # 行数チェック
@@ -214,3 +217,5 @@ done
 - 既存の CLAUDE.md を確認せず上書きする
 - ファクトリの出力を検証せずにそのまま書き込む
 - references/ に CLAUDE.md と重複する内容を書く
+- CLAUDE.md にコードベース概要（ファイルツリー、ディレクトリ構造の列挙）を含める — エージェントのナビゲーション速度を改善しない（ETH Zurich "Evaluating AGENTS.md" 2026）
+- 包括的なドキュメントを CLAUDE.md に詰め込む — 各指示は推論コスト +1-2% のオーバーヘッドを持つ。アクション可能な最小限の指示のみ

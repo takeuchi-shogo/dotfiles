@@ -19,14 +19,10 @@
 - 日本語で応答する
 
 <harness_guarantees>
-- Claude 固有の harness contract は `docs/agent-harness-contract.md` を前提にする。
-- `PostToolUse` hook が formatter / policy check / checkpoint を補助する。
-- `Stop` hook が completion gate を実行し、失敗したテストは追加コンテキストとして差し戻す。
-- `SessionStart` / `SessionEnd` hook が session-state と learnings を保存・復元する。
-- `.eslintrc*`, `biome.json`, `.prettierrc*` などの lint config は保護対象。設定ではなくコードを直す。
-- `git commit --no-verify` は禁止。
-- global permissions と MCP は保守的な default を使い、強い権限や追加 MCP は trusted repo / local override で広げる。
-- コード変更は codex-reviewer と code-reviewer による並列レビューを受ける。初回から高品質なコードを書くこと。
+- Harness contract: `docs/agent-harness-contract.md`。Hook が formatter/policy/completion gate/session を自動実行する
+- `.eslintrc*`, `biome.json`, `.prettierrc*` 等の lint config は保護対象。設定ではなくコードを直す
+- `git commit --no-verify` は禁止
+- コード変更は並列レビュー（codex-reviewer + code-reviewer）を受ける。初回から高品質なコードを書くこと
 </harness_guarantees>
 
 <plan_contract>
