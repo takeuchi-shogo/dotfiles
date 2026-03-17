@@ -149,12 +149,17 @@ agent-browser --session test1 close
 agent-browser --session test2 close
 ```
 
-## Common Pitfalls
+## Gotchas
 
 - **Don't** use CSS selectors when `@ref` from snapshot is available — refs are more reliable
 - **Don't** skip `snapshot` and guess element positions — always observe first
 - **Do** use `snapshot -i` when you only care about interactive elements (faster, less noise)
 - **Do** close the browser when done (`agent-browser close`) to free resources
+- **snapshot が空**: ページのロード完了前に snapshot を取ると空になる。`agent-browser wait` でロード完了を待つこと
+- **@ref の寿命**: ページ遷移やDOMの大きな変更で @ref は無効化される。操作前に必ず再 snapshot
+- **ポート競合**: `npm run dev` が既にバックグラウンドで走っている場合、2重起動でポート競合する。`lsof -i :3000` で確認
+- **file:// プロトコル制限**: file:// URL では CORS やいくつかの Web API が動作しない。localStorage 等のテストは http:// で
+- **タイムアウト**: agent-browser のデフォルトタイムアウトは短い。SPA の初期ロードが遅い場合は明示的に wait を入れる
 
 ## Fallback: Python Playwright
 
