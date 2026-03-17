@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Review feedback tracker — PostToolUse(Bash) hook.
 
-git commit を検出したら、pending な review findings と commit の diff を照合し、
-指摘対象のファイル:行が変更されていれば "accepted"、されていなければ "ignored" と判定する。
+git commit を検出したら、pending な review findings と
+commit の diff を照合し、指摘対象のファイル:行が変更されていれば
+"accepted"、されていなければ "ignored" と判定する。
+
+
 結果は review-feedback.jsonl に記録される。
 
 サブエージェントのコンテキストを汚染しないよう、Python 内で完結する。
@@ -16,7 +19,30 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
-from session_events import emit_review_feedback, read_pending_findings
+from session_events import (
+    emit_review_feedback,
+    read_pending_findings,
+)
+
+
+def _parse_review_scores(text: str) -> dict[str, str] | None:
+    """Review Scores ブロックをパースする。
+
+    Returns:
+        {"correctness": "4/5", ...} or None if not found
+    """
+    match = re.search(r"## Review Scores\n((?:[a-z]+: .+\n)+)", text)
+    if not match:
+        return None
+    scores: dict[str, str] = {}
+    for line in match.group(1).strip().split("\n"):
+        if ":" in line:
+            key, val = line.split(":", 1)
+            key = key.strip()
+            val = val.strip()
+            if key != "weakest":
+                scores[key] = val
+    return scores if scores else None
 
 
 def _is_git_commit(command: str) -> bool:
@@ -129,7 +155,8 @@ def main() -> None:
 
     if accepted_count + ignored_count > 0:
         context = (
-            f"[Review Feedback] {accepted_count + ignored_count} 件のレビュー指摘を追跡: "
+            f"[Review Feedback] "
+            f"{accepted_count + ignored_count} 件のレビュー指摘を追跡: "
             f"{accepted_count} accepted, {ignored_count} ignored"
         )
         json.dump(

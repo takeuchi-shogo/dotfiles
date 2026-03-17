@@ -165,6 +165,23 @@ const items = array.filter(item => item !== null && item !== undefined);
 
 **判定理由**: FYI は「現状のコードに問題はないが、知っておくと便利な情報」。対応は完全に任意。
 
+## 次元別スコアリング
+
+レビュー完了時に以下のブロックを出力に含める。各次元は 1-5 で評価。
+
+```
+## Review Scores
+correctness: ?/5
+security: ?/5
+maintainability: ?/5
+performance: ?/5
+consistency: ?/5
+weakest: <最低スコアの次元名>
+```
+
+- 変更が小さく評価不可能な次元は `N/A` とする
+- weakest は改善優先度の指標として使用される
+
 ## レビュー手順
 
 1. `git diff` で変更差分を確認

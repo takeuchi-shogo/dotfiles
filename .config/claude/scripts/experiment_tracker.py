@@ -5,7 +5,9 @@
 マージ後の効果を learnings データから測定する。
 
 Usage:
-    python experiment_tracker.py record --category errors --hypothesis "..." --branch autoevolve/errors-2026-03-10 --files f1.md f2.md
+    python experiment_tracker.py record --category errors \
+        --hypothesis "..." --branch autoevolve/errors-2026-03-10 \
+        --files f1.md f2.md
     python experiment_tracker.py list [--status pending_review]
     python experiment_tracker.py measure <exp-id>
 """
@@ -403,6 +405,57 @@ def measure_effect(exp_id: str) -> dict:
     }
 
 
+def compute_cqs() -> dict:
+    """全実験から Cumulative Quality Score を計算する。
+
+    merged 実験の measure_effect() verdict に基づくスコア:
+      keep: +10 * abs(change_pct) / 100
+      discard: -15
+      neutral: -2
+
+    5件未満の場合は insufficient_data を返す。
+
+    Returns:
+        {"cqs": float, "total_experiments": int, "breakdown": {...}}
+    """
+    experiments = _load_registry()
+    merged = [e for e in experiments if e.get("status") == "merged"]
+
+    if len(merged) < 5:
+        return {
+            "cqs": 0.0,
+            "total_experiments": len(merged),
+            "status": "insufficient_data",
+            "breakdown": {"keep": 0, "discard": 0, "neutral": 0},
+        }
+
+    cqs = 0.0
+    breakdown = {"keep": 0, "discard": 0, "neutral": 0, "insufficient_data": 0}
+
+    for exp in merged:
+        result = measure_effect(exp["id"])
+        verdict = result.get("verdict", "insufficient_data")
+        if verdict == "keep":
+            change_pct = abs(result.get("change_pct", 0))
+            cqs += 10 * change_pct / 100
+            breakdown["keep"] += 1
+        elif verdict == "discard":
+            cqs -= 15
+            breakdown["discard"] += 1
+        elif verdict == "neutral":
+            cqs -= 2
+            breakdown["neutral"] += 1
+        else:
+            breakdown["insufficient_data"] += 1
+
+    return {
+        "cqs": round(cqs, 2),
+        "total_experiments": len(merged),
+        "status": "ok",
+        "breakdown": breakdown,
+    }
+
+
 def export_tsv() -> str:
     """全実験を autoresearch の results.tsv 風フラット TSV で出力する。"""
     experiments = _load_registry()
@@ -428,7 +481,7 @@ def export_tsv() -> str:
 
 
 def status_summary() -> str:
-    """実験のステータスサマリーを返す。"""
+    """実験のステータスサマリーを返す（CQS 付き）。"""
     experiments = _load_registry()
     if not experiments:
         return "実験データなし"
@@ -437,7 +490,21 @@ def status_summary() -> str:
         s = exp.get("status", "unknown")
         counts[s] = counts.get(s, 0) + 1
     parts = [f"{k}: {v}" for k, v in sorted(counts.items())]
-    return f"全 {len(experiments)} 件 — " + ", ".join(parts)
+    summary = f"全 {len(experiments)} 件 — " + ", ".join(parts)
+
+    cqs_result = compute_cqs()
+    if cqs_result["status"] == "insufficient_data":
+        summary += (
+            f"\nCQS: N/A (データ不足: {cqs_result['total_experiments']}/5 merged)"
+        )
+    else:
+        b = cqs_result["breakdown"]
+        summary += (
+            f"\nCQS: {cqs_result['cqs']} "
+            f"(keep:{b['keep']} discard:{b['discard']}"
+            f" neutral:{b['neutral']})"
+        )
+    return summary
 
 
 def main():

@@ -5,13 +5,16 @@ import tempfile
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / ".config" / "claude" / "scripts"))
+sys.path.insert(
+    0,
+    str(
+        Path(__file__).resolve().parent.parent.parent / ".config" / "claude" / "scripts"
+    ),
+)
 
 
 class TestExperimentTracker:
-
     def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
         self.original_env = os.environ.get("AUTOEVOLVE_DATA_DIR")
@@ -27,6 +30,7 @@ class TestExperimentTracker:
 
     def test_record_experiment(self):
         from experiment_tracker import record_experiment
+
         exp = record_experiment(
             category="errors",
             hypothesis="Fix TypeError guide reduces recurrence",
@@ -43,13 +47,19 @@ class TestExperimentTracker:
 
     def test_list_experiments(self):
         from experiment_tracker import list_experiments, record_experiment
+
         record_experiment("errors", "h1", "b1", ["f1"])
         record_experiment("quality", "h2", "b2", ["f2"])
         exps = list_experiments()
         assert len(exps) == 2
 
     def test_list_experiments_by_status(self):
-        from experiment_tracker import list_experiments, record_experiment, update_status
+        from experiment_tracker import (
+            list_experiments,
+            record_experiment,
+            update_status,
+        )
+
         exp1 = record_experiment("errors", "h1", "b1", ["f1"])
         record_experiment("quality", "h2", "b2", ["f2"])
         update_status(exp1["id"], "merged")
@@ -58,7 +68,12 @@ class TestExperimentTracker:
         assert pending[0]["category"] == "quality"
 
     def test_update_status(self):
-        from experiment_tracker import record_experiment, update_status, list_experiments
+        from experiment_tracker import (
+            record_experiment,
+            update_status,
+            list_experiments,
+        )
+
         exp = record_experiment("errors", "h1", "b1", ["f1"])
         update_status(exp["id"], "merged")
         exps = list_experiments()
@@ -66,6 +81,7 @@ class TestExperimentTracker:
 
     def test_measure_effect_no_data(self):
         from experiment_tracker import measure_effect, record_experiment, update_status
+
         exp = record_experiment("errors", "h1", "b1", ["f1"])
         update_status(exp["id"], "merged")
         result = measure_effect(exp["id"])
@@ -73,6 +89,7 @@ class TestExperimentTracker:
 
     def test_measure_effect_with_data(self):
         from experiment_tracker import measure_effect, record_experiment, update_status
+
         exp = record_experiment("errors", "h1", "b1", ["f1"])
         update_status(exp["id"], "merged")
         learnings_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
@@ -93,10 +110,54 @@ class TestExperimentTracker:
         assert result["before_count"] == 5
         assert result["after_count"] == 2
 
+    def test_compute_cqs_insufficient_data(self):
+        from experiment_tracker import compute_cqs, record_experiment, update_status
+
+        # 5件未満 → insufficient_data
+        for i in range(3):
+            exp = record_experiment("errors", f"h{i}", f"b{i}", [f"f{i}"])
+            update_status(exp["id"], "merged")
+        result = compute_cqs()
+        assert result["status"] == "insufficient_data"
+        assert result["total_experiments"] == 3
+
+    def test_compute_cqs_with_data(self):
+        from experiment_tracker import compute_cqs, record_experiment, update_status
+
+        now = datetime.now(timezone.utc)
+        learnings_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
+        # 5件の merged 実験を作成（全て keep になるようデータを用意）
+        for i in range(5):
+            exp = record_experiment("errors", f"h{i}", f"b{i}", [f"f{i}"])
+            update_status(exp["id"], "merged")
+            # before: 10件, after: 5件 → -50% → keep
+            for j in range(10):
+                ts = (now - timedelta(days=3)).isoformat()
+                entry = {"timestamp": ts, "message": f"err-{i}-{j}"}
+                with open(learnings_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            for j in range(5):
+                entry = {"timestamp": now.isoformat(), "message": f"err-{i}-{j}"}
+                with open(learnings_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+        result = compute_cqs()
+        assert result["status"] == "ok"
+        assert result["total_experiments"] == 5
+        assert result["breakdown"]["keep"] == 5
+        assert result["cqs"] > 0
+
     def test_record_cross_impact(self):
-        from experiment_tracker import record_experiment, record_cross_impact, list_experiments
+        from experiment_tracker import (
+            record_experiment,
+            record_cross_impact,
+            list_experiments,
+        )
+
         exp = record_experiment("quality", "h1", "b1", ["f1"])
-        record_cross_impact(exp["id"], {"errors": {"before": 5, "after": 3, "note": "GP fix reduced errors"}})
+        record_cross_impact(
+            exp["id"],
+            {"errors": {"before": 5, "after": 3, "note": "GP fix reduced errors"}},
+        )
         exps = list_experiments()
         assert "cross_impact" in exps[0]
         assert exps[0]["cross_impact"]["errors"]["after"] == 3

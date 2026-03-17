@@ -129,3 +129,25 @@ class TestSessionEvents:
         data = json.loads(temp_path.read_text().strip())
         assert data["verdict"] == "revert"
         assert data["delta"] == pytest.approx(-0.07, abs=0.001)
+
+    def test_emit_review_scores(self):
+        from session_events import emit_review_scores
+
+        emit_review_scores(
+            reviewer="code-reviewer",
+            scores={
+                "correctness": "4/5",
+                "security": "5/5",
+                "maintainability": "3/5",
+                "performance": "4/5",
+                "consistency": "4/5",
+            },
+            metadata={"weakest": "maintainability"},
+        )
+        scores_path = Path(self.tmpdir) / "learnings" / "review-scores.jsonl"
+        assert scores_path.exists()
+        data = json.loads(scores_path.read_text().strip())
+        assert data["reviewer"] == "code-reviewer"
+        assert data["scores"]["correctness"] == "4/5"
+        assert data["weakest"] == "maintainability"
+        assert "timestamp" in data

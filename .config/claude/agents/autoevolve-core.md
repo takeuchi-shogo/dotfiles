@@ -50,6 +50,15 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 
 データディレクトリ: `~/.claude/agent-memory/`（`AUTOEVOLVE_DATA_DIR` で上書き可能）
 
+### サブロール
+
+Phase 1 は以下の2つのサブロールで構成される（別エージェントではなく同一エージェント内）:
+
+- **Normalizer**: データ正規化、重複排除、次元別スコア集計（review-scores.jsonl の集約）
+- **Pattern Analyst**: エラーパターン分析 + 弱点分析 + CQS トレンド確認
+
+Normalizer → Pattern Analyst の順で実行する。
+
 ### 分析タスク
 
 1. **エラーパターン分析**: 同じエラー3回以上 → 繰り返しエラーとして記録
@@ -220,9 +229,25 @@ git commit -m "🤖 autoevolve: {変更の説明}"
    | 全プロジェクト共通 | `skill/` or `rule/` 化を提案 |
    | 複数カテゴリに効果あり | 優先昇格 |
 
-4. **ヘルスチェック**: learnings サイズ、insights 数、MEMORY.md 行数、最終分析日時
+4. **蒸留パイプライン昇格判定**:
+   `improve-policy.md` の「知識蒸留パイプライン」に従い、昇格条件を満たすデータを検出:
+   - L0→L1: 同一 error_pattern 2回以上 → recovery-tips 候補
+   - L1→L2: 同一パターン 3回以上 + 成功率 > 50% → error-fix-guides 候補
+   - L2→L3: 5回以上再発 + 自動検出可能 → rules 候補
+   - L3→L4: 複数プロジェクトで有効 → golden-principles 候補
 
-5. **週次サマリー生成**: 新しい学び、改善指標、昇格された知識、要アクション
+5. **ヘルスチェック**: learnings サイズ、insights 数、MEMORY.md 行数、最終分析日時
+
+6. **週次サマリー生成**: 新しい学び、改善指標、昇格された知識、要アクション
+
+### サブロール
+
+Phase 3 は以下の2つのサブロールで構成される（同一エージェント内）:
+
+- **Quality Gate**: 蒸留パイプライン昇格判定、CQS ベース制限（CQS < 0 時は昇格保留）、Setup Health Report 生成
+- **Custodian**: 重複排除、陳腐化除去、ヘルスチェック
+
+Quality Gate → Custodian の順で実行する。
 
 ### 安全原則
 

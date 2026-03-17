@@ -445,6 +445,28 @@ def emit_proposal_verdict(
     )
 
 
+def emit_review_scores(
+    reviewer: str,
+    scores: dict[str, str],
+    metadata: dict | None = None,
+) -> None:
+    """次元別レビュースコアを review-scores.jsonl に記録する。
+
+    Args:
+        reviewer: レビューアー名 (e.g. "code-reviewer")
+        scores: 次元→スコア (e.g. {"correctness": "4/5", ...})
+        metadata: 追加情報 (e.g. {"weakest": "maintainability"})
+    """
+    append_to_learnings(
+        "review-scores",
+        {
+            "reviewer": reviewer,
+            "scores": scores,
+            **(metadata or {}),
+        },
+    )
+
+
 def emit_skill_step(
     skill_name: str,
     step: int,

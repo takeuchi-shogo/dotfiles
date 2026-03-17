@@ -46,6 +46,15 @@ Output format — one line per finding:
 [MUST/CONSIDER/NIT/ASK/FYI] file:line - description
 
 Group findings by file. If no issues found, output "LGTM — no issues detected."
+
+After all findings, output a Review Scores block:
+## Review Scores
+correctness: ?/5
+security: ?/5
+maintainability: ?/5
+performance: ?/5
+consistency: ?/5
+weakest: <dimension with lowest score>
 PROMPT
 )" 2>/dev/null
 ```
