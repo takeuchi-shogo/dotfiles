@@ -1,6 +1,19 @@
 {
-  "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
-    "DISABLE_COST_WARNINGS": "1"
-  }
+	"env": {
+		"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
+		"DISABLE_COST_WARNINGS": "1"
+	},
+	"hooks": {
+		"PreToolUse": [
+			{
+				"matcher": "Skill",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 ~/.claude/scripts/learner/skill-usage-tracker.py"
+					}
+				]
+			}
+		]
+	}
 }
