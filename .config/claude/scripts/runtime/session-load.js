@@ -232,6 +232,48 @@ function runBaselineCheck() {
 	}
 }
 
+/**
+ * Snapshot active plans at session start.
+ * Ralph Loop (completion-gate.py) uses this to only block on plans
+ * created or modified during the current session.
+ */
+function snapshotActivePlans() {
+	const planDirs = [
+		path.join(process.cwd(), "docs", "plans", "active"),
+		path.join(process.cwd(), "tmp", "plans"),
+	];
+	const snapshot = { timestamp: Date.now(), plans: {} };
+
+	for (const dir of planDirs) {
+		try {
+			if (!fs.existsSync(dir)) continue;
+			for (const file of fs.readdirSync(dir)) {
+				if (!file.endsWith(".md")) continue;
+				const filePath = path.join(dir, file);
+				const stat = fs.statSync(filePath);
+				snapshot.plans[file] = { mtime: stat.mtimeMs };
+			}
+		} catch {
+			// Directory unreadable — skip
+		}
+	}
+
+	try {
+		const stateDir = path.join(
+			require("os").homedir(),
+			".claude",
+			"session-state",
+		);
+		if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
+		fs.writeFileSync(
+			path.join(stateDir, "active-plans-snapshot.json"),
+			JSON.stringify(snapshot),
+		);
+	} catch {
+		// Non-critical
+	}
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -493,6 +535,7 @@ process.stdin.on("end", () => {
 	}
 
 	loadLearningsForProfile(profile);
+	snapshotActivePlans();
 	suggestTestBaseline();
 	runBaselineCheck();
 	loadBoundaries();

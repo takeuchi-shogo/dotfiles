@@ -128,14 +128,63 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
         return True, ""
 
 
+SNAPSHOT_FILE = os.path.join(
+    os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+    ),
+    "active-plans-snapshot.json",
+)
+
+
+def _load_plan_snapshot() -> dict:
+    """Load the session-start snapshot of active plans."""
+    try:
+        with open(SNAPSHOT_FILE) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def _is_session_relevant(plan_name: str, plan_path: str, snapshot: dict) -> bool:
+    """Check if a plan was created or modified during the current session."""
+    if not snapshot or "plans" not in snapshot:
+        # No snapshot = no session-load ran
+        # Treat all plans as relevant (backward compat)
+        return True
+
+    known = snapshot.get("plans", {})
+    if plan_name not in known:
+        # Plan was created after session start
+        return True
+
+    try:
+        current_mtime = os.path.getmtime(plan_path)
+        snapshot_mtime = known[plan_name].get("mtime", 0)
+        # Modified since session start (tolerance: 1 second)
+        if current_mtime > snapshot_mtime / 1000 + 1:
+            return True
+    except OSError:
+        return True
+
+    return False
+
+
 def _find_incomplete_plan() -> tuple[str, list[str]] | None:
-    """Find active plan with unchecked items. Returns (plan_file, pending_items)."""
+    """Find active plan with unchecked items that is relevant to the current session."""
     import glob
+
+    snapshot = _load_plan_snapshot()
 
     for plan_dir in PLAN_DIRS:
         if not os.path.isdir(plan_dir):
             continue
         for plan_file in glob.glob(os.path.join(plan_dir, "*.md")):
+            plan_name = os.path.basename(plan_file)
+
+            if not _is_session_relevant(plan_name, plan_file, snapshot):
+                continue
+
             try:
                 with open(plan_file) as f:
                     lines = f.readlines()
@@ -143,7 +192,7 @@ def _find_incomplete_plan() -> tuple[str, list[str]] | None:
                 continue
             pending = [ln.strip() for ln in lines if ln.strip().startswith("- [ ]")]
             if pending:
-                return (os.path.basename(plan_file), pending)
+                return (plan_name, pending)
     return None
 
 
@@ -273,7 +322,8 @@ def main() -> None:
     if retries >= MAX_RETRIES:
         _reset_retries()
         print(
-            f"[Completion Gate] リトライ上限({MAX_RETRIES}回)に到達。停止を許可します。",
+            "[Completion Gate] リトライ上限"
+            f"({MAX_RETRIES}回)に到達。停止を許可します。",
             file=sys.stderr,
         )
         return
@@ -295,7 +345,8 @@ def main() -> None:
         ctx_parts.extend(
             [
                 "",
-                "タスクを続行してください。完了不要なら、プランを completed/ に移動してから停止してください。",
+                "タスクを続行してください。完了不要なら、"
+                "プランを completed/ に移動してから停止してください。",
             ]
         )
 
