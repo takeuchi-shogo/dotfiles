@@ -1,6 +1,6 @@
 # Skill Design Patterns Integration
 
-> **Status**: Draft
+> **Status**: Reviewed
 > **Date**: 2026-03-18
 > **Source**: "5 Agent Skill design patterns every ADK developer should know" (Saboo_Shubham_, lavinigam)
 
@@ -44,7 +44,7 @@
 ```
 
 **合成パターン**:
-- Inversion + Generator: 要件収集 → テンプレート出力 (例: /spec, /interview)
+- Inversion + Generator: 要件収集 → テンプレート出力 (例: /spec, /timekeeper)
 - Pipeline + Reviewer: 多段処理の最終ステップで品質チェック (例: /epd)
 - Tool Wrapper + Reviewer: 規約ロード → 規約に基づくレビュー (例: /review + review-checklists/)
 
@@ -95,8 +95,8 @@ metadata:
 | check-health | reviewer |
 | search-first | pipeline |
 | review | reviewer |
-| verification-before-completion | reviewer |
-| continuous-learning | generator |
+| verification-before-completion | pipeline+reviewer |
+| continuous-learning | pipeline |
 | spec | inversion+generator |
 | spike | pipeline |
 | validate | reviewer |
@@ -123,7 +123,26 @@ metadata:
 | daily-report | generator |
 | timekeeper | inversion+generator |
 | digest | generator |
-| interview | inversion |
+| edge-case-analysis | reviewer |
+| github-pr | pipeline |
+| create-pr-wait | pipeline |
+| webapp-testing | tool-wrapper |
+| init-project | pipeline+inversion |
+| setup-background-agents | generator |
+| ai-workflow-audit | reviewer |
+| web-design-guidelines | reviewer |
+| vercel-composition-patterns | tool-wrapper |
+| absorb | pipeline |
+| debate | pipeline |
+| security-review | reviewer |
+| obsidian-content | generator |
+| obsidian-knowledge | tool-wrapper |
+| obsidian-vault-setup | generator |
+| fix-issue | pipeline |
+| rpi | pipeline |
+| checkpoint | generator |
+
+> **Note**: 上記マッピングに含まれないスキル（Personal Ops 系等）は、実装時に Decision Tree に基づいて分類する。
 
 ### 4. `skill-inventory.md` 更新
 
