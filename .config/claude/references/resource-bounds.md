@@ -43,6 +43,8 @@
 
 | 定数 | 値 | ソース | 根拠 |
 |---|---|---|---|
+| Compaction Counter Warning | 3 compactions | `pre-compact-save.js` | Cursor 実証: 複数回圧縮で品質劣化。新セッション推奨 |
+| Compaction Counter TTL | 2 hours | `pre-compact-save.js` | Session State TTL に合わせる |
 | Session State TTL | 2 hours | 全 hook 共通 | セッション寿命の想定上限 |
 | Search-First Session TTL | 2 hours | `pre_tool.rs` | セッション TTL に合わせる |
 

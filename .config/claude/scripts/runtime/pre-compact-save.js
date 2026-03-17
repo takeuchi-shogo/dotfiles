@@ -78,13 +78,46 @@ function findRecentOffloads() {
 	}
 }
 
-// ── 4. Build compaction guidance ─────────────────────────────────
+// ── 4. Compaction counter ────────────────────────────────────────
+
+const COMPACTION_COUNTER_FILE = path.join(
+	process.env.HOME,
+	".claude",
+	"session-state",
+	"compaction-counter.json",
+);
+
+function getCompactionCount() {
+	try {
+		const data = JSON.parse(fs.readFileSync(COMPACTION_COUNTER_FILE, "utf8"));
+		// Reset if older than 2 hours (session TTL)
+		if (Date.now() - data.lastReset > 2 * 60 * 60 * 1000) {
+			return { count: 0, lastReset: Date.now() };
+		}
+		return data;
+	} catch {
+		return { count: 0, lastReset: Date.now() };
+	}
+}
+
+const compactionCounter = getCompactionCount();
+compactionCounter.count++;
+try {
+	const dir = path.dirname(COMPACTION_COUNTER_FILE);
+	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+	fs.writeFileSync(COMPACTION_COUNTER_FILE, JSON.stringify(compactionCounter));
+} catch {
+	// Non-critical
+}
+
+// ── 5. Build compaction guidance ─────────────────────────────────
 
 const activePlans = findActivePlans();
 const recentOffloads = findRecentOffloads();
 
 const state = {
 	timestamp: new Date().toISOString(),
+	compaction_number: compactionCounter.count,
 	git: {
 		branch: branch || "(detached)",
 		uncommitted_changes: diffStat || "(none)",
@@ -101,6 +134,13 @@ const state = {
 
 const guidance = [
 	"## Compaction Guidance (圧縮時の保持優先度)",
+	"",
+	`### Compaction #${compactionCounter.count}`,
+	"",
+	"### Brevity Principle (簡潔さ優先):",
+	"- 圧縮結果は ~1,000 トークン以下を目標にせよ（Cursor 実証: 5K→1K で 50% エラー削減）",
+	"- 詳細より構造を残せ。再取得可能な情報は落としてよい",
+	"- 各項目は1行で。説明文ではなくキーワード+パスで記述",
 	"",
 	"### MUST KEEP (絶対に保持):",
 	"- 現在のタスクの目標と進捗状況",
@@ -123,6 +163,18 @@ const guidance = [
 	"- エージェントからの詳細レポート（要約のみ保持）",
 	"- 探索的な検索結果（必要なら再検索可能）",
 ];
+
+// Compaction count warning
+if (compactionCounter.count >= 3) {
+	guidance.push("");
+	guidance.push(
+		`### ⚠ Session Health Warning: ${compactionCounter.count} 回目の圧縮です`,
+	);
+	guidance.push("- 3回以上の圧縮はコンテキスト品質の劣化リスクが高い");
+	guidance.push(
+		"- /checkpoint で状態を保存し、新しいセッションへの移行を強く推奨",
+	);
+}
 
 if (activePlans.length > 0) {
 	guidance.push("");
