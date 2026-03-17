@@ -1,26 +1,33 @@
 #!/usr/bin/env python3
-"""MCP tool audit logger.
+"""MCP tool audit logger (PreToolUse/mcp__.*).
 
 Logs all MCP tool invocations for security auditing.
 Blocks dangerous MCP operations (e.g., destructive GitHub actions).
 """
 
+from __future__ import annotations
+
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-# MCP operations that should be blocked or warned about
-DANGEROUS_MCP_PATTERNS = {
-    "mcp__github__delete": "Destructive GitHub operation",
-    "mcp__filesystem__delete": "Filesystem deletion via MCP",
-    "mcp__filesystem__move": "Filesystem move via MCP",
-}
+from hook_utils import get_emitter, load_hook_input, run_hook
+
+# MCP operations that should be blocked
+DANGEROUS_MCP_PREFIXES = [
+    ("mcp__github__delete", "Destructive GitHub operation"),
+    ("mcp__filesystem__delete", "Filesystem deletion via MCP"),
+    ("mcp__filesystem__move", "Filesystem move via MCP"),
+]
+
+LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
 
 
-def _summarize_input(tool_input):
+def _summarize_input(tool_input: object) -> dict[str, str] | str:
     """Create a safe summary of tool input (truncate large values)."""
     if not isinstance(tool_input, dict):
         return str(tool_input)[:200]
@@ -31,22 +38,27 @@ def _summarize_input(tool_input):
     return summary
 
 
-def main():
+def _rotate_if_needed(log_path: str) -> None:
+    """Rotate log file if it exceeds LOG_MAX_BYTES."""
     try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
-        return
+        if os.path.exists(log_path) and os.path.getsize(log_path) > LOG_MAX_BYTES:
+            rotated = log_path + ".1"
+            if os.path.exists(rotated):
+                os.remove(rotated)
+            os.rename(log_path, rotated)
+    except OSError as e:
+        print(f"[mcp-audit] log rotation warning: {e}", file=sys.stderr)
 
+
+def _audit(data: dict) -> None:
     tool_name = data.get("tool_name", "")
 
-    # Only process MCP tools
     if not tool_name.startswith("mcp__"):
         return
 
     tool_input = data.get("tool_input", {})
-    timestamp = datetime.now().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
 
-    # Build audit entry
     audit_entry = {
         "timestamp": timestamp,
         "tool": tool_name,
@@ -54,43 +66,36 @@ def main():
         "session_id": data.get("session_id", "unknown"),
     }
 
-    # Persist audit log
+    # Persist audit log with rotation
     log_dir = os.path.expanduser("~/.claude/agent-memory/logs")
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "mcp-audit.jsonl")
 
-    with open(log_path, "a") as f:
-        f.write(json.dumps(audit_entry) + "\n")
+    _rotate_if_needed(log_path)
 
-    # Check for dangerous operations
-    for pattern, reason in DANGEROUS_MCP_PATTERNS.items():
-        if pattern in tool_name:
-            print(
-                json.dumps(
-                    {
-                        "error": f"MCP audit block: {reason}",
-                        "tool": tool_name,
-                        "suggestion": "Use safer alternatives or confirm this is intentional",
-                    }
-                ),
-                file=sys.stderr,
-            )
+    try:
+        with open(log_path, "a") as f:
+            f.write(json.dumps(audit_entry) + "\n")
+    except OSError as e:
+        print(f"[mcp-audit] log write warning: {e}", file=sys.stderr)
+
+    # Check for dangerous operations (startswith for precision)
+    for prefix, reason in DANGEROUS_MCP_PREFIXES:
+        if tool_name.startswith(prefix):
+            print(f"BLOCKED: MCP audit block — {reason} ({tool_name})", file=sys.stderr)
             sys.exit(2)
 
     # Emit event for AutoEvolve tracking
-    try:
-        from session_events import emit_event
+    emit = get_emitter()
+    emit("pattern", {"type": "mcp_tool_usage", "tool": tool_name})
 
-        emit_event(
-            "pattern",
-            {
-                "type": "mcp_tool_usage",
-                "tool": tool_name,
-            },
-        )
-    except ImportError:
-        sys.stderr.write("mcp-audit: session_events not available, skipping emit\n")
+
+def main() -> None:
+    data = load_hook_input()
+    if not data:
+        return
+    _audit(data)
 
 
 if __name__ == "__main__":
-    main()
+    run_hook("mcp-audit", main)
