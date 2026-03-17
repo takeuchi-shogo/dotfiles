@@ -9,16 +9,58 @@ paths:
 ## Hooks Rules
 
 - NEVER call hooks inside conditions, loops, or nested functions
-- Specify dependency arrays accurately — include all referenced values
 - Use `useRef` for values that should not trigger re-renders
 - Extract complex logic into custom hooks with `use` prefix
 
-```typescript
-// BAD: conditional hook
-if (isAuth) { useEffect(() => { ... }, []); }
+## useEffect 禁止 — `useMountEffect` のみ許可
 
-// GOOD: condition inside hook
-useEffect(() => { if (isAuth) { ... } }, [isAuth]);
+直接 `useEffect` を使わない。マウント時の外部同期が必要な場合のみ `useMountEffect` を使用する。
+
+```typescript
+// useMountEffect の定義
+export function useMountEffect(effect: () => void | (() => void)) {
+  useEffect(effect, []);
+}
+```
+
+**代替パターン 5 つ:**
+
+1. **派生状態はインラインで計算** — `useEffect(() => setX(f(y)), [y])` は `const x = f(y)` に置き換え
+2. **データフェッチはライブラリ** — `useQuery` / `useSWR` 等を使い、effect 内の `fetch` + `setState` を排除
+3. **イベントハンドラで直接実行** — ユーザー操作の結果は handler 内で処理。flag → effect → reset パターン禁止
+4. **マウント時の外部同期は `useMountEffect`** — DOM 操作、サードパーティ連携、ブラウザ API サブスクリプション
+5. **`key` でリセット** — props 変更時にコンポーネントを作り直したいなら `<Component key={id} />` を使う
+
+```typescript
+// ❌ BAD: effect で派生状態を同期
+const [filtered, setFiltered] = useState([]);
+useEffect(() => { setFiltered(items.filter(i => i.active)); }, [items]);
+
+// ✅ GOOD: インライン計算
+const filtered = items.filter(i => i.active);
+
+// ❌ BAD: effect でフェッチ
+useEffect(() => { fetchData(id).then(setData); }, [id]);
+
+// ✅ GOOD: データフェッチライブラリ
+const { data } = useQuery(['data', id], () => fetchData(id));
+
+// ❌ BAD: effect で ID 変更を検知してリセット
+useEffect(() => { loadVideo(videoId); }, [videoId]);
+
+// ✅ GOOD: key でリマウント
+<VideoPlayer key={videoId} videoId={videoId} />
+```
+
+**条件付きマウントは親で制御:**
+
+```typescript
+// ❌ BAD: effect 内でガード
+useEffect(() => { if (!isLoading) playVideo(); }, [isLoading]);
+
+// ✅ GOOD: 親で条件分岐してからマウント
+{!isLoading && <VideoPlayer />}
+// VideoPlayer 内で useMountEffect(() => playVideo())
 ```
 
 ## Composition Over Props Drilling

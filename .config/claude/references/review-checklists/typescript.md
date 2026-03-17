@@ -68,7 +68,12 @@ Effective TypeScript (2nd Ed.) に基づく。
 - `must:` リスト要素の `key` に index を使っていないか
 - hooks のルール違反（条件分岐内/ループ内での使用）
 - コンポーネントの props が 5 個超で分割検討
-- `useEffect` の依存配列が正しいか
+- `must:` `useEffect` を直接使っていないか — `useMountEffect` のみ許可
+  - 派生状態の同期 → インライン計算に置き換え
+  - データフェッチ → `useQuery` / `useSWR` 等に置き換え
+  - ユーザーアクション → イベントハンドラで直接処理
+  - props 変更でリセット → `key` でリマウント
+  - マウント時の外部同期のみ `useMountEffect(effect: () => void | (() => void))` を使用
 
 ## TS-12. Exhaustive Switch — `satisfies never`
 
