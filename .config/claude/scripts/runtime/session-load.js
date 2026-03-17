@@ -131,6 +131,42 @@ function checkHandoffRequest() {
 	}
 }
 
+/**
+ * Detect project test runner and suggest running tests first (Willison pattern).
+ * "First run the tests" establishes a baseline at session start.
+ */
+function suggestTestBaseline() {
+	const cwd = process.cwd();
+	const testRunners = [
+		{ file: "package.json", cmd: "npm test", check: "scripts" },
+		{ file: "Makefile", cmd: "make test", check: "test:" },
+		{ file: "Taskfile.yml", cmd: "task test", check: "test:" },
+		{ file: "pyproject.toml", cmd: "uv run pytest", check: null },
+		{ file: "pytest.ini", cmd: "uv run pytest", check: null },
+		{ file: "setup.py", cmd: "python -m pytest", check: null },
+		{ file: "go.mod", cmd: "go test ./...", check: null },
+		{ file: "Cargo.toml", cmd: "cargo test", check: null },
+	];
+
+	for (const runner of testRunners) {
+		const filePath = path.join(cwd, runner.file);
+		try {
+			if (!fs.existsSync(filePath)) continue;
+			if (runner.check) {
+				const content = fs.readFileSync(filePath, "utf8");
+				if (!content.includes(runner.check)) continue;
+			}
+			process.stderr.write(
+				`[Test Baseline] Test runner detected (${runner.file}). ` +
+					`Consider running tests first to establish a baseline: \`${runner.cmd}\`\n`,
+			);
+			return;
+		} catch {
+			// Skip unreadable files
+		}
+	}
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -392,6 +428,7 @@ process.stdin.on("end", () => {
 	}
 
 	loadLearningsForProfile(profile);
+	suggestTestBaseline();
 	loadBoundaries();
 	process.stdout.write(data);
 });
