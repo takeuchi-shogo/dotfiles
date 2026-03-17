@@ -146,6 +146,57 @@ fn format_go(file_path: &str) -> Vec<String> {
     }
 }
 
+/// Check if a project-level formatter config exists by walking up from the file.
+/// Returns true if a config file for the given language is found.
+/// Go (gofmt) is always considered configured — it's the language standard.
+fn has_project_formatter_config(file_path: &str, lang: &str) -> bool {
+    let config_files: &[&str] = match lang {
+        "python" => &[
+            "pyproject.toml",
+            "ruff.toml",
+            ".ruff.toml",
+            "setup.cfg",
+            ".flake8",
+        ],
+        "typescript" => &[
+            "biome.json",
+            "biome.jsonc",
+            ".prettierrc",
+            ".prettierrc.js",
+            ".prettierrc.cjs",
+            ".prettierrc.json",
+            ".prettierrc.yml",
+            ".prettierrc.yaml",
+            "prettier.config.js",
+            "prettier.config.mjs",
+            ".eslintrc",
+            ".eslintrc.js",
+            ".eslintrc.cjs",
+            ".eslintrc.json",
+            ".eslintrc.yml",
+            "eslint.config.js",
+            "eslint.config.mjs",
+        ],
+        "go" => return true, // gofmt is always safe
+        _ => return false,
+    };
+
+    let mut dir = Path::new(file_path).parent();
+    while let Some(d) = dir {
+        for cfg in config_files {
+            if d.join(cfg).exists() {
+                return true;
+            }
+        }
+        // Stop at git root — don't walk beyond the project
+        if d.join(".git").exists() {
+            break;
+        }
+        dir = d.parent();
+    }
+    false
+}
+
 fn auto_format(file_path: &str) -> Option<(String, Vec<String>)> {
     if file_path.is_empty() {
         return None;
@@ -157,10 +208,26 @@ fn auto_format(file_path: &str) -> Option<(String, Vec<String>)> {
         .unwrap_or_default();
 
     let (tool, errors) = match ext.as_str() {
-        "ts" | "tsx" | "js" | "jsx" => ("Oxlint", format_typescript(file_path)),
-        "py" => ("Ruff", format_python(file_path)),
+        "ts" | "tsx" | "js" | "jsx" => {
+            if !has_project_formatter_config(file_path, "typescript") {
+                eprintln!("[Auto-Format] skip: no formatter config found for {}", ext);
+                return None;
+            }
+            ("Oxlint", format_typescript(file_path))
+        }
+        "py" => {
+            if !has_project_formatter_config(file_path, "python") {
+                eprintln!("[Auto-Format] skip: no formatter config found for {}", ext);
+                return None;
+            }
+            ("Ruff", format_python(file_path))
+        }
         "go" => ("go vet", format_go(file_path)),
         "json" | "jsonc" | "css" | "scss" => {
+            if !has_project_formatter_config(file_path, "typescript") {
+                eprintln!("[Auto-Format] skip: no formatter config found for {}", ext);
+                return None;
+            }
             let biome = find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
             let parts: Vec<&str> = biome.split_whitespace().collect();
             if parts.len() == 1 {
