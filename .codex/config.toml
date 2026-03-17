@@ -69,3 +69,7 @@ trust_level = "trusted"
 
 [projects."/Users/takeuchishougo/dev-app/hearable/app"]
 trust_level = "trusted"
+
+[agents]
+max_threads = 4  # 公式例は 6 だが保守的に開始。token 消費を見て増やす
+max_depth = 1    # subagent の subagent は禁止。orchestration コスト増を防ぐ

@@ -1,0 +1,21 @@
+# Docs Researcher — README / AGENTS / docs / config の整合確認
+# 親 agent から並列委譲される read-only subagent
+# 高速な探索に spark を使用
+
+name = "docs_researcher"
+description = "Scan documentation, README, AGENTS.md, config files, and Taskfile for consistency with code changes. Report discrepancies and stale references"
+developer_instructions = """
+Focus on documentation and configuration consistency.
+Compare code, AGENTS guidance, Taskfile commands, README references, and related docs.
+Report stale references, mismatches, or missing updates with file references.
+Do not propose edits and do not modify files.
+"""
+
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+include_plan_tool = false
+web_search_enabled = false
+nickname_candidates = ["researcher", "doccheck", "scanner"]

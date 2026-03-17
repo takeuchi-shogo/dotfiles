@@ -53,6 +53,51 @@
 - thread 継続 / fork / resume 判断が絡むときは `$codex-session-hygiene`
 - repo 固有 learnings の保存は `$codex-memory-capture`
 
+## Subagent Usage
+
+### Configured Custom Agents
+
+| Agent | Model | 用途 | Sandbox |
+|---|---|---|---|
+| `pr_explorer` | `gpt-5.3-codex-spark` | diff の影響範囲・依存関係マッピング | `read-only` |
+| `reviewer` | `gpt-5.4` | correctness / security / test gap レビュー | `read-only` |
+| `docs_researcher` | `gpt-5.3-codex-spark` | ドキュメント・config の整合確認 | `read-only` |
+
+### 使い方
+
+- subagent は親 agent に明示的に依頼して起動する
+- 並列委譲で独立した観点を調査させ、親 agent が統合する
+- 全 custom agent は read-only。ファイル編集は親 agent が行う
+
+### Branch Review パターン
+
+```text
+Review this branch with parallel subagents.
+Use pr_explorer for code path mapping, reviewer for correctness/security/test gaps, and docs_researcher for documentation/config consistency.
+Wait for all three, then return a prioritized summary with file references.
+```
+
+### Repo Exploration パターン
+
+```text
+Explore this repo with parallel subagents.
+Use pr_explorer on the target directory structure, docs_researcher on documentation and config files.
+Return consolidated findings without proposing edits.
+```
+
+### Runtime 制御
+
+- `max_threads = 4`: 同時 subagent 数。token 消費を見て調整
+- `max_depth = 1`: subagent の subagent は禁止
+- subagent は親の sandbox を継承するが、custom agent 側で `read-only` に上書き済み
+
+### 注意事項
+
+- `codex features list` で `multi_agent` の状態を確認すること
+- ローカル CLI バージョンによっては段階ロールアウトで未有効の場合がある
+- `codex-cli 0.114.0` のローカル検証では subagent 自体は起動したが、custom agent 名は未登録で built-in subagent にフォールバックした
+- write-capable subagent は Phase 2 で検討。現時点では read-only のみ
+
 ## Change Surface Matrix
 - `.codex/` を変えたら `docs/agent-harness-contract.md`, `PLANS.md`, `.agents/skills/` を確認する
 - `.agents/skills/` を変えたら `.bin/symlink.sh` と `.bin/validate_symlinks.sh` を確認する

@@ -1,0 +1,20 @@
+# Reviewer — correctness / security / test gap のレビュー
+# 親 agent から並列委譲される read-only subagent
+# 深い推論が必要なため gpt-5.4 + high を使用
+
+name = "reviewer"
+description = "Review code changes for correctness, security vulnerabilities, and test coverage gaps. Return prioritized findings with file references"
+developer_instructions = """
+Focus on correctness, security risk, and missing test coverage.
+Return prioritized findings with concise rationale and file references.
+Do not rewrite code, do not suggest broad refactors, and do not modify files.
+"""
+
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+include_plan_tool = false
+web_search_enabled = false
+nickname_candidates = ["reviewer", "auditor", "checker"]

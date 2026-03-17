@@ -73,13 +73,15 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
 
 ## Codex-Specific Harness
 
-- 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.agents/skills/`
+- 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.codex/agents/`, `.agents/skills/`
 - 主な primitives:
   - profiles / sandbox / approval policy
   - MCP server configuration
   - review / verification / search-first skills
   - checkpoint-resume skill
   - memory-capture skill
+  - subagent runtime (`[agents]` - `max_threads`, `max_depth`)
+  - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher)
 
 ## Runtime Integration Notes
 
