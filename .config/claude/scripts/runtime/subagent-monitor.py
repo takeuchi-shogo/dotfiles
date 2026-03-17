@@ -17,21 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from hook_utils import get_emitter, load_hook_input, run_hook
-
-LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
-
-
-def _rotate_if_needed(log_path: str) -> None:
-    """Rotate log file if it exceeds LOG_MAX_BYTES."""
-    try:
-        if os.path.exists(log_path) and os.path.getsize(log_path) > LOG_MAX_BYTES:
-            rotated = log_path + ".1"
-            if os.path.exists(rotated):
-                os.remove(rotated)
-            os.rename(log_path, rotated)
-    except OSError as e:
-        print(f"[subagent-monitor] log rotation warning: {e}", file=sys.stderr)
+from hook_utils import get_emitter, load_hook_input, rotate_and_append, run_hook
 
 
 def _play_notification_sound() -> None:
@@ -64,14 +50,7 @@ def _monitor(data: dict) -> None:
     log_dir = os.path.expanduser("~/.claude/agent-memory/logs")
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "subagent-metrics.jsonl")
-
-    _rotate_if_needed(log_path)
-
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps(log_entry) + "\n")
-    except OSError as e:
-        print(f"[subagent-monitor] log write warning: {e}", file=sys.stderr)
+    rotate_and_append(log_path, json.dumps(log_entry))
 
     # Emit via session_events
     emit = get_emitter()
