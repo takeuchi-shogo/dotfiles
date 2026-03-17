@@ -52,6 +52,9 @@
 - `.config/claude/commands/`
   - 併せて見る: 対応する skill / script / workflow guide
   - 最低検証: 関連 skill / script の構文確認
+- `.config/claude/agents/`, `.config/claude/references/`
+  - 併せて見る: `references/workflow-guide.md` の Agent Routing Table、関連スキル定義
+  - 最低検証: 参照整合性の目視確認（エージェント名・ファイルパスの一致）
 - `.bin/symlink.sh`, `.bin/validate_symlinks.sh`
   - 併せて見る: Claude 側 symlink 対象、`Taskfile.yml`
   - 最低検証: `task symlink`, `task validate-symlinks`

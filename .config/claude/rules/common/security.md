@@ -115,3 +115,22 @@ If security issue found:
 - まず trust boundary、sensitive path、privileged action を整理する
 - validation や sanitization が存在しても、最終解釈地点で invariant が崩れていないか確認する
 - 可能なら command、exit code、test、log などの validation evidence を残す
+
+### Few-shot Examples
+
+```sql
+-- NG: SQL injection（文字列結合）
+query = "SELECT * FROM users WHERE id = " + userId;
+
+-- OK: パラメータ化クエリ
+query = "SELECT * FROM users WHERE id = $1"; params = [userId];
+```
+
+```typescript
+// NG: Secret のハードコード
+const API_KEY = "sk-abc123...";
+
+// OK: 環境変数から取得
+const API_KEY = process.env.API_KEY;
+if (!API_KEY) throw new Error("API_KEY is required");
+```

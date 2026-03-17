@@ -35,6 +35,27 @@ paths:
 - Use `catch` as control flow
 - Swallow errors with `|| true` unless intentional and documented
 
+### Few-shot Examples
+
+```typescript
+// NG: 握り潰し
+try { await saveUser(data); } catch (e) {}
+
+// OK: ログ + rethrow（userId のみ — data 全体はログしない）
+try { await saveUser(data); } catch (e) {
+  logger.error("saveUser failed", { userId: data.id, error: e });
+  throw e;
+}
+```
+
+```typescript
+// NG: 曖昧メッセージ
+throw new Error("Error occurred");
+
+// OK: 入力値 + 操作 + 原因を含む
+throw new Error(`Failed to update user ${userId}: email validation failed - ${detail}`);
+```
+
 ## Language-Specific
 
 ### TypeScript

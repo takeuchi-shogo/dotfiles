@@ -40,6 +40,42 @@ Preferred workflow:
 - Mock external dependencies, not internal logic
 - Test edge cases and error paths
 
+### Few-shot Examples
+
+```typescript
+// NG: 不明瞭なテスト名
+test("test1", () => { ... });
+
+// OK: シナリオを説明する名前
+test("should return validation error when email is empty", () => { ... });
+```
+
+```typescript
+// NG: Arrange-Act-Assert が混在し、複数の振る舞いを1テストに詰め込む
+test("user creation", () => {
+  const user = createUser("alice");
+  expect(user.name).toBe("alice");
+  user.activate();
+  expect(user.isActive).toBe(true);
+});
+
+// OK: 1テスト1振る舞い、AAA を明確に分離
+test("should create user with given name", () => {
+  // Arrange
+  const name = "alice";
+  // Act
+  const user = createUser(name);
+  // Assert
+  expect(user.name).toBe("alice");
+});
+
+test("should activate user", () => {
+  const user = createUser("alice");
+  user.activate();
+  expect(user.isActive).toBe(true);
+});
+```
+
 ## Troubleshooting Test Failures
 
 1. Use **test-engineer** agent for test strategy

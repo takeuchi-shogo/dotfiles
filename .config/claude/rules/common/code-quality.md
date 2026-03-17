@@ -41,6 +41,34 @@ MANY SMALL FILES > FEW LARGE FILES:
 - Command-Query Separation: 副作用のある関数は値を返さない、値を返す関数は副作用を持たない
 - Split by object, not condition: switch を関数内で繰り返すのでなく、対象ごとの関数に分割する
 
+### Few-shot: Readability & Structure
+
+```typescript
+// NG: 深いネスト
+if (user) {
+  if (user.isActive) {
+    if (user.hasPermission) {
+      doWork(user);
+    }
+  }
+}
+
+// OK: early return でフラット化
+if (!user) return;
+if (!user.isActive) return;
+if (!user.hasPermission) return;
+doWork(user);
+```
+
+```typescript
+// NG: let + 再代入
+let result = items.filter(x => x.active);
+result = result.map(x => x.name);
+
+// OK: const + チェーン or 新変数
+const activeNames = items.filter(x => x.active).map(x => x.name);
+```
+
 ## Boy Scout Rule の Don't 側
 
 巨大な構造には要素を追加しない:
