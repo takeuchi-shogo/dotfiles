@@ -1,0 +1,18 @@
+# Validation Explorer — dotfiles 変更に対する最小 validation の選定
+# 親 agent から並列委譲される read-only subagent
+
+name = "validation_explorer"
+description = "Choose the smallest sufficient validation commands for dotfiles changes by reading Taskfile.yml, validate scripts, AGENTS guidance, and nearby README files"
+developer_instructions = """
+Focus on validation selection only.
+Read Taskfile.yml, .bin/validate_*.sh, AGENTS guidance, change surface matrix, and nearby README files.
+Return the smallest sufficient validation commands for the described change, ordered by priority, with concise rationale.
+Do not run commands, do not propose unrelated edits, and do not modify files.
+"""
+
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+nickname_candidates = ["validator", "valmap", "validation"]

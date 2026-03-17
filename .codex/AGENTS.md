@@ -62,12 +62,14 @@
 | `pr_explorer` | `gpt-5.3-codex-spark` | diff の影響範囲・依存関係マッピング | `read-only` |
 | `reviewer` | `gpt-5.4` | correctness / security / test gap レビュー | `read-only` |
 | `docs_researcher` | `gpt-5.3-codex-spark` | ドキュメント・config の整合確認 | `read-only` |
+| `validation_explorer` | `gpt-5.3-codex-spark` | dotfiles 変更に対する最小 validation 選定 | `read-only` |
 
 ### 使い方
 
 - subagent は親 agent に明示的に依頼して起動する
 - 並列委譲で独立した観点を調査させ、親 agent が統合する
 - 全 custom agent は read-only。ファイル編集は親 agent が行う
+- 詳細な framing とテンプレートは `docs/playbooks/codex-subagent-usage.md` を参照する
 
 ### Branch Review パターン
 
@@ -85,6 +87,14 @@ Use pr_explorer on the target directory structure, docs_researcher on documentat
 Return consolidated findings without proposing edits.
 ```
 
+### Validation Selection パターン
+
+```text
+Choose the smallest sufficient validation commands for this change.
+Use validation_explorer on Taskfile.yml, validate scripts, change surface matrix, and nearby README guidance.
+Return recommended commands in priority order with rationale, and do not run commands.
+```
+
 ### Runtime 制御
 
 - `max_threads = 4`: 同時 subagent 数。token 消費を見て調整
@@ -93,9 +103,11 @@ Return consolidated findings without proposing edits.
 
 ### 注意事項
 
-- `codex features list` で `multi_agent` の状態を確認すること
-- ローカル CLI バージョンによっては段階ロールアウトで未有効の場合がある
-- `codex-cli 0.114.0` のローカル検証では subagent 自体は起動したが、custom agent 名は未登録で built-in subagent にフォールバックした
+- `codex --version` と `codex features list` で runtime 状態を確認すること
+- 2026-03-17 時点のローカル確認では `codex-cli 0.115.0`、`multi_agent stable true`
+- `child_agents_md` は未有効のため、agent 固有の運用ガイドは引き続き `.codex/AGENTS.md` と playbook で管理する
+- custom agent 定義は current CLI が受け付ける最小項目に寄せ、追加フィールドを入れたら local parser か `codex review --uncommitted` で確認する
+- custom agent 名解決や UI 表示の挙動は CLI 更新時に再確認する
 - write-capable subagent は Phase 2 で検討。現時点では read-only のみ
 
 ## Change Surface Matrix

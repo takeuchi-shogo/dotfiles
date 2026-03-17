@@ -81,7 +81,8 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
   - checkpoint-resume skill
   - memory-capture skill
   - subagent runtime (`[agents]` - `max_threads`, `max_depth`)
-  - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher)
+  - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher / validation mapper)
+  - subagent operation playbook (`docs/playbooks/codex-subagent-usage.md`)
 
 ## Runtime Integration Notes
 
@@ -91,6 +92,10 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
 - `commentary` と `final`
   - commentary は進捗共有と未検証項目の明示
   - final は完了済み、検証済み、または未達成の gap の明示
+- subagent orchestration
+  - 役割が明確で並列化できる read-heavy task だけに使う
+  - `objective`、`scope`、`expected output` を親 agent が明示する
+  - 編集、重複 findings の統合、validation 実行は親 agent が持つ
 - compact / resume
   - compact 前に checkpoint を残す
   - resume 後も goal、completion criteria、pending validation は維持する
