@@ -41,6 +41,8 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.context/"      # project-local context files は home へ展開しない
   "^\.agents/"        # project-local skills は ~/.codex/skills と ~/.agents/skills へ個別共有するため除外
   "^\.codex/"         # ~/.codex/ へカスタムシンボリックリンクするため除外
+  "^\.gemini/"        # ~/.gemini/ へカスタムシンボリックリンクするため除外
+  "^\.cursor/"        # ~/.cursor/ へカスタムシンボリックリンクするため除外
 )
 
 # ディレクトリ全体をシンボリックリンクするリスト
@@ -68,6 +70,18 @@ CODEX_SYMLINK_FILES=(
   "AGENTS.md"
 )
 CODEX_SYMLINK_DIRECTORIES=()
+
+# Gemini設定: .gemini/ -> ~/.gemini/ へのシンボリックリンク
+GEMINI_SYMLINK_FILES=(
+  "GEMINI.md"
+)
+GEMINI_SYMLINK_DIRECTORIES=()
+
+# Cursor設定: .cursor/ -> ~/.cursor/ へのシンボリックリンク
+CURSOR_SYMLINK_FILES=()
+CURSOR_SYMLINK_DIRECTORIES=(
+  "rules"
+)
 
 # Codex スキル: 共有可能な skill を ~/.codex/skills/ に個別共有
 # ~/.codex/skills/.system/ を壊さないよう個別にシンボリックリンク
@@ -319,6 +333,118 @@ create_codex_symlinks() {
   done
 }
 
+# Gemini設定用のシンボリックリンク作成 (.gemini/ -> ~/.gemini/)
+create_gemini_symlinks() {
+  local src_dir="$DOTFILES_DIR/.gemini"
+  local dest_dir="$HOME/.gemini"
+
+  mkdir -p "$dest_dir"
+
+  for file in "${GEMINI_SYMLINK_FILES[@]}"; do
+    local target="$src_dir/$file"
+    local link="$dest_dir/$file"
+
+    if [ ! -f "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -f "$link" ] && [ ! -L "$link" ]; then
+      echo "Backing up $link to ${link}.backup"
+      mv "$link" "${link}.backup"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfv "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+
+  for dir in "${GEMINI_SYMLINK_DIRECTORIES[@]}"; do
+    local target="$src_dir/$dir"
+    local link="$dest_dir/$dir"
+
+    if [ ! -d "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      echo "Warning: $link exists and is not a symlink. Removing..." >&2
+      rm -rf "$link"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfvn "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+}
+
+# Cursor設定用のシンボリックリンク作成 (.cursor/ -> ~/.cursor/)
+create_cursor_symlinks() {
+  local src_dir="$DOTFILES_DIR/.cursor"
+  local dest_dir="$HOME/.cursor"
+
+  mkdir -p "$dest_dir"
+
+  for file in "${CURSOR_SYMLINK_FILES[@]}"; do
+    local target="$src_dir/$file"
+    local link="$dest_dir/$file"
+
+    if [ ! -f "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -f "$link" ] && [ ! -L "$link" ]; then
+      echo "Backing up $link to ${link}.backup"
+      mv "$link" "${link}.backup"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfv "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+
+  for dir in "${CURSOR_SYMLINK_DIRECTORIES[@]}"; do
+    local target="$src_dir/$dir"
+    local link="$dest_dir/$dir"
+
+    if [ ! -d "$target" ]; then
+      echo "Warning: $target not found. Skipping." >&2
+      continue
+    fi
+
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      echo "Warning: $link exists and is not a symlink. Removing..." >&2
+      rm -rf "$link"
+    fi
+
+    if [ -L "$link" ]; then
+      if [ "$(readlink "$link")" = "$target" ]; then
+        continue
+      fi
+      ln -sfvn "$target" "$link"
+    else
+      ln -sv "$target" "$link"
+    fi
+  done
+}
+
 main() {
   if ! cd "$DOTFILES_DIR"; then
     echo "Error: $DOTFILES_DIR not found." >&2
@@ -340,6 +466,14 @@ main() {
   # Codex設定のシンボリックリンクを作成
   echo "Creating Codex config symlinks..."
   create_codex_symlinks || true
+
+  # Gemini設定のシンボリックリンクを作成
+  echo "Creating Gemini config symlinks..."
+  create_gemini_symlinks || true
+
+  # Cursor設定のシンボリックリンクを作成
+  echo "Creating Cursor config symlinks..."
+  create_cursor_symlinks || true
 
   # すべてのファイルとシンボリックリンクを処理（macOS互換）
   echo "Creating file symlinks..."
