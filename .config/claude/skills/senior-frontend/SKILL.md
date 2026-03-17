@@ -6,6 +6,8 @@ description: >
   state management selection, or accessibility planning.
   Do NOT use for specific React performance optimization — use react-best-practices skill instead.
 allowed-tools: "Read, Grep, Glob"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Senior Frontend — 設計意思決定ガイド

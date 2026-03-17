@@ -5,6 +5,8 @@ description: >
   Triggers: 'ドキュメント古い', 'doc outdated', '参照切れ', 'broken reference', 'stale docs',
   'ヘルスチェック', 'health check', '整合性', 'consistency check'.
   Use BEFORE starting investigation on unfamiliar code areas.
+metadata:
+  pattern: reviewer
 ---
 
 # Health Check

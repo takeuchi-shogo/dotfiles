@@ -3,6 +3,8 @@ name: weekly-review
 description: GTD式の週次レビュー。全 Issue の棚卸し、滞留タスク検出、inbox 処理、優先度見直しを対話形式で実施。週末や週明けに使用。
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Grep, Glob
+metadata:
+  pattern: generator
 ---
 
 # Weekly Review

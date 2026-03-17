@@ -6,6 +6,8 @@ description: >
   new project conventions discovered during work, debugging insights worth preserving.
   Do NOT use for one-off fixes or task-specific context — use memory system instead.
 allowed-tools: "Read, Bash, Grep, Glob"
+metadata:
+  pattern: pipeline
 ---
 
 # Continuous Learning

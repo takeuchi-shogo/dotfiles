@@ -1,6 +1,8 @@
 ---
 name: create-pr-wait
 description: "PR作成→CI監視→失敗時自動修正→再pushを自動化するワークフロー。/pull-request の拡張版で、CIが通るまで面倒を見る。"
+metadata:
+  pattern: pipeline
 ---
 
 # /create-pr-wait — PR作成からCI通過まで自動化

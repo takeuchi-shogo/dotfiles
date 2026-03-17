@@ -1,6 +1,8 @@
 ---
 name: skill-creator
 description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+metadata:
+  pattern: pipeline+inversion
 ---
 
 # Skill Creator
@@ -74,6 +76,22 @@ The user can override with explicit confirmation ("proceed anyway").
 
 Reference: arXiv:2603.11808 Extraction Quality Criteria
 
+### Pattern Selection
+
+After the Quality Gate, determine the skill's design pattern:
+
+1. Load `references/skill-patterns.md` and review the Decision Tree
+2. Based on the Capture Intent answers (especially Q1: purpose, Q2: category), recommend the best-fit pattern
+3. Present the recommendation to the user:
+   - "Based on your description, this skill fits the **[Pattern]** pattern: [1-sentence why]"
+   - If composite: "This combines **[Pattern A]** (for [purpose]) with **[Pattern B]** (for [purpose])"
+4. Ask the user to confirm or suggest a different pattern
+5. Note the selected pattern's Required Elements from the Structure Quality Checklist — these will be verified in the Test stage
+
+The pattern selection will be used in:
+- **Write SKILL.md stage**: to add `metadata.pattern` to frontmatter and scaffold pattern-specific structure
+- **Test stage**: to verify required elements are present
+
 ### Interview and Research
 
 Proactively ask questions about edge cases, input/output formats, example files, success criteria, and dependencies. Wait to write test prompts until you've got this part ironed out.
@@ -93,6 +111,18 @@ Based on the user interview, fill in these components:
 
 - **compatibility**: Required tools, dependencies (optional, rarely needed)
 - **the rest of the skill :)**
+
+#### Pattern-Aware Scaffolding
+
+When writing the SKILL.md:
+- Add `metadata.pattern` to the frontmatter (e.g., `metadata:\n  pattern: pipeline`)
+- For composite patterns, use `+` notation (e.g., `inversion+generator`)
+- Scaffold the pattern's required structure:
+  - **Pipeline**: `## Step N — [Name]` sections with gate conditions
+  - **Inversion**: `## Phase N — [Name]` sections with "DO NOT proceed until..." gate
+  - **Reviewer**: Reference to checklist file + severity output format
+  - **Generator**: Template reference + output format specification
+  - **Tool Wrapper**: Reference to conventions file + trigger keywords in description
 
 #### Critical Rules (verify before finalizing)
 
@@ -205,6 +235,17 @@ Try to explain to the model why things are important in lieu of heavy-handed mus
 ### Test Cases
 
 After writing the skill draft, come up with 2-3 realistic test prompts — the kind of thing a real user would actually say. Share them with the user: [you don't have to use this exact language] "Here are a few test cases I'd like to try. Do these look right, or do you want to add more?" Then run them.
+
+#### Pattern Compliance Check
+
+After running test prompts, also verify:
+- The SKILL.md contains `metadata.pattern` in its frontmatter
+- The required elements for the selected pattern (from `references/skill-patterns.md` Structure Quality Checklist) are present in the skill's instructions
+- If a Pipeline, numbered steps with gate conditions exist
+- If an Inversion, phase definitions with explicit gating language exist
+- If a Reviewer, a checklist reference and severity classification exist
+
+Flag any missing required elements as warnings for the user to address.
 
 Save test cases to `evals/evals.json`. Don't write assertions yet — just the prompts. You'll draft assertions in the next step while the runs are in progress.
 

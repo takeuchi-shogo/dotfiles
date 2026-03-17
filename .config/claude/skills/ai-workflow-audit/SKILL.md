@@ -5,6 +5,8 @@ description: >
   Codex workflows, deciding what belongs in skills vs memory vs scripts, or carrying
   reusable AI practices across repos.
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
+metadata:
+  pattern: reviewer
 ---
 
 # AI Workflow Audit

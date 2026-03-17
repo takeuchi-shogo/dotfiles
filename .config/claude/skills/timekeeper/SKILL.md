@@ -6,6 +6,8 @@ description: >
   全項目が埋まるまでユーザーに1問ずつ質問し、言語化を促すコーチング型アプローチ。
 argument-hint: plan | review
 allowed-tools: Read, Write, Edit, Glob
+metadata:
+  pattern: inversion+generator
 ---
 
 # Timekeeper

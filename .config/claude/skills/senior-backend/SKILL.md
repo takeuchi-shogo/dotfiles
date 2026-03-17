@@ -6,6 +6,8 @@ description: >
   security architecture. Do NOT use for frontend component design (use senior-frontend)
   or system-level architecture decisions (use senior-architect).
 allowed-tools: "Read, Grep, Glob"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Senior Backend — 設計意思決定ガイド

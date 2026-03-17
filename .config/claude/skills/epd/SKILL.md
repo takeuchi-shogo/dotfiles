@@ -3,6 +3,8 @@ name: epd
 description: "EPD統合ワークフロー。Spec → Spike → Validate → Implement → Review の一連のフローを実行。Harrison Chase の Builder or Reviewer パラダイムに基づく。大きな機能開発で使用。"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree, EnterPlanMode, ExitPlanMode
 user-invocable: true
+metadata:
+  pattern: pipeline
 ---
 
 # EPD: Engineering, Product & Design Workflow

@@ -6,6 +6,8 @@ description: >
   "The Self-Driving Codebase" の3本柱（Isolated Compute, Event Routing, Governance）に基づく。
   新プロジェクトでのCI/CDエージェント統合や、既存プロジェクトへの自動化追加に使用。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+metadata:
+  pattern: generator
 ---
 
 # Setup Background Agents

@@ -1,6 +1,8 @@
 ---
 name: obsidian-vault-setup
 description: 新しい Obsidian Vault を「AI第二の脳」としてセットアップする。テンプレートからフォルダ構造を作成し、CLAUDE.md をカスタマイズする。
+metadata:
+  pattern: generator
 ---
 
 # Obsidian Vault Setup

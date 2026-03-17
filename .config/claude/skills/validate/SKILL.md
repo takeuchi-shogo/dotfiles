@@ -3,6 +3,8 @@ name: validate
 description: "Product Validation ゲート。spec file の acceptance criteria に照らして実装を検証する。「正しいものを作っているか」を確認。/spike や /epd から呼び出し、または手動で使用。"
 allowed-tools: Read, Bash, Glob, Grep, Agent
 user-invocable: true
+metadata:
+  pattern: reviewer
 ---
 
 # Validate: Product Validation Gate

@@ -241,6 +241,22 @@ IF compliance passed:
 
 Define these before writing the skill. They guide testing and iteration.
 
+## Design Patterns
+
+See `references/skill-patterns.md` for the complete pattern catalog.
+
+Quick reference for pattern selection during Capture Intent:
+
+| If the skill primarily... | Pattern |
+|---------------------------|---------|
+| Teaches library/framework conventions | Tool Wrapper |
+| Produces structured documents from templates | Generator |
+| Evaluates code/artifacts against criteria | Reviewer |
+| Interviews the user before acting | Inversion |
+| Enforces a strict multi-step workflow | Pipeline |
+
+---
+
 ### Quantitative Metrics
 
 - **Trigger accuracy:** Skill triggers on 90% of relevant queries

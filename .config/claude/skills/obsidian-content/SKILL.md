@@ -1,6 +1,8 @@
 ---
 name: obsidian-content
 description: Obsidian Vault 全体のコンテキストを活用してコンテンツを生成する。ニュースレター、ブログ記事、ツイートスレッド等。ノートを検索し、ライティングスタイルに従って生成。
+metadata:
+  pattern: generator
 ---
 
 # Obsidian Content Creator

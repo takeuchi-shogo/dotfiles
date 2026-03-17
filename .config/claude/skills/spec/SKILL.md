@@ -3,6 +3,8 @@ name: spec
 description: "Prompt-as-PRD を生成する。アイデアを構造化プロンプトとして記述し、docs/specs/ にバージョン管理する。agent にそのまま渡せる実行可能な仕様書を作成。"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 user-invocable: true
+metadata:
+  pattern: inversion+generator
 ---
 
 # Spec: Prompt-as-PRD Generator

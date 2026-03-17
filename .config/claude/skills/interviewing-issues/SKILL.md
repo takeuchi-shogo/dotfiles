@@ -1,6 +1,8 @@
 ---
 name: interviewing-issues
 description: "曖昧なGitHub Issueを4段階のインタビューで明確化し、構造化された仕様を出力する。実装前の要件定義・スコープ確定に使用。"
+metadata:
+  pattern: inversion
 ---
 
 # /interviewing-issues — Issue を仕様に変換する

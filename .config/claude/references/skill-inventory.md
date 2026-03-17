@@ -6,70 +6,70 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 
 毎日の開発フローで優先して使う skill。
 
-- `check-health`
-- `search-first`
-- `review`
-- `verification-before-completion`
-- `continuous-learning`
-- `spec`
-- `spike`
-- `validate`
-- `codex-review`
+- `check-health` — reviewer
+- `search-first` — pipeline
+- `review` — reviewer
+- `verification-before-completion` — pipeline+reviewer
+- `continuous-learning` — pipeline
+- `spec` — inversion+generator
+- `spike` — pipeline
+- `validate` — reviewer
+- `codex-review` — reviewer
 
 ## Cross-Model / Research
 
 外部モデルや深い調査が必要なときだけ使う。
 
-- `codex`
-- `gemini`
-- `research`
-- `epd`
-- `interviewing-issues`
+- `codex` — tool-wrapper
+- `gemini` — tool-wrapper
+- `research` — pipeline
+- `epd` — pipeline
+- `interviewing-issues` — inversion
 
 ## Domain / Specialist
 
 技術領域が明確なときだけ使う。
 
-- `senior-architect`
-- `senior-backend`
-- `senior-frontend`
-- `react-best-practices`
-- `react-expert`
-- `frontend-design`
-- `web-design-guidelines`
-- `webapp-testing`
-- `vercel-composition-patterns`
-- `edge-case-analysis`
-- `ui-ux-pro-max`
+- `senior-architect` — tool-wrapper
+- `senior-backend` — tool-wrapper
+- `senior-frontend` — tool-wrapper
+- `react-best-practices` — tool-wrapper
+- `react-expert` — tool-wrapper
+- `frontend-design` — generator
+- `web-design-guidelines` — reviewer
+- `webapp-testing` — tool-wrapper
+- `vercel-composition-patterns` — tool-wrapper
+- `edge-case-analysis` — reviewer
+- `ui-ux-pro-max` — tool-wrapper+generator
 
 ## Automation / Meta
 
 workflow 自体を改善するときに使う。
 
-- `autonomous`
-- `create-pr-wait`
-- `improve`
-- `eureka`
-- `skill-audit`
-- `skill-creator`
-- `setup-background-agents`
-- `ai-workflow-audit`
+- `autonomous` — pipeline
+- `create-pr-wait` — pipeline
+- `improve` — pipeline
+- `eureka` — generator
+- `skill-audit` — reviewer
+- `skill-creator` — pipeline+inversion
+- `setup-background-agents` — generator
+- `ai-workflow-audit` — reviewer
 
 ## Personal Ops
 
 個人運用や GTD、知識管理で使う。通常の coding task では自動で前提にしない。
 
-- `daily-report`
-- `dev-ops-setup`
-- `morning`
-- `capture`
-- `kanban`
-- `meeting-minutes`
-- `weekly-review`
-- `dev-insights`
-- `obsidian-vault-setup`
-- `obsidian-knowledge`
-- `obsidian-content`
+- `daily-report` — generator
+- `dev-ops-setup` — pipeline
+- `morning` — inversion+generator
+- `capture` — generator
+- `kanban` — tool-wrapper
+- `meeting-minutes` — generator
+- `weekly-review` — generator
+- `dev-insights` — reviewer
+- `obsidian-vault-setup` — generator
+- `obsidian-knowledge` — tool-wrapper
+- `obsidian-content` — generator
 
 ## Default Guidance
 
@@ -111,3 +111,14 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 - **conflicts-with 関係にある skill を同時に有効にしない**
 - **depends-on 関係がある場合、upstream skill を先に実行する**
 - **subset 関係にある場合、superset の方を優先検討する**
+
+## Pattern Distribution
+
+| Pattern | Count | Example Skills |
+|---------|-------|----------------|
+| tool-wrapper | 13 | codex, gemini, react-expert, senior-* |
+| generator | 12 | eureka, daily-report, digest, frontend-design |
+| reviewer | 10 | review, check-health, validate, skill-audit |
+| inversion | 1 | interviewing-issues |
+| pipeline | 11 | epd, autonomous, research, absorb |
+| composite | 6 | spec (inv+gen), skill-creator (pipe+inv), verification-before-completion (pipe+rev) |

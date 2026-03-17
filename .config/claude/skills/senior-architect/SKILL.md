@@ -6,6 +6,8 @@ description: >
   microservices, planning scalability, or creating architecture diagrams.
   Do NOT use for implementation-level code decisions — use senior-backend or senior-frontend instead.
 allowed-tools: "Read, Grep, Glob"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Senior Architect — 設計意思決定ガイド

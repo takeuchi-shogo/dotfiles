@@ -2,6 +2,8 @@
 name: webapp-testing
 description: Toolkit for interacting with and testing local web applications using agent-browser CLI. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
 license: Complete terms in LICENSE.txt
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Web Application Testing

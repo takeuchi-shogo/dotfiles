@@ -4,6 +4,8 @@ description: GTD式の即時キャプチャ。思いつき、TODO、メモを Gi
 disable-model-invocation: true
 allowed-tools: Bash(gh *)
 argument-hint: "<memo text>"
+metadata:
+  pattern: generator
 ---
 
 # Quick Capture

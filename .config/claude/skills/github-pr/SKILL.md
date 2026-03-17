@@ -4,6 +4,8 @@ description: >
   PRセルフレビュー・レビューコメント対応・マージ判断。
   「セルフレビューして」「PR確認して」「コメント対応して」「マージしていい？」で発動。
 allowed-tools: Bash(*gh-unresolved-threads*), Bash(gh pr *), Bash(gh api graphql *)
+metadata:
+  pattern: pipeline
 ---
 
 # GitHub PR

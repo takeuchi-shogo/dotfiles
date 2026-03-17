@@ -6,6 +6,8 @@ description: >
   並列タスクは worktree で隔離し、共有状態の破損を防止。
   長時間のリファクタリング、マイグレーション、大規模実装に使用。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+metadata:
+  pattern: pipeline
 ---
 
 # Autonomous — Multi-Session Task Automation

@@ -7,6 +7,8 @@ description: >
   or optimizing GraphQL API performance. Do NOT use for REST API design (use senior-backend)
   or general system architecture (use senior-architect).
 allowed-tools: "Read, Grep, Glob, Bash"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # GraphQL Expert — 設計・実装・レビューガイド

@@ -6,6 +6,8 @@ description: >
   'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better'.
   Do NOT use for factual questions with clear answers — use WebSearch or gemini skill instead.
 allowed-tools: Read, Bash, Grep, Glob, Agent
+metadata:
+  pattern: pipeline
 ---
 
 # Multi-Model Debate

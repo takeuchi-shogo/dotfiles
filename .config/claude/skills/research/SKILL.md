@@ -5,6 +5,8 @@ description: >
   自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
   Do NOT use for simple single-query searches — use WebSearch or gemini skill instead.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+metadata:
+  pattern: pipeline
 ---
 
 # Deep Research — Multi-Agent Orchestration

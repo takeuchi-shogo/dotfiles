@@ -1,6 +1,8 @@
 ---
 name: skill-audit
 description: "Batch A/B benchmarking and health audit for skills. Use when user says 'audit skills', 'benchmark skills', 'skill health check', 'retire unused skills', or 'check skill quality'. Runs A/B tests across multiple skills, detects description conflicts, and generates audit reports. Do NOT use for creating or editing individual skills (use skill-creator instead)."
+metadata:
+  pattern: reviewer
 ---
 
 # Skill Audit

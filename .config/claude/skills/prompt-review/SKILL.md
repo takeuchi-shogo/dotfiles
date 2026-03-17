@@ -8,6 +8,8 @@ description: >
 disable-model-invocation: true
 allowed-tools: Read, Write, Glob, Grep, Bash
 context: fork
+metadata:
+  pattern: reviewer
 ---
 
 # prompt-review スキル

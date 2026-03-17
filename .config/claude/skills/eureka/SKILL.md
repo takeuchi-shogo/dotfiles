@@ -6,6 +6,8 @@ description: >
   '今日学んだこと', '予想外の解決策', 'aha moment', '重要な知見'.
   発見の鮮度が高いうちに記録し、AutoEvolve learnings と連携。/eureka で手動起動。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+metadata:
+  pattern: generator
 ---
 
 # Eureka — Technical Breakthrough Capture

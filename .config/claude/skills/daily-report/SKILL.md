@@ -1,6 +1,8 @@
 ---
 name: daily-report
 description: 1日の全プロジェクト横断セッションをまとめた日報を生成する。/daily-report で今日、/daily-report yesterday で昨日、/daily-report YYYY-MM-DD で指定日の日報を作成。
+metadata:
+  pattern: generator
 ---
 
 # Daily Report Generator

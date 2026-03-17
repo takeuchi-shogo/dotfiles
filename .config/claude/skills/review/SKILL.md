@@ -14,6 +14,8 @@ hooks:
             [REVIEW GUARD] /review スキル実行中です。レビュー中にコードを直接修正してはいけません。
             指摘事項はレビュー出力に含め、修正はユーザーが判断した後に行ってください。
             このツール呼び出しを本当に実行する必要がありますか？レビュー出力テンプレートへの書き込みのみ許可されます。
+metadata:
+  pattern: reviewer
 ---
 
 # Code Review Orchestrator

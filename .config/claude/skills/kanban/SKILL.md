@@ -4,6 +4,8 @@ description: GitHub Projects カンバンの操作と進捗確認。ステータ
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read
 argument-hint: "[status | start #N | done #N | view]"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Kanban Operations

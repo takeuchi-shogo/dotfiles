@@ -1,6 +1,8 @@
 ---
 name: obsidian-knowledge
 description: Obsidian Vault 内のナレッジを検索・整理・リンクする。ノート検索、タグ一括変更、リンク候補発見、文献ノートからパーマネントノート生成、MOC（Map of Content）自動生成。
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Obsidian Knowledge Manager

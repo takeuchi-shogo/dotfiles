@@ -1,6 +1,8 @@
 ---
 name: react-expert
 description: Use when researching React APIs or concepts for documentation. Use when you need authoritative usage examples, caveats, warnings, or errors for a React feature.
+metadata:
+  pattern: tool-wrapper
 ---
 
 # React Expert Research Skill

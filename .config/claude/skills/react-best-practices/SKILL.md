@@ -7,6 +7,8 @@ license: MIT
 tags: [React, Next.js, Performance, Optimization, Best Practices, Bundle Size, Rendering, Server Components]
 dependencies: []
 allowed-tools: "Read, Bash, Grep, Glob"
+metadata:
+  pattern: tool-wrapper
 ---
 
 # React Best Practices - Performance Optimization

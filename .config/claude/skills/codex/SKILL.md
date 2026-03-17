@@ -4,6 +4,8 @@ description: >
   Use when the user asks to run Codex CLI (codex exec, codex resume) or references
   OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.4
   by default. NOT for code review (use codex-review) or debugging (use debugger agent).
+metadata:
+  pattern: tool-wrapper
 ---
 
 # Codex Skill Guide

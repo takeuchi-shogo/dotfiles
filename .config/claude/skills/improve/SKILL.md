@@ -2,6 +2,8 @@
 name: improve
 description: AutoEvolve のオンデマンド改善サイクルを実行。学習データの分析 → 知識整理 → 設定改善提案を一括で行う。/improve で起動。
 allowed-tools: Read, Bash, Grep, Glob, Agent
+metadata:
+  pattern: pipeline
 ---
 
 # AutoEvolve On-Demand Improvement Cycle
