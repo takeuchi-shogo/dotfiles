@@ -43,7 +43,7 @@ Review the recent git changes. Check these 6 items in order:
 6. **Tests**: Missing edge cases, flaky patterns, inadequate coverage
 
 Output format — one line per finding:
-[MUST/CONSIDER/NIT] file:line - description
+[MUST/CONSIDER/NIT/ASK/FYI] file:line - description
 
 Group findings by file. If no issues found, output "LGTM — no issues detected."
 PROMPT

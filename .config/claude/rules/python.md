@@ -14,17 +14,25 @@ PEP 8・Effective Python・Fluent Python に基づく。
 
 ```
 project/
+├── src/my_project/   # 再利用可能なコード
+│   └── __init__.py
+├── tests/            # pytest
+├── pyproject.toml    # プロジェクト定義
+└── uv.lock           # 依存ロック
+```
+
+ML/データサイエンスプロジェクトでは以下を追加:
+
+```
+project/
 ├── configs/          # 設定ファイル（YAML/TOML）
 ├── scripts/          # エントリポイント（種類別に整理）
 │   ├── data/         # データ前処理
 │   ├── training/     # 学習実行
 │   ├── evaluation/   # 評価・分析
 │   └── plots/        # 可視化
-├── src/my_project/   # 再利用可能なコード
-│   └── __init__.py
-├── tests/            # pytest
-├── pyproject.toml    # プロジェクト定義
-└── uv.lock           # 依存ロック
+├── src/my_project/
+└── ...
 ```
 
 - `scripts/` はエントリポイント。再利用可能なロジックは `src/` に分離する
