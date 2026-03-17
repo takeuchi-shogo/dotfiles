@@ -5,6 +5,15 @@ description: >
   コード変更後の Review 段階で使用、または /review で手動起動。
   言語固有チェックリストは references/review-checklists/ に配置。code-reviewer のプロンプトに注入して使用。
 allowed-tools: Read, Bash, Grep, Glob, Agent
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: prompt
+          prompt: >
+            [REVIEW GUARD] /review スキル実行中です。レビュー中にコードを直接修正してはいけません。
+            指摘事項はレビュー出力に含め、修正はユーザーが判断した後に行ってください。
+            このツール呼び出しを本当に実行する必要がありますか？レビュー出力テンプレートへの書き込みのみ許可されます。
 ---
 
 # Code Review Orchestrator
