@@ -56,6 +56,24 @@ Start by understanding the user's intent. The current conversation might already
 6. **Success criteria?** Define upfront — e.g., "triggers on 90% of relevant queries", "completes in under 5 tool calls". See `references/planning-guide.md` for metrics guidance.
 7. Should we set up test cases to verify the skill works? Skills with objectively verifiable outputs (file transforms, data extraction, code generation, fixed workflow steps) benefit from test cases. Skills with subjective outputs (writing style, art) often don't need them. Suggest the appropriate default based on the skill type, but let the user decide.
 
+### Quality Gate
+
+Evaluate the skill idea against 4 quality criteria (see `references/validation-checklist.md`
+"Quality Gate" section). Walk through each with the user:
+
+1. **Recurrence**: "Will you use this in multiple projects/contexts?"
+   → If one-off, suggest a script instead
+2. **Verification**: "Have you done this workflow manually at least once?"
+   → If hypothetical, suggest `/spike` first
+3. **Non-obviousness**: "Does Claude already do this well without a skill?"
+   → If yes, run a quick baseline comparison first
+4. **Generalizability**: "Could someone else use this skill with different inputs?"
+   → If too specific, help extract the generalizable pattern
+
+The user can override with explicit confirmation ("proceed anyway").
+
+Reference: arXiv:2603.11808 Extraction Quality Criteria
+
 ### Interview and Research
 
 Proactively ask questions about edge cases, input/output formats, example files, success criteria, and dependencies. Wait to write test prompts until you've got this part ironed out.

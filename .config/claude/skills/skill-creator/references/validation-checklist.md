@@ -34,6 +34,22 @@
 
 ---
 
+## Quality Gate (arXiv:2603.11808)
+
+Before investing in writing a skill, evaluate against these 4 extraction quality criteria.
+All 4 should be "Yes" to proceed. If any is "No", consider the alternative.
+
+- [ ] **Recurrence** — Does this pattern appear in 3+ different contexts/projects?
+  - No → Consider a one-off script in `~/.claude/scripts/` instead
+- [ ] **Verification** — Is the procedural knowledge verified by real usage?
+  - No → Run `/spike` first to validate the approach before codifying
+- [ ] **Non-obviousness** — Does this exceed the model's baseline knowledge?
+  - No → Test with `skill-audit` Batch 1 methodology before investing
+- [ ] **Generalizability** — Can it be parameterized for different contexts?
+  - No → Extract the generalizable core; leave specifics as parameters
+
+---
+
 ## Before You Start
 
 - [ ] Identified 2-3 concrete use cases
