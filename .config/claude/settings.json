@@ -271,6 +271,17 @@
 				]
 			},
 			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/stagnation-detector.py",
+						"timeout": 5,
+						"statusMessage": "Stagnation check..."
+					}
+				]
+			},
+			{
 				"matcher": "Skill",
 				"hooks": [
 					{
