@@ -127,6 +127,10 @@ for skill_dir in sorted(skills_dir.iterdir()):
 1. `references/improve-policy.md` を読み、改善方針・禁止事項を確認
 2. 最新の insights を確認
 3. learnings データの裏付けを確認（データなき改善は行わない）
+4. RL advantage データを確認（`references/rl-optimization-guide.md` 参照）:
+   - `skill-credit.jsonl` の per-step credit を確認
+   - `session-metrics.jsonl` の `is_weight` で過去データの信頼度を確認
+   - K-variant テスト結果がある場合は RLOO/GRPO advantage を参照
 
 ### 改善候補の優先度
 

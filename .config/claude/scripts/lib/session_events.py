@@ -151,6 +151,40 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+_CONFIG_VERSION_CACHE: str | None = None
+
+
+def compute_config_version() -> str:
+    """設定ファイル群の SHA-256 先頭12文字を返す。
+
+    対象: ~/.claude/{CLAUDE.md, settings.json, references/improve-policy.md}
+    ファイルが存在しない場合はスキップする。全ファイル不在時は空文字。
+    """
+    import hashlib
+
+    global _CONFIG_VERSION_CACHE  # noqa: PLW0603
+    if _CONFIG_VERSION_CACHE is not None:
+        return _CONFIG_VERSION_CACHE
+
+    claude_dir = Path.home() / ".claude"
+    targets = [
+        claude_dir / "CLAUDE.md",
+        claude_dir / "settings.json",
+        claude_dir / "references" / "improve-policy.md",
+    ]
+    h = hashlib.sha256()
+    found = False
+    for target in targets:
+        try:
+            content = target.read_bytes()
+            h.update(content)
+            found = True
+        except OSError:
+            continue
+    _CONFIG_VERSION_CACHE = h.hexdigest()[:12] if found else ""
+    return _CONFIG_VERSION_CACHE
+
+
 def emit_event(category: str, data: dict) -> None:
     """セッション中のイベントを一時ファイルに追記する（スコア付き）。
 
@@ -174,6 +208,7 @@ def emit_event(category: str, data: dict) -> None:
             "failure_type": failure_type,
             "scored_by": "rule",
             "promotion_status": "pending",
+            "config_version": compute_config_version(),
         }
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
@@ -184,6 +219,83 @@ def emit_event(category: str, data: dict) -> None:
             logger.error("emit failed: %s", exc)
         except Exception:
             pass
+
+
+def read_session_events() -> list[dict]:
+    """current-session.jsonl を非破壊で読み取る。
+
+    flush_session() と異なりファイルを削除しない。
+    セッション途中のフック (stagnation-detector 等) が参照する。
+    """
+    logger = _setup_logger()
+    path = _temp_path()
+    if not path.exists():
+        return []
+    events = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        events.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        logger.debug(
+                            "read_session: skipped corrupt line: %s", line[:80]
+                        )
+                        continue
+    except OSError as exc:
+        logger.warning("read_session: failed to read %s: %s", path, exc)
+        return []
+    return [_normalize_event(e) for e in events]
+
+
+def build_state_descriptor() -> dict:
+    """EvoX の φ(D) に相当する統合状態要約。
+
+    current-session.jsonl を非破壊で読み、スコア統計・進捗・多様性を計算する。
+    stagnation-detector と session-learner が使用。
+    """
+    events = read_session_events()
+    if not events:
+        return {
+            "score_stats": {
+                "total_events": 0,
+                "error_count": 0,
+                "avg_importance": 0.0,
+                "high_importance_count": 0,
+            },
+            "progress": {"steps_since_last_error": 0, "error_rate": 0.0},
+            "diversity": {"unique_command_types": 0, "total_commands": 0},
+        }
+
+    importances = [e.get("importance", 0.5) for e in events]
+    error_events = [e for e in events if e.get("category") == "error"]
+
+    error_indices = [i for i, e in enumerate(events) if e.get("category") == "error"]
+    steps_since_last_error = (
+        (len(events) - 1 - error_indices[-1]) if error_indices else len(events)
+    )
+
+    commands = [e.get("command", "") for e in events if e.get("command")]
+    unique_commands = len({parts[0] for cmd in commands if (parts := cmd.split())})
+
+    return {
+        "score_stats": {
+            "total_events": len(events),
+            "error_count": len(error_events),
+            "avg_importance": round(sum(importances) / len(importances), 2),
+            "high_importance_count": sum(1 for i in importances if i >= 0.8),
+        },
+        "progress": {
+            "steps_since_last_error": steps_since_last_error,
+            "error_rate": round(len(error_events) / len(events), 2),
+        },
+        "diversity": {
+            "unique_command_types": unique_commands,
+            "total_commands": len(commands),
+        },
+    }
 
 
 def flush_session() -> list[dict]:

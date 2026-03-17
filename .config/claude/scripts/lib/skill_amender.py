@@ -1,4 +1,5 @@
-"""Skill amendment engine — SKILL.md parsing, health assessment, and proposal generation.
+"""Skill amendment engine — SKILL.md parsing, health assessment,
+and proposal generation.
 
 autoevolve-core の Phase 2 から呼び出される。
 SKILL.md の解析、スキル健全性の判定、修正提案の生成を行う。
@@ -290,6 +291,47 @@ GATE_ACCEPT_THRESHOLD_PP = 2.0
 GATE_REJECT_THRESHOLD_PP = -2.0
 
 
+CLIP_EPSILON = 0.2
+
+
+def _apply_clip_check(
+    result: GateResult,
+    report: SkillHealthReport,
+) -> GateResult:
+    """GateResult 返却前に clip_ratio で変更比率を検証する。
+
+    スコアトレンドの変動が ±epsilon を超える場合、
+    reason に CLIP WARNING を追記して注意喚起する。
+    """
+    from rl_advantage import clip_ratio
+
+    if report.execution_count < 2:
+        return result
+
+    # avg_score を「現在」、avg_score - trend を「以前」として比率を計算
+    before = report.avg_score - report.trend
+    if before <= 0:
+        return result
+
+    clipped = clip_ratio(report.avg_score, before, CLIP_EPSILON)
+    raw_ratio = report.avg_score / before
+
+    if abs(raw_ratio - clipped) > 1e-9:
+        clip_msg = (
+            f" [CLIP WARNING: ratio {raw_ratio:.2f}"
+            f" clipped to {clipped:.2f},"
+            f" epsilon={CLIP_EPSILON}]"
+        )
+        return GateResult(
+            verdict=result.verdict,
+            ab_delta=result.ab_delta,
+            score_delta=result.score_delta,
+            reason=result.reason + clip_msg,
+        )
+
+    return result
+
+
 def gate_proposal(
     proposal: AmendmentProposal,
     report: SkillHealthReport,
@@ -314,27 +356,40 @@ def gate_proposal(
             verdict="auto_reject",
             ab_delta=benchmark_delta,
             score_delta=report.trend,
-            reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値 {GATE_REJECT_THRESHOLD_PP}pp 以下",
+            reason=(
+                f"A/B delta {benchmark_delta:+.1f}pp"
+                f" — 閾値 {GATE_REJECT_THRESHOLD_PP}pp 以下"
+            ),
         )
 
     if benchmark_delta >= GATE_ACCEPT_THRESHOLD_PP:
-        if proposal.amendment_type in ("edit_instruction", "deprecate"):
+        if proposal.amendment_type in (
+            "edit_instruction",
+            "deprecate",
+        ):
             return GateResult(
                 verdict="pending_review",
                 ab_delta=benchmark_delta,
                 score_delta=report.trend,
-                reason=f"A/B delta {benchmark_delta:+.1f}pp — 高影響変更のため人間レビュー必須",
+                reason=(
+                    f"A/B delta {benchmark_delta:+.1f}pp"
+                    " — 高影響変更のため人間レビュー必須"
+                ),
             )
         return GateResult(
             verdict="auto_accept",
             ab_delta=benchmark_delta,
             score_delta=report.trend,
-            reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値 {GATE_ACCEPT_THRESHOLD_PP}pp 以上",
+            reason=(
+                f"A/B delta {benchmark_delta:+.1f}pp"
+                f" — 閾値 {GATE_ACCEPT_THRESHOLD_PP}pp 以上"
+            ),
         )
 
-    return GateResult(
+    result = GateResult(
         verdict="pending_review",
         ab_delta=benchmark_delta,
         score_delta=report.trend,
-        reason=f"A/B delta {benchmark_delta:+.1f}pp — 閾値内、人間レビュー推奨",
+        reason=(f"A/B delta {benchmark_delta:+.1f}pp — 閾値内、人間レビュー推奨"),
     )
+    return _apply_clip_check(result, report)

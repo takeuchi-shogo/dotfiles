@@ -132,6 +132,52 @@ def _update_playbook(summary: dict, logger: logging.Logger) -> None:
     logger.info("session-learner: updated playbook for %s", project)
 
 
+def _classify_approach(events: list[dict]) -> str:
+    """セッションイベントからアプローチ分類を推論する (EvoX Task B)。
+
+    Returns: refinement / structural / exploratory /
+             codex-deep / gemini-research
+    """
+    skill_names = {
+        e.get("skill_name", "") for e in events if e.get("category") == "skill"
+    }
+    if skill_names & {"codex-debugger", "codex-reviewer"}:
+        return "codex-deep"
+    if "gemini-explore" in skill_names:
+        return "gemini-research"
+
+    # exploratory: 検索系イベントが多い
+    search_tools = {"Read", "Grep", "Glob", "WebSearch"}
+    search_count = sum(1 for e in events if e.get("tool_name") in search_tools)
+    if events and search_count > len(events) * 0.5:
+        return "exploratory"
+
+    # structural: 3+ ファイルへの言及
+    files_mentioned = {
+        e.get("file", e.get("path", ""))
+        for e in events
+        if e.get("file") or e.get("path")
+    }
+    if len(files_mentioned) >= 3:
+        return "structural"
+
+    return "refinement"
+
+
+def _classify_task_type(summary: dict) -> str:
+    """セッションのタスクタイプを推論する (EvoX Task B)。
+
+    Returns: "debug" | "implement" | "refactor" | "investigate"
+    """
+    if summary["errors_count"] > 0 and summary["corrections"] > 0:
+        return "debug"
+    if summary["quality_issues"] > summary["errors_count"]:
+        return "refactor"
+    if summary["total_events"] < 5 and summary["errors_count"] == 0:
+        return "investigate"
+    return "implement"
+
+
 def _detect_repeated_topics(summary: dict, logger: logging.Logger) -> None:
     """Detect topics that appear repeatedly across sessions.
 
@@ -272,13 +318,45 @@ def _compute_proposal_metrics(events: list[dict]) -> dict:
     }
 
 
+def _read_last_jsonl_entry(path: Path) -> dict:
+    """JSONL ファイルの最後のエントリを返す。空/不在なら空辞書。"""
+    import json as _json
+
+    if not path.exists():
+        return {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for line in reversed(lines):
+            line = line.strip()
+            if line:
+                return _json.loads(line)
+    except (OSError, _json.JSONDecodeError) as exc:
+        logging.getLogger("autoevolve").debug(
+            "_read_last_jsonl_entry failed for %s: %s", path, exc
+        )
+    return {}
+
+
+# outcome → score マッピング
+_OUTCOME_SCORES: dict[str, float] = {
+    "clean_success": 1.0,
+    "recovery": 0.6,
+    "failure": 0.2,
+}
+
+
 def process_session(cwd: str | None = None) -> None:
     """セッションデータを処理し、永続ストレージに書き出す。"""
+    from session_events import compute_config_version
+
     logger = logging.getLogger("autoevolve")
     summary = build_session_summary(cwd=cwd)
 
     if summary["total_events"] == 0:
         return
+
+    # RL: config_version を計算
+    config_version = compute_config_version()
 
     from tip_generalizer import generalize_entry
 
@@ -338,6 +416,8 @@ def process_session(cwd: str | None = None) -> None:
             )
 
     # スキル実行データの集計
+    from rl_advantage import importance_weight, step_credit
+
     events = summary["_events"]
     quality = summary["_quality"]
     skill_invocations = [
@@ -345,6 +425,17 @@ def process_session(cwd: str | None = None) -> None:
         for e in events
         if e.get("category") == "skill" and e.get("type") == "invocation"
     ]
+
+    # RL: 前回セッションの config_version を取得して IS weight 計算
+    from storage import get_data_dir
+
+    prev_entry = _read_last_jsonl_entry(
+        get_data_dir() / "metrics" / "session-metrics.jsonl"
+    )
+    prev_cv = prev_entry.get("config_version", config_version)
+    change_count = 0 if prev_cv == config_version else 1
+    is_weight = importance_weight(config_version, prev_cv, change_count)
+
     if skill_invocations:
         # セッション全体の集計値（ループ外で一度だけ計算）
         error_count = len(summary["_errors"])
@@ -376,7 +467,7 @@ def process_session(cwd: str | None = None) -> None:
                 }
             )
 
-            # Extended fields: related_error_ids (スキルスコープのエラーのみ)
+            # Extended fields: related_error_ids
             error_refs_from_steps = {
                 e.get("error_ref") for e in step_outcomes if e.get("error_ref")
             }
@@ -404,6 +495,8 @@ def process_session(cwd: str | None = None) -> None:
                     "step_failures": step_failures,
                     "related_error_ids": related_error_ids,
                     "related_tools": related_tools,
+                    "config_version": config_version,
+                    "is_weight": is_weight,
                 },
             )
             logger.info(
@@ -412,14 +505,29 @@ def process_session(cwd: str | None = None) -> None:
                 score,
             )
 
+        # RL: Per-step credit assignment → skill-credit.jsonl
+        outcome_score = _OUTCOME_SCORES.get(summary["outcome"], 0.2)
+        credits = step_credit(outcome_score, skill_invocations, events)
+        for sname, credit in credits.items():
+            append_to_learnings(
+                "skill-credit",
+                {
+                    "skill_name": sname,
+                    "credit": credit,
+                    "outcome": summary["outcome"],
+                    "outcome_score": outcome_score,
+                    "config_version": config_version,
+                    "is_weight": is_weight,
+                },
+            )
+
     # Critical Failure Step (CFS) detection — AgentRx-inspired
-    # Identify the first unrecoverable error in the session trajectory
     cfs = _detect_critical_failure_step(events)
     cfs_data = {}
     if cfs:
         append_to_learnings("critical-failure-steps", cfs)
         logger.info(
-            "session-learner: CFS detected at index %d (FM=%s): %s",
+            "session-learner: CFS at index %d (FM=%s): %s",
             cfs["cfs_index"],
             cfs["failure_mode"],
             cfs["message"][:80],
@@ -435,7 +543,8 @@ def process_session(cwd: str | None = None) -> None:
     if proposal_metrics:
         for p in [e for e in events if e.get("category") == "proposal"]:
             append_to_learnings(
-                "proposal-verdicts", {k: v for k, v in p.items() if k != "category"}
+                "proposal-verdicts",
+                {k: v for k, v in p.items() if k != "category"},
             )
 
     metrics = {
@@ -449,6 +558,8 @@ def process_session(cwd: str | None = None) -> None:
         "outcome": summary["outcome"],
         "high_importance_count": summary["high_importance_count"],
         "avg_importance": summary["avg_importance"],
+        "config_version": config_version,
+        "is_weight": is_weight,
         **proposal_metrics,
         **cfs_data,
     }
@@ -459,6 +570,38 @@ def process_session(cwd: str | None = None) -> None:
 
     # Repeated topic detection (Codified Context G4)
     _detect_repeated_topics(summary, logger)
+
+    # Strategy Outcomes Database (EvoX Task B)
+    approach = _classify_approach(events)
+    task_type = _classify_task_type(summary)
+    append_to_learnings(
+        "strategy-outcomes",
+        {
+            "project": summary["project"],
+            "task_type": task_type,
+            "approach": approach,
+            "context": {
+                "error_count": summary["errors_count"],
+                "quality_issues": summary["quality_issues"],
+                "total_events": summary["total_events"],
+            },
+            "outcome": summary["outcome"],
+            "improvement_delta": 0.0,
+            "notes": "",
+        },
+    )
+    logger.info(
+        "session-learner: strategy outcome: %s/%s -> %s",
+        task_type,
+        approach,
+        summary["outcome"],
+    )
+
+    # Stagnation state cleanup (EvoX Task A)
+    stagnation_state = (
+        Path.home() / ".claude" / "agent-memory" / "stagnation-state.json"
+    )
+    stagnation_state.unlink(missing_ok=True)
 
     logger.info(
         "session-learner: flushed %d errors, %d quality, %d patterns",

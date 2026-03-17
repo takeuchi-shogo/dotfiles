@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
-"""Aggregate reviewer eval results and generate Before/After comparison report.
+"""Aggregate reviewer eval results and generate comparison reports.
 
 Usage:
     python3 aggregate_benchmark.py --single results/baseline.json
-    python3 aggregate_benchmark.py --baseline results/baseline.json --current results/current.json
+    python3 aggregate_benchmark.py \
+        --baseline results/baseline.json \
+        --current results/current.json
+    python3 aggregate_benchmark.py \
+        --variants v1.json v2.json v3.json
 """
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+from rl_advantage import grpo_advantage, rloo_advantage
 
 
 def compute_metrics(results: list[dict]) -> dict:
@@ -56,6 +64,72 @@ def compute_per_fm(results: list[dict]) -> dict[str, dict]:
     return fm_stats
 
 
+def compute_rloo_metrics(
+    variant_results: list[list[dict]],
+) -> dict:
+    """K variant の結果から RLOO advantage を計算する。
+
+    Args:
+        variant_results: K 個の result リスト
+
+    Returns:
+        各 variant の metrics + RLOO advantage を含む辞書。
+    """
+    metrics_list = [compute_metrics(vr) for vr in variant_results]
+    f1_scores = [m["f1"] for m in metrics_list]
+    advantages = rloo_advantage(f1_scores)
+
+    return {
+        "method": "rloo",
+        "variants": [
+            {
+                "index": i,
+                **metrics_list[i],
+                "advantage": advantages[i] if advantages else 0.0,
+            }
+            for i in range(len(metrics_list))
+        ],
+        "best_variant": (
+            max(range(len(f1_scores)), key=lambda i: f1_scores[i])
+            if f1_scores
+            else None
+        ),
+    }
+
+
+def compute_grpo_metrics(
+    variant_results: list[list[dict]],
+) -> dict:
+    """K variant の結果から GRPO advantage を計算する。
+
+    Args:
+        variant_results: K 個の result リスト
+
+    Returns:
+        各 variant の metrics + GRPO advantage を含む辞書。
+    """
+    metrics_list = [compute_metrics(vr) for vr in variant_results]
+    f1_scores = [m["f1"] for m in metrics_list]
+    advantages = grpo_advantage(f1_scores)
+
+    return {
+        "method": "grpo",
+        "variants": [
+            {
+                "index": i,
+                **metrics_list[i],
+                "advantage": advantages[i] if advantages else 0.0,
+            }
+            for i in range(len(metrics_list))
+        ],
+        "best_variant": (
+            max(range(len(f1_scores)), key=lambda i: f1_scores[i])
+            if f1_scores
+            else None
+        ),
+    }
+
+
 def format_single_report(metrics: dict, per_fm: dict[str, dict]) -> str:
     """Format a single benchmark report."""
     lines = [
@@ -95,6 +169,7 @@ def format_comparison_report(
         sign = "+" if d >= 0 else ""
         return f"{sign}{d:.1%}"
 
+    b, c = baseline_m, current_m
     lines = [
         "# Reviewer Benchmark: Before/After Comparison",
         "",
@@ -102,9 +177,17 @@ def format_comparison_report(
         "",
         "| Metric | Baseline | Current | Delta |",
         "|--------|----------|---------|-------|",
-        f"| Recall | {baseline_m['recall']:.1%} | {current_m['recall']:.1%} | {delta(current_m['recall'], baseline_m['recall'])} |",
-        f"| Precision | {baseline_m['precision']:.1%} | {current_m['precision']:.1%} | {delta(current_m['precision'], baseline_m['precision'])} |",
-        f"| F1 | {baseline_m['f1']:.1%} | {current_m['f1']:.1%} | {delta(current_m['f1'], baseline_m['f1'])} |",
+        (
+            f"| Recall | {b['recall']:.1%}"
+            f" | {c['recall']:.1%}"
+            f" | {delta(c['recall'], b['recall'])} |"
+        ),
+        (
+            f"| Precision | {b['precision']:.1%}"
+            f" | {c['precision']:.1%}"
+            f" | {delta(c['precision'], b['precision'])} |"
+        ),
+        (f"| F1 | {b['f1']:.1%} | {c['f1']:.1%} | {delta(c['f1'], b['f1'])} |"),
         "",
         "## Per-FM Comparison",
         "",
@@ -119,32 +202,104 @@ def format_comparison_report(
             f"| {fm} | {b_rate:.0%} | {c_rate:.0%} | {delta(c_rate, b_rate)} |"
         )
 
-    recall_delta = current_m["recall"] - baseline_m["recall"]
-    precision_delta = current_m["precision"] - baseline_m["precision"]
-    f1_delta = current_m["f1"] - baseline_m["f1"]
+    recall_d = c["recall"] - b["recall"]
+    precision_d = c["precision"] - b["precision"]
+    f1_d = c["f1"] - b["f1"]
+
+    recall_str = delta(c["recall"], b["recall"])
+    prec_str = delta(c["precision"], b["precision"])
+    f1_str = delta(c["f1"], b["f1"])
+
+    recall_pass = "PASS" if recall_d >= 0.10 else "FAIL"
+    prec_pass = "PASS" if precision_d >= -0.05 else "FAIL"
+    f1_pass = "PASS" if f1_d >= 0.05 else "FAIL"
 
     lines.extend(
         [
             "",
             "## Success Criteria",
             "",
-            f"- Recall +10pt: {'PASS' if recall_delta >= 0.10 else 'FAIL'} ({delta(current_m['recall'], baseline_m['recall'])})",
-            f"- Precision -5pt max: {'PASS' if precision_delta >= -0.05 else 'FAIL'} ({delta(current_m['precision'], baseline_m['precision'])})",
-            f"- F1 +5pt: {'PASS' if f1_delta >= 0.05 else 'FAIL'} ({delta(current_m['f1'], baseline_m['f1'])})",
+            f"- Recall +10pt: {recall_pass} ({recall_str})",
+            f"- Precision -5pt max: {prec_pass} ({prec_str})",
+            f"- F1 +5pt: {f1_pass} ({f1_str})",
         ]
     )
     return "\n".join(lines)
 
 
+def format_variants_report(
+    rloo: dict,
+    grpo: dict,
+) -> str:
+    """K-variant ベンチマーク結果のマークダウンレポート。"""
+    lines = [
+        "# K-Variant Benchmark Report",
+        "",
+        "## RLOO Advantage",
+        "",
+        "| Variant | F1 | Advantage |",
+        "|---------|-----|-----------|",
+    ]
+    for v in rloo["variants"]:
+        lines.append(f"| V{v['index']} | {v['f1']:.1%} | {v['advantage']:+.4f} |")
+    if rloo["best_variant"] is not None:
+        lines.append(f"\nBest variant (RLOO): V{rloo['best_variant']}")
+
+    lines.extend(
+        [
+            "",
+            "## GRPO Advantage",
+            "",
+            "| Variant | F1 | Advantage |",
+            "|---------|-----|-----------|",
+        ]
+    )
+    for v in grpo["variants"]:
+        lines.append(f"| V{v['index']} | {v['f1']:.1%} | {v['advantage']:+.4f} |")
+    if grpo["best_variant"] is not None:
+        lines.append(f"\nBest variant (GRPO): V{grpo['best_variant']}")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Aggregate benchmark results")
-    parser.add_argument("--single", help="Single result JSON for standalone report")
-    parser.add_argument("--baseline", help="Baseline result JSON for comparison")
-    parser.add_argument("--current", help="Current result JSON for comparison")
-    parser.add_argument("--output", default=None, help="Output path (default: stdout)")
+    parser.add_argument(
+        "--single",
+        help="Single result JSON for standalone report",
+    )
+    parser.add_argument(
+        "--baseline",
+        help="Baseline result JSON for comparison",
+    )
+    parser.add_argument(
+        "--current",
+        help="Current result JSON for comparison",
+    )
+    parser.add_argument(
+        "--variants",
+        nargs="+",
+        help="K>=3 variant result JSONs for RLOO/GRPO analysis",
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Output path (default: stdout)",
+    )
     args = parser.parse_args()
 
-    if args.single:
+    if args.variants:
+        if len(args.variants) < 3:
+            parser.error("--variants requires at least 3 files")
+            return
+        variant_results = []
+        for vpath in args.variants:
+            with open(vpath) as f:
+                variant_results.append(json.load(f))
+        rloo = compute_rloo_metrics(variant_results)
+        grpo = compute_grpo_metrics(variant_results)
+        report = format_variants_report(rloo, grpo)
+    elif args.single:
         with open(args.single) as f:
             results = json.load(f)
         metrics = compute_metrics(results)
@@ -162,7 +317,7 @@ def main() -> None:
             compute_per_fm(current),
         )
     else:
-        parser.error("Provide --single or both --baseline and --current")
+        parser.error("Provide --single, --baseline+--current, or --variants")
         return
 
     if args.output:
