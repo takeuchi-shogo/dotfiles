@@ -55,6 +55,23 @@ MANY SMALL FILES > FEW LARGE FILES:
 
 → 詳細は `rules/common/security.md` の入力バリデーションセクションを参照
 
+## Config Externalization
+
+ハードコードされた値を設定ファイルや環境変数に分離する:
+
+- **マジックナンバー**: 意味のある定数名を付ける（`MAX_RETRIES = 3`）
+- **環境依存値**: 環境変数 or `.env` で管理する（URL, ポート, APIキー）
+- **チューニング可能なパラメータ**: YAML/TOML/JSON の設定ファイルに外部化する
+- **判断基準**: 「この値を変えるときにコードを再デプロイしたいか？」— No なら外部化する
+
+## Scope Discipline
+
+1つの PR / Issue は1つの目的に絞る:
+
+- **Feature Creep 防止**: 実装中に見つけた改善は別 Issue に切り出す
+- **スコープの判定**: 「この変更を1文で要約できるか？」— できなければ分割する
+- **目安**: 400行超の差分は分割を検討する
+
 ## Code Quality Checklist
 
 Before marking work complete:
@@ -63,5 +80,5 @@ Before marking work complete:
 - [ ] Files are focused (<800 lines)
 - [ ] No deep nesting (>4 levels) — early return を使う
 - [ ] Proper error handling
-- [ ] No hardcoded values (use constants or config)
+- [ ] No hardcoded values — Config Externalization セクションに従う
 - [ ] Command-Query Separation が守られている

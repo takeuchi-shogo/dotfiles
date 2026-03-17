@@ -20,6 +20,7 @@ user-invocable: true
   4. Implement     → 最小実装（動くことが最優先）
   5. Validate      → /validate で acceptance criteria を照合
   6. Report        → 結果をまとめて報告
+  7. Record        → Abandon の場合は失敗記録を保存
 ```
 
 ## Step 1-2: Spec Check / Create
@@ -75,7 +76,34 @@ validate スキルを呼び出して acceptance criteria を検証する。
 
 - **Proceed**: worktree のコードは参考として残す。正式実装は `/rpi` で新たに行う
 - **Pivot**: spec を更新して再度 `/spike`
-- **Abandon**: worktree を削除、spec の status を `abandoned` に更新
+- **Abandon**: 失敗の学習を記録してから worktree を削除
+
+### Negative Results の記録（Abandon 時は必須）
+
+失敗した実験でも学びは資産。以下のテンプレートで `docs/spikes/{feature}-abandoned.md` に記録する:
+
+```markdown
+# Spike: {feature} — Abandoned
+
+**Date**: YYYY-MM-DD
+**Spec**: docs/specs/{feature}.prompt.md
+**Branch**: spike/{feature}（削除済み）
+
+## What We Tried
+- 試したアプローチの概要
+
+## Why It Didn't Work
+- 失敗の根本原因（技術的制約、パフォーマンス、ユーザビリティ等）
+
+## What We Learned
+- 今後に活かせる知見
+- 避けるべきアプローチ
+
+## Alternatives Considered
+- 検討したが試さなかった代替案（次回の参考に）
+```
+
+spec の status を `abandoned` に更新し、worktree を削除する。
 
 ## Anti-Patterns
 
