@@ -216,7 +216,11 @@ Save test cases to `evals/evals.json`. Don't write assertions yet — just the p
       "id": 1,
       "prompt": "User's task prompt",
       "expected_output": "Description of expected result",
-      "files": []
+      "files": [],
+      "checklist": [
+        "Does the output include a specific example?",
+        "Is the tone professional and clear?"
+      ]
     }
   ]
 }
@@ -266,6 +270,8 @@ Write an `eval_metadata.json` for each test case (assertions can be empty for no
 Don't just wait for the runs to finish — you can use this time productively. Draft quantitative assertions for each test case and explain them to the user. If assertions already exist in `evals/evals.json`, review them and explain what they check.
 
 Good assertions are objectively verifiable and have descriptive names — they should read clearly in the benchmark viewer so someone glancing at the results immediately understands what each one checks. Subjective skills (writing style, design quality) are better evaluated qualitatively — don't force assertions onto things that need human judgment.
+
+**Checklist vs Assertions:** For binary quality checks (yes/no questions like "Does the output include X?" or "Is it free of Y?"), use the `checklist` field instead of assertions. Checklist items are scored as simple pass/fail with higher consistency than free-form assertions. Use 3-6 checklist items per eval. Assertions are better for complex, multi-faceted evaluations that need detailed evidence.
 
 Update the `eval_metadata.json` files and `evals/evals.json` with the assertions once drafted. Also explain to the user what they'll see in the viewer — both the qualitative outputs and the quantitative benchmark.
 

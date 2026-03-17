@@ -70,6 +70,12 @@ if [[ -z "$ASSERTIONS" ]]; then
   ASSERTIONS="  (No specific assertions provided — evaluate overall quality)"
 fi
 
+CHECKLIST=$(jq -r '.checklist // [] | to_entries | map("  \(.key + 1). \(.value)") | join("\n")' "$METADATA_FILE")
+HAS_CHECKLIST="false"
+if [[ -n "$CHECKLIST" ]]; then
+  HAS_CHECKLIST="true"
+fi
+
 WITH_SKILL_OUTPUT=$(cat "$WITH_SKILL_FILE")
 WITHOUT_SKILL_OUTPUT=$(cat "$WITHOUT_SKILL_FILE")
 
@@ -112,7 +118,20 @@ ${TASK_PROMPT}
 
 ## Assertions to Check
 
-${ASSERTIONS}
+${ASSERTIONS}"
+
+# Add checklist section if present
+if [[ "$HAS_CHECKLIST" == "true" ]]; then
+  GRADER_PROMPT="${GRADER_PROMPT}
+
+## Yes/No Checklist
+
+Answer each question with a clear yes or no. These are binary quality checks:
+
+${CHECKLIST}"
+fi
+
+GRADER_PROMPT="${GRADER_PROMPT}
 
 ## Output A
 
@@ -126,8 +145,43 @@ ${OUTPUT_B}
 
 1. For each assertion listed above, check whether it is satisfied by Output A and Output B independently. Record evidence for each.
 2. Rate the overall quality of each output on a scale of 1-10 (10 = excellent).
-3. List strengths and weaknesses of each output.
-4. Declare a winner: \"A\", \"B\", or \"tie\".
+3. List strengths and weaknesses of each output."
+
+if [[ "$HAS_CHECKLIST" == "true" ]]; then
+  GRADER_PROMPT="${GRADER_PROMPT}
+4. For each checklist question, answer yes (passed=true) or no (passed=false) for each output. Be strict — borderline cases are 'no'.
+5. Declare a winner: \"A\", \"B\", or \"tie\"."
+else
+  GRADER_PROMPT="${GRADER_PROMPT}
+4. Declare a winner: \"A\", \"B\", or \"tie\"."
+fi
+
+# Build JSON schema for grader response
+if [[ "$HAS_CHECKLIST" == "true" ]]; then
+  GRADER_PROMPT="${GRADER_PROMPT}
+
+Respond with ONLY valid JSON in exactly this format (no markdown fences, no extra text):
+
+{
+  \"output_a\": {
+    \"assertion_results\": [{\"text\": \"assertion text\", \"passed\": true, \"evidence\": \"why it passed or failed\"}],
+    \"checklist_results\": [{\"question\": \"the checklist question\", \"passed\": true, \"evidence\": \"brief reason\"}],
+    \"quality_score\": 8,
+    \"strengths\": [\"strength 1\"],
+    \"weaknesses\": [\"weakness 1\"]
+  },
+  \"output_b\": {
+    \"assertion_results\": [{\"text\": \"assertion text\", \"passed\": true, \"evidence\": \"why it passed or failed\"}],
+    \"checklist_results\": [{\"question\": \"the checklist question\", \"passed\": true, \"evidence\": \"brief reason\"}],
+    \"quality_score\": 7,
+    \"strengths\": [\"strength 1\"],
+    \"weaknesses\": [\"weakness 1\"]
+  },
+  \"winner\": \"A\",
+  \"reasoning\": \"Explanation of why A or B won, or why it is a tie\"
+}"
+else
+  GRADER_PROMPT="${GRADER_PROMPT}
 
 Respond with ONLY valid JSON in exactly this format (no markdown fences, no extra text):
 
@@ -147,6 +201,7 @@ Respond with ONLY valid JSON in exactly this format (no markdown fences, no extr
   \"winner\": \"A\",
   \"reasoning\": \"Explanation of why A or B won, or why it is a tie\"
 }"
+fi
 
 ##############################################################################
 # Run the grader via claude -p (no tools — pure reasoning)
@@ -197,6 +252,14 @@ for key in ("output_a", "output_b", "winner", "reasoning"):
     if key not in result:
         print(f"ERROR: Missing required field '{key}' in grader output", file=sys.stderr)
         sys.exit(1)
+
+# Compute checklist_pass_rate for each output if checklist_results present
+for output_key in ("output_a", "output_b"):
+    output_data = result[output_key]
+    checklist = output_data.get("checklist_results", [])
+    if checklist:
+        passed = sum(1 for c in checklist if c.get("passed", False))
+        output_data["checklist_pass_rate"] = round(passed / len(checklist), 4)
 
 # Map A/B back to real labels
 grading = {
