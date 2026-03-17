@@ -1,7 +1,7 @@
 # SkillRL 統合設計 — AutoEvolve 自己改善スキルの強化
 
 **Date**: 2026-03-17
-**Status**: Approved
+**Status**: Approved (Spec Review Passed)
 **Approach**: B (モジュール分離型)
 **Source**: SkillRL (arXiv:2602.08234) + cognee-skills 分析
 
@@ -38,10 +38,15 @@ SkillRL 論文の知見を既存 AutoEvolve パイプラインに統合し、ス
 
 | ファイル | 変更内容 |
 |---------|---------|
-| `scripts/lib/session_events.py` | `emit_skill_event` に task_type 自動推論を追加（1箇所） |
+| `scripts/lib/skill_amender.py` | 閾値定数を `HEALTH_THRESHOLDS` として export（DRY: skill_metrics から参照） |
 | `scripts/learner/session-learner.py` | 成功蒸留トリガー + task_type フィールド追加（2箇所） |
 | `agents/autoevolve-core.md` | Phase 1 に率ベース分析、Phase 2 に率ベーストリガー、Phase 3 に圧縮（3セクション） |
 | `skills/skill-creator/SKILL.md` | Cold-Start 蒸留ステップ追加（1セクション） |
+
+**設計判断**: 当初 `session_events.py` の `emit_skill_event` に task_type 推論を追加する案だったが、
+`session_events.py` → `skill_metrics.py` → `storage.py` の循環依存リスクを避けるため、
+`session-learner.py` の `process_session()` 内で `skill-executions` への書き出し時に
+task_type を付与する方式に変更。
 
 ### データフロー
 
@@ -50,8 +55,9 @@ Session End
     │
     ├─ session-learner.py
     │   ├─ (既存) errors/quality/patterns → learnings/*.jsonl
-    │   ├─ (既存) skill-executions.jsonl (+ task_type フィールド追加)
-    │   └─ (新規) skill_distiller.distill_session() → success-strategies.jsonl
+    │   ├─ (既存+拡張) skill-executions.jsonl (+ task_type フィールド)
+    │   └─ (新規) skill_distiller.distill_session()
+    │         └─ [outcome == clean_success のみ] → success-strategies.jsonl
     │
     v
 /improve 実行時
@@ -85,11 +91,43 @@ clean_success セッションから3種の戦略を蒸留:
 2. **ツール使用パターン**: 使用ツール集合の記録
 3. **エラー回避パターン**: 過去に失敗したカテゴリでの clean_success → 差分を記録
 
-出力先: `learnings/success-strategies.jsonl`
+**呼び出し元**: `session-learner.py` の `process_session()` 内、スキル実行データ集計の後:
+
+```python
+# process_session() 末尾に追加
+if summary["outcome"] == "clean_success" and skill_invocations:
+    try:
+        from skill_distiller import distill_session
+        strategies = distill_session(summary)
+        for s in strategies:
+            append_to_learnings("success-strategies", s)
+        logger.info("session-learner: %d success strategies distilled", len(strategies))
+    except Exception as e:
+        logger.error("session-learner: distill failed: %s", e)
+```
+
+`distill_session` は `summary` の `_events`, `_errors`, `_patterns` 内部キーに依存してよい
+（`build_session_summary()` の戻り値構造は安定している）。
+
+**task_type の追加**: 同じ `process_session()` 内の既存スキル実行ループ:
+
+```python
+for inv in skill_invocations:
+    skill_name = inv.get("skill_name", "")
+    # ... 既存コード ...
+    from skill_metrics import infer_task_type
+    task_type = inv.get("task_type") or infer_task_type([skill_name])
+
+    append_to_learnings("skill-executions", {
+        # ... 既存フィールド全て維持 ...
+        "task_type": task_type,  # 新規追加
+    })
+```
+
+**戻り値スキーマ** (`timestamp` は含めない — `append_to_learnings` が自動付与):
 
 ```json
 {
-  "timestamp": "...",
   "strategy_type": "skill_selection | tool_usage | error_avoidance",
   "task_type": "feature",
   "project": "webapp-a",
@@ -100,6 +138,8 @@ clean_success セッションから3種の戦略を蒸留:
 }
 ```
 
+出力先: `learnings/success-strategies.jsonl`
+
 #### classify_scope(skill_name: str, data_dir: Path) -> str
 
 skill-executions.jsonl のプロジェクト分布から自動判定:
@@ -107,6 +147,9 @@ skill-executions.jsonl のプロジェクト分布から自動判定:
 - 3+ プロジェクト → `"general"`
 - 1-2 プロジェクト → `"domain"`
 - 実行5回未満 → `"unknown"`
+
+**制約注記**: `project` フィールドは `Path(cwd).name`（ディレクトリ末尾）のため、
+異なるパスで同名ディレクトリがある場合に誤判定の可能性あり。これは既存の session-learner の制約。
 
 #### compress_learnings(data_dir: Path, target: str) -> int
 
@@ -116,7 +159,18 @@ skill-executions.jsonl のプロジェクト分布から自動判定:
 2. 同一 failure_mode × project → 代表1件に集約
 3. 60日以上前 + insights 反映済み → アーカイブ
 
-安全策: 圧縮前にバックアップ。対象は errors, quality, recovery-tips のみ。
+**バックアップ方針**:
+- 命名規則: `{target}.jsonl.{YYYYMMDDTHHMMSS}.bak`（タイムスタンプ付き）
+- 保持: 最新3世代。4つ目以降の古い .bak は自動削除
+- 書き込み: temp file → `os.replace()` で atomic に置換
+- 圧縮前後の件数を logger.info で出力
+
+**排他制御の前提**: `/improve` はユーザーが手動実行するため、
+session-learner（SessionEnd hook）と同時実行されない前提。
+仕様上 atomic write で安全性を担保するが、明示的なファイルロックは設けない。
+
+対象: errors, quality, recovery-tips のみ。
+success-strategies, skill-executions は圧縮しない（トレンド分析に必要）。
 
 ### skill_metrics.py
 
@@ -137,6 +191,9 @@ skill-executions.jsonl のプロジェクト分布から自動判定:
 
 prefix 対応: `"review:security-review"` → prefix `"review"` を優先使用
 
+**メンテナンス**: マッピングにないスキル名が来た場合、`"other"` にフォールバックしつつ
+`logger.warning("unmapped skill: %s", name)` を出力し更新を促す。
+
 #### infer_task_type(skill_names: list[str]) -> str
 
 複数スキル使用時は最頻出タスクタイプを返す。
@@ -145,10 +202,13 @@ prefix 対応: `"review:security-review"` → prefix `"review"` を優先使用
 
 group_by = "skill" | "task_type" でグループ別成功率を算出。
 
-判定閾値:
+**閾値**: `skill_amender.HEALTH_THRESHOLDS` を参照（DRY）:
 - healthy: rate >= 0.6
 - degraded: rate 0.4-0.6 or trend <= -0.15
 - failing: rate < 0.4
+
+`compute_success_rates` は集計と判定を行うが、閾値定数は `skill_amender.py` に
+一元管理し、`from skill_amender import HEALTH_THRESHOLDS` で参照する。
 
 #### check_evolution_triggers(data_dir, min_executions) -> list[EvolutionTrigger]
 
@@ -172,9 +232,10 @@ group_by = "skill" | "task_type" でグループ別成功率を算出。
 
 | モジュール | テストファイル | 主要ケース |
 |-----------|-------------|-----------|
-| skill_distiller | test_skill_distiller.py | clean_success 蒸留 / failure スキップ / 圧縮+バックアップ / 空データ安全性 |
-| skill_metrics | test_skill_metrics.py | マッピング正引き / prefix 対応 / 成功率計算 / unknown 判定 / トリガー判定 |
+| skill_distiller | test_skill_distiller.py | clean_success 蒸留 / failure スキップ / 圧縮+バックアップ+世代管理 / 空データ安全性 |
+| skill_metrics | test_skill_metrics.py | マッピング正引き / prefix 対応 / unmapped warning / 成功率計算 / unknown 判定 / トリガー判定 |
 | skill_bootstrap | test_skill_bootstrap.py | 関連戦略検索 / 類似スキル検出 / データなしフォールバック |
+| (統合) | test_session_learner.py に追加 | process_session → distill_session E2E フロー / task_type フィールド付与 |
 
 テスト隔離: `AUTOEVOLVE_DATA_DIR` 環境変数で一時ディレクトリに差し替え。
 
@@ -188,14 +249,28 @@ group_by = "skill" | "task_type" でグループ別成功率を算出。
 
 - `skill-executions.jsonl`: task_type フィールド追加。既存エントリは `.get("task_type", "other")` で安全に読める
 - `success-strategies.jsonl`: 新規ファイルなので互換性の問題なし
-- `compress_learnings`: バックアップ作成後に圧縮。手動復元可能
+- `compress_learnings`: atomic write + 3世代バックアップで安全に圧縮
 
 ## Acceptance Criteria
 
-1. clean_success セッション終了時に success-strategies.jsonl にエントリが追加される
-2. `/improve` 実行時にスキル別・タスクタイプ別の成功率レポートが出力される
-3. rate < 0.6 のスキルが進化トリガーとして検出される
-4. `compress_learnings` で同一 message のエントリがマージされる
-5. `generate_skill_seed` が関連データのシードを返す
-6. 全テストが PASSED
+1. clean_success セッション（スキル invocation 1件以上）終了時に、success-strategies.jsonl に 1件以上のエントリが追加される
+2. `/improve` 実行時に、skill_metrics がスキル別・タスクタイプ別の成功率を `list[SuccessRate]` として返す
+3. skill-executions.jsonl に 10件以上のエントリがあるスキルで成功率 < 0.6 の場合、`check_evolution_triggers` が非空リストを返す
+4. 同一 message のエントリが 3件ある learnings ファイルに対し、`compress_learnings` 実行後に同 message は 1件（count >= 3）になり、タイムスタンプ付き .bak が作成される
+5. `generate_skill_seed` が `related_strategies`, `common_tools`, `failure_patterns`, `suggested_steps`, `similar_skills` キーを含む dict を返す
+6. 全テスト（単体 + 統合）が PASSED
 7. 既存の session-learner / autoevolve フローが regression なく動作する
+
+## Spec Review Findings (Addressed)
+
+| 区分 | 指摘 | 対応 |
+|------|------|------|
+| CRITICAL | `emit_skill_event` 変更仕様不足 | `session-learner.py` 側で task_type 付与に変更。擬似コード追記 |
+| CRITICAL | `session-learner.py` 統合詳細不足 | 呼び出し擬似コード + 条件分岐を明記 |
+| CRITICAL | `compress_learnings` データ安全性 | タイムスタンプ付きバックアップ + 3世代保持 + atomic write |
+| SUGGESTION | `assess_health` 責務重複 | `HEALTH_THRESHOLDS` を `skill_amender.py` に一元管理 |
+| SUGGESTION | timestamp 二重付与 | `distill_session` の戻り値から timestamp を除外 |
+| SUGGESTION | 受入基準定量化 | 基準 1,3,4 を定量的に書き換え |
+| SUGGESTION | 統合テスト不在 | `test_session_learner.py` への統合テスト追加を明記 |
+| SUGGESTION | `TASK_TYPE_MAP` メンテナンス | unmapped スキルに logger.warning を出力 |
+| SUGGESTION | `classify_scope` 制約 | project フィールドの制約を注記 |
