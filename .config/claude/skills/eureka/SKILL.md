@@ -2,8 +2,9 @@
 name: eureka
 description: >
   技術ブレイクスルーを構造化テンプレートで即座に記録する。問題→洞察→実装→指標→再利用パターン。
-  発見の鮮度が高いうちに記録し、AutoEvolve learnings と連携。
-  /eureka で手動起動。
+  Triggers: 'これは発見だ', 'eureka', 'ブレイクスルー', 'breakthrough', 'TIL',
+  '今日学んだこと', '予想外の解決策', 'aha moment', '重要な知見'.
+  発見の鮮度が高いうちに記録し、AutoEvolve learnings と連携。/eureka で手動起動。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

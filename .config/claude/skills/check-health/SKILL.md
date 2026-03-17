@@ -1,6 +1,10 @@
 ---
 name: check-health
-description: ドキュメント鮮度・コード乖離・参照整合性をチェックする。M/Lタスクの Plan ステージで自動実行、または手動で /check-health で実行。
+description: >
+  ドキュメント鮮度・コード乖離・参照整合性をチェックする。M/Lタスクの Plan ステージで自動実行、または手動で /check-health で実行。
+  Triggers: 'ドキュメント古い', 'doc outdated', '参照切れ', 'broken reference', 'stale docs',
+  'ヘルスチェック', 'health check', '整合性', 'consistency check'.
+  Use BEFORE starting investigation on unfamiliar code areas.
 ---
 
 # Health Check

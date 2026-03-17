@@ -2,7 +2,9 @@
 name: continuous-learning
 description: >
   Auto-detect and record reusable patterns from corrections, debugging, and repeated work.
-  Use when receiving feedback, fixing a recurring issue, or discovering a new project-specific convention.
+  Triggers: user corrections ('no not that', 'instead do', 'don't do X'), recurring patterns (same fix applied 2+ times),
+  new project conventions discovered during work, debugging insights worth preserving.
+  Do NOT use for one-off fixes or task-specific context — use memory system instead.
 allowed-tools: "Read, Bash, Grep, Glob"
 ---
 

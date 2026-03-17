@@ -1,6 +1,11 @@
 ---
 name: spike
-description: "プロトタイプファースト開発。worktree で隔離し、最小実装 → Product Validation まで行う。アイデアの素早い検証に使用。テスト・lint 不要。"
+description: >
+  プロトタイプファースト開発。worktree で隔離し、最小実装 → Product Validation まで行う。
+  Triggers: '試してみたい', 'プロトタイプ', 'POC', 'proof of concept', 'まず動かしてみる',
+  'spike', '実験', 'feasibility', 'これって可能？', 'quick test'.
+  Do NOT use when spec is clear and ready for production — use /rpi or /epd instead.
+  テスト・lint 不要。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree
 user-invocable: true
 ---

@@ -3,6 +3,9 @@ name: edge-case-analysis
 description: >
   実装前に異常系・境界値・nil パスを強制的に洗い出す。M/L 規模のタスクで Plan → Implement の間に挟む。
   移行タスク、新機能実装、バグ修正のいずれでも使用。
+  Triggers: 'エッジケース', '境界値', 'nilチェック', '異常系', 'what if', '壊れるケース',
+  'edge case', 'boundary', 'corner case', 'error path'.
+  Do NOT use for S規模タスク(typo修正、1行変更) — オーバーキル。
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 ---
 

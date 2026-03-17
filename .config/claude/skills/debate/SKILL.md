@@ -2,8 +2,9 @@
 name: debate
 description: >
   複数AIモデル(Codex/Gemini)に同じ質問を投げ、独立した視点を収集・統合する。
-  設計判断、技術選定、アーキテクチャ比較、トレードオフ分析に使用。
-  「AとBどちらが良い？」「この設計の問題点は？」等の判断が必要な場面で起動。
+  Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons',
+  'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better'.
+  Do NOT use for factual questions with clear answers — use WebSearch or gemini skill instead.
 allowed-tools: Read, Bash, Grep, Glob, Agent
 ---
 
