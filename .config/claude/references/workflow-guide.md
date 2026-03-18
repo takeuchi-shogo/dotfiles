@@ -80,6 +80,7 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 - `search-first` スキル — 実装前に既存の解決策を検索する
 - brainstorming スキルでアイデアを設計に落とす
 - writing-plans スキルで実装計画を策定する
+- **Plan レビュー（M/L 必須）**: Plan 作成後、ユーザーに提示する**前に** `plan-document-reviewer` サブエージェントを dispatch してレビューを実施する。Issues Found なら修正して再レビュー、Approved ならユーザーへ提示する（writing-plans スキルの Plan Review Loop に従う。最大3イテレーション）
 - **L規模のみ**: チェックポイントコミットを作成してから着手する（`git add -A && git commit -m "checkpoint: before {task description}"`）
 
 ### 1.3. プロジェクト俯瞰 — M/L 規模のみ
