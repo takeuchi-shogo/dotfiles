@@ -64,10 +64,19 @@ M の全ファイルに加え:
 
 ```
 以下のプロジェクトの docs/architecture.md を生成してください。
+
+テンプレート: references/architecture-template.md に従う
+
 - プロジェクトパス: {cwd}
 - 技術スタック: {tech_stack}
-- サブシステム概要、依存関係マップ、key abstractions を含める
+- 必須セクション: System Overview, High-Level Architecture, Core Components, Development Setup
+- 条件付きセクション: Data Stores（DB有り）, External Integrations（外部API有り）,
+  Security Architecture（認証有り）, Architecture Decisions（ADR有り or L レベル）
+- 該当しないセクションは省略する（全セクションを埋めようとしない）
+- 60 行以内。超える場合は references/subsystems/ に分離
 - Breadcrumb パターンで標準概念は簡潔に
+- ファイルパスを含めてエージェントのナビゲーションを支援する
+- コマンドは実際に動作することを検証してから記載する
 ```
 
 ### document-factory (mode: context)（Local CLAUDE.md）
