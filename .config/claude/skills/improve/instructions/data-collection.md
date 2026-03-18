@@ -1,0 +1,99 @@
+# Data Collection (Step 0-3)
+
+## Step 0: トレースレビュー（Open Coding）
+
+人間がトレースを直接読む儀式。"Error Analysis: The Highest-ROI Activity in AI Engineering" に基づく。
+
+```bash
+python3 -c "
+import sys, os
+sys.path.insert(0, os.path.expanduser('~/.claude/scripts'))
+from lib.trace_sampler import sample_recent_traces, sample_unclassified_traces, format_for_review
+traces = sample_recent_traces(n=20)
+print('=== 直近 20 トレース ===')
+print(format_for_review(traces))
+print()
+unclassified = sample_unclassified_traces()
+print(f'=== 未分類トレース: {len(unclassified)} 件 ===')
+if unclassified[:5]:
+    print(format_for_review(unclassified[:5]))
+"
+```
+
+**ユーザーに以下を提示**:
+
+1. 上記スクリプトの出力テーブルを表示
+2. 「以下のトレースを確認してください。気になるパターン・驚き・想定外の動作はありますか？」と質問
+3. ユーザーの回答を `open_coding_notes` として保持し、Step 4 の autoevolve-core プロンプトに渡す
+
+**データがない場合またはユーザーがスキップを希望した場合**: 「自動分析のみ実行します」と報告し Step 1 に進む。
+
+## Step 1: データ可用性チェック
+
+学習データ・メトリクスが存在するか確認する:
+
+```bash
+echo "=== データ可用性チェック ==="
+for f in errors.jsonl quality.jsonl patterns.jsonl; do
+  path="$HOME/.claude/agent-memory/learnings/$f"
+  if [ -f "$path" ]; then
+    count=$(wc -l < "$path" | tr -d ' ')
+    echo "✓ learnings/$f: ${count} 件"
+  else
+    echo "✗ learnings/$f: 未作成"
+  fi
+done
+
+for f in skill-executions.jsonl skill-benchmarks.jsonl; do
+  path="$HOME/.claude/agent-memory/learnings/$f"
+  if [ -f "$path" ]; then
+    count=$(wc -l < "$path" | tr -d ' ')
+    echo "✓ learnings/$f: ${count} 件"
+  else
+    echo "- learnings/$f: 未作成"
+  fi
+done
+
+metrics="$HOME/.claude/agent-memory/metrics/session-metrics.jsonl"
+if [ -f "$metrics" ]; then
+  count=$(wc -l < "$metrics" | tr -d ' ')
+  echo "✓ metrics/session-metrics.jsonl: ${count} 件"
+else
+  echo "✗ metrics/session-metrics.jsonl: 未作成"
+fi
+
+# 最新の分析レポート
+latest=$(ls -t "$HOME/.claude/agent-memory/insights/analysis-"*.md 2>/dev/null | head -1)
+if [ -n "$latest" ]; then
+  echo "✓ 最新分析: $(basename "$latest")"
+else
+  echo "- 分析レポート: なし（初回実行）"
+fi
+```
+
+**データが全て未作成の場合**: 「学習データがまだ蓄積されていません。セッションを重ねてから再実行してください。」と報告して **終了**。
+
+## Step 2: 実験トラッカーの確認
+
+過去の改善実験の状態を確認する:
+
+```bash
+if [ -f "$HOME/.claude/scripts/experiment-tracker.py" ]; then
+  python3 "$HOME/.claude/scripts/experiment-tracker.py" status
+else
+  echo "experiment-tracker.py が未配置です（スキップ）"
+fi
+```
+
+- **pending** な実験がある場合 → 一覧を表示し、ユーザーに状況を伝える
+- **merged** だが効果測定未実施の実験がある場合 → Step 3 で測定する
+
+## Step 3: マージ済み実験の効果測定
+
+Step 2 で効果測定対象が見つかった場合:
+
+```bash
+python3 "$HOME/.claude/scripts/experiment-tracker.py" measure-all
+```
+
+測定結果をユーザーに報告する。対象がない場合はスキップ。
