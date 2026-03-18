@@ -18,22 +18,22 @@
 
 - 日本語で応答する
 
-<harness_guarantees>
+<important if="you are modifying hooks, scripts, settings.json, or lint configuration files">
 - Harness contract: `docs/agent-harness-contract.md`。Hook が formatter/policy/completion gate/session を自動実行する
-- `.eslintrc*`, `biome.json`, `.prettierrc*` 等の lint config は保護対象。設定ではなくコードを直す
-- `git commit --no-verify` は禁止
+- IMPORTANT: `.eslintrc*`, `biome.json`, `.prettierrc*` 等の lint config は保護対象。設定ではなくコードを直す
+- IMPORTANT: `git commit --no-verify` は絶対に禁止。違反すると hook 体系が無効化される
 - コード変更は並列レビュー（codex-reviewer + code-reviewer）を受ける。初回から高品質なコードを書くこと
-</harness_guarantees>
+</important>
 
-<plan_contract>
+<important if="you are starting a non-trivial task or planning implementation">
 
 - 非自明な変更では root の `PLANS.md` に従う。
 - Claude Code の `plansDirectory` は `tmp/plans/` だが、長時間タスク、handoff、または将来参照したい plan は `docs/plans/` に昇格する。
 - harness 変更、複数ディレクトリ変更、30 分以上の作業見込みでは plan を必須とする。
 
-</plan_contract>
+</important>
 
-<mandatory_skills>
+<important if="you are about to implement, investigate, or review code">
 
 - 調査開始時は `/check-health` と `search-first` 系の workflow を優先する。
 - 非自明なコード変更後のレビューは `/review` を使う。
@@ -42,7 +42,9 @@
 - 仕様が曖昧なまま実装に入らず、`/spec` や `/spike` を使う。
 - 並列で別 task を走らせるときは worktree を使って session と filesystem を分離する。
 
-</mandatory_skills>
+</important>
+
+<important if="you are modifying files in .config/claude/ or .bin/">
 
 ## Change Surface Matrix
 
@@ -59,10 +61,16 @@
   - 併せて見る: Claude 側 symlink 対象、`Taskfile.yml`
   - 最低検証: `task symlink`, `task validate-symlinks`
 
+</important>
+
+<important if="you are creating a git commit">
+
 ## コミット規則
 
 - conventional commit + 絵文字プレフィックス（例: ✨ feat:, 🐛 fix:, 📝 docs:, ♻️ refactor:, 🔧 chore:）
 - `/commit` コマンドを使用
+
+</important>
 
 ---
 
@@ -109,6 +117,8 @@ Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check
 
 ---
 
+<important if="you are working with file paths, symlinks, or directory structure">
+
 ## dotfiles 固有の注意
 
 - このリポジトリは symlink で `~/.config`, `~/.claude` 等にリンクしている
@@ -116,3 +126,5 @@ Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check
 - `~/.config/` 配下の設定の実体は `dotfiles/.config/`
 - エージェントは `memory: user`（グローバル）を使用する
 - 実運用の playbook は `docs/playbooks/` を参照する
+
+</important>
