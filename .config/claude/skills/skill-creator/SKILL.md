@@ -146,6 +146,11 @@ SKILL.md 初稿を SkillNet の 5 次元で確認する（[arXiv:2603.04448](htt
 
 詳細な Good/Average/Poor の境界条件は `skill-audit` の Step 0: 5D Quality Scan を参照。
 
+### Anti-Patterns セクション
+
+SKILL.md に `## Anti-Patterns` セクションを含めることを推奨する。
+1行1項目、段落説明不要。詳細は `references/skill-writing-principles.md` の「Anti-Patterns セクションの標準化」を参照。
+
 ### Security Scan
 
 Before testing, run the security scanner on the skill directory:
@@ -193,6 +198,14 @@ These word counts are approximate and you can feel free to go longer if needed.
 - Keep SKILL.md under 500 lines; if you're approaching this limit, add an additional layer of hierarchy along with clear pointers about where the model using the skill should go next to follow up.
 - Reference files clearly from SKILL.md with guidance on when to read them
 - For large reference files (>300 lines), include a table of contents
+
+#### Skill Writing Principles
+
+スキル本文の品質を高める 7 つの原則は `references/skill-writing-principles.md` を参照。
+特に重要な 3 つ:
+- **指示を書け、知恵を書くな** — 「なぜ重要か」より「何をすべきか」
+- **一般知識を削れ** — エージェントが知っていることは省く
+- **具体的に書け** — 曖昧な指示は無意味、Good/Bad 例を示す
 
 **Domain organization**: When a skill supports multiple domains/frameworks, organize by variant:
 
@@ -609,6 +622,7 @@ The references/ directory has additional documentation:
 - `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
 - `references/planning-guide.md` — Skill categories, description formula, design patterns, success criteria
 - `references/validation-checklist.md` — Critical rules, YAML reference, before/during/after checklists
+- `references/skill-writing-principles.md` — 7 principles for high-quality skill content (directives not wisdom, cut general knowledge, etc.)
 - `references/troubleshooting.md` — Common issues: won't upload, doesn't trigger, triggers too often, instructions not followed
 
 ---

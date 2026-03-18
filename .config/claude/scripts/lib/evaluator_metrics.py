@@ -85,8 +85,10 @@ def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
 def compute_reviewer_accuracy() -> dict[str, dict]:
     """Compute per-reviewer accept rate by cross-referencing findings and feedback.
 
-    Returns a dict keyed by reviewer name:
-        {"code-reviewer": {"total": N, "accepted": N, "ignored": N, "accept_rate": 0.X}, ...}
+    Returns a dict keyed by reviewer name::
+
+        {"code-reviewer": {"total": N, "accepted": N,
+         "ignored": N, "accept_rate": 0.X}, ...}
     """
     return _compute_accuracy_by("reviewer")
 
@@ -133,10 +135,119 @@ def compute_hook_effectiveness() -> dict[str, dict]:
     }
 
 
+def compute_confusion_matrix(
+    human_labels: list[str],
+    eval_labels: list[str],
+    positive: str = "Pass",
+    negative: str = "Fail",
+) -> dict[str, int]:
+    """Compute confusion matrix from paired label lists.
+
+    Returns dict with keys: tp, fp, fn, tn.
+    """
+    tp = fp = fn = tn = 0
+    for h, e in zip(human_labels, eval_labels):
+        if h == positive and e == positive:
+            tp += 1
+        elif h == negative and e == positive:
+            fp += 1
+        elif h == positive and e == negative:
+            fn += 1
+        elif h == negative and e == negative:
+            tn += 1
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn}
+
+
+def compute_tpr_tnr(
+    human_labels: list[str],
+    eval_labels: list[str],
+    positive: str = "Pass",
+    negative: str = "Fail",
+) -> dict[str, float]:
+    """Compute TPR and TNR from paired label lists.
+
+    TPR = tp / (tp + fn)  — when human says Pass, how often does evaluator agree?
+    TNR = tn / (tn + fp)  — when human says Fail, how often does evaluator agree?
+    """
+    cm = compute_confusion_matrix(human_labels, eval_labels, positive, negative)
+    tp, fp, fn, tn = cm["tp"], cm["fp"], cm["fn"], cm["tn"]
+    tpr = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    tnr = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    return {"tpr": round(tpr, 4), "tnr": round(tnr, 4), **cm}
+
+
+def rogan_gladen_correction(
+    p_obs: float,
+    tpr: float,
+    tnr: float,
+) -> float | None:
+    """Correct observed pass rate for known evaluator bias (Rogan-Gladen).
+
+    theta_hat = (p_obs + TNR - 1) / (TPR + TNR - 1)
+
+    Returns None if TPR + TNR - 1 is near zero (evaluator is no better than random).
+    """
+    denom = tpr + tnr - 1
+    if abs(denom) < 1e-6:
+        return None
+    theta = (p_obs + tnr - 1) / denom
+    return max(0.0, min(1.0, round(theta, 4)))
+
+
+def bootstrap_ci(
+    human_labels: list[str],
+    eval_labels: list[str],
+    p_obs: float,
+    n_bootstrap: int = 2000,
+    ci: float = 0.95,
+    positive: str = "Pass",
+    negative: str = "Fail",
+) -> tuple[float, float] | None:
+    """Bootstrap confidence interval for Rogan-Gladen corrected success rate.
+
+    Returns (lower, upper) tuple, or None if computation fails.
+    """
+    import random
+
+    n = len(human_labels)
+    if n == 0:
+        return None
+
+    estimates: list[float] = []
+    alpha = (1 - ci) / 2
+
+    for _ in range(n_bootstrap):
+        indices = [random.randint(0, n - 1) for _ in range(n)]
+        h_sample = [human_labels[i] for i in indices]
+        e_sample = [eval_labels[i] for i in indices]
+
+        cm = compute_confusion_matrix(h_sample, e_sample, positive, negative)
+        tp, fp, fn, tn = cm["tp"], cm["fp"], cm["fn"], cm["tn"]
+
+        tpr_b = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        tnr_b = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+        denom = tpr_b + tnr_b - 1
+
+        if abs(denom) < 1e-6:
+            continue
+
+        theta = (p_obs + tnr_b - 1) / denom
+        estimates.append(max(0.0, min(1.0, theta)))
+
+    if len(estimates) < n_bootstrap * 0.5:
+        return None
+
+    estimates.sort()
+    lower_idx = int(len(estimates) * alpha)
+    upper_idx = int(len(estimates) * (1 - alpha)) - 1
+    return (round(estimates[lower_idx], 4), round(estimates[upper_idx], 4))
+
+
 def format_evaluator_report(
     reviewer_acc: dict[str, dict],
     fm_acc: dict[str, dict],
     hook_eff: dict[str, dict],
+    calibration: dict | None = None,
 ) -> str:
     """Generate a Markdown report from evaluator metrics.
 
@@ -192,5 +303,23 @@ def format_evaluator_report(
     else:
         lines.append("No hook effectiveness data available.")
     lines.append("")
+
+    # Section 4: Evaluator Calibration (optional)
+    if calibration:
+        lines.append("## Evaluator Calibration\n")
+        if "tpr" in calibration and "tnr" in calibration:
+            lines.append(f"- **TPR**: {calibration['tpr'] * 100:.1f}%")
+            lines.append(f"- **TNR**: {calibration['tnr'] * 100:.1f}%")
+        if (
+            "corrected_rate" in calibration
+            and calibration["corrected_rate"] is not None
+        ):
+            lines.append(
+                f"- **Corrected Pass Rate**: {calibration['corrected_rate'] * 100:.1f}%"
+            )
+        if "ci" in calibration and calibration["ci"] is not None:
+            lo, hi = calibration["ci"]
+            lines.append(f"- **95% CI**: [{lo * 100:.1f}%, {hi * 100:.1f}%]")
+        lines.append("")
 
     return "\n".join(lines)
