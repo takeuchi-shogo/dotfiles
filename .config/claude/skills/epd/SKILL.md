@@ -178,3 +178,8 @@ docs/specs/{feature}/
 - Phase 2 完了時: spike-report.md を生成（Spike のサマリー + 判明した課題）
 - Phase 3 の反復時: changelog.md に変更履歴を追記
 - L 規模のみ: requirements.md に構造化された要件を出力
+
+## Skill Assets
+
+- フェーズ遷移チェックリスト: `templates/phase-transition.md`
+- ワークフロー判断ガイド: `references/workflow-decision.md`

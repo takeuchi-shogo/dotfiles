@@ -150,3 +150,9 @@ Mermaid 記法で以下の C4 Model 図を生成する:
 - **migration path の欠落**: 理想アーキテクチャだけでなく、現状→理想への段階的移行パスを必ず含める
 - **依存関係の罠**: 共有ライブラリ/共有DBは暗黙の結合。明示的な API 契約に置き換える
 - **図と実装の乖離**: アーキテクチャ図を作ったら、実装フェーズで参照されるようドキュメントにリンクする
+
+## Skill Assets
+
+- アーキテクチャ提案書テンプレート: `templates/architecture-proposal.md`
+- 技術選定評価マトリクス: `templates/tech-evaluation.md`
+- アーキテクチャパターン: `references/architecture-patterns.md` (既存)

@@ -237,3 +237,9 @@ tags:
 - **plan の項目が空のまま先に進まない** — 全項目が埋まるまで続ける
 - **review で plan の達成/未達成を勝手に判定しない** — ユーザー自身に振り返らせる
 - **既存セクションを無断で上書きしない** — plan/review が既にある場合は必ず確認する
+
+## Skill Assets
+
+- 見積もり精度追跡: `scripts/accuracy-tracker.sh`
+- 計画テンプレート: `templates/daily-plan-template.md` (既存)
+- 振り返りテンプレート: `templates/evening-review-template.md` (既存)

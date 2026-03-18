@@ -110,3 +110,9 @@ RFC 7807 Problem Details 形式を標準とする:
 - **cache invalidation**: キャッシュ導入は書き込みパスの複雑さと引き換え。まず「キャッシュなしで許容できるか」を検討
 - **API versioning 後回し**: v1 でバージョニング戦略を決めないと v2 で破壊的変更が避けられない
 - **認証/認可の混同**: 認証(誰か) と認可(何ができるか) は別レイヤー。一緒に実装すると権限昇格バグの温床
+
+## Skill Assets
+
+- セキュリティチェックリスト: `references/security-checklist.md`
+- API仕様テンプレート: `templates/api-spec-template.md`
+- API設計ガイド: `references/api-design-guide.md` (既存)

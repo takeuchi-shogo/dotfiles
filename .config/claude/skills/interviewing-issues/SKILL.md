@@ -114,6 +114,11 @@ metadata:
 | 抽象的な受け入れ条件 | 「正しく動作する」ではなく具体的な入出力を書く |
 | スコープを広げすぎる | Issue に書かれていない機能を追加しない |
 
+## Skill Assets
+
+- 構造化仕様書テンプレート: `templates/structured-spec.md`
+- 質問パターン集: `references/question-patterns.md`
+
 ## Example
 
 ```

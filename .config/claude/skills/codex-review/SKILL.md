@@ -101,3 +101,8 @@ PROMPT
 - **--skip-git-repo-check 必須**: dotfiles のような symlink リポジトリでは git repo 検出に失敗するため、常にこのフラグが必要
 - **大きすぎる diff**: 500行超の diff は Codex のコンテキストを圧迫する。`--stat` で概要を先に確認し、ファイル単位で分割レビューを検討
 - **2>/dev/null の副作用**: エラー出力を捨てているため、Codex CLI 自体のエラー（認証切れ等）が見えなくなる。問題時は外して実行
+
+## Skill Assets
+
+- レビュー出力テンプレート: `templates/review-output.md`
+- レビューチェックリスト: `references/review-checklist.md`

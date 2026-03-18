@@ -136,3 +136,8 @@ Step 3 の後、追加ラウンドを実行:
 - 単純な事実確認（→ WebSearch や context7）
 - コード実装（→ 直接書く）
 - バグ修正（→ debugger / codex-debugger）
+
+## Skill Assets
+
+- 討論結果テンプレート: `templates/debate-synthesis.md`
+- 討論スタイルガイド: `references/debate-styles.md`

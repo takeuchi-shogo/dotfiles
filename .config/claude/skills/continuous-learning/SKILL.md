@@ -116,3 +116,8 @@ Next.js の hydration mismatch を2回修正
   - 状況: SSR と CSR の出力が異なる
   - 対処: useEffect で client-only 処理を分離、Date/Math.random を避ける
 ```
+
+## Skill Assets
+
+- パターン記録テンプレート: `templates/pattern-record.md`
+- 検出シグナル一覧: `references/detection-signals.md`

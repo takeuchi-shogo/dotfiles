@@ -122,3 +122,8 @@ spec の status を `abandoned` に更新し、worktree を削除する。
 ## Reference Files
 
 - `templates/spike-scaffold.md` — spike 開始時にコピーして使うテンプレート
+
+## Skill Assets
+
+- スパイクレポートテンプレート: `templates/spike-report.md`
+- スキャフォールドテンプレート: `templates/spike-scaffold.md` (既存)

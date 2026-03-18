@@ -169,3 +169,8 @@ AI: (修正を反映して再プレビュー)
 ユーザー: OK
 AI: 05-Literature/lit-ゼンケ・アーレンス-how-to-take-smart-notes.md に保存しました。
 ```
+
+## Skill Assets
+
+- メタデータ推論ルール: `references/metadata-inference.md`
+- 文献ノートテンプレート: `templates/literature-note-template.md` (既存)

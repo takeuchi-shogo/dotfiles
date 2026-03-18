@@ -107,3 +107,8 @@ SEO が重要                 → Server Component
 - **hydration mismatch**: SSR/SSG で server と client の出力が異なると hydration エラー。動的コンテンツは useEffect 内で
 - **bundle size 盲点**: 依存追加時に bundle analyzer で影響を確認。tree-shaking が効かないライブラリに注意
 - **アクセシビリティ後付け**: 設計段階で ARIA/keyboard navigation を組み込む。後から付けると手戻りが大きい
+
+## Skill Assets
+
+- アクセシビリティチェックリスト: `references/a11y-checklist.md`
+- コンポーネントパターン: `references/component-patterns.md` (既存)

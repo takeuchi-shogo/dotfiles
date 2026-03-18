@@ -82,3 +82,8 @@ Use `/model` slash command within a Codex session to switch models, or configure
 - **sandbox scope**: `--full-auto` は全ファイル書き込み可能。本番コードには `--suggest` で差分確認を挟む
 - **resume token 消費**: `codex resume` は前回セッションの全コンテキストを再読み込み。長いセッション後の resume はコスト大
 - **日本語コメント**: Codex は英語最適化。日本語コメントのあるコードで推論精度が落ちる場合がある。指示は英語で渡す
+
+## Skill Assets
+
+- モデル選択ガイド: `references/model-selection.md`
+- ヘルパースクリプト: `scripts/codex-helper.sh`
