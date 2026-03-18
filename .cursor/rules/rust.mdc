@@ -1,0 +1,64 @@
+---
+description: Rust coding standards — ownership, error handling, type system, concurrency. Applied when editing Rust files.
+globs: "**/*.rs"
+alwaysApply: false
+---
+
+# Rust Rules
+
+## Ownership & Borrowing
+
+- clone より borrow を優先
+- 関数引数は `&str`（`String` ではなく）
+- `Rc` / `Arc` は必要な場合のみ
+- `Cow<'_, str>` で所有/借用の柔軟性
+
+## Error Handling
+
+- ライブラリ: `Result<T, E>` + `thiserror` でドメインエラー
+- アプリケーション: `anyhow::Result` + `.context()` でコンテキスト追加
+- `?` 演算子で伝播
+
+## Pattern Matching
+
+- `if let` チェーンより `match` を優先
+- `_` は控えめに使う
+- `if let` / `let else` は単一バリアント判定に
+
+## Type System
+
+- Newtype パターンで型安全性
+- bool フラグより enum
+- `From` / `Into`, `TryFrom` / `TryInto` を実装
+- 3+ オプショナルには Builder パターン
+
+## Standard Traits
+
+- `Debug`: 全型に実装
+- `Clone`: 全フィールドが Clone なら
+- `Copy`: 小さい型のみ
+- `PartialEq` + `Eq`, `Hash`（キーに使う場合）
+- `Default`, `serde::Serialize/Deserialize`
+
+## Concurrency
+
+- tokio チャネル > Mutex + 共有状態
+- async 内で blocking しない
+- spawn にはエラーハンドリングを含める
+
+## Visibility
+
+- デフォルト private
+- `pub(crate)` で内部公開
+- private → public はマイナー、public → private はメジャー変更
+
+## Testing
+
+- `#[cfg(test)] mod tests` でユニットテスト
+- doc tests + integration tests
+- プロパティテスト（proptest / quickcheck）
+
+## Tools
+
+- `cargo fmt`, `cargo clippy`, `cargo test`
+- リフレクション回避、最適化前にプロファイル

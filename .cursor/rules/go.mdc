@@ -1,0 +1,55 @@
+---
+description: Go coding standards — error handling, naming conventions, concurrency patterns, table-driven tests. Applied when editing Go files.
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# Go Rules
+
+## Error Handling
+
+- `err != nil` を必ずチェック。コンテキスト付きでラップ: `fmt.Errorf("doing X: %w", err)`
+- `errors.Is()` / `errors.As()` で判定。型スイッチではなくエラーチェーンを使う
+- センチネルエラーはパッケージレベルで定義: `var ErrNotFound = errors.New("not found")`
+- エラーメッセージ: 小文字、句読点なし
+
+## Naming
+
+- MixedCaps のみ（アンダースコア不可）
+- パッケージ名: 短く（user, http）、汎用禁止（util, common）
+- パッケージ名との冗長排除: `user.New()` not `user.NewUser()`
+- 頭字語は全大文字: ID, URL, API, HTTP
+- レシーバー: 1-2文字の略称（s for Server）、一貫して使う
+- Getter: `Owner()` not `GetOwner()`
+
+## context.Context
+
+- 第一引数に配置。全関数で伝播
+- `WithTimeout` + `defer cancel()`
+- 構造体に保持しない
+
+## Concurrency
+
+- 明確な終了パスを設計する
+- `errgroup` でエラー伝播
+- 通信にはチャネル、状態保護には Mutex
+- 同期関数を先に書き、非同期は後から
+
+## Function Design
+
+- Early Return パターン
+- CQS（コマンド・クエリ分離）
+- ポインタはサイズではなく意味で使い分ける
+
+## Testing
+
+- テーブル駆動テスト + `t.Run()`
+- `t.Helper()` でヘルパー関数をマーク
+- `t.Parallel()` で並列実行
+- アサーションメッセージに十分な情報を含める
+
+## Modern Go (1.21+)
+
+- 標準ライブラリの `slices` / `maps` パッケージ
+- ループ変数のスコーピング修正を活用
+- `log/slog` で構造化ログ

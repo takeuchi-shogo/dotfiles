@@ -1,0 +1,42 @@
+---
+description: Quality guard enforcing code complexity limits, static analysis, and review requirements. Prevents the velocity-quality degradation cycle identified in MSR'26 research.
+globs:
+alwaysApply: true
+---
+
+# Quality Guard
+
+> Based on MSR '26 "Speed at the Cost of Quality" (arxiv:2511.04427):
+> Cursor adoption leads to +41.6% code complexity and +30.3% static analysis warnings.
+> These quality issues create a self-reinforcing cycle that reduces future velocity by up to 64.5%.
+
+## Complexity Limits
+
+- **関数**: 50行以内、ネスト4段以内
+- **ファイル**: 400行目安、800行上限。超過時は分割を検討
+- **認知的複雑度**: 新規関数は低複雑度を維持。条件分岐のネストより早期リターンを使う
+
+## Static Analysis
+
+- 変更後は必ず lint / type チェックを実行し、全パスを確認してから完了を宣言する
+- 新しい警告を導入しない。既存の警告を増やす変更は許可しない
+- auto-fix 可能な問題は自動修正する
+
+## Code Duplication
+
+- DRY 原則を厳守。同一ロジックの重複を見つけたら共通化する
+- ただし、似ているだけで文脈が異なるコードの無理な共通化は避ける
+
+## Review & Planning
+
+- 3ファイル以上の変更は Plan Mode（Shift+Tab）で計画を立ててから実装する
+- レビューなしのマージ禁止
+- 大規模変更は段階的に行い、各段階でテストを通過させる
+
+## Before Completion Checklist
+
+1. [ ] lint / type チェックがパスする
+2. [ ] 関連テストがパスする
+3. [ ] 新しい警告が導入されていない
+4. [ ] 関数が50行・ネスト4段以内である
+5. [ ] ファイルが800行以内である

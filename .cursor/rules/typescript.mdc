@@ -1,0 +1,64 @@
+---
+description: TypeScript coding standards — strict typing, structural patterns, Effective TypeScript 2nd Ed. principles. Applied when editing TypeScript files.
+globs: "**/*.ts, **/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript Rules
+
+## Type System Fundamentals
+
+- 構造的型付け（duck typing）を理解して活用する
+- 型は集合: `never`（空集合）→ リテラル → ユニオン → `unknown`（全体集合）
+- `any` 禁止。`unknown` + 型ガードを使う
+- `String`, `Number` 等のオブジェクトラッパー型禁止。`string`, `number` を使う
+- 型アサーション (`as`) は最小限に。`satisfies` を優先
+
+## tsconfig 必須設定
+
+```json
+{
+  "strict": true,
+  "noUncheckedIndexedAccess": true,
+  "exactOptionalPropertyTypes": true,
+  "verbatimModuleSyntax": true,
+  "isolatedModules": true,
+  "noUnusedLocals": true,
+  "noUnusedParameters": true
+}
+```
+
+## Type Inference
+
+- コンパイラの推論に任せる（ローカル変数の型注釈は不要）
+- 公開 API の戻り値型は明示する
+- `import type` で型のみのインポートを使う
+
+## Type Design
+
+- 判別共用体（Discriminated Union）を優先。タグで分岐
+- `satisfies` 演算子で型安全な初期化
+- null は境界に押し出す（内部ロジックでは non-null を維持）
+- 入力は寛容に、出力は厳格に
+- オプショナルプロパティは限定的に使う
+
+## Utility Types
+
+- `Pick`, `Omit`, `Partial`, `Required`, `Record`, `Readonly` を活用
+- `as const` でリテラル型を維持
+- Branded Types で newtype パターン: `type UserId = string & { readonly __brand: unique symbol }`
+
+## Nullish Handling
+
+- `??`（nullish coalescing）、`?.`（optional chaining）を使う
+- `exactOptionalPropertyTypes` で `undefined` と「未定義」を区別
+
+## Error Handling
+
+- Zod でランタイム検証。外部データの境界で使用
+- Result パターンで型安全なエラー処理
+
+## Documentation
+
+- TSDoc コメント（`/** */`）を公開 API に付ける
+- 型情報をコメントで繰り返さない

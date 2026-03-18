@@ -1,0 +1,48 @@
+---
+description: React and Next.js component patterns — hooks rules, Server Components, composition, memoization. Applied when editing React component files.
+globs: "**/*.tsx, **/*.jsx"
+alwaysApply: false
+---
+
+# React Rules
+
+## Hooks
+
+- 条件分岐・ループ・ネスト関数内で呼ばない
+- `useRef` はリレンダー不要な値の保持に使う
+- カスタムフックは `use` プレフィックス必須
+
+## useEffect の制限
+
+- `useEffect` は原則禁止。以下の代替手段を使う:
+  1. インライン計算（派生状態）
+  2. データフェッチライブラリ（useQuery / useSWR）
+  3. イベントハンドラ
+  4. マウント時の外部同期のみ許可（useMountEffect）
+  5. key でリセット
+
+## Composition
+
+- children / render props でコンポーネント合成
+- Container + Presentational に分離
+- Context は限定的に使う（テーマ、認証、ロケールのみ）
+- 状態はコロケーション（使う場所の近くに配置）
+
+## Server Components (Next.js)
+
+- デフォルトは Server Component
+- `"use client"` はインタラクションが必要な場合のみ
+- クライアント境界はできるだけ下（leaf に近く）に置く
+- サーバーでデータフェッチし、シリアライズ可能な props で渡す
+
+## Memoization
+
+- `useMemo` / `useCallback` はデフォルトで使わない。計測してから
+- React Compiler (React 19+) が利用可能なら有効化
+- `React.memo()` は頻繁にリレンダーされるコンポーネントのみ
+
+## Keys & Lists
+
+- 動的リストに配列インデックスを key にしない
+- 安定した識別子（id / slug）を使う
+- key は作成時に生成、レンダー時ではない

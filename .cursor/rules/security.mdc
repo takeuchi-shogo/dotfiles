@@ -1,0 +1,47 @@
+---
+description: Security rules based on OWASP Top 10. Apply when writing authentication, authorization, input validation, API endpoints, database queries, or handling secrets and sensitive data.
+globs:
+alwaysApply: false
+---
+
+# Security Rules
+
+## Mandatory Checks
+
+- 秘密情報のハードコード禁止（API キー、パスワード、トークン）
+- 全ユーザー入力をバリデーション（型、範囲、長さ、フォーマット）
+- SQL インジェクション防止: パラメータ化クエリのみ使用
+- XSS 防止: 出力エスケープ + CSP ヘッダー
+- CSRF 防止: トークンベースの保護
+- エラーメッセージに内部情報を含めない
+
+## Secret Management
+
+- 環境変数 or シークレットマネージャーを使用
+- `.env*` は `.gitignore` に含める
+- `.env.example` にプレースホルダーを配置
+- 短命トークンを優先
+
+## Input Validation
+
+- 信頼境界（外部入力、API レスポンス、ファイル読み込み）で検証
+- ホワイトリスト方式を優先（許可リスト > 拒否リスト）
+- 検証ライブラリを使用（Zod, joi, pydantic 等）
+
+## Authentication & Authorization
+
+- パスワード: bcrypt / argon2 でハッシュ化
+- セッション: HTTP-only, Secure, SameSite cookie
+- JWT: 短い有効期限 + リフレッシュトークン
+- 最小権限の原則
+
+## Dependencies
+
+- 既知の脆弱性をチェック（`npm audit`, `pip audit`, `govulncheck`）
+- ロックファイルをコミット
+- メジャーバージョンアップは変更内容を確認
+
+## Security Response
+
+- セキュリティ問題を発見したら即座に報告
+- 修正前に影響範囲を評価

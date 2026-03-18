@@ -1,0 +1,50 @@
+---
+description: Testing standards — AAA pattern, naming, mock strategy, coverage targets. Apply when writing tests, designing test strategy, or reviewing test code.
+globs:
+alwaysApply: false
+---
+
+# Testing Rules
+
+## Coverage Target
+
+- 80%+ を目標
+- テスト種別: Unit（高速、分離）、Integration（外部依存含む）、E2E（ユーザーフロー）
+
+## TDD Workflow
+
+1. RED: 失敗するテストを書く
+2. GREEN: テストを通す最小限の実装
+3. IMPROVE: リファクタリング（テストは通したまま）
+
+## AAA Pattern
+
+- **Arrange**: セットアップ（テストデータ、モック）
+- **Act**: 実行（テスト対象を呼び出す）
+- **Assert**: 検証（期待値と比較）
+
+## Test Naming
+
+テスト名に WHAT / WHEN / EXPECTED RESULT を含める:
+- `test_returns_empty_list_when_no_items_found`
+- `should render error message when API fails`
+
+## Mock Strategy
+
+- 外部依存のみモック（API、DB、ファイルシステム、時刻）
+- **内部ロジックはモックしない**
+- 依存性注入でテスト容易性を確保
+- テスト間でモックをリセット
+
+## Assertions
+
+- 1テスト1論理アサーション
+- 具体的な値で比較（truthiness ではなく equality）
+- エラーケースとエッジケースをテスト
+- スナップショットテストは UI のみ
+
+## Test Data
+
+- マジックナンバー / マジックストリング禁止
+- ファクトリ関数 / fixture で生成
+- 現実的だが決定的な値を使う

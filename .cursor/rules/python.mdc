@@ -1,0 +1,46 @@
+---
+description: Python coding standards — type hints, uv package management, pytest, Pythonic idioms. Applied when editing Python files.
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python Rules
+
+## Project Structure
+
+- src レイアウト + `pyproject.toml` + `uv.lock`
+- ML/DS: `configs/`, `scripts/`, `src/` を分離
+- パッケージ管理: `uv` を使用。`requirements.txt` / `setup.py` は非推奨
+
+## Type Hints
+
+- 公開関数には型ヒント必須
+- `T | None` を使う（`Optional[T]` より推奨）
+- `TypedDict` / `@dataclass` を dict より優先
+- データモデル: `@dataclass(frozen=True)` or Pydantic `BaseModel`
+
+## Error Handling
+
+- 素の `except:` 禁止。具体的な例外を指定
+- ログ出力 + reraise パターン
+- `with` 文でリソース管理
+
+## Pythonic Idioms
+
+- リスト/辞書/集合内包表記を活用
+- `enumerate`, `zip`, `any`, `all` を使う
+- EAFP（許可より謝罪）パターン
+- `from module import *` 禁止
+- ミュータブルなデフォルト引数禁止
+
+## Security
+
+- `eval` / `exec` 禁止
+- 信頼されないデータに `pickle` 禁止
+- `shell=True` 禁止。ORM を使う
+
+## Testing
+
+- pytest + `@pytest.mark.parametrize`
+- fixture / conftest.py でセットアップ共有
+- 具体的なアサーション（`assert x == 42`、`assert x` ではない）

@@ -78,9 +78,15 @@ GEMINI_SYMLINK_FILES=(
 GEMINI_SYMLINK_DIRECTORIES=()
 
 # Cursor設定: .cursor/ -> ~/.cursor/ へのシンボリックリンク
-CURSOR_SYMLINK_FILES=()
+CURSOR_SYMLINK_FILES=(
+  "hooks.json"
+)
 CURSOR_SYMLINK_DIRECTORIES=(
   "rules"
+  "skills"
+  "agents"
+  "commands"
+  "hooks"
 )
 
 # Codex スキル: 共有可能な skill を ~/.codex/skills/ に個別共有

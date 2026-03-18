@@ -1,0 +1,30 @@
+---
+description: Error handling patterns — explicit handling, fail fast, structured logging, user-friendly messages. Apply when implementing error handling, logging, or recovery logic.
+globs:
+alwaysApply: false
+---
+
+# Error Handling Rules
+
+## Principles
+
+- **明示的に処理**: エラーを握りつぶさない
+- **早期失敗**: 問題を検出したらすぐに報告
+- **構造化ログ**: コンテキスト付きでログ出力
+- **ユーザーフレンドリー**: 技術的詳細を隠し、行動可能なメッセージを表示
+- **回復可能なら回復**: リトライ、フォールバック、グレースフルデグラデーション
+
+## DO
+
+- 型付きエラーを使う（TypeScript: Result パターン、Go: error wrapping、Rust: thiserror）
+- エラーにコンテキストを付与（何をしようとしていたか）
+- エラー境界を設ける（React: ErrorBoundary、Go: recover）
+- 重要な操作のリトライにはバックオフを使う
+
+## DON'T
+
+- catch して何もしない（`catch(e) {}`）
+- 機密情報をログに含める
+- スタックトレースをユーザーに表示する
+- 制御フローに例外を使う
+- 全ての例外を同一の catch で処理する
