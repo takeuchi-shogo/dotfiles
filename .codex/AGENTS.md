@@ -25,6 +25,7 @@
 - 最も近い `AGENTS.md` を常に優先する。
 - repo に `.agents/skills/` がある場合は、project-local skill を先に使う。
 - `CLAUDE.md` や Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提をそのまま実行しない。
+- OpenAI 製品や API の調査では global `openai-docs` skill と `openaiDeveloperDocs` MCP を優先し、fallback browse は OpenAI 公式 docs に限定する。
 
 ## Editing Defaults
 - 変更は既存の命名規則・構成・formatter に従う。無関係な差分を広げない。

@@ -54,6 +54,9 @@ args = ["-y", "@playwright/mcp@latest"]
 command = "npx"
 args = ["-y", "@anthropic-ai/deepwiki-mcp@latest"]
 
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
 [notifications]
 command = "osascript -e 'display notification \"Codex が完了しました\" with title \"Codex CLI\"'"
 # agent-turn-complete イベントで macOS 通知（Claude Code hooks と統一）
