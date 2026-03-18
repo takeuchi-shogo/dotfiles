@@ -1,0 +1,53 @@
+# ==============================================================
+# .cursorignore - Cursor のインデックス・コンテキストから除外
+# NOTE: 補助的防御層。根本対策はシークレットマネージャー移行
+# ==============================================================
+
+# --- Environment files (秘密情報の典型的格納先) ---
+.env
+.env.*
+
+# --- Cryptographic keys & certificates ---
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# --- SSH keys ---
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+
+# --- Platform-specific secrets ---
+.config/raycast/**/secrets*
+.config/raycast/**/*token*
+.config/raycast/**/*api_key*
+
+# --- Machine-local config (トークンを含む可能性) ---
+.config/zsh/local.zsh
+settings.local.json
+
+# --- Large/binary files (インデックス不要) ---
+*.lock
+*.pdf
+*.wasm
+
+# --- Temporary ---
+.cache/
+
+# --- Build artifacts ---
+node_modules/
+dist/
+build/
+.next/
+target/
+__pycache__/
+
+# --- NOTE: dotfiles 固有 ---
+# .claude/, .codex/, .gemini/, tmp/ は除外しない（このリポジトリの管理対象）
+# 他プロジェクトでは AI agent configs の cross-contamination 防止のため除外推奨
