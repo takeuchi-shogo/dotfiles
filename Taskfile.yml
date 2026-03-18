@@ -78,3 +78,8 @@ tasks:
     desc: Restore Claude Code to vanilla (unpatched) state
     cmds:
       - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js --restore
+
+  codex-janitor:
+    desc: Run the repo-local Codex janitor workflow runner
+    cmds:
+      - python3 ~/dotfiles/tools/codex-janitor/runner.py {{.CLI_ARGS}}

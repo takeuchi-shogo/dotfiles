@@ -1,0 +1,36 @@
+name = "refactor-loop"
+description = "Plan-first refactor loop for Codex using repo-local skills"
+
+[prompt]
+required = false
+default = "$find-best-refactor find the single highest-leverage refactor in this repository"
+user_template = "$find-best-refactor {user_prompt}"
+
+[counts]
+improvements = 4
+reviews = 5
+
+[stopping]
+usefulness_threshold = 3
+
+[[stages]]
+label = "find-best-refactor"
+prompt = "{initial_prompt}"
+
+[[stages]]
+label = "execplan-improve"
+prompt = "$execplan-improve improve the pending execution plan at .agent/execplan-pending.md"
+repeat = "improvements"
+stop_on_skip = true
+stop_on_low_usefulness = true
+
+[[stages]]
+label = "implement-execplan"
+prompt = "$implement-execplan implement the pending execution plan at .agent/execplan-pending.md"
+
+[[stages]]
+label = "review-recent-work"
+prompt = "$review-recent-work review the most recently implemented ExecPlan work"
+repeat = "reviews"
+stop_on_skip = true
+stop_on_low_usefulness = true
