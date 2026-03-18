@@ -186,6 +186,24 @@ FINDINGS_JSON
 **failure_mode マッピング**: `references/failure-taxonomy.md` を参照し、指摘内容に最も近い FM-XXX を付与する。
 マッチしない場合は空文字列。
 
+## Data Storage
+
+レビュー結果のサマリを `~/.claude/skill-data/review/` に蓄積します。
+蓄積データは AutoEvolve と連携し、頻出する指摘パターンの分析に使用します。
+
+### 保存先
+- `~/.claude/skill-data/review/reviews.jsonl` — レビュー結果サマリ (append-only)
+
+### フォーマット (1行1JSON)
+```json
+{"date": "2026-03-18", "project": "dotfiles", "files": 5, "findings": 3, "severity": {"critical": 0, "warning": 2, "info": 1}, "reviewers": ["code-reviewer", "codex-reviewer"]}
+```
+
+### 使い方
+1. レビュー完了後、上記フォーマットで結果を追記
+2. AutoEvolve が定期的に分析し、頻出パターンを rules/ に反映
+3. `/review` 実行時に過去の指摘傾向を参考にフォーカスエリアを調整
+
 ## Anti-Patterns
 
 - レビューアーを直接 Skill ツールで起動する（Agent ツールで並列起動すること）

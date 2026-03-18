@@ -1,6 +1,6 @@
 ---
 name: dev-insights
-description: 開発パターンをデータ駆動で分析する。コミット頻度、Issue完了率、曜日別パフォーマンス、滞留タスク傾向を可視化し、改善ポイントを提案。
+description: "Use when analyzing development patterns data-driven — commit frequency, issue completion rate, day-of-week performance, stale task trends. Visualizes metrics and suggests improvements. Triggers: '開発分析', 'コミット頻度', 'パフォーマンス分析', '滞留タスク', 'dev metrics'. Do NOT use for: daily status (use daily-report), weekly task review (use weekly-review)."
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Grep, Glob
 argument-hint: "[weekly | monthly | custom-range]"

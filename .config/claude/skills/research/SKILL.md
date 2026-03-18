@@ -145,6 +145,10 @@ docs/research/             # 最終レポートの保存先（git 管理）
 | 3-8          | claude -p で並列実行                    |
 | 9+           | 2バッチに分割して順次実行（メモリ保護） |
 
+## Templates
+
+- `templates/research-report-template.md` — リサーチレポート出力テンプレート
+
 ## Anti-Patterns
 
 - ユーザー承認なしに並列実行を開始する

@@ -74,3 +74,11 @@ metadata:
 Requires Codex CLI v0.57.0 or later. The CLI defaults to `gpt-5.4` (config.toml で設定済み). Check version: `codex --version`
 
 Use `/model` slash command within a Codex session to switch models, or configure default in `~/.codex/config.toml`.
+
+## Gotchas
+
+- **model 選択ミス**: `--model` 未指定だと gpt-5.4 がデフォルト。軽量タスクには `o4-mini` を指定してコスト抑制
+- **reasoning effort 過不足**: `--reasoning high` はレビュー・設計向き。実装タスクに xhigh を使うとトークン浪費。タスク種別に合わせて medium/high/xhigh を選択
+- **sandbox scope**: `--full-auto` は全ファイル書き込み可能。本番コードには `--suggest` で差分確認を挟む
+- **resume token 消費**: `codex resume` は前回セッションの全コンテキストを再読み込み。長いセッション後の resume はコスト大
+- **日本語コメント**: Codex は英語最適化。日本語コメントのあるコードで推論精度が落ちる場合がある。指示は英語で渡す

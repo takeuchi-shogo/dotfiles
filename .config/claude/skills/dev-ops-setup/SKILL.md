@@ -149,3 +149,10 @@ gh project field-list {project_number} --owner {owner} --format json
 
 ※ GitHub Projects 未設定の場合、/kanban は GitHub Issues のみで動作します
 ```
+
+## Gotchas
+
+- **secret の log 露出**: CI/CD パイプラインのログに API キーやトークンが出力されないよう masking を設定
+- **環境差異**: dev/staging/prod で設定が異なる場合、environment matrix を明示的に管理
+- **webhook の二重発火**: GitHub webhook のリトライで同じイベントが複数回処理される。冪等性を確保
+- **権限の過剰付与**: CI bot に admin 権限を与えない。必要最小限の permission scope を設定

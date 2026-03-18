@@ -1,6 +1,6 @@
 ---
 name: obsidian-knowledge
-description: Obsidian Vault 内のナレッジを検索・整理・リンクする。ノート検索、タグ一括変更、リンク候補発見、文献ノートからパーマネントノート生成、MOC（Map of Content）自動生成。
+description: "Use when searching, organizing, or linking knowledge in your Obsidian Vault — note search, bulk tag changes, link discovery, permanent note generation from literature notes, or MOC auto-generation. Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート'. Do NOT use for: コンテンツ生成 (use obsidian-content), Vault 初期セットアップ (use obsidian-vault-setup)."
 metadata:
   pattern: tool-wrapper
 ---

@@ -1,6 +1,6 @@
 ---
 name: obsidian-vault-setup
-description: 新しい Obsidian Vault を「AI第二の脳」としてセットアップする。テンプレートからフォルダ構造を作成し、CLAUDE.md をカスタマイズする。
+description: "Use when setting up a new Obsidian Vault as an 'AI second brain'. Creates folder structure from templates and customizes CLAUDE.md. Triggers: 'Vault 作りたい', 'Obsidian セットアップ', 'new vault', '第二の脳'. Do NOT use for: 既存 Vault のコンテンツ生成 (use obsidian-content), ナレッジ整理 (use obsidian-knowledge)."
 metadata:
   pattern: generator
 ---
@@ -98,3 +98,10 @@ Vault 全体を Glob/Read でスキャンし、以下を確認:
 - [ ] CLAUDE.md がカスタマイズされている
 - [ ] .claude/memory.md が初期化されている
 - [ ] テンプレートファイルが配置されている
+
+## Gotchas
+
+- **template collision**: 既存 Vault にテンプレートを適用すると既存ファイルを上書きする可能性。バックアップ確認
+- **sync conflict**: iCloud/Dropbox 同期中に Vault 構造を変更すると競合ファイルが発生。同期を一時停止してから実行
+- **plugin 互換性**: テンプレートが前提とする Obsidian プラグインがインストールされているか確認
+- **CLAUDE.md のパス**: Vault 内の CLAUDE.md はプロジェクト CLAUDE.md と混同しやすい。用途を明記

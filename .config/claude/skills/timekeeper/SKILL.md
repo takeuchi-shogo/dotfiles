@@ -205,6 +205,30 @@ tags:
 
 ---
 
+## Data Storage
+
+計画・振り返りの履歴を `~/.claude/skill-data/timekeeper/` に蓄積します。
+過去の計画精度（計画 vs 実績）を追跡し、見積もり精度の改善に活用します。
+
+### 保存先
+- `~/.claude/skill-data/timekeeper/sessions.jsonl` — 計画/振り返りの履歴 (append-only)
+
+### フォーマット (1行1JSON)
+```json
+{"date": "2026-03-18", "type": "plan", "tasks_planned": 5, "focus": "harness改善"}
+{"date": "2026-03-18", "type": "review", "tasks_completed": 3, "tasks_carried": 2, "learning": "見積もりが楽観的すぎた"}
+```
+
+### 使い方
+1. 朝の計画完了後に plan エントリを追記
+2. 夕方の振り返り完了後に review エントリを追記
+3. 次回の計画時に過去の完了率を参照し、「前週の完了率: 60% → タスク数を調整しましょう」と提案
+
+## Templates
+
+- `templates/daily-plan-template.md` — 朝の計画テンプレート
+- `templates/evening-review-template.md` — 夕方の振り返りテンプレート
+
 ## Anti-Patterns
 
 - **複数の質問を一度に聞かない** — 必ず1メッセージ1質問

@@ -99,3 +99,11 @@ SEO が重要                 → Server Component
 | HOC | クロスカッティング（認証ラップ等）— hooks で代替可能なら hooks |
 
 詳細なパターン集は `references/component-patterns.md` を参照。
+
+## Gotchas
+
+- **over-memoization**: useMemo/useCallback の乱用は可読性を下げ、効果も薄い。プロファイラで計測してから適用
+- **state scope creep**: グローバル state に何でも入れると再レンダリング地獄。コンポーネントローカル state を優先
+- **hydration mismatch**: SSR/SSG で server と client の出力が異なると hydration エラー。動的コンテンツは useEffect 内で
+- **bundle size 盲点**: 依存追加時に bundle analyzer で影響を確認。tree-shaking が効かないライブラリに注意
+- **アクセシビリティ後付け**: 設計段階で ARIA/keyboard navigation を組み込む。後から付けると手戻りが大きい

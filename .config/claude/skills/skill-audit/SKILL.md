@@ -226,3 +226,10 @@ GRPO は z-score なので ±1.0 が1標準偏差。
 | Benchmark data (per skill) | `.skill-eval/{skill-name}/iteration-N/benchmark.json`     |
 | Audit report               | `docs/benchmarks/YYYY-MM-DD-audit.md`                     |
 | AutoEvolve learnings       | `~/.claude/agent-memory/learnings/skill-benchmarks.jsonl` |
+
+## Gotchas
+
+- **統計的検出力不足**: 2-3回の eval では有意差を検出できない。最低5回、理想は10回以上
+- **cherry-pick 結果**: 成功ケースだけ報告するバイアス。失敗ケースも含めた全結果を評価
+- **description conflict 誤検知**: 似た description でも対象ドメインが異なれば競合しない。Do NOT use for を確認
+- **退役判断の早まり**: 使用頻度が低くても特定シナリオで重要なスキルがある。頻度だけで判断しない

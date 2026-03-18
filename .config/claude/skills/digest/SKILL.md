@@ -1,6 +1,6 @@
 ---
 name: digest
-description: NotebookLM の出力テキストを Obsidian Literature Note に構造化・保存する。YouTube 動画や記事の要約を貼り付けると、メタデータを自動推論し、Vault の 05-Literature/ に保存。
+description: "Use when converting NotebookLM output text into structured Obsidian Literature Notes. Paste YouTube/article summaries and it auto-infers metadata, saves to 05-Literature/. Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge), コンテンツ生成 (use obsidian-content)."
 metadata:
   pattern: generator
 ---
@@ -129,6 +129,10 @@ source:
 - [ ] {アイデア 1} — パーマネントノートにできそうな概念
 - [ ] {アイデア 2} — パーマネントノートにできそうな概念
 ```
+
+## Templates
+
+- `templates/literature-note-template.md` — Obsidian Literature Note テンプレート
 
 ## 使用例
 

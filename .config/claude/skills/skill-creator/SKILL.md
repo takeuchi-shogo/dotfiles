@@ -614,3 +614,11 @@ Repeating one more time the core loop here for emphasis:
 Please add steps to your TodoList, if you have such a thing, to make sure you don't forget. If you're in Cowork, please specifically put "Create evals JSON and run `eval-viewer/generate_review.py` so human can review test cases" in your TodoList to make sure it happens.
 
 Good luck!
+
+## Gotchas
+
+- **eval データ汚染**: テストケースがスキル本体の例と重複すると過学習。eval は独立したシナリオで作成
+- **description triggering 精度**: description が長すぎると他スキルと競合。"Use when" + "Do NOT use for" の対で精度を上げる
+- **scope creep**: 1スキルに複数カテゴリの機能を詰め込むと発火条件が曖昧になる。1スキル1カテゴリを維持
+- **benchmark 分散**: 少数回の実行では分散が大きい。最低5回以上の eval で統計的に判断
+- **既存スキルとの重複**: 作成前に `/skill-audit` で類似スキルがないか確認

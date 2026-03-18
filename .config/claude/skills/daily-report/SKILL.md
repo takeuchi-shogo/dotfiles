@@ -126,6 +126,10 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl 2>/dev/null | jq -r --arg dat
 - summary と firstPrompt、そしてユーザーメッセージの内容をもとに、何をしたかを具体的に書く
 - 「成果」は各グループの最終的なアウトプットを簡潔に記載する
 
+## Templates
+
+- `templates/daily-report-template.md` — 日報出力テンプレート
+
 ### Step 6: ファイル保存
 
 1. `~/daily-reports/` ディレクトリが存在しなければ作成する
@@ -133,3 +137,21 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl 2>/dev/null | jq -r --arg dat
 3. 保存完了を報告する
 
 **上書き確認**: 同名ファイルが既に存在する場合は、ユーザーに上書きして良いか確認する。
+
+## Data Storage
+
+このスキルは実行結果のメタデータを `~/.claude/skill-data/daily-report/` に蓄積します。
+過去の実行結果を参照して差分ベースの出力を生成します。
+
+### 保存先
+- `~/.claude/skill-data/daily-report/history.jsonl` — 各実行のメタデータ (append-only)
+
+### フォーマット (1行1JSON)
+```json
+{"date": "2026-03-18", "projects": ["dotfiles", "myapp"], "sessions": 5, "commits": 3, "files_changed": 12}
+```
+
+### 使い方
+1. 日報生成完了後、上記フォーマットでメタデータを追記
+2. 次回実行時に history.jsonl を読み、前回との差分を計算
+3. 「前日比: セッション +2, コミット -1」のような差分情報を出力に含める

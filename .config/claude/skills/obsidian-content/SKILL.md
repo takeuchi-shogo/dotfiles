@@ -1,6 +1,6 @@
 ---
 name: obsidian-content
-description: Obsidian Vault 全体のコンテキストを活用してコンテンツを生成する。ニュースレター、ブログ記事、ツイートスレッド等。ノートを検索し、ライティングスタイルに従って生成。
+description: "Use when generating content (newsletters, blog posts, tweet threads) from your Obsidian Vault. Searches notes and follows your writing style. Triggers: 'ニュースレター書いて', 'ブログ記事', 'ツイート生成', 'Vault からコンテンツ'. Do NOT use for: ノート検索・整理のみ (use obsidian-knowledge), Vault 初期セットアップ (use obsidian-vault-setup)."
 metadata:
   pattern: generator
 ---

@@ -43,3 +43,11 @@ PR品質を繰り返しチェックし、マージ判断を行う。
 - `/create-pr-wait` — PR作成 + CI監視
 - `/review` — コード変更のレビュー（コミット前）
 - `github-pr`（本スキル）— PR提出後のライフサイクル管理
+
+## Gotchas
+
+- **rebase after review**: レビュー承認後の rebase は reviewer の approve を無効化する。rebase は review 前に完了させる
+- **unresolved thread 見落とし**: `gh-unresolved-threads` スクリプトで未解決スレッドを確認してからマージ
+- **concurrent reviewer changes**: 複数 reviewer が同時にコメントすると対応漏れが発生。コメント一覧を毎回取得し直す
+- **draft PR の自動マージ**: draft 状態の PR に auto-merge を設定しても ready-for-review に変更されるまで発動しない
+- **大規模 diff**: 500行超の diff は reviewer の負荷が高い。可能なら PR を分割
