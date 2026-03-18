@@ -38,6 +38,8 @@
 - リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
 - `git commit --no-verify` 禁止。pre-commit フックをバイパスしない。
 - タスク完了前にテスト・lint を実行して通過を確認する。
+- sandbox 外 command の反復承認を durable にしたい場合は `.codex/rules/*.rules` に昇格し、`AGENTS.md` には自然言語の方針だけを残す。
+- `Rules` は最小権限で始め、broad allowlist は作らない。追加前に `codex execpolicy check --pretty --rules <file> -- <command>` で検証する。
 - repo 共通 contract は `docs/agent-harness-contract.md` を参照する。
 - 長時間タスク、中断前、handoff 前、milestone 完了時は `$codex-checkpoint-resume` を使う。
 - 繰り返し発生した repo 固有ルールや failure は `$codex-memory-capture` で `~/.codex/memories` に記録する。
@@ -112,6 +114,7 @@ Return recommended commands in priority order with rationale, and do not run com
 
 - `codex --version` と `codex features list` で runtime 状態を確認すること
 - 2026-03-17 時点のローカル確認では `codex-cli 0.115.0`、`multi_agent stable true`
+- 2026-03-19 時点のローカル確認では `codex execpolicy check` は使えるが、`bash -lc ...` / `zsh -lc ...` の shell wrapper は match を返さなかった。`Rules` は direct command token 前提で検証する
 - `child_agents_md` は未有効のため、agent 固有の運用ガイドは引き続き `.codex/AGENTS.md` と playbook で管理する
 - custom agent 定義は current CLI が受け付ける最小項目に寄せ、追加フィールドを入れたら local parser か `codex review --uncommitted` で確認する
 - custom agent 名解決や UI 表示の挙動は CLI 更新時に再確認する

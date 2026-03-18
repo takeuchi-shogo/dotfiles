@@ -20,6 +20,8 @@
   - deterministic verification surface
 - `.mcp.json`
   - repo で使う external context surface
+- `.codex/rules/`
+  - Codex の exec policy surface
 - `.agents/skills/`
   - repo-local workflow and policy surface
 - `tmp/codex-state/`
@@ -76,6 +78,7 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
 - 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.codex/agents/`, `.agents/skills/`
 - 主な primitives:
   - profiles / sandbox / approval policy
+  - exec policy rules (`.codex/rules/*.rules`)
   - MCP server configuration
   - review / verification / search-first skills
   - checkpoint-resume skill
@@ -107,5 +110,7 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
 ## Rules
 
 - agent 固有の保証を repo 共通 contract に混ぜない
+- `AGENTS.md` は自然言語の行動方針、`.codex/rules/*.rules` は sandbox 外 command の機械判定として分離する
+- exec policy は broad allow より minimal adoption を優先し、read-only prefix から始める
 - validation は tool 不在だけで hard fail させない。必要なら skip を明示する
 - 同じ friction を 2 回経験したら durable memory か skill へ昇格を検討する

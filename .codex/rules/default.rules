@@ -1,0 +1,96 @@
+# Minimal Codex execpolicy rules for the dotfiles workspace.
+# Keep the first version conservative and easy to audit.
+
+prefix_rule(
+    pattern = ["git", "status"],
+    decision = "allow",
+    justification = "Read-only repository status checks are safe to run without prompting.",
+    match = [
+        "git status",
+        "git status --short",
+        "git status --porcelain=v1",
+    ],
+    not_match = [
+        "git stash status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "diff"],
+    decision = "allow",
+    justification = "Read-only diff inspection is safe to run without prompting.",
+    match = [
+        "git diff",
+        "git diff --stat",
+        "git diff --name-only HEAD",
+    ],
+    not_match = [
+        "git difftool",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "log"],
+    decision = "allow",
+    justification = "Read-only history inspection is safe to run without prompting.",
+    match = [
+        "git log",
+        "git log --oneline -5",
+        "git log --stat HEAD~3..HEAD",
+    ],
+    not_match = [
+        "git reflog",
+    ],
+)
+
+prefix_rule(
+    pattern = ["codex", "execpolicy", "check"],
+    decision = "allow",
+    justification = "Local execpolicy evaluation is a safe verification command.",
+    match = [
+        "codex execpolicy check --rules .codex/rules/default.rules -- git status",
+        "codex execpolicy check --pretty --rules .codex/rules/default.rules -- git diff --stat",
+    ],
+    not_match = [
+        "codex exec",
+    ],
+)
+
+prefix_rule(
+    pattern = ["codex", "review", "--uncommitted"],
+    decision = "prompt",
+    justification = "Repository review is useful but may take time and external resources, so keep an approval prompt.",
+    match = [
+        "codex review --uncommitted",
+        "codex review --uncommitted --plain",
+    ],
+    not_match = [
+        "codex review",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Do not discard local changes with `git reset --hard`. Inspect with `git diff` and edit intentionally instead.",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD",
+    ],
+    not_match = [
+        "git reset --soft HEAD~1",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "forbidden",
+    justification = "Do not discard tracked changes with `git checkout --`. Use `apply_patch` or ask before reverting anything.",
+    match = [
+        "git checkout -- .",
+        "git checkout -- .codex/AGENTS.md",
+    ],
+    not_match = [
+        "git checkout main",
+    ],
+)
