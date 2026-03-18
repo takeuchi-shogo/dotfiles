@@ -155,3 +155,8 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl 2>/dev/null | jq -r --arg dat
 1. 日報生成完了後、上記フォーマットでメタデータを追記
 2. 次回実行時に history.jsonl を読み、前回との差分を計算
 3. 「前日比: セッション +2, コミット -1」のような差分情報を出力に含める
+
+## Skill Assets
+
+- セッション統計収集: `scripts/collect-session-stats.sh` — `sh scripts/collect-session-stats.sh [YYYY-MM-DD]`
+- 日報テンプレート: `templates/daily-report-template.md` (既存)

@@ -164,3 +164,9 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 - **分析レポートから実装**: `/rpi docs/research/YYYY-MM-DD-{slug}-analysis.md`
 - **大規模統合**: `/epd` の Phase 1 (Spec) に分析レポートを入力
 - **深掘り調査**: 記事が不十分なら `/research` で補完調査
+
+## Skill Assets
+
+- 分析レポートテンプレート: `templates/analysis-report.md`
+- 統合プランテンプレート: `templates/integration-plan.md`
+- 取捨選択基準: `references/triage-criteria.md`

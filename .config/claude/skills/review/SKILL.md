@@ -219,3 +219,8 @@ FINDINGS_JSON
 - **言語チェックリストの Read 忘れ**: code-reviewer にチェックリストを注入し忘れると、汎用レビューしか行われない。Step 2 の言語判定を省略しないこと
 - **信頼度フィルタの閾値**: confidence 80未満のフィルタが厳しすぎると、有効な指摘も消える。初回は閾値なしで実行し、ノイズを見てから調整
 - **codex-reviewer との重複**: code-reviewer と codex-reviewer が同じ指摘をすることがある。Synthesis ステップで重複排除すること
+
+## Skill Assets
+
+- 統合レポートテンプレート: `templates/synthesis-report.md`
+- diff 統計抽出: `scripts/extract-diff-stats.sh` — `sh scripts/extract-diff-stats.sh [ref]` で JSON 出力

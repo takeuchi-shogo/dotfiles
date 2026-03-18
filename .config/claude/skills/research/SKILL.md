@@ -163,3 +163,9 @@ docs/research/             # 最終レポートの保存先（git 管理）
 - **Gemini の hallucination**: Google Search grounding があっても Gemini は事実と異なる情報を返すことがある。クロスバリデーション必須
 - **レポート肥大化**: サブタスクが多すぎると統合レポートが巨大になる。3-5 サブタスクが最適
 - **言語プロトコル**: CLI への指示は英語、ユーザーへの報告は日本語。混在させるとモデルの出力品質が下がる
+
+## Skill Assets
+
+- サブタスクプロンプト: `templates/subtask-prompt.md`
+- モデル割り当て基準: `references/model-assignment-guide.md`
+- レポートテンプレート: `templates/research-report-template.md` (既存)

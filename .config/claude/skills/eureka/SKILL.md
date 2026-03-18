@@ -94,3 +94,7 @@ importance: 0.8+ (Impact に応じて)
 - 長文を書こうとして鮮度を失う（簡潔に、後で refinement）
 - 問題なしに洞察だけ書く（必ず Problem → Insight のペアで）
 - Metrics を省略する（定量化できなくても Before/After の定性比較を書く）
+
+## Skill Assets
+
+- 発見記録テンプレート: `templates/breakthrough-template.md`

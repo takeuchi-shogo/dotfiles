@@ -429,3 +429,9 @@ Step 7 のレポートに以下を追加:
 - **Accept Rate: {keeps}/{total} ({rate}%)** — autoresearch 記事基準: 50%以上が健全
 - 早期終了: {yes/no, reason}
 - ドリフト検出: {yes/no}
+
+## Skill Assets
+
+- 改善レポートテンプレート: `templates/improvement-report.md`
+- 実験ログテンプレート: `templates/experiment-log.md`
+- 分析カテゴリ判断基準: `references/analysis-categories.md`
