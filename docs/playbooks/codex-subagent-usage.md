@@ -48,6 +48,7 @@ Codex の subagent を dotfiles で使うときの playbook。
 - 重複 findings の統合
 - 実際の編集
 - validation 実行と最終判断
+- requirements、decision、final output を main thread に保つこと
 
 ## Standard Templates
 
@@ -141,6 +142,8 @@ Do not run commands.
 - write-capable subagent は使わない
 - 同じ観点の subagent を重複起動しない
 - 緊急の blocking work は親 agent が自分で処理する
+- subagent は parallel worker であると同時に parallel context でもある。探索ノイズを main thread に持ち込まないために使う
+- main thread は要件整理、比較判断、統合、最終報告に集中させる
 
 ## Watchouts
 

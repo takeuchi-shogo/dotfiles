@@ -35,6 +35,24 @@
 - 変更後は必ず対象に近い検証を実行する
 - 破壊的変更や広範囲変更は approval 前提で扱う
 - 推測で完了宣言しない
+- main thread は requirements、decision、final output に寄せる
+- 並列に進める探索、代替案、要約作成は必要に応じて worktree や subagent に分離する
+
+## Parallel Surfaces
+
+長時間 task では、並列化の価値は速度だけでなく context 分離にある。
+
+- 同一 project 内の別 thread
+  - debugging、alternative exploration、summary を 1 本の流れに潰さず、目的ごとに分ける
+- worktree
+  - foreground の main workspace と衝突させたくない代替案、長時間試行、破壊的寄りの実験を逃がす
+- subagent
+  - 影響範囲調査、review、docs/config 確認のような read-heavy task を main thread から切り離す
+
+判断基準:
+
+- 今の判断と編集に直結するものは foreground
+- 比較対象、探索ノイズ、長時間試行は background
 
 ## Standard Loop
 

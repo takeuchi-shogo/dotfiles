@@ -20,6 +20,8 @@
 - handoff 前、中断前、milestone 完了時は `$codex-checkpoint-resume` を使って filesystem に state を残す。
 - 非自明な変更では root の `PLANS.md` に従い、永続化したい plan は `docs/plans/` に残す。
 - 並列で別 task を進めるときは worktree を使って branch と filesystem を分離する。
+- main thread は requirements、decision、final output に寄せ、探索ログや試行錯誤は別 thread / subagent / worktree に逃がす。
+- 同じ repo 内でも debugging、alternative exploration、summary は別 thread として扱い、1 本の流れに潰さない。
 
 ## Project Instructions
 - 最も近い `AGENTS.md` を常に優先する。
@@ -74,6 +76,7 @@
 - 並列委譲で独立した観点を調査させ、親 agent が統合する
 - 全 custom agent は read-only。ファイル編集は親 agent が行う
 - 詳細な framing とテンプレートは `docs/playbooks/codex-subagent-usage.md` を参照する
+- subagent の主目的は速度だけでなく context isolation であり、noisy な探索を main thread に積まないために使う
 
 ### Branch Review パターン
 

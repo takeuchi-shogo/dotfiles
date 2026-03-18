@@ -8,13 +8,15 @@
 - Claude と Codex を別 task で並列に走らせる
 - 破壊的ではないが生成物や formatter が衝突しやすい
 - 実験的変更を main workspace と切り離したい
+- 代替案を複数試し、promising なものだけ foreground に戻したい
 
 ## Standard Steps
 
 1. ベース branch を確認する
 2. `git worktree add ../<repo>-<task> -b <branch>` で専用 worktree を作る
-3. その worktree で session を開始し、plan を作る
-4. task 完了後は branch を整理し、不要な worktree を片付ける
+3. Local を foreground、worktree を background の試行環境として役割分担する
+4. その worktree で session を開始し、plan を作る
+5. promising な試行だけ foreground に昇格し、task 完了後は branch を整理して不要な worktree を片付ける
 
 ## Example
 
@@ -30,6 +32,8 @@ task validate-configs
 - plan と checkpoint は worktree ごとに管理する
 - 同じファイル群を複数の live session で共有しない
 - symlink や home 側へ影響する変更は、main workspace に戻る前に validation を通す
+- main workspace は現在の判断と統合に使い、長時間の代替案や invasive な試行は worktree に寄せる
+- 複数案を試すときは stash より worktree を優先し、attempt ごとの context を分離する
 
 ## Permission Notes
 
