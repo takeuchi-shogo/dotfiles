@@ -42,6 +42,33 @@ The user can override these defaults with a custom skill list.
 
 Execute the following steps in order:
 
+### Step 0: 5D Quality Scan
+
+A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md を 5 次元で静的スクリーニングする。
+
+#### 手順
+
+1. 対象スキルの SKILL.md + references/ + scripts/ を読む
+2. 以下の 5 次元それぞれを Good/Average/Poor で判定する
+3. いずれかが Poor → audit report の「Improve」セクションに `(5D)` 注記付きで分類
+4. 結果を audit report Summary テーブルの 5D 列に記録
+
+#### 5 次元の定義（SkillNet [arXiv:2603.04448](https://arxiv.org/abs/2603.04448) prompts.py 準拠）
+
+| 次元 | Good | Average | Poor |
+|------|------|---------|------|
+| **Safety** | 破壊的操作をデフォルト回避、安全チェック含む、スコープ制限明示 | 良性ドメインだがリスク操作のセーフガード言及なし | 危険なアクション(delete/reset等)をガードなしで言及 |
+| **Completeness** | 目標+手順+入出力が明確、前提条件を記載 | 目標は明確だが手順/前提/出力が不十分 | 曖昧すぎて行動不能、核心的手順欠如 |
+| **Executability** | 具体的アクション/コマンド/パラメータ。指示のみスキルは明確ガイダンスで OK | 概ね実行可能だが曖昧ステップあり | 実行不能な曖昧指示 |
+| **Maintainability** | 狭いスコープ、モジュール性、明確な入出力、低結合 | 再利用部分はあるが境界が不明確 | スコープ広すぎ or 密結合 |
+| **Cost-awareness** | 軽量タスクは低コスト。重量タスクはバッチ/制限/キャッシュを明示 | コスト制御なしだが無駄もない | 無駄なワークフローを限度なく推奨 |
+
+#### 追加ルール
+
+- `allowed_tools` が必要以上に広い場合 → Safety を 1 レベル下げ
+- コア式/アルゴリズムの致命的エラー → Completeness を最大 Average（通常 Poor）
+- トリビアルなスクリプト（echo のみ等）→ Executability を最大 Average
+
 ### Step 1: Select target skills
 
 Ask the user which batch to audit, or accept a custom skill list. Default to both batches if unspecified.
@@ -159,10 +186,10 @@ Generate the report at `docs/benchmarks/YYYY-MM-DD-audit.md` using this template
 
 ## Summary
 
-| Skill   | Quality (with) | Quality (baseline) | Delta | Recommendation |
-| ------- | -------------- | ------------------ | ----- | -------------- |
-| skill-a | 7.5            | 6.0                | +1.5  | Keep           |
-| skill-b | 5.0            | 5.5                | -0.5  | Retire         |
+| Skill   | Safety | Comp. | Exec. | Maint. | Cost | Quality (with) | Quality (baseline) | Delta | Recommendation |
+| ------- | ------ | ----- | ----- | ------ | ---- | -------------- | ------------------ | ----- | -------------- |
+| skill-a | Good   | Good  | Avg   | Good   | Good | 7.5            | 6.0                | +1.5  | Keep           |
+| skill-b | Avg    | Poor  | Good  | Avg    | Good | —              | —                  | —     | Improve (5D)   |
 
 ## Recommendations
 

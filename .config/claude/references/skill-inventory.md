@@ -80,10 +80,10 @@ workflow 自体を改善するときに使う。
 
 ## Relationships (SkillNet)
 
-スキル間の形式的関係。arXiv:2603.11808 SkillNet ontology に基づく。
+スキル間の形式的関係。[arXiv:2603.04448](https://arxiv.org/abs/2603.04448) SkillNet ontology に基づく。
 skill-audit の conflict 検出と triage-router のスキル選択に使用。
 
-### depends-on
+### depend_on
 
 | Upstream | Downstream | Context |
 |----------|-----------|---------|
@@ -93,24 +93,48 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 | spike | epd | epd は spike の結果をもとに proceed/pivot/abandon を判断 |
 | codex-review | review | 100行超の変更では codex-review が review に先行する |
 
-### conflicts-with
+### conflicts_with
+
+同時有効化が禁止。設計指針が矛盾するため併用すると出力品質が劣化する。
 
 | Skill A | Skill B | 理由 |
 |---------|---------|------|
 | frontend-design | ui-ux-pro-max | デザイン指針が競合する可能性 |
 | react-best-practices | react-expert | React 知識の範囲が重複 |
 
-### is-a-subset-of
+### belong_to
 
-| Subset | Superset | 備考 |
-|--------|----------|------|
+| Child | Parent | 備考 |
+|-------|--------|------|
 | react-expert | senior-frontend | React 以外の frontend 知識も含む |
 
-### ガイダンス追記
+### similar_to
 
-- **conflicts-with 関係にある skill を同時に有効にしない**
-- **depends-on 関係がある場合、upstream skill を先に実行する**
-- **subset 関係にある場合、superset の方を優先検討する**
+機能的に等価で置換可能。同時使用は可能だが冗長。
+
+| Skill A | Skill B | 理由 |
+|---------|---------|------|
+| codex-review | review | どちらもコードレビュー。100行超では codex-review を先行 |
+| senior-frontend | react-best-practices | React 最適化は両方カバー。深度が異なる |
+
+### compose_with
+
+独立だが頻繁に連携。出力→入力の関係。
+
+| Source | Target | 理由 |
+|--------|--------|------|
+| spec | spike | spec で仕様定義 → spike で実験実装 |
+| research | absorb | research で調査 → absorb で統合 |
+| skill-creator | skill-audit | 作成後に品質監査 |
+
+### ガイダンス
+
+- **`conflicts_with`** 関係にあるスキルを同時に有効にしない
+- **`depend_on`** 関係がある場合、upstream スキルを先に実行する
+- **`belong_to`** 関係にある場合、parent の方を優先検討する
+- **`similar_to`** 関係にあるスキルは、ユースケースに応じて使い分ける（同時使用は可能だが冗長）
+- **`compose_with`** 関係にあるスキルは、連鎖実行を検討する
+- **`similar_to` と `conflicts_with` の違い**: similar は同時使用可能だが冗長、conflicts は同時有効化が禁止（設計指針が矛盾）
 
 ## Pattern Distribution
 

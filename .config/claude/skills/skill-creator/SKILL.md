@@ -74,7 +74,7 @@ Evaluate the skill idea against 4 quality criteria (see `references/validation-c
 
 The user can override with explicit confirmation ("proceed anyway").
 
-Reference: arXiv:2603.11808 Extraction Quality Criteria
+Reference: arXiv:2603.04448 SkillNet Extraction Quality Criteria
 
 ### Pattern Selection
 
@@ -133,6 +133,19 @@ When writing the SKILL.md:
 - No README.md inside the skill folder — all docs go in SKILL.md or references/
 - See `references/validation-checklist.md` for the full checklist and YAML reference
 
+### 5D Quality Check
+
+SKILL.md 初稿を SkillNet の 5 次元で確認する（[arXiv:2603.04448](https://arxiv.org/abs/2603.04448)）。
+いずれかが Poor の場合、修正してから Security Scan に進む。Average は注記のみ。
+
+1. **Safety**: 破壊的操作にガードがあるか？allowed_tools が必要最小限か？
+2. **Completeness**: 前提条件・入出力・失敗モードが明示されているか？
+3. **Executability**: 手順が具体的か？指示のみスキルの場合、ガイダンスが明確か？
+4. **Maintainability**: スコープが狭く、モジュール性があり、他スキルと低結合か？
+5. **Cost-awareness**: トークン効率を意識しているか？無駄なループや大量読み込みがないか？
+
+詳細な Good/Average/Poor の境界条件は `skill-audit` の Step 0: 5D Quality Scan を参照。
+
 ### Security Scan
 
 Before testing, run the security scanner on the skill directory:
@@ -148,7 +161,7 @@ The scanner checks:
 - **G1 (Static)**: Dangerous code patterns (eval, exec, network access, fs destruction)
 - **G2 (Semantic)**: Prompt injection vectors (zero-width chars, RTL override, hidden instructions)
 
-Reference: arXiv:2603.11808 Four-Stage Verification Pipeline (G1-G4)
+Reference: arXiv:2603.04448 Four-Stage Verification Pipeline (G1-G4)
 
 ### Skill Writing Guide
 
