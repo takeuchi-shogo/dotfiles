@@ -1,6 +1,11 @@
 ---
 name: morning
 description: 朝の開発計画を生成する。GitHub Issues/Projects の状態、進行中タスク、優先度を分析し、今日取り組むべきタスクを提案。毎朝のセッション開始時に使用。
+---
+
+## Skill Assets
+
+- `templates/morning-routine.md` — Morning routine template (energy check, today's focus, time blocks, carry-over)
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Grep, Glob
 metadata:

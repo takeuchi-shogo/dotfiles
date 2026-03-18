@@ -625,6 +625,10 @@ The references/ directory has additional documentation:
 - `references/skill-writing-principles.md` — 7 principles for high-quality skill content (directives not wisdom, cut general knowledge, etc.)
 - `references/troubleshooting.md` — Common issues: won't upload, doesn't trigger, triggers too often, instructions not followed
 
+## Skill Assets (Archetype Reference)
+
+- スキル型選択ガイド: `references/skill-archetypes.md` — 新スキル作成時に archetype を選択するためのフローチャートと各型の定義
+
 ---
 
 Repeating one more time the core loop here for emphasis:

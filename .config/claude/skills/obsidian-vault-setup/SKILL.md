@@ -105,3 +105,7 @@ Vault 全体を Glob/Read でスキャンし、以下を確認:
 - **sync conflict**: iCloud/Dropbox 同期中に Vault 構造を変更すると競合ファイルが発生。同期を一時停止してから実行
 - **plugin 互換性**: テンプレートが前提とする Obsidian プラグインがインストールされているか確認
 - **CLAUDE.md のパス**: Vault 内の CLAUDE.md はプロジェクト CLAUDE.md と混同しやすい。用途を明記
+
+## Skill Assets
+
+- `references/plugin-recommendations.md` — Obsidian plugin recommendations (Essential, Knowledge Management, Writing, AI Integration)

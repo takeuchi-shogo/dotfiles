@@ -117,3 +117,7 @@ gh project item-edit --project-id {project_id} --id {item_id} \
 - 個別選択モードでは、各変更ごとに y/n を確認
 - 大量の変更（10件超）の場合は特に慎重に確認を促す
 - 実行前にドライランとして `gh` コマンドを表示する選択肢も提供
+
+## Skill Assets
+
+- `templates/minutes-template.md` — Meeting minutes template (agenda, discussion, decisions, action items, next meeting)

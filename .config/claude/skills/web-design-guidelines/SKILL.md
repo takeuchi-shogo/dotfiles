@@ -1,6 +1,11 @@
 ---
 name: web-design-guidelines
 description: Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".
+---
+
+## Skill Assets
+
+- `references/checklist-by-category.md` — Category checklist covering Animation, Typography, Color, Layout, Accessibility, Performance, Icons
 metadata:
   author: vercel
   version: "1.0.0"

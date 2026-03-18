@@ -134,3 +134,7 @@ Step 2 に戻り、CIを再度監視する。
 - PR を出してCIを通すまでを一気に済ませたいとき
 - CI失敗の修正を手動で繰り返したくないとき
 - `/pull-request` だと CI の面倒まで見てくれないとき
+
+## Skill Assets
+
+- `templates/ci-fix-log.md` — CI fix attempt log template (attempt table, final status)

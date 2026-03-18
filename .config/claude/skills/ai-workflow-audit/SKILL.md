@@ -89,3 +89,7 @@ metadata:
 - prompt を skill や template に固定せず、毎回その場で書き直す
 - repo 固有ルールを global memory に混ぜる
 - docs に書いただけで運用が定着すると期待する
+
+## Skill Assets
+
+- `references/audit-checklist.md` — Checklist covering Skills, Agents, Hooks, Memory, and Configuration audit criteria

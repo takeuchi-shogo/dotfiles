@@ -1,6 +1,11 @@
 ---
 name: react-expert
 description: Use when researching React APIs or concepts for documentation. Use when you need authoritative usage examples, caveats, warnings, or errors for a React feature.
+---
+
+## Skill Assets
+
+- `references/api-quick-ref.md` — React API quick reference (Hooks table with pitfalls, React 19 APIs, Patterns)
 metadata:
   pattern: tool-wrapper
 ---

@@ -260,3 +260,7 @@ GRPO は z-score なので ±1.0 が1標準偏差。
 - **cherry-pick 結果**: 成功ケースだけ報告するバイアス。失敗ケースも含めた全結果を評価
 - **description conflict 誤検知**: 似た description でも対象ドメインが異なれば競合しない。Do NOT use for を確認
 - **退役判断の早まり**: 使用頻度が低くても特定シナリオで重要なスキルがある。頻度だけで判断しない
+
+## Skill Assets
+
+- `templates/audit-report.md` — Audit report template (date, summary table, description conflicts, recommendations)

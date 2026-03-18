@@ -166,3 +166,7 @@ N/ [まとめ + CTA]
 - ジェネリックなAI臭い表現を使っていないか
 - ソースノートの内容を正確に反映しているか
 - リンク切れがないか
+
+## Skill Assets
+
+- `templates/content-templates.md` — Content format templates for newsletter, blog post, and tweet thread

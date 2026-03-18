@@ -159,3 +159,7 @@ tags:
 ## memory.md 更新
 
 各操作後、`.claude/memory.md` に実行した操作のサマリーを追記する。
+
+## Skill Assets
+
+- `templates/moc-template.md` — Map of Content template (core concepts, related topics, open questions, sources)
