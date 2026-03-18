@@ -51,21 +51,58 @@ fn trim_lines(text: &str, max: usize) -> Vec<String> {
         .collect()
 }
 
+/// Check if a Prettier config exists by walking up from the file.
+fn has_prettier_config(file_path: &str) -> bool {
+    let prettier_configs: &[&str] = &[
+        ".prettierrc", ".prettierrc.js", ".prettierrc.cjs",
+        ".prettierrc.json", ".prettierrc.yml", ".prettierrc.yaml",
+        "prettier.config.js", "prettier.config.mjs",
+    ];
+    let mut dir = Path::new(file_path).parent();
+    while let Some(d) = dir {
+        for cfg in prettier_configs {
+            if d.join(cfg).exists() {
+                return true;
+            }
+        }
+        if d.join(".git").exists() {
+            break;
+        }
+        dir = d.parent();
+    }
+    false
+}
+
 fn format_typescript(file_path: &str) -> Vec<String> {
-    let biome = find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
     let oxlint = find_tool("oxlint").unwrap_or_else(|| "npx --yes oxlint@latest".to_string());
 
-    // Format
-    let biome_parts: Vec<&str> = biome.split_whitespace().collect();
-    if biome_parts.len() == 1 {
-        run_silent(biome_parts[0], &["format", "--write", file_path]);
+    // Format: use Prettier if config exists, otherwise Biome
+    if has_prettier_config(file_path) {
+        let prettier = find_tool("prettier").unwrap_or_else(|| "npx prettier".to_string());
+        let prettier_parts: Vec<&str> = prettier.split_whitespace().collect();
+        if prettier_parts.len() == 1 {
+            run_silent(prettier_parts[0], &["--write", file_path]);
+        } else {
+            let _ = Command::new(prettier_parts[0])
+                .args(&prettier_parts[1..])
+                .args(["--write", file_path])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status();
+        }
     } else {
-        let _ = Command::new(biome_parts[0])
-            .args(&biome_parts[1..])
-            .args(["format", "--write", file_path])
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
-            .status();
+        let biome = find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
+        let biome_parts: Vec<&str> = biome.split_whitespace().collect();
+        if biome_parts.len() == 1 {
+            run_silent(biome_parts[0], &["format", "--write", file_path]);
+        } else {
+            let _ = Command::new(biome_parts[0])
+                .args(&biome_parts[1..])
+                .args(["format", "--write", file_path])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status();
+        }
     }
 
     // Lint
