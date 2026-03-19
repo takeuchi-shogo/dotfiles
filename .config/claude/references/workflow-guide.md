@@ -134,6 +134,21 @@ codex exec --skip-git-repo-check -m gpt-5.4 \
 - ユニット → 統合 → E2E の3層で検証
 - テストが通らなければ実装に戻る
 
+### 3.1. Eval 優先原則
+
+Agent の出力品質が低下した場合、**まず評測（eval）を疑い、次に Agent を修正する**。
+
+| 状況 | まずやること | やってはいけないこと |
+|------|-------------|-------------------|
+| テストが不安定 | テスト環境・リソース制約を確認 | Agent のプロンプトを変更 |
+| スコアが低下 | 評価基準のドリフトを確認 | モデルを切り替え |
+| 新機能で既存テスト失敗 | テストが現仕様と整合しているか確認 | テストを削除 |
+
+**判断フロー**:
+1. 評測基盤のエラー率を確認（infra error ≠ Agent error）
+2. 評分器のキャリブレーション確認（TPR/TNR — `evaluator-calibration-guide.md` 参照）
+3. 基盤に問題なければ Agent の修正に進む
+
 ### 4. Review（レビュー）
 
 `/review` スキルのワークフローに従う。スケーリング・言語検出・スペシャリスト選択・結果統合の詳細はスキル内の `skills/review/references/reviewer-routing.md` と `skills/review/templates/review-output.md` を参照。

@@ -86,6 +86,57 @@
 | **Sources** | ✅ | 根拠の出典。ファイルパス、URL、ドキュメント名。帰属の追跡に使用 |
 | **Recommended Actions** | Async のみ | ユーザーが次に取るべきアクション |
 
+## 子Agent 制約
+
+### 深度制限
+
+子Agent が孫Agent を無限に生成するのを防ぐ。
+
+- **最大深度**: 2（親 → 子 → 孫まで。それ以上は禁止）
+- **maxTurns**: タスク複雑度に応じて設定。目安: 調査系 10、実装系 20、複合系 30
+
+### 最小システムプロンプト
+
+子Agent には以下の3セクションのみ渡す。Skills、Memory、harness 指示は含めない:
+
+1. **Tooling**: 使用可能なツールと権限
+2. **Workspace**: 作業ディレクトリとファイル境界
+3. **Runtime**: 現在時刻、ブランチ名等の動的情報
+
+理由: 権限外泄の防止、隔離境界の維持、コンテキスト節約。
+
+### JSONL Inbox プロトコル
+
+マルチAgent 間で構造化メッセージを交換する場合の仕様:
+
+```jsonl
+{"request_id":"req-001","from":"orchestrator","to":"worker-1","content":"src/api.ts のエラーハンドリングを修正","status":"pending","timestamp":"2026-03-20T09:00:00Z"}
+{"request_id":"req-001","from":"worker-1","to":"orchestrator","content":"修正完了。try-catch を追加、テスト pass","status":"completed","timestamp":"2026-03-20T09:05:00Z"}
+```
+
+| フィールド | 必須 | 説明 |
+|-----------|------|------|
+| request_id | yes | リクエスト識別子 |
+| from | yes | 送信元 Agent ID |
+| to | yes | 宛先 Agent ID |
+| content | yes | メッセージ本文 |
+| status | yes | pending / approved / rejected / completed |
+| timestamp | yes | ISO 8601 |
+
+- 保存先: `.team/inbox/{agentId}.jsonl`（append-only）
+- 読取: 行単位パース、status でフィルタ
+- 崩壊復旧: append-only のため、途中でクラッシュしても既存データは保全
+
+### 幻覚の相互増幅への対策
+
+複数 Agent が頻繁にやり取りすると、1つの誤りが連鎖的に強化される。対策:
+
+- 重要な結論には独立した第2 Agent による交叉検証を挟む
+- 外部検証（単体テスト、コンパイラ、lint）を各 Agent の完了条件に含める
+- Agent 間の通信は摘要のみ。探索・試行の詳細は子Agent のコンテキスト内に留める
+
+---
+
 ## 使い方
 
 各スキル・スクリプトは、サブエージェント起動時にパターンに応じたフレーミングを注入する:
