@@ -1,0 +1,62 @@
+blueprint:
+  name: bug-fix
+  description: Investigate and fix a bug with test verification
+  trigger: "Bug report, test failure, error in production"
+  completion: strict
+
+  nodes:
+    # --- Agentic: root cause analysis ---
+    - id: investigate
+      type: agentic
+      tools: [Read, Grep, Glob, Bash]
+      max_iterations: 3
+      on_failure: handback
+
+    # --- Agentic: apply the fix ---
+    - id: implement-fix
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Glob]
+      max_iterations: 3
+      on_failure: handback
+
+    # --- Deterministic: lint check (0 tokens) ---
+    - id: lint
+      type: deterministic
+      command: "${LINT_CMD:-true}"
+      on_failure: retry
+
+    # --- Agentic: fix lint errors ---
+    - id: fix-lint-errors
+      type: agentic
+      tools: [Read, Edit, Grep]
+      max_iterations: 2
+      on_failure: abort
+
+    # --- Deterministic: run tests (0 tokens) ---
+    - id: test
+      type: deterministic
+      command: "${TEST_CMD}"
+      on_failure: retry
+
+    # --- Agentic: fix failing tests ---
+    - id: fix-test-failures
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Glob, Bash]
+      max_iterations: 2
+      on_failure: handback
+
+    # --- Deterministic: commit (0 tokens) ---
+    - id: commit
+      type: deterministic
+      command: "git add -A && git commit"
+      on_failure: abort
+
+  edges:
+    - [investigate, implement-fix]
+    - [implement-fix, lint]
+    - [lint, test,            { condition: "lint.passed" }]
+    - [lint, fix-lint-errors, { condition: "lint.failed" }]
+    - [fix-lint-errors, lint]                              # loop back
+    - [test, commit,              { condition: "test.passed" }]
+    - [test, fix-test-failures,   { condition: "test.failed" }]
+    - [fix-test-failures, lint]                            # re-verify from lint

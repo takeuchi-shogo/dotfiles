@@ -1,0 +1,61 @@
+blueprint:
+  name: feature
+  description: Implement a new feature from spec
+  trigger: "Feature request, spec file, new functionality"
+  completion: graduated  # delivering a PR is a valid partial success
+
+  nodes:
+    # --- Deterministic: load spec (0 tokens) ---
+    - id: read-spec
+      type: deterministic
+      command: "cat docs/specs/${FEATURE}.prompt.md"
+      on_failure: abort
+
+    # --- Agentic: understand codebase and produce implementation plan ---
+    - id: plan
+      type: agentic
+      tools: [Read, Grep, Glob]
+      max_iterations: 2
+      on_failure: handback
+
+    # --- Agentic: write the feature ---
+    - id: implement
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Glob, Bash]
+      max_iterations: 5
+      on_failure: handback
+
+    # --- Deterministic: lint check (0 tokens) ---
+    - id: lint
+      type: deterministic
+      command: "${LINT_CMD:-true}"
+      on_failure: retry
+
+    # --- Deterministic: run tests (0 tokens) ---
+    - id: test
+      type: deterministic
+      command: "${TEST_CMD}"
+      on_failure: retry
+
+    # --- Agentic: fix lint errors or test failures ---
+    - id: fix-issues
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Bash]
+      max_iterations: 2
+      on_failure: handback
+
+    # --- Deterministic: open pull request (0 tokens) ---
+    - id: create-pr
+      type: deterministic
+      command: "gh pr create --title '${PR_TITLE}' --body-file ${PR_BODY}"
+      on_failure: abort
+
+  edges:
+    - [read-spec, plan]
+    - [plan, implement]
+    - [implement, lint]
+    - [lint, test,        { condition: "lint.passed" }]
+    - [lint, fix-issues,  { condition: "lint.failed" }]
+    - [fix-issues, lint]                                   # loop back
+    - [test, create-pr,   { condition: "test.passed" }]
+    - [test, fix-issues,  { condition: "test.failed" }]
