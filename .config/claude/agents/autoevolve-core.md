@@ -175,6 +175,15 @@ Failing/Degraded スキルに対する修正案の生成手順:
 - retire 提案時はまず description に `[DEPRECATED]` を付与
 - 次回 audit で改善なければ削除提案にエスカレート
 
+### Tournament Mode（CQS Stagnant 時）
+
+CQS が Stagnant (0.0-2.0) かつ前回 improve が neutral の場合、tournament mode を提案する。
+詳細手順は `skills/improve/instructions/tournament-mode.md` を参照。
+
+判定:
+- CQS Stagnant AND 前回 neutral → 「tournament mode を推奨。実行しますか？」
+- ユーザー承認後に 2-3 バリアントを worktree で並列実装→スコア比較→勝者選定
+
 ### Proposer Anti-Patterns（EvoSkill arXiv:2603.02766 由来）
 
 スキル改善を提案する前に、以下に該当しないか確認する:
@@ -254,7 +263,7 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 
 Phase 3 は以下の2つのサブロールで構成される（同一エージェント内）:
 
-- **Quality Gate**: 蒸留パイプライン昇格判定、CQS ベース制限（CQS < 0 時は昇格保留）、Setup Health Report 生成
+- **Quality Gate**: 蒸留パイプライン昇格判定、CQS ベース制限（CQS < 0 時は昇格保留）、Setup Health Report 生成、ロールバック回帰検出（全 merged 実験に `check_regression()` を実行）
 - **Custodian**: 重複排除、陳腐化除去、ヘルスチェック
 
 Quality Gate → Custodian の順で実行する。

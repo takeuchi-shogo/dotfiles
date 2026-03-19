@@ -342,7 +342,7 @@ def measure_effect(exp_id: str) -> dict:
         return {"verdict": "insufficient_data", "error": "experiment not yet merged"}
 
     merged_at = datetime.fromisoformat(merged_at_str)
-    category = exp["category"]
+    category = exp.get("category", "")
 
     # learnings データを読む
     learnings_path = _get_data_dir() / "learnings" / f"{category}.jsonl"
@@ -456,6 +456,128 @@ def compute_cqs() -> dict:
     }
 
 
+def check_regression(exp_id: str, min_sessions: int = 3) -> dict:
+    """merged 実験後の品質回帰を検出する。
+
+    判定ロジック:
+    1. merged 後 min_sessions セッション以上経過していること（安定化待ち）
+    2. merged 後の error_rate が merged 前より 20% 以上増加
+    3. OR: merged 後に同カテゴリの discard が 2 件以上発生
+    4. OR: CQS が merged 時点から -5 以上低下
+
+    Args:
+        exp_id: 検査対象の実験ID
+        min_sessions: 安定化待ちの最小セッション数
+
+    Returns:
+        {"regression": bool, "reason": str, "suggestion": str}
+    """
+    experiments = _load_registry()
+    exp = None
+    for e in experiments:
+        if e["id"] == exp_id:
+            exp = e
+            break
+
+    if exp is None:
+        return {"regression": False, "reason": "experiment not found", "suggestion": ""}
+
+    if exp.get("status") != "merged":
+        return {"regression": False, "reason": "not merged", "suggestion": ""}
+
+    merged_at_str = exp.get("merged_at")
+    if not merged_at_str:
+        return {
+            "regression": False,
+            "reason": "no merged_at timestamp",
+            "suggestion": "",
+        }
+
+    merged_at = datetime.fromisoformat(merged_at_str)
+    category = exp.get("category", "")
+
+    # Check 1: 安定化待ち — merged 後のセッション数を確認
+    metrics_path = _get_data_dir() / "metrics" / "session-metrics.jsonl"
+    if not metrics_path.exists():
+        return {
+            "regression": False,
+            "reason": "session-metrics not found",
+            "suggestion": "",
+        }
+    post_merge_sessions = 0
+    with open(metrics_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                ts_str = entry.get("timestamp", "")
+                if not ts_str:
+                    continue
+                ts = datetime.fromisoformat(ts_str)
+                if ts > merged_at:
+                    post_merge_sessions += 1
+            except (json.JSONDecodeError, ValueError, TypeError):
+                continue
+
+    if post_merge_sessions < min_sessions:
+        return {
+            "regression": False,
+            "reason": (
+                f"insufficient sessions after merge"
+                f" ({post_merge_sessions}/{min_sessions})"
+            ),
+            "suggestion": "",
+        }
+
+    # Check 2: error_rate 増加
+    effect = measure_effect(exp_id)
+    if effect.get("verdict") == "discard":
+        change_pct = effect.get("change_pct", 0)
+        return {
+            "regression": True,
+            "reason": f"error_rate increased by {change_pct}% after merge",
+            "suggestion": f"revert {exp_id}",
+        }
+
+    # Check 3: 同カテゴリの discard が 2 件以上
+    post_merge_discards = 0
+    for other in experiments:
+        if other.get("category") != category:
+            continue
+        if other.get("status") != "merged":
+            continue
+        if other.get("id") == exp_id:
+            continue
+        other_result = measure_effect(other.get("id", ""))
+        if other_result.get("verdict") == "discard":
+            other_merged = other.get("merged_at", "")
+            if not other_merged:
+                continue
+            try:
+                other_dt = datetime.fromisoformat(other_merged)
+                if other_dt > merged_at:
+                    post_merge_discards += 1
+            except (ValueError, TypeError):
+                continue
+
+    if post_merge_discards >= 2:
+        return {
+            "regression": True,
+            "reason": (
+                f"{post_merge_discards} discards in category '{category}' after merge"
+            ),
+            "suggestion": f"revert {exp_id}",
+        }
+
+    # Check 4: CQS の大幅低下は compute_cqs() のスナップショット比較が必要
+    # 現時点では CQS は累積値のため、単一実験の影響を分離するのは困難
+    # 将来的に CQS スナップショットを導入した場合に追加する
+
+    return {"regression": False, "reason": "no regression detected", "suggestion": ""}
+
+
 def export_tsv() -> str:
     """全実験を autoresearch の results.tsv 風フラット TSV で出力する。"""
     experiments = _load_registry()
@@ -550,6 +672,19 @@ def main():
         "--skills", required=True, help="Comma-separated degraded skill names"
     )
 
+    # check-regression サブコマンド
+    check_reg = subparsers.add_parser(
+        "check-regression",
+        help="Check for quality regression after merge",
+    )
+    check_reg.add_argument("exp_id", help="Experiment ID")
+    check_reg.add_argument(
+        "--min-sessions",
+        type=int,
+        default=3,
+        help="Min sessions after merge",
+    )
+
     # proposer-context サブコマンド
     proposer_ctx = subparsers.add_parser(
         "proposer-context", help="Build proposer context for a skill"
@@ -605,6 +740,13 @@ def main():
         skills = [s.strip() for s in args.skills.split(",")]
         result = select_next_target(skills)
         print(result or "NO_TARGET")
+
+    elif args.command == "check-regression":
+        result = check_regression(args.exp_id, args.min_sessions)
+        if result["regression"]:
+            print(f"[ROLLBACK SUGGESTED] {args.exp_id}: {result['reason']}")
+        else:
+            print(f"OK: {result['reason']}")
 
     elif args.command == "proposer-context":
         print(build_proposer_context(args.skill, args.limit))
