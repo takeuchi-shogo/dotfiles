@@ -58,3 +58,8 @@
 | `importance < 0.4` | 昇格なし |
 
 昇格先: `insights/analysis-YYYY-MM-DD.md` の「昇格提案」セクション
+
+## 統合スコアリング設定
+
+全閾値・重みは `references/scoring-config.json` に一元管理されている。
+チューニング時は JSON を編集し、本ファイルの閾値表は人間向けリファレンスとして残す。

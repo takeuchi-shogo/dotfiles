@@ -85,7 +85,13 @@ Normalizer → Pattern Analyst の順で実行する。
      - A/B retire + 実行スコア低 → 強い改善根拠
      - A/B keep + 実行スコア低 → 環境変化による劣化
      - 実行データなし → 不要スキル候補
-8. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
+8. **出力信号分類**: `skill-executions.jsonl` の self-score を `scoring-config.json` の `outputSignal.thresholds` で分類
+   - HIGH_SIGNAL (score >= 8) → 成功パターンとして `patterns.jsonl` に記録、insights 昇格候補
+   - CONTEXTUAL (score >= 5) → 通常の分析対象
+   - WATCHLIST (score >= 3) → 監視。3回連続で degraded スキルとして改善候補に
+   - NOISE (score < 3) → 分析対象外。ログのみ保持
+   - 信号分類の集計は insights の「出力信号分布」セクションに含める
+9. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
    - 同じ error_pattern が3回以上 → error-fix-guides.md への自動追加候補
    - generalized フィールドを使ってパターンマッチング
    - recovery_action の有効性を検証（同じエラーの再発有無）

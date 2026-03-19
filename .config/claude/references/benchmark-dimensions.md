@@ -40,3 +40,21 @@ python .config/claude/scripts/benchmark/setup_health.py --json
 ```
 
 `/improve` ダッシュボードの一部として使用される。
+
+## Retroactive Scoring
+
+新スキル導入時やデータ不足時に、過去の実行記録からベースラインスコアを遡及算出する。
+
+```bash
+# 特定スキルのバッチスコアリング
+python .config/claude/scripts/benchmark/retroactive_scorer.py --skill improve
+
+# 全スキル
+python .config/claude/scripts/benchmark/retroactive_scorer.py --all
+
+# プレビュー（書き込みなし）
+python .config/claude/scripts/benchmark/retroactive_scorer.py --all --dry-run
+```
+
+スコアは `skill-executions.jsonl` に `scored_by: "retroactive"` として追記される。
+閾値・信号分類は `references/scoring-config.json` の `outputSignal` を参照する。

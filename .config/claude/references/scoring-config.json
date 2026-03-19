@@ -1,0 +1,73 @@
+{
+	"$schema": "Scoring configuration for AutoEvolve and skill evaluation",
+	"$doc": "閾値・重みの一元管理。scoring-rules.md, autoevolve-core.md, benchmark-dimensions.md から参照される。",
+
+	"eventImportance": {
+		"$doc": "イベント記録時の重要度閾値 (0.0-1.0)",
+		"promotionThresholds": {
+			"autoPromote": 0.8,
+			"promoteAfterRepeat": 0.4,
+			"noPromote": 0.4
+		},
+		"repeatCountForPromotion": 3
+	},
+
+	"skillHealth": {
+		"$doc": "スキル健全性判定 (autoevolve-core Phase 1)",
+		"thresholds": {
+			"healthy": 0.6,
+			"degraded": 0.4,
+			"failing": 0.4
+		},
+		"trendDropThreshold": -0.1,
+		"failingConsecutiveRuns": 4,
+		"failingWindowSize": 5,
+		"minExecutionsForImprovement": 5
+	},
+
+	"outputSignal": {
+		"$doc": "スキル出力スコア (1-10) の信号分類。self-scoring の Score 値に適用する。",
+		"thresholds": {
+			"highSignal": 8,
+			"contextual": 5,
+			"watchlist": 3,
+			"noise": 3
+		},
+		"actions": {
+			"highSignal": "即座に insights 昇格候補。成功パターンとして patterns.jsonl に記録",
+			"contextual": "通常の分析対象。skill-executions.jsonl に記録",
+			"watchlist": "監視のみ。3回連続で degraded スキルとして改善候補に",
+			"noise": "分析対象外。ログのみ保持"
+		}
+	},
+
+	"weights": {
+		"$doc": "スコア算出時の次元別重み",
+		"quality": 0.6,
+		"recency": 0.4
+	},
+
+	"confidence": {
+		"$doc": "スコアリング手法ごとの信頼度",
+		"ruleMatch": 0.8,
+		"categoryFallback": 0.5,
+		"llmReeval": 0.9,
+		"selfScore": 0.7
+	},
+
+	"benchmarkDimensions": {
+		"$doc": "Setup Health の次元別閾値 (benchmark-dimensions.md)",
+		"errorRate": { "good": 1.0, "warning": 3.0 },
+		"recoveryRate": { "good": 0.7, "warning": 0.4 },
+		"qualityScore": { "good": 5, "warning": 15 },
+		"skillHealth": { "good": 0.6, "warning": 0.4 },
+		"improvementVelocity": { "good": 0, "warning": 0 },
+		"reviewAcceptance": { "good": 0.7, "warning": 0.4 }
+	},
+
+	"improveDelta": {
+		"$doc": "AutoEvolve Improve フェーズの効果判定閾値 (pp)",
+		"mergeRecommend": 2,
+		"revertRecommend": -2
+	}
+}
