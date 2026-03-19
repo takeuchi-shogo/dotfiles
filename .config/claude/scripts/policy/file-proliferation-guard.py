@@ -49,17 +49,52 @@ def _state_path() -> Path:
     return get_data_dir() / STATE_FILE
 
 
+def _session_file() -> Path:
+    """current-session.jsonl のパス。セッション境界の判定に使う。"""
+    from storage import get_data_dir
+
+    return get_data_dir() / "current-session.jsonl"
+
+
+def _is_new_session(state: dict) -> bool:
+    """state が現在のセッションと一致しないなら True を返す。
+
+    判定基準: current-session.jsonl が存在しない(= 新セッション開始前)、
+    または state に記録された session_file_mtime と実ファイルの mtime が不一致。
+    """
+    session_path = _session_file()
+    if not session_path.exists():
+        return True
+    try:
+        current_mtime = session_path.stat().st_mtime
+    except OSError:
+        return True
+    return state.get("session_file_mtime") != current_mtime
+
+
 def _load_state() -> dict:
+    default = {"created_files": [], "warned": False}
     path = _state_path()
     if not path.exists():
-        return {"created_files": [], "warned": False}
+        return default
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        state = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return {"created_files": [], "warned": False}
+        return default
+    # セッションが変わっていたらリセット
+    if _is_new_session(state):
+        return default
+    return state
 
 
 def _save_state(state: dict) -> None:
+    # セッション境界の追跡用に current-session.jsonl の mtime を記録
+    session_path = _session_file()
+    if session_path.exists():
+        try:
+            state["session_file_mtime"] = session_path.stat().st_mtime
+        except OSError:
+            state.pop("session_file_mtime", None)
     path = _state_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
