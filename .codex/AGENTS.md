@@ -71,6 +71,9 @@
 | `reviewer` | `gpt-5.4` | correctness / security / test gap レビュー | `read-only` |
 | `docs_researcher` | `gpt-5.3-codex-spark` | ドキュメント・config の整合確認 | `read-only` |
 | `validation_explorer` | `gpt-5.3-codex-spark` | dotfiles 変更に対する最小 validation 選定 | `read-only` |
+| `search_specialist` | `gpt-5.3-codex-spark` | search-first 段階の codebase / external source 探索 | `read-only` |
+| `security_auditor` | `gpt-5.4` | auth / secrets / validation / config の security 深掘り | `read-only` |
+| `debugger` | `gpt-5.4` | failing validation / runtime anomaly / test failure の切り分け | `read-only` |
 
 ### 使い方
 
@@ -79,6 +82,9 @@
 - 全 custom agent は read-only。ファイル編集は親 agent が行う
 - 詳細な framing とテンプレートは `docs/playbooks/codex-subagent-usage.md` を参照する
 - subagent の主目的は速度だけでなく context isolation であり、noisy な探索を main thread に積まないために使う
+- `search_specialist` は search-first や外部調査の初動で使う
+- `security_auditor` は `.codex/`、`.mcp.json`、script、auth、secrets、input validation の変更で使う
+- `debugger` は validation failure、CLI 挙動不良、再現が曖昧な不具合の切り分けで使う
 
 ### Branch Review パターン
 

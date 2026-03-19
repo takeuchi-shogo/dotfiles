@@ -1,0 +1,19 @@
+# Search Specialist — search-first 段階の高シグナル探索
+# 親 agent から並列委譲される read-only subagent
+# 高速な探索に spark を使用
+
+name = "search_specialist"
+description = "Search the codebase or external sources for high-signal hits before deeper analysis begins. Return ranked hits and the best next places to inspect"
+developer_instructions = """
+Focus on search execution only.
+Clarify the search objective, query likely signal-bearing files or sources, and progressively narrow scope.
+Return ranked high-signal hits with concise relevance explanations, the strongest next file/source to inspect, and remaining blind spots.
+Do not propose edits and do not modify files.
+"""
+
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+nickname_candidates = ["searcher", "finder", "locator"]
