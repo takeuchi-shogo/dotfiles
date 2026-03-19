@@ -4,6 +4,10 @@
 Detects project type, runs appropriate test command, and injects failure
 info as additionalContext so the agent can self-correct.
 Uses a retry counter to prevent infinite loops (max 2 retries).
+
+Features:
+  - Selective test running: run related tests first, then full suite (Stripe Minions)
+  - Graduated completion: partial handback with structured report (Stripe Minions)
 Ref: Harness Engineering Best Practices 2026 — "Completion Gates (Stop)"
 
 Triggered by: hooks.Stop
@@ -19,6 +23,11 @@ import sys
 import tempfile
 
 MAX_RETRIES = 2
+
+# Graduated completion mode (Stripe Minions pattern)
+# "strict" = default, block on test failure
+# "graduated" = allow partial completion with handback report
+COMPLETION_MODE = os.environ.get("COMPLETION_MODE", "strict")
 COUNTER_DIR = os.path.join(tempfile.gettempdir(), "claude-completion-gate")
 COUNTER_FILE = os.path.join(COUNTER_DIR, "retries")
 
@@ -231,6 +240,100 @@ _TEST_FILE_MAPPINGS = {
 }
 
 
+def _try_selective_tests() -> tuple[bool, str, str] | None:
+    """Try running only tests related to changed files (fast feedback).
+
+    Returns (success, output, cmd) or None if selective tests aren't available.
+    """
+    try:
+        # Import test_selector from sibling lib/ directory
+        lib_dir = os.path.join(os.path.dirname(__file__), "..", "lib")
+        if lib_dir not in sys.path:
+            sys.path.insert(0, lib_dir)
+        from test_selector import select_tests
+
+        selective_cmd, _full_cmd = select_tests(project_root=os.getcwd())
+        if selective_cmd is None:
+            return None
+
+        print(
+            f"[Completion Gate] 選択的テスト実行: {selective_cmd}",
+            file=sys.stderr,
+        )
+        success, output = _run_tests(selective_cmd)
+        return (success, output, selective_cmd)
+    except ImportError:
+        print("[Completion Gate] test_selector not available", file=sys.stderr)
+        return None
+    except Exception as exc:
+        print(f"[Completion Gate] selective test error: {exc}", file=sys.stderr)
+        return None
+
+
+def _generate_handback_report() -> str:
+    """Generate a structured handback report for graduated completion.
+
+    Collects: completed tasks, failed tests, and recommended actions.
+    """
+    parts = [
+        "[Graduated Completion] ハンドバックレポート",
+        "",
+        "## Status: Partial",
+        "",
+    ]
+
+    # Collect recent test failure info
+    test_cmd = _detect_test_command()
+    if test_cmd:
+        success, output = _run_tests(test_cmd)
+        if not success:
+            parts.extend(
+                [
+                    "### 失敗テスト",
+                    f"コマンド: `{test_cmd}`",
+                    "```",
+                    output,
+                    "```",
+                    "",
+                ]
+            )
+        else:
+            parts.extend(["### テスト: 全通過", ""])
+
+    # Collect changed files as "completed work"
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--stat", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=os.getcwd(),
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            parts.extend(
+                [
+                    "### 変更済みファイル",
+                    "```",
+                    result.stdout.strip(),
+                    "```",
+                    "",
+                ]
+            )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(f"[Completion Gate] git diff failed: {exc}", file=sys.stderr)
+
+    parts.extend(
+        [
+            "### 推奨アクション",
+            "1. 失敗テストを確認し、手動で修正を検討してください",
+            "2. 変更済みコードは commit 済みです（作業喪失防止）",
+            "3. PR を作成する場合は `[WIP]` を title に付加してください",
+        ]
+    )
+
+    return "\n".join(parts)
+
+
 def _check_test_coverage_for_changes() -> str | None:
     """Check if changed source files have corresponding test files (advisory)."""
     try:
@@ -318,14 +421,23 @@ def _check_test_coverage_for_changes() -> str | None:
 def main() -> None:
     retries = _get_retry_count()
 
-    # Safety valve: if we've hit max retries, allow stop
+    # Safety valve: if we've hit max retries, allow stop (or handback)
     if retries >= MAX_RETRIES:
         _reset_retries()
-        print(
-            "[Completion Gate] リトライ上限"
-            f"({MAX_RETRIES}回)に到達。停止を許可します。",
-            file=sys.stderr,
-        )
+        if COMPLETION_MODE == "graduated":
+            report = _generate_handback_report()
+            print(
+                "[Completion Gate] リトライ上限到達 — graduated mode: "
+                "ハンドバックレポートを生成します。",
+                file=sys.stderr,
+            )
+            json.dump({"systemMessage": report}, sys.stdout)
+        else:
+            print(
+                "[Completion Gate] リトライ上限"
+                f"({MAX_RETRIES}回)に到達。停止を許可します。",
+                file=sys.stderr,
+            )
         return
 
     # --- Ralph Loop: check for incomplete active plans ---
@@ -367,6 +479,35 @@ def main() -> None:
             json.dump({"systemMessage": review_msg}, sys.stdout)
         return
 
+    # Step 1: Try selective tests first (fast feedback)
+    selective = _try_selective_tests()
+    if selective is not None:
+        sel_success, sel_output, sel_cmd = selective
+        if not sel_success:
+            # Selective tests failed — skip full suite, report immediately
+            _set_retry_count(retries + 1)
+            remaining = MAX_RETRIES - retries - 1
+            ctx_lines = [
+                f"[Completion Gate] 関連テストが失敗: `{sel_cmd}`",
+                f"リトライ残り: {remaining}回",
+                "",
+                "```",
+                sel_output,
+                "```",
+                "",
+                "FIX: 関連テストを通過させてから完了してください。",
+            ]
+            json.dump(
+                {"decision": "block", "reason": "\n".join(ctx_lines)},
+                sys.stdout,
+            )
+            return
+        print(
+            f"[Completion Gate] 関連テスト通過 ({sel_cmd})",
+            file=sys.stderr,
+        )
+
+    # Step 2: Run full test suite
     success, output = _run_tests(test_cmd)
 
     if success:

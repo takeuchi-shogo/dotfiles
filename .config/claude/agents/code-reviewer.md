@@ -47,6 +47,13 @@ When invoked:
 - suggestion ブロックで修正案を提示
 - 良い点も認める
 
+### Design Rationale 昇格ルール（M/L 変更）
+
+M/L 規模の変更で Design Rationale（`references/comprehension-debt-policy.md` 参照）が不十分な場合、`ask:` ではなく `must:` に昇格する。
+- What / Why this approach / Risk mitigation の 3 点が欠けている → `must:`
+- 「動いたから」「AI が提案したから」のみ → `must:`
+- S 規模は免除
+
 ## Review Checklist
 
 ### 基本品質

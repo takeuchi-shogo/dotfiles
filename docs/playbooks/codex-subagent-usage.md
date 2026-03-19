@@ -27,6 +27,15 @@ Codex の subagent を dotfiles で使うときの playbook。
   - `Taskfile.yml`、`.bin/validate_*.sh`、change surface matrix、README から最小 validation を選定
   - この agent は導入後に使用する
 
+## Optional Specialist Roles
+
+- `search_specialist`
+  - search-first 段階の codebase / external source 探索
+- `security_auditor`
+  - auth、secrets、input validation、config、script の focused security review
+- `debugger`
+  - failing validation、CLI anomaly、runtime bug、failing test の root-cause isolation
+
 ## Framing Rules
 
 - subagent には query だけでなく `objective` を渡す

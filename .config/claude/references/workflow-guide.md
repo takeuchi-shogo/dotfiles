@@ -134,6 +134,21 @@ codex exec --skip-git-repo-check -m gpt-5.4 \
 - ユニット → 統合 → E2E の3層で検証
 - テストが通らなければ実装に戻る
 
+### 3.1. Eval 優先原則
+
+Agent の出力品質が低下した場合、**まず評測（eval）を疑い、次に Agent を修正する**。
+
+| 状況 | まずやること | やってはいけないこと |
+|------|-------------|-------------------|
+| テストが不安定 | テスト環境・リソース制約を確認 | Agent のプロンプトを変更 |
+| スコアが低下 | 評価基準のドリフトを確認 | モデルを切り替え |
+| 新機能で既存テスト失敗 | テストが現仕様と整合しているか確認 | テストを削除 |
+
+**判断フロー**:
+1. 評測基盤のエラー率を確認（infra error ≠ Agent error）
+2. 評分器のキャリブレーション確認（TPR/TNR — `evaluator-calibration-guide.md` 参照）
+3. 基盤に問題なければ Agent の修正に進む
+
 ### 4. Review（レビュー）
 
 `/review` スキルのワークフローに従う。スケーリング・言語検出・スペシャリスト選択・結果統合の詳細はスキル内の `skills/review/references/reviewer-routing.md` と `skills/review/templates/review-output.md` を参照。
@@ -172,9 +187,17 @@ Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check
 
 | 規模            | 例                                | 必須段階                         | スキップ可能                           |
 | --------------- | --------------------------------- | -------------------------------- | -------------------------------------- |
-| **S（軽微）**   | typo修正、1行変更、設定値変更     | Implement → Verify                              | Plan, Risk Analysis, Test, Review, Security      |
-| **M（標準）**   | 関数追加、バグ修正、小機能        | Plan → Risk Analysis → Implement → Test → Verify | 4並列レビューは1-2エージェントに縮小可           |
-| **L（大規模）** | 新機能、リファクタリング、API設計 | Checkpoint → 全7段階（Risk Analysis 含む）        | なし                                             |
+| **S（軽微）**   | typo修正、1行変更、設定値変更     | Implement → Verify                              | Spec Review, Plan, Risk Analysis, Test, Review, Security |
+| **M（標準）**   | 関数追加、バグ修正、小機能        | Spec Review → Plan → Risk Analysis → Implement → Test → Verify | 4並列レビューは1-2エージェントに縮小可           |
+| **L（大規模）** | 新機能、リファクタリング、API設計 | Spec Review → Checkpoint → 全7段階（Risk Analysis 含む） | なし                                             |
+
+### Spec Review の定義（M/L で必須）
+
+M/L 規模のタスクで実装に入る前に仕様の品質を確認するゲート。S は免除。
+
+1. `rules/common/overconfidence-prevention.md` の 6 つの Spec Slop 指標をパスすること
+2. 曖昧な要件が 0 になるまで質問で解消すること
+3. Design Rationale（`references/comprehension-debt-policy.md`）の 3 点が記述されていること
 
 ### 多因子タスク規模判定
 

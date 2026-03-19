@@ -11,7 +11,7 @@ Rules 20-22.
 
 Note: This is an initial implementation focused on proxy metric checks.
 Future iterations will add assertion counting and scope narrowing detection.
-TODO: Rule 22 (Metric Diversity) auto-detection is not yet implemented.
+Rule 22 (Metric Diversity) implemented — detects single-metric evaluations.
 """
 
 from __future__ import annotations
@@ -35,6 +35,7 @@ emit = get_emitter()
 
 # --- Constants ---
 SCORE_JUMP_THRESHOLD = 5  # +5pp triggers Goodhart warning
+MIN_METRIC_COUNT = 2  # Rule 22: require at least 2 distinct metrics
 PROTECTED_FILES = [
     "improve-policy.md",
     "skill-benchmarks.jsonl",
@@ -106,6 +107,49 @@ def _parse_single_delta(delta_str: str) -> float | None:
         return float(delta_str)
     except ValueError:
         return None
+
+
+def _detect_single_metric(tool_output: str) -> str | None:
+    """Rule 22: Detect evaluations relying on a single metric.
+
+    When an improve/evolve result reports scores, check that multiple
+    distinct metrics are present. Single-metric optimization is vulnerable
+    to Goodhart's Law exploitation.
+
+    Inspired by "Don't trust your agents" (0xSero & SarahXC):
+    "If your only measure is 'gets things done fast,' you'll hire people
+    who cut corners."
+    """
+    # Look for score/metric reporting patterns
+    metric_patterns = [
+        re.compile(
+            r"(?:score|metric|accuracy|pass_rate|recall|precision|f1|bleu|rouge)\s*[=:]\s*[\d.]+",
+            re.I,
+        ),
+        re.compile(r"checklist_pass_rate\s*[=:]\s*[\d.]+", re.I),
+        re.compile(r"\b(?:improvement|delta|change)\s*[=:]\s*[+-]?[\d.]+", re.I),
+    ]
+
+    found_metrics: set[str] = set()
+    for pattern in metric_patterns:
+        for match in pattern.finditer(tool_output):
+            # Extract the metric name (first word before = or :)
+            text = match.group(0)
+            name = re.split(r"\s*[=:]\s*", text)[0].strip().lower()
+            found_metrics.add(name)
+
+    # Only warn if we found exactly 1 metric (indicates evaluation happened
+    # but with insufficient breadth). 0 metrics = not a scoring context.
+    if len(found_metrics) == 1:
+        metric_name = next(iter(found_metrics))
+        return (
+            f"[Gaming Detector] Rule 22 警告: "
+            f"評価が単一メトリクス '{metric_name}' のみに依存しています。"
+            f"少なくとも {MIN_METRIC_COUNT} 個の独立したメトリクスで評価してください。"
+            f"単一メトリクスはエージェントの搾取対象になります。"
+        )
+
+    return None
 
 
 def _detect_score_jump(tool_output: str) -> str | None:
@@ -187,6 +231,20 @@ def main() -> None:
             {
                 "type": "gaming_detected",
                 "rule": "20_proxy_metric",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # Rule 22: Metric diversity check
+    warning = _detect_single_metric(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "22_metric_diversity",
                 "message": warning,
             },
         )

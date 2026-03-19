@@ -334,6 +334,8 @@ def append_to_learnings(filename: str, data: dict) -> None:
         path = _get_data_dir() / "learnings" / f"{filename}.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         entry = {"timestamp": _now_iso(), **data}
+        entry.setdefault("tier", "raw")
+        entry.setdefault("score", 0.0)
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
         brief = str(data.get("message", data.get("rule", "")))[:80]

@@ -16,10 +16,26 @@ REGISTRY_PATH = Path(
 
 
 def _next_id() -> str:
-    """UUID サフィックスで TOCTOU レースを回避しつつ、人間可読な日付プレフィックスを保持。"""
+    """UUID で TOCTOU レースを回避し、日付プレフィックスで可読性を保持。"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     short_uuid = uuid.uuid4().hex[:6]
     return f"tr-{today}-{short_uuid}"
+
+
+def _has_running_task() -> bool:
+    """running 状態のタスクが存在するか確認。単一 in_progress 制約の強制。"""
+    if not REGISTRY_PATH.exists():
+        return False
+    entries: dict[str, dict] = {}
+    for line in REGISTRY_PATH.read_text().splitlines():
+        try:
+            entry = json.loads(line)
+            eid = entry.get("id", "")
+            if eid:
+                entries.setdefault(eid, {}).update(entry)
+        except json.JSONDecodeError:
+            continue
+    return any(e.get("status") == "running" for e in entries.values())
 
 
 def register(
@@ -59,7 +75,18 @@ def update_status(
     output_path: str | None = None,
     error: str | None = None,
 ) -> None:
-    """既存エントリのステータスを更新（同じ id で新しい行を追記）。"""
+    """既存エントリのステータスを更新（同じ id で新しい行を追記）。
+
+    単一 in_progress 制約: running に遷移する場合、
+    既に running のタスクがあれば ValueError を送出。
+    """
+    if status == "running" and _has_running_task():
+        current = get_latest(entry_id)
+        if not current or current.get("status") != "running":
+            raise ValueError(
+                "別のタスクが running 状態です。"
+                "先に完了させてから新しいタスクを開始してください。"
+            )
     update = {
         "id": entry_id,
         "status": status,

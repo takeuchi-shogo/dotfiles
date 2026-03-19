@@ -85,7 +85,13 @@ Normalizer → Pattern Analyst の順で実行する。
      - A/B retire + 実行スコア低 → 強い改善根拠
      - A/B keep + 実行スコア低 → 環境変化による劣化
      - 実行データなし → 不要スキル候補
-8. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
+8. **出力信号分類**: `skill-executions.jsonl` の self-score を `scoring-config.json` の `outputSignal.thresholds` で分類
+   - HIGH_SIGNAL (score >= 8) → 成功パターンとして `patterns.jsonl` に記録、insights 昇格候補
+   - CONTEXTUAL (score >= 5) → 通常の分析対象
+   - WATCHLIST (score >= 3) → 監視。3回連続で degraded スキルとして改善候補に
+   - NOISE (score < 3) → 分析対象外。ログのみ保持
+   - 信号分類の集計は insights の「出力信号分布」セクションに含める
+9. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
    - 同じ error_pattern が3回以上 → error-fix-guides.md への自動追加候補
    - generalized フィールドを使ってパターンマッチング
    - recovery_action の有効性を検証（同じエラーの再発有無）
@@ -169,6 +175,15 @@ Failing/Degraded スキルに対する修正案の生成手順:
 - retire 提案時はまず description に `[DEPRECATED]` を付与
 - 次回 audit で改善なければ削除提案にエスカレート
 
+### Tournament Mode（CQS Stagnant 時）
+
+CQS が Stagnant (0.0-2.0) かつ前回 improve が neutral の場合、tournament mode を提案する。
+詳細手順は `skills/improve/instructions/tournament-mode.md` を参照。
+
+判定:
+- CQS Stagnant AND 前回 neutral → 「tournament mode を推奨。実行しますか？」
+- ユーザー承認後に 2-3 バリアントを worktree で並列実装→スコア比較→勝者選定
+
 ### Proposer Anti-Patterns（EvoSkill arXiv:2603.02766 由来）
 
 スキル改善を提案する前に、以下に該当しないか確認する:
@@ -248,7 +263,7 @@ git commit -m "🤖 autoevolve: {変更の説明}"
 
 Phase 3 は以下の2つのサブロールで構成される（同一エージェント内）:
 
-- **Quality Gate**: 蒸留パイプライン昇格判定、CQS ベース制限（CQS < 0 時は昇格保留）、Setup Health Report 生成
+- **Quality Gate**: 蒸留パイプライン昇格判定、CQS ベース制限（CQS < 0 時は昇格保留）、Setup Health Report 生成、ロールバック回帰検出（全 merged 実験に `check_regression()` を実行）
 - **Custodian**: 重複排除、陳腐化除去、ヘルスチェック
 
 Quality Gate → Custodian の順で実行する。

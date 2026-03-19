@@ -118,4 +118,57 @@ update_status(os.environ["ENTRY_ID"], os.environ["FINAL_STATUS"], output_path=os
 PYEOF
 fi
 
+# --- PR Delivery (Stripe Minions pattern) ---
+COMPLETION_MODE="${COMPLETION_MODE:-strict}"
+CREATE_PR="${CREATE_PR:-false}"
+
+if [[ "$CREATE_PR" == "true" ]]; then
+  BRANCH_NAME=$(git branch --show-current 2>/dev/null || echo "")
+
+  if [[ -n "$BRANCH_NAME" && "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
+    # Determine PR title and status
+    if [[ "$FINAL_STATUS" == "completed" ]]; then
+      PR_TITLE="${PR_TITLE_PREFIX:-[autonomous]} ${TASK_NAME}"
+      COMPLETION_LABEL="Full"
+    elif [[ "$COMPLETION_MODE" == "graduated" ]]; then
+      PR_TITLE="[WIP] ${PR_TITLE_PREFIX:-[autonomous]} ${TASK_NAME}"
+      COMPLETION_LABEL="Partial"
+    else
+      echo "Skipping PR creation: task not completed and graduated mode not enabled"
+      COMPLETION_LABEL="Blocked"
+    fi
+
+    if [[ "$COMPLETION_LABEL" != "Blocked" ]]; then
+      # Build PR body from template
+      TEMPLATE="${TASK_DIR}/../../templates/pr-template.md"
+      if [[ -f "$TEMPLATE" ]]; then
+        TASK_PROGRESS=$(cat "$TASK_LIST" 2>/dev/null || echo "N/A")
+        CHANGES=$(git diff --stat HEAD~1 2>/dev/null || echo "N/A")
+        PR_BODY=$(sed \
+          -e "s|{summary}|Automated task: ${TASK_NAME}|g" \
+          -e "s|{blueprint_name}|${BLUEPRINT:-default}|g" \
+          -e "s|{session_count}|${i}|g" \
+          -e "s|{completion_status}|${COMPLETION_LABEL}|g" \
+          "$TEMPLATE")
+        # Replace multiline placeholders
+        PR_BODY=$(echo "$PR_BODY" | sed "s|{changes}|${CHANGES}|g")
+        PR_BODY=$(echo "$PR_BODY" | sed "s|{task_progress}|See progress.md|g")
+        PR_BODY=$(echo "$PR_BODY" | sed "s|{handback_report}|See session logs|g")
+      else
+        PR_BODY="Automated PR by /autonomous. See progress.md for details."
+      fi
+
+      git push -u origin "$BRANCH_NAME" 2>/dev/null
+      gh pr create --title "$PR_TITLE" --body "$PR_BODY" 2>/dev/null && \
+        echo "PR created successfully" || \
+        echo "WARNING: Failed to create PR" >&2
+    fi
+  fi
+
+  # Notification (macOS)
+  if command -v osascript &>/dev/null; then
+    osascript -e "display notification \"${TASK_NAME}: ${COMPLETION_LABEL}\" with title \"Autonomous Complete\" sound name \"Glass\"" 2>/dev/null || true
+  fi
+fi
+
 echo "Autonomous execution finished."

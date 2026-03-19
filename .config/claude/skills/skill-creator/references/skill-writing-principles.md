@@ -113,3 +113,27 @@ SKILL.md → reference.md は OK。reference.md → detail.md は禁止。
 **適用判断:**
 - 繰り返し違反されるルールには Good/Bad 例を併記（feedback_bad_example_pattern.md 参照）
 - 1回の観察のみの場合はアンチパターンに追加しない
+
+## 8. 出力を自己スコアリングせよ (Self-score your output)
+
+スキルの出力品質を継続的に測定するため、出力末尾に自己評価を付与する。
+このスコアは `skill-executions.jsonl` に記録され、AutoEvolve の改善ループで使用される。
+
+**形式:**
+```
+Score: [1-10]
+Reason: [1文 — 何が良かったか、何が不足か、次回改善点]
+```
+
+**スコア基準:**
+- 9-10: スキルの stated criteria を完全に満たし、追加価値も提供
+- 7-8: criteria をほぼ満たす。軽微な改善余地あり
+- 5-6: criteria の一部を満たすが、明確な欠落がある
+- 3-4: criteria の大半を満たせていない
+- 1-2: ほぼ失敗。根本的な問題あり
+
+**適用ルール:**
+- 新規作成・改善するスキルに段階的に導入する（既存スキルの一斉変更はしない）
+- Pipeline 型スキル（/improve, /epd 等）の最終出力に付与する
+- Guard 型スキル（/freeze, /careful 等）は対象外（pass/fail で十分）
+- Score は `scoring-config.json` の `outputSignal.thresholds` で信号分類される

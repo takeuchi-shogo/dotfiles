@@ -1,0 +1,62 @@
+blueprint:
+  name: refactor
+  description: Refactor code while maintaining behavior
+  trigger: "Tech debt, code smell, architecture improvement"
+  completion: strict  # behavior must be preserved; no regressions allowed
+
+  nodes:
+    # --- Agentic: understand scope and design approach ---
+    - id: analyze
+      type: agentic
+      tools: [Read, Grep, Glob]
+      max_iterations: 2
+      on_failure: handback
+
+    # --- Deterministic: capture baseline test results (0 tokens) ---
+    # Run BEFORE any changes so regressions are detectable.
+    - id: snapshot-tests
+      type: deterministic
+      command: "${TEST_CMD}"
+      on_failure: abort   # if baseline tests fail, stop — fix them first
+
+    # --- Agentic: perform the refactor ---
+    - id: refactor
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Glob]
+      max_iterations: 5
+      on_failure: handback
+
+    # --- Deterministic: lint check (0 tokens) ---
+    - id: lint
+      type: deterministic
+      command: "${LINT_CMD:-true}"
+      on_failure: retry
+
+    # --- Agentic: fix lint errors or test regressions ---
+    - id: fix-regressions
+      type: agentic
+      tools: [Read, Edit, Grep, Bash]
+      max_iterations: 2
+      on_failure: abort   # cannot auto-fix; hand back to human
+
+    # --- Deterministic: verify no regressions (0 tokens) ---
+    - id: verify-tests
+      type: deterministic
+      command: "${TEST_CMD}"
+      on_failure: retry
+
+    # --- Deterministic: commit (0 tokens) ---
+    - id: commit
+      type: deterministic
+      command: "git add -A && git commit"
+      on_failure: abort
+
+  edges:
+    - [analyze, snapshot-tests]
+    - [snapshot-tests, refactor]
+    - [refactor, lint]
+    - [lint, verify-tests,    { condition: "lint.passed" }]
+    - [lint, fix-regressions, { condition: "lint.failed" }]
+    - [fix-regressions, lint]                              # loop back
+    - [verify-tests, commit,          { condition: "test.passed" }]
+    - [verify-tests, fix-regressions, { condition: "test.failed" }]
