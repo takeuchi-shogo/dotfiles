@@ -136,6 +136,39 @@ grep -c '^\- \[ \]' .autonomous/{task-name}/task_list.md
 cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 ```
 
+## Step 5: Deliver (Stripe Minions Pattern)
+
+セッションループ完了後、自動的に PR を作成しハンドバックする。
+
+### PR 作成条件
+
+| 状態 | アクション |
+|------|-----------|
+| 全タスク完了 (Full) | PR 作成 + 通知 |
+| 一部完了 (Partial, COMPLETION_MODE=graduated) | `[WIP]` PR + ハンドバックレポート + 通知 |
+| 着手不能 (Blocked) | PR なし、エラーレポート + 通知 |
+
+### 手動実行
+
+```bash
+# run-session.sh が自動実行するが、手動でも可能
+COMPLETION_MODE=graduated bash ~/.claude/skills/autonomous/scripts/run-session.sh \
+  .autonomous/{task-name} \
+  {max_sessions} \
+  {budget_per_session}
+```
+
+### Blueprint 連携
+
+タスク分析時に `references/blueprints/` から最適な blueprint を推薦する:
+
+1. バグ修正系 → `bug-fix.yaml`
+2. 新機能系 → `feature.yaml`
+3. リファクタリング系 → `refactor.yaml`
+
+Blueprint の `tools` フィールドを executor-prompt.md の指示に反映し、
+不要なツールの使用を抑制する。
+
 ## Safety
 
 - **Lock ファイル**: 同時実行を防止（`run.lock`）
