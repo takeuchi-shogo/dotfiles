@@ -38,6 +38,11 @@ FILE_AGENT_ROUTES: list[tuple[str, str, str]] = [
     (r"\.config/claude/references/", "doc-gardener", "リファレンス"),
     (r"\.proto$", "backend-architect", "Protocol Buffers"),
     (r"(test_|_test\.|\.test\.|\.spec\.)", "test-engineer", "テストファイル"),
+    (
+        r"\.config/claude/skills/",
+        "security-reviewer",
+        "スキル定義 — /security-scan の実行を推奨",
+    ),
 ]
 
 _COOLDOWN_FILE = "/tmp/claude-file-pattern-router-last.json"

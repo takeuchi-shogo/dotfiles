@@ -53,7 +53,8 @@
 			"Bash(gh pr view *)",
 			"Bash(gh pr checks *)",
 			"Bash(gh pr diff *)",
-			"Bash(gh pr list *)"
+			"Bash(gh pr list *)",
+			"Bash(npx ecc-agentshield *)"
 		],
 		"deny": [
 			"Bash(rm -rf *)",
