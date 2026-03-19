@@ -3,6 +3,10 @@
 
 Logs all MCP tool invocations for security auditing.
 Blocks dangerous MCP operations (e.g., destructive GitHub actions).
+
+Skill-level MCP scoping: when CLAUDE_SKILL is set and the skill
+declares `mcp-tools:` in its SKILL.md, warns on out-of-scope servers.
+For general tool scoping (non-MCP), see tool-scope-enforcer.py.
 """
 
 from __future__ import annotations
@@ -23,6 +27,37 @@ DANGEROUS_MCP_PREFIXES = [
     ("mcp__filesystem__delete", "Filesystem deletion via MCP"),
     ("mcp__filesystem__move", "Filesystem move via MCP"),
 ]
+
+
+def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> None:
+    """Warn if MCP tool is not in the active skill's mcp-tools."""
+    skills_dir = Path(__file__).resolve().parent.parent.parent / "skills"
+    skill_file = skills_dir / skill_name / "SKILL.md"
+    if not skill_file.exists():
+        return
+
+    try:
+        content = skill_file.read_text()
+        for line in content.split("\n"):
+            if line.startswith("mcp-tools:"):
+                allowed = [t.strip() for t in line.split(":", 1)[1].strip().split(",")]
+                parts = tool_name.split("__")
+                if len(parts) >= 2:
+                    server = parts[1]
+                    if server not in allowed:
+                        print(
+                            f"[MCP Audit] MCP server "
+                            f"'{server}' はスキル "
+                            f"'{skill_name}' の "
+                            f"mcp-tools 外です",
+                            file=sys.stderr,
+                        )
+                return
+    except OSError as exc:
+        print(
+            f"[MCP Audit] skill scope check error: {exc}",
+            file=sys.stderr,
+        )
 
 
 def _summarize_input(tool_input: object) -> dict[str, str] | str:
@@ -63,6 +98,11 @@ def _audit(data: dict) -> None:
         if tool_name.startswith(prefix):
             print(f"BLOCKED: MCP audit block — {reason} ({tool_name})", file=sys.stderr)
             sys.exit(2)
+
+    # Skill-level MCP tool scoping (advisory)
+    skill_name = os.environ.get("CLAUDE_SKILL", "")
+    if skill_name:
+        _check_skill_mcp_scope(tool_name, skill_name)
 
     # Emit event for AutoEvolve tracking
     emit = get_emitter()
