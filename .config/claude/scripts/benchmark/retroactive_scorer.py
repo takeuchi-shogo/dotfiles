@@ -97,7 +97,7 @@ def compute_retroactive_score(usage: dict, session: dict) -> tuple[float, str]:
     reasons = []
 
     # セッションにエラーがあれば減点
-    error_count = session.get("error_count", 0)
+    error_count = session.get("errors_count", 0)
     if error_count == 0:
         score += 1.5
         reasons.append("エラーなし")
@@ -108,13 +108,17 @@ def compute_retroactive_score(usage: dict, session: dict) -> tuple[float, str]:
         score -= 1.0
         reasons.append(f"エラー多発({error_count}件)")
 
-    # セッション完了度
-    if session.get("completed", False):
+    # セッション完了度 (outcome: "clean_success" / "recovery" / "failure")
+    outcome = session.get("outcome", "")
+    if outcome == "clean_success":
         score += 1.0
         reasons.append("セッション正常完了")
+    elif outcome == "recovery":
+        score += 0.5
+        reasons.append("エラーから回復")
 
     # 後続修正の有無（同日に correction があれば減点）
-    corrections = session.get("correction_count", 0)
+    corrections = session.get("corrections", 0)
     if corrections > 0:
         score -= corrections * 0.5
         reasons.append(f"修正{corrections}回")
