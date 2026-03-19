@@ -1,7 +1,7 @@
 ---
 source: "https://blog.bytebytego.com/p/how-stripes-minions-ship-1300-prs"
 date: 2026-03-19
-status: analyzed
+status: integrated
 ---
 
 ## Source Summary
