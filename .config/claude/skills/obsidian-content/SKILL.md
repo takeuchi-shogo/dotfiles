@@ -163,10 +163,11 @@ N/ [まとめ + CTA]
 
 生成前に以下を確認:
 - CLAUDE.md の Writing Style に違反していないか
-- ジェネリックなAI臭い表現を使っていないか
+- `references/writing-anti-patterns.md` のチェックリストを適用し、AI臭い表現を排除したか
 - ソースノートの内容を正確に反映しているか
 - リンク切れがないか
 
 ## Skill Assets
 
 - `templates/content-templates.md` — Content format templates for newsletter, blog post, and tweet thread
+- `references/writing-anti-patterns.md` — AI臭い表現の Good/Bad 対比テーブルとセルフレビューチェックリスト
