@@ -44,6 +44,18 @@ git diff --name-only HEAD
 - **言語**: 変更ファイルの拡張子
 - **コンテンツシグナル**: diff 内容からスペシャリストの必要性を判定
 
+## Step 1.5: Design Rationale Check（M/L のみ）
+
+M/L 規模の変更では、レビュー開始前に Design Rationale の存在を確認する（S は免除）。
+
+確認項目（`references/comprehension-debt-policy.md` 参照）:
+1. **What**: この変更は何を解決するか — 記述があるか
+2. **Why this approach**: なぜこのアプローチか（却下した代替案含む）— 記述があるか
+3. **Risk mitigation**: 何が壊れうるか、どう防いでいるか — 記述があるか
+
+- Plan ファイル、コミットメッセージ、または PR 説明に含まれているか確認
+- 不十分な場合はレビュー冒頭で `must:` として指摘し、記述を求める
+
 ## Step 2: Scaling Decision
 
 ### レビュアー構成（行数ベース）
@@ -146,6 +158,25 @@ git diff --name-only HEAD
 9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 10. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
 11. **合意率メトリクス**: 3-way レビュー（~200行以上）では、レビューアー間の合意率を算出する。同一箇所を2+レビューアーが指摘 → 合意。合意率 = 合意指摘数 / 全指摘数 × 100%。レポート末尾に `Agreement Rate: N%` を表示。合意率が50%未満なら `[LOW AGREEMENT]` 警告を付与し、人間の追加判断を促す
+
+### Coverage Check
+
+レビューの網羅性を検証し、見落としを防ぐ。
+
+1. **ファイルカバレッジ**: 変更ファイル数 vs レビューで言及されたファイル数の比率を算出し、レポートに `File Coverage: N/M (X%)` として出力
+2. **大規模変更警告**: 100 行超の変更で全ファイルに言及がない場合、`[LOW COVERAGE]` 警告を付与
+3. **comprehension_confidence スコア**: レビュー全体の理解度を 1-5 で評価し、レポート末尾に出力
+
+```
+## Comprehension Confidence
+comprehension_confidence: ?/5
+```
+
+- 5: 全変更の意図・影響を完全に理解してレビュー
+- 4: ほぼ全体を理解、一部不明箇所あり
+- 3: 主要な変更は理解、周辺の影響は未確認
+- 2: 部分的にしか理解できていない
+- 1: 変更の意図が不明確
 
 ## Step 5: Findings Persistence（フィードバックループ）
 

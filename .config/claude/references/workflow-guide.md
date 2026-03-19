@@ -187,9 +187,17 @@ Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check
 
 | 規模            | 例                                | 必須段階                         | スキップ可能                           |
 | --------------- | --------------------------------- | -------------------------------- | -------------------------------------- |
-| **S（軽微）**   | typo修正、1行変更、設定値変更     | Implement → Verify                              | Plan, Risk Analysis, Test, Review, Security      |
-| **M（標準）**   | 関数追加、バグ修正、小機能        | Plan → Risk Analysis → Implement → Test → Verify | 4並列レビューは1-2エージェントに縮小可           |
-| **L（大規模）** | 新機能、リファクタリング、API設計 | Checkpoint → 全7段階（Risk Analysis 含む）        | なし                                             |
+| **S（軽微）**   | typo修正、1行変更、設定値変更     | Implement → Verify                              | Spec Review, Plan, Risk Analysis, Test, Review, Security |
+| **M（標準）**   | 関数追加、バグ修正、小機能        | Spec Review → Plan → Risk Analysis → Implement → Test → Verify | 4並列レビューは1-2エージェントに縮小可           |
+| **L（大規模）** | 新機能、リファクタリング、API設計 | Spec Review → Checkpoint → 全7段階（Risk Analysis 含む） | なし                                             |
+
+### Spec Review の定義（M/L で必須）
+
+M/L 規模のタスクで実装に入る前に仕様の品質を確認するゲート。S は免除。
+
+1. `rules/common/overconfidence-prevention.md` の 6 つの Spec Slop 指標をパスすること
+2. 曖昧な要件が 0 になるまで質問で解消すること
+3. Design Rationale（`references/comprehension-debt-policy.md`）の 3 点が記述されていること
 
 ### 多因子タスク規模判定
 
