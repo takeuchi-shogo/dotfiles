@@ -282,6 +282,17 @@
 				]
 			},
 			{
+				"matcher": "Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/file-proliferation-guard.py",
+						"timeout": 5,
+						"statusMessage": "File proliferation check..."
+					}
+				]
+			},
+			{
 				"matcher": "Skill",
 				"hooks": [
 					{
