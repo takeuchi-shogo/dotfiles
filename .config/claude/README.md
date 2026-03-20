@@ -32,13 +32,13 @@ graph TB
     subgraph orchestrator["Orchestrator Layer (Claude Opus)"]
         direction TB
         CC[Claude Code CLI]
-        CLAUDE_MD["CLAUDE.md<br><small>コア原則 ~69行</small>"]
+        CLAUDE_MD["CLAUDE.md<br><small>コア原則 ~130行</small>"]
         SETTINGS["settings.json<br><small>hooks / permissions / model</small>"]
     end
 
     subgraph execution["Execution Layer"]
         direction TB
-        subgraph hooks_box["Hooks (18 scripts)"]
+        subgraph hooks_box["Hooks (35 scripts)"]
             direction LR
             H_RT["Runtime<br><small>format, session, checkpoint</small>"]
             H_PO["Policy<br><small>golden-check, error-to-codex</small>"]
@@ -46,7 +46,7 @@ graph TB
             H_LR["Learner<br><small>session-learner</small>"]
         end
 
-        subgraph skills_box["Skills (48+)"]
+        subgraph skills_box["Skills (61)"]
             direction LR
             SK_CORE["Core Workflow<br><small>/review, /rpi, /epd</small>"]
             SK_DOMAIN["Domain<br><small>frontend, backend, architect</small>"]
@@ -54,7 +54,7 @@ graph TB
             SK_OPS["DevOps<br><small>/morning, /kanban, /capture</small>"]
         end
 
-        subgraph agents_box["Agents (28)"]
+        subgraph agents_box["Agents (31)"]
             direction LR
             AG_REV["Review<br><small>code-reviewer, codex-reviewer</small>"]
             AG_IMPL["Implement<br><small>debugger, build-fixer</small>"]
@@ -117,18 +117,21 @@ graph TB
 ├── settings.local.json           # ローカルオーバーライド
 ├── statusline.sh                 # ステータスライン表示
 │
-├── agents/                       # サブエージェント定義 (28個)
-├── commands/                     # カスタムコマンド (19個)
-├── skills/                       # 再利用可能なスキル (48+)
-├── rules/                        # 言語・ドメイン別ルール (13個)
-├── references/                   # 参照ドキュメント (24個)
-│   └── review-checklists/        # 言語別レビュー基準
-├── scripts/                      # Hook スクリプト (18個)
-│   ├── runtime/                  # セッション管理・フォーマット
-│   ├── policy/                   # ポリシー強制・エラー検出
-│   ├── lifecycle/                # 計画追跡・ドキュメント管理
-│   ├── learner/                  # 学習データ収集
-│   └── lib/                      # 共有ユーティリティ
+├── agents/                       # サブエージェント定義 (31個)
+├── commands/                     # カスタムコマンド (27個)
+├── skills/                       # 再利用可能なスキル (61個)
+├── rules/                        # 言語・ドメイン別ルール (11個)
+│   └── common/                   # 共通ルール (品質・セキュリティ・テスト)
+├── references/                   # 参照ドキュメント (54個)
+│   ├── review-checklists/        # 言語別レビュー基準
+│   └── blueprints/               # ワークフローブループリント
+├── scripts/                      # Hook スクリプト
+│   ├── runtime/     (9個)        # セッション管理・フォーマット
+│   ├── policy/      (20個)       # ポリシー強制・エラー検出
+│   ├── lifecycle/   (4個)        # 計画追跡・ドキュメント管理
+│   ├── learner/     (2個)        # 学習データ収集
+│   └── lib/         (12個)       # 共有ユーティリティ
+├── templates/                    # テンプレート
 └── docs/
     └── research/                 # 外部CLI出力の永続保存
 ```
@@ -164,65 +167,10 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 
 ---
 
-## Hooks システム（自動イベント駆動）
+## Hooks システム
 
-Hooks は Claude Code のライフサイクルイベントに対して**自動的に**スクリプトを実行する仕組み。
-4つのカテゴリに分離されている。
-
-```mermaid
-graph LR
-    subgraph events["Claude Code Events"]
-        E1["SessionStart"]
-        E2["UserPromptSubmit"]
-        E3["PreToolUse"]
-        E4["PostToolUse"]
-        E5["PreCompact"]
-        E6["Stop / SessionEnd"]
-        E7["Notification"]
-    end
-
-    subgraph runtime["runtime/ (基盤)"]
-        R1["session-load.js<br><small>セッション復元</small>"]
-        R2["auto-format.js<br><small>Biome/Ruff/gofmt</small>"]
-        R3["output-offload.py<br><small>大出力→/tmp退避</small>"]
-        R4["suggest-compact.js<br><small>コンパクト提案</small>"]
-        R5["checkpoint_manager.py<br><small>自動チェックポイント</small>"]
-        R6["session-save.js<br><small>状態保存</small>"]
-        R7["pre-compact-save.js<br><small>圧縮前保存</small>"]
-    end
-
-    subgraph policy["policy/ (品質強制)"]
-        P1["agent-router.py<br><small>最適エージェント推薦</small>"]
-        P2["golden-check.py<br><small>GP違反検出</small>"]
-        P3["error-to-codex.py<br><small>エラー→Codex提案</small>"]
-        P4["protect-linter-config.py<br><small>lint設定保護</small>"]
-        P5["search-first-gate.py<br><small>検索優先ガード</small>"]
-        P6["suggest-gemini.py<br><small>Gemini提案</small>"]
-        P7["completion-gate.py<br><small>テスト実行ゲート</small>"]
-        P8["post-test-analysis.py<br><small>テスト結果分析</small>"]
-    end
-
-    subgraph lifecycle["lifecycle/ (計画管理)"]
-        L1["plan-lifecycle.py<br><small>計画進捗追跡</small>"]
-    end
-
-    subgraph learner["learner/ (学習)"]
-        LR1["session-learner.py<br><small>学習データ永続化</small>"]
-    end
-
-    E1 --> R1
-    E2 --> P1
-    E3 --> P4 & P5 & P6
-    E4 --> R2 & R3 & R4 & R5 & P2 & P3 & P8 & L1
-    E5 --> R7
-    E6 --> R6 & P7 & LR1
-
-    style events fill:#533483,stroke:#16213e,color:#e0e0e0
-    style runtime fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style policy fill:#e94560,stroke:#16213e,color:#ffffff
-    style lifecycle fill:#1b998b,stroke:#16213e,color:#ffffff
-    style learner fill:#f4a261,stroke:#16213e,color:#1a1a2e
-```
+Hooks は Claude Code のライフサイクルイベントに対して自動的にスクリプトを実行する仕組み。
+4 カテゴリ・35 スクリプトで構成。
 
 ### イベント → スクリプト対応表
 
@@ -230,13 +178,68 @@ graph LR
 |---------|-----------|------|
 | **SessionStart** | `session-load.js`, `checkpoint_recover.py` | セッション復元、前回チェックポイント回復 |
 | **UserPromptSubmit** | `agent-router.py` | Codex/Gemini キーワード検出、最適エージェント推薦 |
-| **PreToolUse** (Edit/Write) | `protect-linter-config.py`, `search-first-gate.py` | lint設定保護、検索優先ガード |
-| **PreToolUse** (Bash) | `git add` 検証, `pre-commit-check.js` | `-A`/`--all` ブロック、コミットメッセージ検証 |
+| **PreToolUse** (Edit/Write) | `protect-linter-config.py`, `search-first-gate.py`, `tool-scope-enforcer.py` | lint設定保護、検索優先ガード、ツールスコープ制限 |
+| **PreToolUse** (Bash) | `pre-commit-check.js`, `docker-safety.py` | コミット検証、Docker 安全性チェック |
 | **PreToolUse** (WebSearch) | `suggest-gemini.py` | 大規模リサーチ時に Gemini CLI を提案 |
-| **PostToolUse** (Edit/Write) | `auto-format.js`, `golden-check.py`, `checkpoint_manager.py` | 自動整形、GP違反検出、チェックポイント |
-| **PostToolUse** (Bash) | `output-offload.py`, `error-to-codex.py`, `post-test-analysis.py`, `plan-lifecycle.py` | 出力退避、エラー分析、テスト解析、計画追跡 |
+| **PostToolUse** (Edit/Write) | `auto-format.js`, `golden-check.py`, `checkpoint_manager.py`, `file-proliferation-guard.py` | 自動整形、GP違反検出、チェックポイント、ファイル増殖防止 |
+| **PostToolUse** (Bash) | `output-offload.py`, `error-to-codex.py`, `post-test-analysis.py`, `plan-lifecycle.py`, `stagnation-detector.py` | 出力退避、エラー分析、テスト解析、計画追跡、停滞検知 |
 | **PreCompact** | `pre-compact-save.js` | コンテキスト圧縮前にセッション状態保存 |
-| **Stop/SessionEnd** | `completion-gate.py`, `session-save.js`, `session-learner.py` | テスト実行ゲート、状態保存、学習データ永続化 |
+| **Stop/SessionEnd** | `completion-gate.py`, `session-save.js`, `session-learner.py`, `skill-usage-tracker.py` | テスト実行ゲート、状態保存、学習データ永続化、スキル利用追跡 |
+
+### policy/ スクリプト一覧 (20個)
+
+| スクリプト | 役割 |
+|-----------|------|
+| `agent-router.py` | 最適エージェント推薦 |
+| `agentshield-filter.py` | エージェント入力フィルタリング |
+| `completion-gate.py` | テスト実行ゲート |
+| `docker-safety.py` | Docker コマンド安全性チェック |
+| `error-to-codex.py` | エラー→Codex 提案 |
+| `file-pattern-router.py` | ファイルパターンルーティング |
+| `file-proliferation-guard.py` | ファイル増殖防止 |
+| `gaming-detector.py` | specification gaming 検出 |
+| `golden-check.py` | Golden Principles 違反検出 |
+| `mcp-audit.py` | MCP サーバー監査 |
+| `post-test-analysis.py` | テスト結果分析 |
+| `pre-commit-check.js` | コミットメッセージ検証 |
+| `protect-linter-config.py` | lint 設定保護 |
+| `review-feedback-tracker.py` | レビューフィードバック追跡 |
+| `search-first-gate.py` | 検索優先ガード |
+| `skill-security-scan.py` | スキルセキュリティスキャン |
+| `skill-tracker.py` | スキル利用追跡 |
+| `stagnation-detector.py` | 停滞検知 |
+| `suggest-gemini.py` | Gemini CLI 提案 |
+| `tool-scope-enforcer.py` | ツールスコープ制限 |
+
+### runtime/ スクリプト一覧 (9個)
+
+| スクリプト | 役割 |
+|-----------|------|
+| `auto-format.js` | Biome/Ruff/gofmt 自動整形 |
+| `checkpoint_manager.py` | 自動チェックポイント |
+| `checkpoint_recover.py` | チェックポイント回復 |
+| `output-offload.py` | 大出力→/tmp 退避 |
+| `pre-compact-save.js` | 圧縮前保存 |
+| `session-load.js` | セッション状態復元 |
+| `session-save.js` | セッション状態保存 |
+| `subagent-monitor.py` | サブエージェント監視 |
+| `suggest-compact.js` | コンパクト提案 |
+
+### lifecycle/ スクリプト一覧 (4個)
+
+| スクリプト | 役割 |
+|-----------|------|
+| `context-drift-check.py` | コンテキストドリフト検出 |
+| `doc-garden-check.py` | ドキュメント鮮度チェック |
+| `memory-archive.py` | メモリアーカイブ |
+| `plan-lifecycle.py` | 計画進捗追跡 |
+
+### learner/ スクリプト一覧 (2個)
+
+| スクリプト | 役割 |
+|-----------|------|
+| `session-learner.py` | 学習データ永続化 |
+| `skill-usage-tracker.py` | スキル使用頻度追跡 |
 
 ### 共有モジュール (scripts/lib/)
 
@@ -248,112 +251,123 @@ graph LR
 | `task_registry.py` | タスクレジストリ CRUD |
 | `evaluator_metrics.py` | レビューアー精度メトリクス |
 | `trace_sampler.py` | 大規模トレースのサンプリング |
-
-### Plan / Checkpoint の役割分担
-
-- plan: goal、scope、validation、decision を `PLANS.md` 契約で残す
-- checkpoint: session 再開用の runtime state を保存する
-- 長時間タスクでは両方を使う
+| `rl_advantage.py` | RL アドバンテージ計算 |
+| `skill_amender.py` | スキル修正ユーティリティ |
+| `test_selector.py` | テスト選択 |
+| `tip_generalizer.py` | ヒント汎化 |
 
 ---
 
-## Skills カテゴリマップ (48+)
+## Skills カテゴリマップ (61個)
 
 Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill名`)で呼び出すか、エージェントが内部で参照する。
-
 運用上は [references/skill-inventory.md](references/skill-inventory.md) の tier を優先する。
 
-```mermaid
-graph TB
-    subgraph core["Core Workflow (開発の中核)"]
-        direction LR
-        review["/review<br>コードレビュー統合"]
-        rpi["/rpi<br>Research→Plan→Implement"]
-        epd["/epd<br>Spec→Spike→Validate→Build"]
-        commit["/commit<br>conventional commit"]
-        searchFirst["search-first<br>検索優先ワークフロー"]
-        verify["verification-before-completion<br>完了前検証"]
-        checkHealth["/check-health<br>ドキュメント健全性"]
-    end
+### Core Workflow (開発の中核)
 
-    subgraph product["Product Development (プロダクト開発)"]
-        direction LR
-        spec["/spec<br>Prompt-as-PRD 生成"]
-        spike["/spike<br>プロトタイプ検証"]
-        validate["/validate<br>受入基準検証"]
-        edgeCaseAnalysis["edge-case-analysis<br>異常系洗い出し"]
-        interviewIssues["/interviewing-issues<br>Issue 明確化"]
-    end
+| スキル | 説明 |
+|--------|------|
+| `review` | コードレビュー統合 (レビューアー自動選択・並列起動) |
+| `epd` | Spec → Spike → Validate → Build → Review |
+| `search-first` | 検索優先ワークフロー |
+| `verification-before-completion` | 完了前検証 |
+| `check-health` | ドキュメント健全性チェック |
+| `continuous-learning` | 自動パターン検出・記録 |
 
-    subgraph domain["Domain Specialist (専門知識)"]
-        direction LR
-        seniorArch["senior-architect<br>システム設計"]
-        seniorBack["senior-backend<br>API/DB設計"]
-        seniorFront["senior-frontend<br>React/Next.js"]
-        reactBP["react-best-practices<br>React最適化"]
-        frontDesign["frontend-design<br>UI デザイン"]
-        graphql["graphql-expert<br>GraphQL設計"]
-        buf["buf-protobuf<br>Protocol Buffers"]
-        webDesign["web-design-guidelines<br>Web UI ガイドライン"]
-        uiux["ui-ux-pro-max<br>UI/UX最適化"]
-        vercel["vercel-composition-patterns<br>コンポジション"]
-    end
+### Product Development
 
-    subgraph ext["External Model (外部モデル連携)"]
-        direction LR
-        codex["/codex<br>Codex CLI (gpt-5.4)"]
-        codexReview["/codex-review<br>Codex レビュー"]
-        gemini["/gemini<br>Gemini CLI (1M)"]
-        research["/research<br>並列リサーチ"]
-    end
+| スキル | 説明 |
+|--------|------|
+| `spec` | Prompt-as-PRD 仕様書生成 |
+| `spike` | Worktree 隔離プロトタイプ検証 |
+| `validate` | 受入基準検証 |
+| `edge-case-analysis` | 異常系・境界値洗い出し |
+| `interviewing-issues` | Issue 明確化インタビュー |
+| `audit` | コードベース品質監査 |
+| `autocover` | テスト自動生成パイプライン |
 
-    subgraph automation["Automation (自動化)"]
-        direction LR
-        autonomous["/autonomous<br>マルチセッション自律実行"]
-        improve["/improve<br>AutoEvolve 改善"]
-        createPRWait["/create-pr-wait<br>PR→CI監視→自動修正"]
-        fixIssue["/fix-issue<br>Issue自動修正"]
-        setupBG["setup-background-agents<br>BG エージェント基盤"]
-    end
+### Domain Specialist (専門知識)
 
-    subgraph devops["DevOps (日々の運用)"]
-        direction LR
-        morning["/morning<br>朝の計画"]
-        kanban["/kanban<br>カンバン操作"]
-        capture["/capture<br>GTD即時キャプチャ"]
-        weeklyReview["/weekly-review<br>週次レビュー"]
-        dailyReport["/daily-report<br>日報生成"]
-        devInsights["/dev-insights<br>データ分析"]
-    end
+| スキル | 説明 |
+|--------|------|
+| `senior-architect` | システムアーキテクチャ設計 |
+| `senior-backend` | API/DB 設計 |
+| `senior-frontend` | React/Next.js アーキテクチャ |
+| `react-best-practices` | React パフォーマンス最適化 (40+ ルール) |
+| `react-expert` | React API リサーチ |
+| `frontend-design` | 高品質 UI デザイン生成 |
+| `graphql-expert` | GraphQL 設計・実装 |
+| `buf-protobuf` | Protocol Buffers / Buf エコシステム |
+| `ui-ux-pro-max` | UI/UX 最適化 (10 スタック対応) |
+| `web-design-guidelines` | Web Interface Guidelines 準拠レビュー |
+| `vercel-composition-patterns` | React コンポジションパターン |
 
-    subgraph knowledge["Knowledge (知識管理)"]
-        direction LR
-        obsSetup["obsidian-vault-setup<br>Vault セットアップ"]
-        obsKnow["obsidian-knowledge<br>ナレッジ検索"]
-        obsCont["obsidian-content<br>コンテンツ生成"]
-        eureka["/eureka<br>ブレイクスルー記録"]
-        contLearn["continuous-learning<br>継続学習"]
-    end
+### External Model (外部モデル連携)
 
-    subgraph meta["Meta (スキル管理)"]
-        direction LR
-        skillCreator["skill-creator<br>スキル作成"]
-        skillAudit["skill-audit<br>スキル監査"]
-        aiAudit["ai-workflow-audit<br>AI workflow 監査"]
-        initProject["init-project<br>プロジェクト初期化"]
-        challenge["/challenge<br>変更への挑戦"]
-        secReview["/security-review<br>セキュリティ"]
-    end
+| スキル | 説明 |
+|--------|------|
+| `codex` | Codex CLI (gpt-5.4) 実行 |
+| `codex-review` | Codex AI コードレビュー・CHANGELOG 生成 |
+| `gemini` | Gemini CLI (1M ctx) 大規模分析 |
+| `research` | マルチエージェント並列リサーチ |
+| `debate` | 複数 AI モデルによるセカンドオピニオン |
 
-    style core fill:#e94560,stroke:#16213e,color:#ffffff
-    style product fill:#533483,stroke:#16213e,color:#e0e0e0
-    style domain fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style ext fill:#1b998b,stroke:#16213e,color:#ffffff
-    style automation fill:#f4a261,stroke:#16213e,color:#1a1a2e
-    style devops fill:#2d6a4f,stroke:#16213e,color:#e0e0e0
-    style knowledge fill:#6c567b,stroke:#16213e,color:#e0e0e0
-    style meta fill:#495057,stroke:#16213e,color:#e0e0e0
-```
+### Automation
+
+| スキル | 説明 |
+|--------|------|
+| `autonomous` | マルチセッション自律実行 |
+| `improve` | AutoEvolve 改善サイクル |
+| `create-pr-wait` | PR → CI 監視 → 自動修正 |
+| `github-pr` | PR セルフレビュー・マージ判断 |
+| `setup-background-agents` | バックグラウンドエージェント基盤セットアップ |
+| `absorb` | 外部記事・論文の知見統合 |
+
+### DevOps (日々の運用)
+
+| スキル | 説明 |
+|--------|------|
+| `morning` | 朝の開発計画生成 |
+| `kanban` | カンバンボード操作 |
+| `capture` | GTD 即時キャプチャ |
+| `weekly-review` | GTD 式週次レビュー |
+| `daily-report` | 全プロジェクト横断日報 |
+| `dev-insights` | 開発データ分析 |
+| `timekeeper` | 朝の計画・夕方の振り返り |
+
+### Knowledge (知識管理)
+
+| スキル | 説明 |
+|--------|------|
+| `obsidian-vault-setup` | Vault セットアップ |
+| `obsidian-knowledge` | ナレッジ検索・整理 |
+| `obsidian-content` | コンテンツ生成 |
+| `digest` | NotebookLM → Literature Note 変換 |
+| `eureka` | 技術ブレイクスルー記録 |
+
+### Meta (スキル・プロジェクト管理)
+
+| スキル | 説明 |
+|--------|------|
+| `skill-creator` | スキル作成・編集・ベンチマーク |
+| `skill-audit` | スキル品質監査・A/B テスト |
+| `ai-workflow-audit` | AI ワークフロー監査 |
+| `init-project` | プロジェクト初期化 |
+| `prompt-review` | プロンプトレビュー |
+
+### Safety & Debug
+
+| スキル | 説明 |
+|--------|------|
+| `careful` | 本番環境操作ガード |
+| `freeze` | 編集禁止モード (デバッグ用) |
+| `hook-debugger` | Hook 診断 Runbook |
+| `webapp-testing` | agent-browser による Web アプリテスト |
+| `upload-image-to-pr` | 画像を PR に埋め込み |
+| `nano-banana` | AI 画像生成 (Gemini 3.1 Flash) |
+| `meeting-minutes` | 議事録生成 |
+| `dev-ops-setup` | DevOps セットアップ |
+| `developer-onboarding` | 開発者オンボーディング |
 
 ### スキル間の依存関係
 
@@ -391,80 +405,81 @@ flowchart TB
 
 ---
 
-## Agents カテゴリマップ (28)
+## Agents カテゴリマップ (31個)
 
 Agents は**専門実行コンテキスト**。Skills が知識を提供し、Agents がそれを実行する。
 `triage-router` が最適なエージェントを推薦する。
 
-```mermaid
-graph TB
-    subgraph review_agents["Code Review (7)"]
-        direction LR
-        codeReviewer["code-reviewer<br><small>汎用レビュー + 言語チェックリスト注入</small>"]
-        golangReviewer["golang-reviewer<br><small>Go 専門 (MA/MU スタイル)</small>"]
-        codexReviewer["codex-reviewer<br><small>Codex深い推論 (~100行以上)</small>"]
-        commentAnalyzer["comment-analyzer<br><small>コメント品質・正確性</small>"]
-        silentFailure["silent-failure-hunter<br><small>サイレント障害検出</small>"]
-        testAnalyzer["test-analyzer<br><small>テスト品質・エッジケース</small>"]
-        securityReviewer["security-reviewer<br><small>OWASP Top 10</small>"]
-    end
+### Code Review (8)
 
-    subgraph arch_agents["Architecture & Design (4)"]
-        direction LR
-        backendArch["backend-architect<br><small>API/DB/スケーラビリティ</small>"]
-        nextjsArch["nextjs-architecture-expert<br><small>App Router/RSC</small>"]
-        docFactory["document-factory<br><small>ドキュメント生成</small>"]
-        typeDesign["type-design-analyzer<br><small>型設計品質</small>"]
-    end
+| エージェント | 役割 |
+|-------------|------|
+| `code-reviewer` | 汎用レビュー + 言語チェックリスト注入 |
+| `golang-reviewer` | Go 専門 (MA/MU スタイル) |
+| `codex-reviewer` | Codex 深い推論 (~100行以上) |
+| `cross-file-reviewer` | 変更の他ファイルへの影響検出 |
+| `comment-analyzer` | コメント品質・正確性 |
+| `silent-failure-hunter` | サイレント障害検出 |
+| `test-analyzer` | テスト品質・エッジケース |
+| `security-reviewer` | OWASP Top 10・信頼境界 |
 
-    subgraph impl_agents["Implementation & Debug (6)"]
-        direction LR
-        buildFixer["build-fixer<br><small>ビルドエラー最小修正</small>"]
-        debugger["debugger<br><small>体系的根本原因分析</small>"]
-        codexDebugger["codex-debugger<br><small>Codex 深いデバッグ</small>"]
-        frontDev["frontend-developer<br><small>React/レスポンシブ</small>"]
-        golangPro["golang-pro<br><small>Go goroutine/channel</small>"]
-        tsPro["typescript-pro<br><small>高度な型システム</small>"]
-    end
+### Architecture & Design (4)
 
-    subgraph maint_agents["Maintenance (3)"]
-        direction LR
-        docGardener["doc-gardener<br><small>ドキュメント鮮度</small>"]
-        goldenCleanup["golden-cleanup<br><small>GP違反スキャン</small>"]
-        uiObserver["ui-observer<br><small>Playwright UI観察</small>"]
-    end
+| エージェント | 役割 |
+|-------------|------|
+| `backend-architect` | API/DB/スケーラビリティ |
+| `nextjs-architecture-expert` | App Router/RSC |
+| `document-factory` | ドキュメント自動生成 |
+| `type-design-analyzer` | 型設計品質 |
 
-    subgraph product_agents["Product & Design Review (2)"]
-        direction LR
-        productReviewer["product-reviewer<br><small>spec整合性・スコープ</small>"]
-        designReviewer["design-reviewer<br><small>UI/UX・a11y</small>"]
-    end
+### Implementation & Debug (7)
 
-    subgraph routing_agents["Routing & Infra (4)"]
-        direction LR
-        triageRouter["triage-router<br><small>タスク分類・推薦</small>"]
-        gitInspector["safe-git-inspector<br><small>Git履歴 読取専用</small>"]
-        dbReader["db-reader<br><small>DB 読取専用</small>"]
-        geminiExplore["gemini-explore<br><small>Gemini 1M分析</small>"]
-    end
+| エージェント | 役割 |
+|-------------|------|
+| `build-fixer` | ビルドエラー最小修正 |
+| `debugger` | 体系的根本原因分析 |
+| `codex-debugger` | Codex 深いデバッグ |
+| `codex-risk-reviewer` | 実装前リスク分析 |
+| `frontend-developer` | React/レスポンシブ |
+| `golang-pro` | Go goroutine/channel |
+| `typescript-pro` | 高度な型システム |
 
-    subgraph evolve_agents["AutoEvolve (1)"]
-        autoevolveCore["autoevolve-core<br><small>Analyze / Improve / Garden</small>"]
-    end
+### Maintenance (3)
 
-    subgraph test_agents["Test (1)"]
-        testEngineer["test-engineer<br><small>テスト戦略・カバレッジ</small>"]
-    end
+| エージェント | 役割 |
+|-------------|------|
+| `doc-gardener` | ドキュメント鮮度 |
+| `golden-cleanup` | GP 違反スキャン |
+| `ui-observer` | Playwright UI 観察 |
 
-    style review_agents fill:#e94560,stroke:#16213e,color:#ffffff
-    style arch_agents fill:#533483,stroke:#16213e,color:#e0e0e0
-    style impl_agents fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style maint_agents fill:#1b998b,stroke:#16213e,color:#ffffff
-    style product_agents fill:#f4a261,stroke:#16213e,color:#1a1a2e
-    style routing_agents fill:#495057,stroke:#16213e,color:#e0e0e0
-    style evolve_agents fill:#6c567b,stroke:#16213e,color:#e0e0e0
-    style test_agents fill:#2d6a4f,stroke:#16213e,color:#e0e0e0
-```
+### Product & Design Review (2)
+
+| エージェント | 役割 |
+|-------------|------|
+| `product-reviewer` | spec 整合性・スコープ |
+| `design-reviewer` | UI/UX・a11y |
+
+### Test (2)
+
+| エージェント | 役割 |
+|-------------|------|
+| `test-engineer` | テスト戦略・カバレッジ |
+| `edge-case-hunter` | 境界値・異常系検出 |
+
+### Routing & Infra (4)
+
+| エージェント | 役割 |
+|-------------|------|
+| `triage-router` | タスク分類・推薦 |
+| `safe-git-inspector` | Git 履歴 読取専用 |
+| `db-reader` | DB 読取専用 |
+| `gemini-explore` | Gemini 1M 分析 |
+
+### AutoEvolve (1)
+
+| エージェント | 役割 |
+|-------------|------|
+| `autoevolve-core` | Analyze / Improve / Garden |
 
 ### 言語別レビューチェックリスト
 
@@ -479,71 +494,7 @@ graph TB
 
 ---
 
-## Skills ↔ Agents ↔ Hooks 連携フロー
-
-Skills が「何をするか」を定義し、Agents が「どう実行するか」を担い、Hooks が「いつ発火するか」を制御する。
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant CC as Claude Code
-    participant Hook as Hooks
-    participant Skill as Skills
-    participant Agent as Agents
-    participant CLI as External CLI
-    participant Data as Learning Data
-
-    Note over CC: SessionStart
-    Hook->>CC: session-load.js (状態復元)
-
-    User->>CC: タスク入力
-    Hook->>CC: agent-router.py (最適エージェント推薦)
-
-    CC->>Skill: /rpi (Research→Plan→Implement)
-
-    Note over Skill: Research Phase
-    Skill->>Agent: gemini-explore (大規模分析)
-    Agent->>CLI: Gemini CLI (1M context)
-    CLI-->>Agent: 分析結果
-    Agent-->>Skill: リサーチ結果
-
-    Note over Skill: Plan Phase
-    Skill->>CC: 計画策定
-
-    Note over Skill: Implement Phase
-    CC->>CC: コード編集 (Edit/Write)
-    Hook->>CC: auto-format.js (自動整形)
-    Hook->>CC: golden-check.py (GP違反検出)
-    Hook->>Data: emit_event(quality)
-
-    CC->>CC: Bash (テスト実行)
-    Hook->>CC: post-test-analysis.py (結果分析)
-    Hook->>Data: emit_event(pattern)
-
-    Note over CC: エラー発生時
-    Hook->>CC: error-to-codex.py (Codex提案)
-    CC->>Agent: codex-debugger
-    Agent->>CLI: Codex CLI (gpt-5.4)
-    CLI-->>Agent: デバッグ結果
-    Agent-->>CC: 修正案
-
-    Note over CC: レビュー (/review)
-    CC->>Skill: /review
-    Skill->>Agent: code-reviewer (並列起動)
-    Skill->>Agent: codex-reviewer (並列起動)
-    Skill->>Agent: product-reviewer (spec存在時)
-    Agent-->>Skill: レビュー結果
-    Skill->>CC: 統合レポート
-    Skill->>Data: emit_review_finding()
-
-    Note over CC: Stop/SessionEnd
-    Hook->>CC: completion-gate.py (テストゲート)
-    Hook->>Data: session-learner.py (学習永続化)
-```
-
----
-
-## EPD ワークフロー（フル開発サイクル）
+## EPD ワークフロー
 
 大きな機能開発で使用する Spec → Spike → Validate → Build → Review の統合フロー。
 Harrison Chase の "How Coding Agents Are Reshaping EPD" に基づく。
@@ -618,53 +569,6 @@ flowchart TB
 
 コードレビューは変更規模と内容シグナルに応じて**レビューアー数を自動スケール**する。
 
-```mermaid
-flowchart LR
-    diff["git diff<br>変更分析"]
-
-    subgraph scaling["スケーリング判定"]
-        s10["~10行<br>省略"]
-        s50["~50行<br>2並列"]
-        s200["~200行<br>3並列"]
-        s200plus["200行超<br>4-5並列"]
-    end
-
-    subgraph always["常時起動"]
-        cr["code-reviewer<br>+ 言語チェックリスト"]
-    end
-
-    subgraph conditional["条件起動"]
-        cxr["codex-reviewer<br>(50行以上)"]
-        gr["golang-reviewer<br>(.go ファイル)"]
-        pr["product-reviewer<br>(spec 存在時)"]
-        dr["design-reviewer<br>(.tsx/.css 変更時)"]
-    end
-
-    subgraph content_signal["内容シグナル起動"]
-        sfh["silent-failure-hunter<br>(catch/recover/fallback)"]
-        ta["test-analyzer<br>(_test.go, .test.ts)"]
-        ca["comment-analyzer<br>(10行以上のコメント)"]
-        tda["type-design-analyzer<br>(type/interface 追加)"]
-    end
-
-    subgraph synthesis["統合"]
-        dedup["重複排除"]
-        filter["confidence < 80 除外"]
-        priority["Critical → Important → Suggestion"]
-        report["統合レポート"]
-    end
-
-    diff --> scaling
-    scaling --> always & conditional & content_signal
-    always & conditional & content_signal --> synthesis
-
-    style scaling fill:#533483,stroke:#16213e,color:#e0e0e0
-    style always fill:#e94560,stroke:#16213e,color:#ffffff
-    style conditional fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style content_signal fill:#1b998b,stroke:#16213e,color:#ffffff
-    style synthesis fill:#f4a261,stroke:#16213e,color:#1a1a2e
-```
-
 ### レビュースケール表
 
 | 変更行数 | レビューアー | 言語チェックリスト |
@@ -676,64 +580,10 @@ flowchart LR
 
 ---
 
-## AutoEvolve システム（自律改善ループ）
+## AutoEvolve システム
 
 [karpathy/autoresearch](https://github.com/karpathy/autoresearch) に着想を得た自律改善システム。
 セッションデータを自動収集・分析し、設定自体を改善する提案を生成する。
-
-```mermaid
-flowchart TB
-    subgraph session["セッション中 (自動)"]
-        direction TB
-        errHook["error-to-codex.py<br>エラー検出"]
-        gpHook["golden-check.py<br>GP違反検出"]
-        testHook["post-test-analysis.py<br>テスト分析"]
-        reviewHook["review-feedback-tracker.py<br>レビュー追跡"]
-
-        emit["emit_event()<br>session_events.py"]
-        tmpFile["current-session.jsonl<br>(一時ファイル)"]
-
-        errHook & gpHook & testHook & reviewHook --> emit --> tmpFile
-    end
-
-    subgraph flush["セッション終了 (自動)"]
-        learner["session-learner.py<br>flush_session()"]
-        errors["errors.jsonl"]
-        quality["quality.jsonl"]
-        patterns["patterns.jsonl"]
-        reviewFindings["review-findings.jsonl"]
-        metrics["session-metrics.jsonl"]
-
-        learner --> errors & quality & patterns & reviewFindings & metrics
-    end
-
-    subgraph analysis["分析 (/improve 手動)"]
-        direction TB
-        analyze["Phase 1: Analyze<br>4カテゴリ並列分析"]
-        garden["Phase 2: Garden<br>重複排除・陳腐化除去"]
-        improvePhase["Phase 3: Improve<br>設定改善提案"]
-        branch["autoevolve/* ブランチ<br>max 3ファイル/サイクル"]
-
-        analyze --> garden --> improvePhase --> branch
-    end
-
-    tmpFile --> learner
-    errors & quality & patterns --> analyze
-
-    subgraph safety["安全機構"]
-        s1["master 直接変更禁止"]
-        s2["1サイクル max 3ファイル"]
-        s3["テスト通過必須"]
-        s4["人間レビュー必須"]
-    end
-
-    branch --> safety
-
-    style session fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style flush fill:#533483,stroke:#16213e,color:#e0e0e0
-    style analysis fill:#1b998b,stroke:#16213e,color:#ffffff
-    style safety fill:#e94560,stroke:#16213e,color:#ffffff
-```
 
 ### 4層ループ
 
@@ -752,6 +602,13 @@ flowchart TB
   → 確信度高 → MEMORY.md に追記 (autoevolve-core が提案)
   → 汎用性高 → skill / rule に昇格 (人間が承認)
 ```
+
+### 安全機構
+
+- master 直接変更禁止
+- 1サイクル max 3ファイル
+- テスト通過必須
+- 人間レビュー必須
 
 ### セキュリティ境界
 
@@ -772,80 +629,24 @@ flowchart TB
 | **M** | 関数追加、バグ修正 | Plan → Implement → Test → Verify |
 | **L** | 新機能、リファクタリング | Plan → Implement → Test → Review → Verify → Security Check |
 
-```mermaid
-flowchart LR
-    Plan["Plan"] --> Implement["Implement"]
-    Implement --> Test["Test"]
-    Test --> Review["Review"]
-    Review --> Verify["Verify"]
-    Verify --> Security["Security Check"]
-    Security --> Commit["Commit"]
-
-    Test -->|"失敗"| Implement
-    Review -->|"指摘"| Implement
-    Verify -->|"失敗"| Implement
-    Security -->|"脆弱性"| Implement
-
-    style Plan fill:#533483,stroke:#16213e,color:#e0e0e0
-    style Implement fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style Test fill:#1b998b,stroke:#16213e,color:#ffffff
-    style Review fill:#e94560,stroke:#16213e,color:#ffffff
-    style Verify fill:#f4a261,stroke:#16213e,color:#1a1a2e
-    style Security fill:#495057,stroke:#16213e,color:#e0e0e0
-    style Commit fill:#2d6a4f,stroke:#16213e,color:#e0e0e0
-```
-
 ---
 
 ## Progressive Disclosure 設計
 
 コンテキストウィンドウを効率的に使うための階層型設計:
 
-```mermaid
-graph TB
-    subgraph always["常時読み込み (~69行)"]
-        claudeMd["CLAUDE.md<br>コア原則・ワークフロー概要"]
-    end
-
-    subgraph conditional["条件付き読み込み (各20-50行)"]
-        rules["rules/<br>言語別コーディング規則"]
-        rulesCommon["rules/common/<br>セキュリティ・品質・テスト"]
-    end
-
-    subgraph onDemand["必要時のみ (各100-300行)"]
-        refs["references/<br>ワークフロー詳細・GP・エラーガイド"]
-        checklists["review-checklists/<br>言語別レビュー基準"]
-    end
-
-    subgraph invoked["コマンド実行時 (各50-200行)"]
-        skills["skills/<br>ワークフロー定義・知識ベース"]
-    end
-
-    always -->|"対象言語のコード変更時"| conditional
-    conditional -->|"明示的参照・複雑な判断時"| onDemand
-    onDemand -->|"/ コマンド実行時"| invoked
-
-    style always fill:#e94560,stroke:#16213e,color:#ffffff
-    style conditional fill:#f4a261,stroke:#16213e,color:#1a1a2e
-    style onDemand fill:#0f3460,stroke:#16213e,color:#e0e0e0
-    style invoked fill:#495057,stroke:#16213e,color:#e0e0e0
-```
+| 層 | 読み込みタイミング | 例 |
+|----|-------------------|-----|
+| **常時** (~130行) | 毎ターン | `CLAUDE.md` コア原則・ワークフロー概要 |
+| **条件付き** (各20-50行) | 対象言語のコード変更時 | `rules/` 言語別コーディング規則 |
+| **必要時のみ** (各100-300行) | 明示的参照・複雑な判断時 | `references/` ワークフロー詳細・GP・エラーガイド |
+| **コマンド実行時** (各50-200行) | `/` コマンド実行時 | `skills/` ワークフロー定義・知識ベース |
 
 ---
 
-## ルール (13個)
+## ルール (11個)
 
 `rules/` 配下のルールは Claude Code が自動的に条件に応じて読み込む。
-
-### 共通ルール
-
-| ファイル | 適用場面 |
-|---------|---------|
-| `common/code-quality.md` | DRY, SOLID, 保守性 |
-| `common/error-handling.md` | エラーハンドリングパターン |
-| `common/security.md` | セキュリティベストプラクティス |
-| `common/testing.md` | テスト戦略・カバレッジ |
-| `common/overconfidence-prevention.md` | 不確実性の認知 |
 
 ### 言語別ルール
 
@@ -853,10 +654,12 @@ graph TB
 |---------|------|
 | `typescript.md` | TypeScript 型安全性、React パターン |
 | `react.md` | React コンポーネント設計、hooks |
+| `python.md` | Python イディオム、型ヒント |
 | `go.md` | Go イディオム、エラーハンドリング、並行処理 |
 | `rust.md` | Rust 所有権、ライフタイム、安全性 |
 | `test.md` | テスト構造・命名規則 |
 | `proto.md` | Protocol Buffers |
+| `config.md` | 設定管理ルール |
 
 ### モデル委譲ルール
 
@@ -864,40 +667,47 @@ graph TB
 |---------|------|
 | `codex-delegation.md` | Codex CLI に委譲するタイミングと方法 |
 | `gemini-delegation.md` | Gemini CLI に委譲するタイミングと方法 |
-| `config.md` | 設定管理ルール |
+
+### 共通ルール (`common/`)
+
+品質・セキュリティ・テスト・エラーハンドリング等の共通規則。
 
 ---
 
-## リファレンス (24個)
+## カスタムコマンド (27個)
 
-`references/` は詳細ドキュメント。必要時にのみ参照される (Progressive Disclosure)。
+`/command` で呼び出すスラッシュコマンド。
 
-| ファイル | 内容 |
-|---------|------|
-| `workflow-guide.md` | 6段階ワークフロー詳細、エージェントルーティング、トークン予算 |
-| `golden-principles.md` | GP-001〜008: 品質・設計原則の自動検出パターン |
-| `improve-policy.md` | AutoEvolve の改善方針・制約・禁止事項 |
-| `error-fix-guides.md` | エラーパターン→根本原因→修正のマッピング |
-| `constraints-library.md` | C-001〜C-010 ソフト制約テンプレート |
-| `subagent-delegation-guide.md` | 3委譲パターン (Sync, Async, Queue) |
-| `subagent-framing.md` | サブエージェントへのフレーミング注入 |
-| `agent-design-lessons.md` | エージェント設計パターンと教訓 |
-| `failure-taxonomy.md` | FM-001〜FM-010 障害モード分類 |
-| `research-checklist.md` | 構造化リサーチプロトコル |
-| `scoring-rules.md` | レビュースコア計算ルール |
-| `readability-principles.md` | コード可読性の原則 |
-| `skill-inventory.md` | スキルカタログと使用ガイド |
-| `task-registry-schema.md` | タスクレジストリ JSON スキーマ |
-| `context-profiles.md` | コンテキスト切替パターン |
-| `brownfield-analysis-template.md` | 大規模コードベース分析テンプレート |
-| `e2e-tool-selection.md` | E2E テストツール選定マトリクス |
-| `claudeignore-template.md` | .claudeignore テンプレート |
-| `claude-code-threats.md` | セキュリティ脅威モデル |
-| `mcp-server-template/` | MCP サーバー実装テンプレート |
-| `review-checklists/typescript.md` | TypeScript レビュー基準 |
-| `review-checklists/python.md` | Python レビュー基準 |
-| `review-checklists/go.md` | Go レビュー基準 |
-| `review-checklists/rust.md` | Rust レビュー基準 |
+| コマンド | 説明 | 規模 |
+|---------|------|------|
+| `/commit` | conventional commit + 絵文字プレフィックスでコミット | S |
+| `/review` | 変更規模に応じてレビューアーを自動選択・並列起動 | M-L |
+| `/pull-request` | PR 作成 (ブランチ push + タイトル/本文自動生成) | S |
+| `/rpi` | Research → Plan → Implement の3フェーズ | L |
+| `/epd` | Full EPD: Spec → Spike → Validate → Decide → Build | L |
+| `/spec` | Prompt-as-PRD 仕様書生成 | M |
+| `/spike` | Worktree 隔離プロトタイプ検証 | M |
+| `/validate` | spec の受入基準に対する検証 | S |
+| `/improve` | AutoEvolve 改善サイクルの手動実行 | L |
+| `/research` | マルチエージェント並列リサーチ | M-L |
+| `/autonomous` | マルチセッション自律実行 | L |
+| `/fix-issue` | GitHub Issue を起点にした自動修正 | M-L |
+| `/security-review` | OWASP Top 10 セキュリティレビュー | M |
+| `/security-scan` | AgentShield セキュリティ監査 | M |
+| `/challenge` | 直前の変更を分析し、エレガント版再設計 | M |
+| `/eureka` | 技術ブレイクスルーの構造化記録 | S |
+| `/checkpoint` | セッション状態の手動チェックポイント | S |
+| `/check-context` | コンテキストウィンドウ使用率確認 | S |
+| `/memory-status` | メモリシステム状態サマリー | S |
+| `/daily-report` | 全プロジェクト横断の日報生成 | M |
+| `/absorb` | 外部記事・論文の知見統合 | M-L |
+| `/interview` | spec のための深いインタビュー | M |
+| `/recall` | コミット履歴からコンテキスト復元 | S |
+| `/onboarding` | 開発者プロファイル構築 | M |
+| `/profile-drip` | プロファイル 1日1問漸進構築 | S |
+| `/persona` | 口調切り替え (ギャル/妹/メスガキ/お姉さん) | S |
+| `/timekeeper` | 朝の計画・夕方の振り返り | M |
+| `/init-project` | プロジェクト初期化 | L |
 
 ---
 
@@ -915,41 +725,13 @@ graph TB
 
 ---
 
-## MCP サーバー (3個)
+## MCP サーバー
 
 | サーバー | 用途 |
 |---------|------|
 | `context7` | ライブラリの最新ドキュメント・コード例の取得 |
+| `brave-search` | Brave Web/Local 検索 |
 | `playwright` | Web アプリのブラウザ操作・スクリーンショット・テスト |
-| `deepwiki` | DeepWiki からのナレッジ検索 |
-
----
-
-## カスタムコマンド (19個)
-
-`/command` で呼び出すスラッシュコマンド。
-
-| コマンド | 説明 | タスク規模 |
-|---------|------|-----------|
-| `/commit` | conventional commit + 絵文字プレフィックスでコミット作成 | S |
-| `/review` | 変更規模に応じてレビューアーを自動選択・並列起動 | M-L |
-| `/pull-request` | PR 作成 (ブランチ push + タイトル/本文自動生成) | S |
-| `/rpi` | Research → Plan → Implement の3フェーズ体系的実行 | L |
-| `/epd` | Full EPD: Spec → Spike → Validate → Decide → Build | L |
-| `/spec` | Prompt-as-PRD 仕様書生成 | M |
-| `/spike` | Worktree 隔離プロトタイプ検証 | M |
-| `/validate` | spec の受入基準に対する検証 | S |
-| `/improve` | AutoEvolve 改善サイクルの手動実行 | L |
-| `/research` | マルチエージェント並列リサーチ | M-L |
-| `/autonomous` | マルチセッション自律実行 | L |
-| `/fix-issue` | GitHub Issue を起点にした自動修正 | M-L |
-| `/security-review` | OWASP Top 10 セキュリティレビュー | M |
-| `/challenge` | 直前の変更を分析し、エレガント版再設計 | M |
-| `/eureka` | 技術ブレイクスルーの構造化記録 | S |
-| `/checkpoint` | セッション状態の手動チェックポイント | S |
-| `/check-context` | コンテキストウィンドウ使用率確認 | S |
-| `/memory-status` | メモリシステム状態サマリー | S |
-| `/daily-report` | 全プロジェクト横断の日報生成 | M |
 
 ---
 
