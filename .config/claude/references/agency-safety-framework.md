@@ -96,6 +96,35 @@
 
 ---
 
+## Tool-Use Safety Taxonomy
+
+> Nemotron-Agentic-Safety (11K labeled telemetry traces) の分類体系を参考に、
+> ツール使用ワークフローにおける安全性パターンを定義する。
+
+### 障害モード
+
+| 障害モード | 説明 | 検出方法 | 既存コントロール |
+|-----------|------|---------|----------------|
+| **Tool Hallucination** | 存在しないツール名・パラメータの生成 | ツール名の allowlist 照合 | agentshield-filter.py |
+| **Scope Violation** | 許可範囲外のリソースへのアクセス試行 | deny rules + パス検証 | settings.json deny rules, protect-linter-config.py |
+| **Cascading Failure** | 1つのツール失敗が連鎖的に後続操作を破壊 | CFS 検出 (session-learner.py) | stagnation-detector.py, completion-gate.py |
+| **Parameter Injection** | ツールパラメータへの悪意ある値の注入 | 入力サニタイズ + パターンマッチ | docker-safety.py, deny rules |
+| **Excessive Autonomy** | 確認なしで高影響操作を連続実行 | 操作カウント + 影響度評価 | completion-gate.py MAX_RETRIES |
+| **Silent Data Corruption** | ツール成功だが結果が不正（誤ったファイル編集等） | 差分検証 + テスト実行 | golden-check.py, completion-gate.py |
+
+### 3本柱との対応
+
+| 障害モード | 関連する柱 | 制限強度 |
+|-----------|-----------|---------|
+| Tool Hallucination | Affordances | Hard block |
+| Scope Violation | Affordances | Hard block |
+| Cascading Failure | Goal-directedness | Budget limit |
+| Parameter Injection | Affordances | Hard block |
+| Excessive Autonomy | Goal-directedness | Budget limit |
+| Silent Data Corruption | Goal-directedness | Soft warning |
+
+---
+
 ## 設計原則
 
 1. **Intelligence は味方**: エージェントの推論能力を制限するのではなく、Affordances と Goal-directedness を制限することで安全性を確保する

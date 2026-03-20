@@ -164,6 +164,47 @@ def _classify_approach(events: list[dict]) -> str:
     return "refinement"
 
 
+def _classify_data_domain(events: list[dict]) -> str:
+    """セッションイベントからデータドメインを分類する。
+
+    Nemotron post-training の4カテゴリに対応:
+    - structured_conversation: 通常の対話・構造化レスポンス
+    - math_reasoning: 数学・論理・証明
+    - tool_use: ツール呼び出し・エージェント連携
+    - swe: コード生成・編集・テスト
+
+    Returns: ドメイン文字列
+    """
+    tool_names = {e.get("tool_name", "") for e in events if e.get("tool_name")}
+    code_tools = {"Edit", "Write", "NotebookEdit"}
+    agent_tools = {"Agent", "SendMessage"}
+
+    code_ratio = sum(1 for e in events if e.get("tool_name") in code_tools) / max(
+        len(events), 1
+    )
+    agent_ratio = sum(1 for e in events if e.get("tool_name") in agent_tools) / max(
+        len(events), 1
+    )
+
+    # SWE: コード編集が30%以上
+    if code_ratio >= 0.3:
+        return "swe"
+
+    # tool_use: エージェント/ツール連携が多い
+    if agent_ratio >= 0.2 or len(tool_names) >= 6:
+        return "tool_use"
+
+    # math_reasoning: 数学・推論関連キーワード
+    math_keywords = {"math", "proof", "calculate", "theorem", "logic"}
+    text_content = " ".join(
+        str(e.get("message", "")) + str(e.get("data", "")) for e in events[:20]
+    ).lower()
+    if any(kw in text_content for kw in math_keywords):
+        return "math_reasoning"
+
+    return "structured_conversation"
+
+
 def _classify_task_type(summary: dict) -> str:
     """セッションのタスクタイプを推論する (EvoX Task B)。
 
@@ -574,12 +615,14 @@ def process_session(cwd: str | None = None) -> None:
     # Strategy Outcomes Database (EvoX Task B)
     approach = _classify_approach(events)
     task_type = _classify_task_type(summary)
+    data_domain = _classify_data_domain(events)
     append_to_learnings(
         "strategy-outcomes",
         {
             "project": summary["project"],
             "task_type": task_type,
             "approach": approach,
+            "data_domain": data_domain,
             "context": {
                 "error_count": summary["errors_count"],
                 "quality_issues": summary["quality_issues"],
