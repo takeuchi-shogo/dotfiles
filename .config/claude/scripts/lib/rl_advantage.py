@@ -152,20 +152,71 @@ def clip_ratio(after: float, before: float, epsilon: float = 0.2) -> float:
     return round(max(1.0 - epsilon, min(1.0 + epsilon, ratio)), 10)
 
 
+def margin_advantage(score_a: float, score_b: float) -> float:
+    """マージン付き advantage を計算する。
+
+    Bradley-Terry のペアワイズ比較に「どれくらい良いか」の度合いを保持する。
+    通常の A/B 比較が sign(a-b) しか見ないのに対し、差の大きさを返す。
+    Llama 2 の margin loss (L = -log(sigma(r_c - r_r - m))) に着想。
+
+    Args:
+        score_a: variant A のスコア
+        score_b: variant B のスコア
+
+    Returns:
+        符号付きマージン (A - B)。正なら A が優位。
+    """
+    return round(score_a - score_b, 10)
+
+
+def plackett_luce_ranking(scores: list[float]) -> list[float]:
+    """Plackett-Luce モデルによる K-wise ランキングスコアを計算する。
+
+    K>=3 の variant を順序付きランキングとして評価する。
+    各 variant のスコアを softmax で確率に変換し、ランキング確率を返す。
+    K=2 の場合は Bradley-Terry に帰着する。
+
+    Args:
+        scores: K variant のスコアリスト (K >= 2)
+
+    Returns:
+        各 variant の Plackett-Luce 確率（合計 1.0）。
+        len < 2 の場合は空リスト。
+    """
+    k = len(scores)
+    if k < 2:
+        return []
+
+    # オーバーフロー防止のため最大値を引く
+    max_s = max(scores)
+    exp_scores = [math.exp(s - max_s) for s in scores]
+    total = sum(exp_scores)
+
+    if total == 0:
+        return [1.0 / k] * k
+
+    return [round(e / total, 10) for e in exp_scores]
+
+
 def step_credit(
     outcome: float,
     invocations: list[dict],
     events: list[dict],
+    step_quality: dict[str, float] | None = None,
 ) -> dict[str, float]:
     """Per-step credit assignment: 各スキルの寄与度を計算する。
 
     セッション outcome をスキルの呼び出し回数に比例して配分する。
+    step_quality が指定された場合、PRM 的にステップの正しさで重み付けする。
 
     Args:
         outcome: セッション全体の outcome スコア (0.0-1.0)
         invocations: スキル呼び出しイベントのリスト
             各要素は {"skill_name": str, ...} を含む
         events: セッション全体のイベントリスト (未使用、将来の拡張用)
+        step_quality: スキル名→品質スコア (0.0-1.0) のマッピング。
+            指定時は呼び出し回数×品質スコアで重み付けする。
+            未指定時は呼び出し回数のみで配分（従来動作）。
 
     Returns:
         {skill_name: credit_score} の辞書。空の場合は空辞書。
@@ -191,7 +242,20 @@ def step_credit(
     if total_invocations == 0:
         return {}
 
-    # 呼び出し回数に比例して outcome を配分
+    # PRM 的ステップ品質重み付け
+    if step_quality:
+        weighted: dict[str, float] = {}
+        for name, count in skill_counts.items():
+            quality = step_quality.get(name, 0.5)  # デフォルト: 中立
+            weighted[name] = count * quality
+        total_weighted = sum(weighted.values())
+        if total_weighted == 0:
+            return {name: 0.0 for name in skill_counts}
+        return {
+            name: round(outcome * w / total_weighted, 4) for name, w in weighted.items()
+        }
+
+    # 呼び出し回数に比例して outcome を配分（従来動作）
     return {
         name: round(outcome * count / total_invocations, 4)
         for name, count in skill_counts.items()

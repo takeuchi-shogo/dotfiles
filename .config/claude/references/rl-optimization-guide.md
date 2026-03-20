@@ -15,6 +15,9 @@ Policy Gradient の数学的概念を AutoEvolve ハーネスの
 | Importance Sampling | 設定変更後のデータ重み | `importance_weight()` |
 | Clipping | 変更比率の制限 | `clip_ratio()` |
 | Credit Assignment | スキルごとの寄与度 | `step_credit()` |
+| Margin Loss | A/B 比較の度合い | `margin_advantage()` |
+| K-wise Ranking | K>=3 の順序付き比較 | `plackett_luce_ranking()` |
+| Process RM | ステップ品質重み付け | `step_credit(step_quality=...)` |
 
 ## 関数リファレンス
 
@@ -67,9 +70,32 @@ clip_ratio(0.7, 1.0, 0.2)  # → 0.8 (下限クリップ)
 clip_ratio(1.1, 1.0, 0.2)  # → 1.1 (範囲内)
 ```
 
-### `step_credit(outcome, invocations, events)`
+### `margin_advantage(score_a, score_b) -> float`
+
+マージン付き advantage。A/B 比較で「どちらが良いか」だけでなく
+「どれくらい良いか」の度合いを返す。Llama 2 の margin loss に着想。
+
+```python
+from rl_advantage import margin_advantage
+margin_advantage(0.9, 0.6)  # → 0.3 (A が大幅に優位)
+margin_advantage(0.51, 0.49)  # → 0.02 (僅差)
+```
+
+### `plackett_luce_ranking(scores: list[float]) -> list[float]`
+
+K>=3 の variant を Plackett-Luce モデルで順序付きランキング。
+softmax 確率を返す（合計 1.0）。K=2 で Bradley-Terry に帰着。
+
+```python
+from rl_advantage import plackett_luce_ranking
+probs = plackett_luce_ranking([0.6, 0.9, 0.7, 0.8])
+# → [0.098, 0.394, 0.146, 0.361]  # 0.9 が最高確率
+```
+
+### `step_credit(outcome, invocations, events, step_quality=None)`
 
 Per-step credit assignment。outcome を呼び出し回数比で配分。
+`step_quality` 指定時は PRM 的にステップの正しさで重み付けする。
 
 ```python
 from rl_advantage import step_credit
@@ -78,8 +104,14 @@ invocations = [
     {"skill_name": "review"},
     {"skill_name": "test"},
 ]
+# 従来動作（回数比のみ）
 credits = step_credit(1.0, invocations, [])
 # → {"review": 0.6667, "test": 0.3333}
+
+# PRM 的品質重み付け
+quality = {"review": 1.0, "test": 0.2}
+credits = step_credit(1.0, invocations, [], step_quality=quality)
+# → review の寄与が品質で増幅される
 ```
 
 ## チューニング指針
@@ -107,6 +139,19 @@ credits = step_credit(1.0, invocations, [])
 | 3 | 最小コスト、ノイズ影響大 |
 | 5 | バランス良好（推奨） |
 | 7+ | 精度高いが eval コスト大 |
+
+## ORM/PRM 使い分け
+
+タスク種別に応じてスコアリング戦略を切り替える。
+
+| タスク種別 | スコアリング | step_quality | 理由 |
+|-----------|------------|-------------|------|
+| 推論系（デバッグ、設計、レビュー） | PRM 的 | 各ステップの正しさで重み付け | 中間推論の正しさが最終結果に影響 |
+| 結果系（生成、変換、フォーマット） | ORM 的 | None（呼び出し回数のみ） | 最終出力のみが重要 |
+| 混合（実装 + テスト） | PRM 的 | テスト結果で重み調整 | テスト通過が品質の強い信号 |
+
+判定基準: セッション内で「途中経過の質」が最終結果に影響するなら PRM、
+「結果だけ見ればいい」なら ORM。迷ったら ORM（従来動作）。
 
 ## データフロー
 
