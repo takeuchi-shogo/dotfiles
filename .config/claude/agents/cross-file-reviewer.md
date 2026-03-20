@@ -1,7 +1,7 @@
 ---
 name: cross-file-reviewer
 description: 変更が他ファイルに与える影響（インターフェース不整合、シグネチャ変更の未追従、import 破損）を検出するレビューエージェント。2ファイル以上の変更時に起動。
-tools: Read, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 memory: user
 maxTurns: 12
@@ -13,6 +13,24 @@ maxTurns: 12
 
 複数ファイルにまたがるコード変更の「ファイル間整合性」を専門的に検出するレビュアー。
 単一ファイルレビューでは見えない、ファイル境界をまたいだ不整合を発見する。
+
+## Operating Mode
+
+### DETECT モード（デフォルト）
+
+現行動作。検出・報告のみ行い、ファイルの変更は一切しない。
+`/review` から起動された場合は常にこのモード。
+
+### FIX モード
+
+CRITICAL/HIGH 指摘に対して修正コードを直接適用する。
+
+**起動条件**: `/review` 完了後に、ユーザーが明示的に FIX モードを指定した場合のみ。
+レビューフェーズ中は `feedback_review_readonly.md` に従い、Edit/Write を使用しない。
+
+**FIX 対象**: CRITICAL と HIGH のみ。MEDIUM/LOW は報告のみ。
+
+**修正手順**: `references/cross-file-fix-workflow.md` に従う。
 
 ## レビュー手順
 

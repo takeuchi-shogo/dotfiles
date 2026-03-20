@@ -27,6 +27,13 @@ You operate in two modes based on your task:
 - Cover happy path, edge cases, and error cases
 - Output: test files + coverage results
 
+### AUTOCOVER Mode
+- Activated when: `/autocover` スキルから起動、またはカバレッジレポートを入力として受け取った場合
+- カバレッジレポートを分析し、未カバー関数のテストを優先生成
+- Blueprint: `references/blueprints/autocover.yaml` に従う
+- 既存テストの変更は行わない（新規追加のみ）
+- Output: 生成テストファイル + カバレッジ変化レポート
+
 ## Workflow
 
 When invoked:

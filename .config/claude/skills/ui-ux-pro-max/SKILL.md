@@ -47,6 +47,22 @@ This Skill is not needed in the following situations:
 
 **Decision criteria**: If the task will change how a feature **looks, feels, moves, or is interacted with**, this Skill should be used.
 
+## Figma MCP Integration
+
+Figma MCP サーバーが利用可能な場合、ライブデザインデータから直接コンポーネントを生成できる。
+
+### MCP あり（Figma サーバー接続済み）
+
+1. Figma ファイルからデザイントークン（色、フォント、スペーシング）を自動取得
+2. コンポーネント構造をデザインノードから抽出してコード生成
+3. デザインと実装の差分を検出
+
+セットアップ手順: `references/mcp-toolshed.md` の Figma セクションを参照。
+
+### MCP なし（デフォルト）
+
+従来の KB 駆動ワークフロー（下記の Step 1-4）をそのまま使用。Figma MCP がなくても全機能が動作する。
+
 ## Rule Categories by Priority
 
 *For human/AI reference: follow priority 1→10 to decide which rule category to focus on first; use `--domain <Domain>` to query details when needed. Scripts do not read this table.*

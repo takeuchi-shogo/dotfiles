@@ -75,6 +75,7 @@ output: "api/handler.py:42: # TODO: rate limiting\n..."
 - 5 MCP サーバーで約 55,000 tokens のツール定義オーバーヘッド
 - ツールが多すぎると単一ツールへの注意力が希釈される
 - Shell で処理できるもの、静的知識で済むもの、Skill で代替できるものには新ツール不要
+- **推奨上限: 同時 3 サーバー ≈ 33K tokens** — 詳細は `references/mcp-toolshed.md` を参照
 
 ### 6. 返回フォーマットをパラメータ化する
 

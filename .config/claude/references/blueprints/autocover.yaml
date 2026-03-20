@@ -1,0 +1,54 @@
+blueprint:
+  name: autocover
+  description: Analyze coverage gaps and auto-generate tests
+  trigger: "/autocover, coverage gap analysis, test generation"
+  completion: graduated  # partial test generation is still useful
+
+  nodes:
+    # --- Agentic: analyze current coverage ---
+    - id: analyze-coverage
+      type: agentic
+      tools: [Read, Bash, Glob, Grep]
+      max_iterations: 3
+      on_failure: handback
+
+    # --- Agentic: identify untested functions and prioritize ---
+    - id: identify-gaps
+      type: agentic
+      tools: [Read, Grep, Glob]
+      max_iterations: 2
+      on_failure: handback
+
+    # --- Agentic: generate test files ---
+    - id: generate-tests
+      type: agentic
+      tools: [Read, Write, Edit, Grep, Glob]
+      max_iterations: 5
+      on_failure: handback
+
+    # --- Deterministic: run generated tests ---
+    - id: run-tests
+      type: deterministic
+      command: "${TEST_CMD}"
+      on_failure: handback
+
+    # --- Agentic: fix failing tests ---
+    - id: fix-tests
+      type: agentic
+      tools: [Read, Edit, Write, Grep, Bash]
+      max_iterations: 3
+      on_failure: handback
+
+    # --- Deterministic: mutation check (optional) ---
+    - id: mutation-check
+      type: deterministic
+      command: "${MUTATION_CMD:-true}"
+      on_failure: skip
+
+  edges:
+    - [analyze-coverage, identify-gaps]
+    - [identify-gaps, generate-tests]
+    - [generate-tests, run-tests]
+    - [run-tests, mutation-check, { condition: "run-tests.passed" }]
+    - [run-tests, fix-tests,      { condition: "run-tests.failed" }]
+    - [fix-tests, run-tests]                                          # loop back
