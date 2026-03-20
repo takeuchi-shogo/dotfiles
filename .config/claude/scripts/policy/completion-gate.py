@@ -312,7 +312,7 @@ def _generate_handback_report() -> str:
         if result.returncode == 0 and result.stdout.strip():
             parts.extend(
                 [
-                    "### 変更済みファイル",
+                    "### 未コミットの変更ファイル",
                     "```",
                     result.stdout.strip(),
                     "```",
@@ -326,7 +326,8 @@ def _generate_handback_report() -> str:
         [
             "### 推奨アクション",
             "1. 失敗テストを確認し、手動で修正を検討してください",
-            "2. 変更済みコードは commit 済みです（作業喪失防止）",
+            "2. working tree に未コミットの変更が残っています。"
+            "必要に応じて commit してください",
             "3. PR を作成する場合は `[WIP]` を title に付加してください",
         ]
     )
