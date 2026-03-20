@@ -40,6 +40,7 @@ sandbox_mode = "workspace-write"
 
 [features]
 shell_snapshot = true        # 環境スナップショット（beta）
+undo = true                  # per-turn git ghost snapshots を有効化
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
 
 [mcp_servers.context7]

@@ -80,6 +80,7 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
   - profiles / sandbox / approval policy
   - exec policy rules (`.codex/rules/*.rules`)
   - MCP server configuration
+  - Apps / connectors feature and app configuration
   - review / verification / search-first skills
   - checkpoint-resume skill
   - memory-capture skill
