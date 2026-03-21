@@ -114,13 +114,15 @@ Read `instructions/platform-specific.md` when running in:
 
 The agents/ directory contains instructions for specialized subagents. Read them when you need to spawn the relevant subagent.
 
-- `agents/grader.md` — How to evaluate assertions against outputs
-- `agents/comparator.md` — How to do blind A/B comparison between two outputs
-- `agents/analyzer.md` — How to analyze why one version beat another
+> **Note**: The following agent/reference files are planned but not yet created.
+> Use the inline instructions in `instructions/testing-evaluation.md` and `instructions/improving.md` instead.
+>
+> - `agents/grader.md` — How to evaluate assertions against outputs
+> - `agents/comparator.md` — How to do blind A/B comparison between two outputs
+> - `agents/analyzer.md` — How to analyze why one version beat another
+> - `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
 
 The references/ directory has additional documentation:
-
-- `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
 - `references/planning-guide.md` — Skill categories, description formula, design patterns, success criteria
 - `references/validation-checklist.md` — Critical rules, YAML reference, before/during/after checklists
 - `references/skill-writing-principles.md` — 7 principles for high-quality skill content (directives not wisdom, cut general knowledge, etc.)

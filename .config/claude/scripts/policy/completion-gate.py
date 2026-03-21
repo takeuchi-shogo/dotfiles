@@ -419,6 +419,120 @@ def _check_test_coverage_for_changes() -> str | None:
     )
 
 
+# --- Comprehension Check: Design Rationale for M/L changes ---
+# Ref: Addy Osmani "Comprehension Debt" + comprehension-debt-policy.md
+_CHANGE_SIZE_M = 30  # lines changed threshold for M-size
+_RATIONALE_KEYWORDS = {
+    "what": ["解決", "目的", "what", "solve", "address", "purpose"],
+    "why": [
+        "なぜ",
+        "アプローチ",
+        "選んだ",
+        "理由",
+        "why",
+        "approach",
+        "chose",
+        "because",
+        "代替",
+    ],
+    "risk": ["リスク", "壊れ", "影響", "risk", "break", "impact", "mitigation"],
+}
+
+
+def _estimate_change_size() -> int:
+    """Estimate lines changed from git diff --stat."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--stat", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=os.getcwd(),
+        )
+        if result.returncode != 0 or not result.stdout.strip():
+            return 0
+        # Last line: " N files changed, X insertions(+), Y deletions(-)"
+        import re
+
+        m = re.search(r"(\d+) insertion", result.stdout)
+        ins = int(m.group(1)) if m else 0
+        m = re.search(r"(\d+) deletion", result.stdout)
+        dels = int(m.group(1)) if m else 0
+        return ins + dels
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(f"[Comprehension Check] git diff error: {exc}", file=sys.stderr)
+        return 0
+
+
+def _find_rationale_text() -> str:
+    """Collect text from active plan and recent commit message."""
+    parts: list[str] = []
+    # Check active plans
+    import glob as _glob
+
+    for plan_dir in PLAN_DIRS:
+        if not os.path.isdir(plan_dir):
+            continue
+        for plan_file in _glob.glob(os.path.join(plan_dir, "*.md")):
+            try:
+                with open(plan_file) as f:
+                    parts.append(f.read()[:2000])
+            except OSError as exc:
+                print(f"[Comprehension Check] plan read error: {exc}", file=sys.stderr)
+    # Check latest commit message
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--pretty=%B"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=os.getcwd(),
+        )
+        if result.returncode == 0:
+            parts.append(result.stdout)
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(f"[Comprehension Check] git log error: {exc}", file=sys.stderr)
+    return "\n".join(parts).lower()
+
+
+def _check_design_rationale() -> str | None:
+    """Check if M/L changes have Design Rationale (What/Why/Risk).
+
+    Advisory only — returns a message if rationale is missing, else None.
+    """
+    change_size = _estimate_change_size()
+    if change_size < _CHANGE_SIZE_M:
+        return None  # S-size: exempt
+
+    text = _find_rationale_text()
+    if not text:
+        return (
+            f"[Comprehension Check] {change_size}行の変更がありますが、"
+            "Design Rationale（What/Why/Risk）が Plan にもコミットにも見つかりません。"
+            "理解負債を防ぐため、変更意図を記録してください。"
+        )
+
+    missing: list[str] = []
+    for dimension, keywords in _RATIONALE_KEYWORDS.items():
+        if not any(kw in text for kw in keywords):
+            missing.append(dimension)
+
+    if not missing:
+        return None
+
+    labels = {
+        "what": "What(何を解決)",
+        "why": "Why(なぜこのアプローチ)",
+        "risk": "Risk(何が壊れうるか)",
+    }
+    missing_str = ", ".join(labels[d] for d in missing)
+    return (
+        f"[Comprehension Check] {change_size}行の変更で "
+        f"Design Rationale の {missing_str} が不十分です。"
+        "Plan またはコミットメッセージに記録を推奨します。"
+    )
+
+
 def main() -> None:
     retries = _get_retry_count()
 
@@ -475,9 +589,15 @@ def main() -> None:
     if not test_cmd:
         _reset_retries()
         # Advisory: suggest review if many edits (no tests to run)
+        advisories_notests: list[str] = []
         review_msg = _check_review_gate()
         if review_msg:
-            json.dump({"systemMessage": review_msg}, sys.stdout)
+            advisories_notests.append(review_msg)
+        rationale_msg = _check_design_rationale()
+        if rationale_msg:
+            advisories_notests.append(rationale_msg)
+        if advisories_notests:
+            json.dump({"systemMessage": "\n".join(advisories_notests)}, sys.stdout)
         return
 
     # Step 1: Try selective tests first (fast feedback)
@@ -522,6 +642,9 @@ def main() -> None:
         coverage_msg = _check_test_coverage_for_changes()
         if coverage_msg:
             advisories.append(coverage_msg)
+        rationale_msg = _check_design_rationale()
+        if rationale_msg:
+            advisories.append(rationale_msg)
         if advisories:
             json.dump({"systemMessage": "\n".join(advisories)}, sys.stdout)
         return
