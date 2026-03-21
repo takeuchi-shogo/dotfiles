@@ -107,6 +107,7 @@ CODEX_SHARED_PROJECT_SKILLS=(
   "codex-checkpoint-resume"
   "codex-memory-capture"
   "codex-session-hygiene"
+  "openai-frontend-prompt-workflow"
 )
 
 share_skill_directory() {

@@ -43,6 +43,7 @@
 - まず使う候補:
   - `$codex-search-first`: 実装前の既存資産調査
   - `$ai-workflow-audit`: harness 改善や repo 横断共有で、skill / memory / script の昇格先を決める
+  - `$openai-frontend-prompt-workflow`: GPT-5.4 frontend prompt template の再利用、公式 guidance の運用化、不足情報の聞き返し
   - `$codex-verification-before-completion`: 完了前の実コマンド検証
   - `$dotfiles-config-validation`: dotfiles 向け validation コマンド選定
   - `$codex-checkpoint-resume`: 長時間タスクの checkpoint と再開補助

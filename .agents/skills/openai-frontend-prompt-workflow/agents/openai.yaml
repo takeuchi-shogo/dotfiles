@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenAI Frontend Prompt Workflow"
+  short_description: "Reusable GPT-5.4 frontend prompt templates with ask-back intake"
+  default_prompt: "Use $openai-frontend-prompt-workflow to choose the right frontend prompt template, ask for missing inputs, and produce a reusable prompt."
