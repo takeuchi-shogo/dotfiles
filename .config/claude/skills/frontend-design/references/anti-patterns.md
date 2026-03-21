@@ -12,6 +12,9 @@
 ## Layout
 - **NG**: 全要素にボーダーラディウス
 - **NG**: 過度なシャドウ
+- **NG**: ヒーローで generic SaaS card grid を最初の印象にする
+- **NG**: brand が弱く、nav を消すと別ブランドにも見える
+- **NG**: dashboard を stacked cards だけで構成する
 - **OK**: 意図的な空白と階層
 
 ## Motion
@@ -21,4 +24,6 @@
 
 ## General
 - **NG**: "AI が作りました" 感のあるデザイン
+- **NG**: section ごとの役割が曖昧で、同じ mood statement を繰り返す
+- **NG**: real content がないまま placeholder の勢いで組み切る
 - **OK**: 意図的で個性のあるデザイン

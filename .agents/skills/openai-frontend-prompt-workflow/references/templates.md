@@ -247,3 +247,41 @@ use real copy and context:
 
 verify desktop/mobile layout and key flows before finishing.
 ```
+
+## Template: Handoff To Frontend Skill
+
+```text
+Use $frontend-skill.
+
+Build this frontend with the following brief.
+
+Surface:
+- [landing page / app / dashboard]
+
+Product and audience:
+- [product / brand]
+- [audience]
+
+Visual direction:
+- style: [style]
+- palette: [palette]
+- mood: [mood]
+- composition: [composition]
+
+Content:
+- goal: [goal]
+- CTA: [CTA]
+- required sections: [sections]
+- real copy/context: [copy/context]
+
+Implementation constraints:
+- Use React + TypeScript + Tailwind
+- Start with reasoning low unless complexity clearly requires medium
+- If a screenshot or reference UI is attached, match spacing, hierarchy, and visual rhythm closely
+- Verify desktop/mobile and fix overlap, hierarchy, and navigation issues before finishing
+
+Before coding:
+- write visual thesis
+- write content plan
+- write interaction thesis
+```

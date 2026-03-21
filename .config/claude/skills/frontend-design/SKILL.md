@@ -18,6 +18,19 @@ Before coding, understand the context and commit to a BOLD aesthetic direction:
 - **Constraints**: Technical requirements (framework, performance, accessibility).
 - **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
 
+Before implementation, always write:
+- **Visual thesis**: one sentence describing mood, material, and energy
+- **Content plan**: hero, support, detail, final CTA for marketing surfaces; workspace, navigation, secondary context for app surfaces
+- **Interaction thesis**: 2-3 motion ideas that materially change the feel of the page
+
+If the task is underspecified, ask for or infer:
+- **Surface type**: landing page, app, dashboard, or mixed
+- **Product / brand / audience**
+- **Real content**: actual copy, goal, CTA, required sections
+- **Visual references**: screenshot, mood board, or explicit style / palette / composition / mood
+
+If no visual reference exists and imagery matters, propose a quick mood-board direction first instead of jumping straight into generic layout work.
+
 **CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
 
 Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
@@ -42,6 +55,29 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 **IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+
+## Surface Rules
+
+For landing pages and promotional surfaces:
+- Treat the first viewport as a single composition, not a pile of components.
+- Prefer a full-bleed hero or dominant visual plane.
+- Make the brand or product name a hero-level signal.
+- Default to no cards, especially in the hero.
+- Give each section one job, one dominant visual idea, and one takeaway.
+- Keep the hero budget tight: brand, headline, short support copy, CTA group, dominant visual.
+- Use real imagery or a real-looking visual anchor; decorative gradients alone are not enough.
+
+For apps and dashboards:
+- Default to calm surface hierarchy and utility copy over marketing copy.
+- Start from the working surface, not a homepage-style hero, unless explicitly requested.
+- Use cards only when the card itself is the interaction.
+- Avoid dashboard-card mosaics, thick borders on every region, and decorative gradients behind routine product UI.
+- Optimize for scanability: headings, labels, numbers, status, and action should explain the product at a glance.
+
+Across both:
+- Limit the system by default: two typefaces max and one accent color.
+- Motion should create presence and hierarchy, not noise.
+- Verify desktop and mobile composition before considering the work complete.
 
 ## Skill Assets
 
