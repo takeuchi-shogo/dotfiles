@@ -31,16 +31,26 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 9. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `references/claude-code-threats.md`）
 10. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `references/review-checklists/security-baseline.md`）
 
+## Confirmation Bias Mitigation
+
+LLM はコミットメッセージや PR description に含まれる著者の意図説明に引きずられ、
+脆弱性を見落とす確認バイアスを持つ (arXiv:2603.18740)。以下の手順で軽減する:
+
+1. **Blind-first**: まず `git diff HEAD~1 HEAD` の raw diff のみを読み、コミットメッセージや PR body を見ずに脆弱性を探す
+2. **Adversarial framing**: 「レビューする」ではなく「脆弱性を見つける」というフレーミングで分析する
+3. **Context 後付け**: blind 分析の後にコミットメッセージを読み、見落としがないか再確認する
+
 ## Review Workflow
 
-### 1. Initial Scan
+### 1. Initial Scan (Blind-first)
 
-まず以下の順で全体像を把握:
+まず以下の順で全体像を把握（コミットメッセージは読まない）:
 
-1. 変更の目的と attack surface を確認
+1. `git diff HEAD~1 HEAD` の raw diff から attack surface を特定
 2. trust boundary、sensitive path、privileged action を列挙
 3. decode / parse / normalize / render をまたぐ transformation chain を確認
-4. その後で補助的に scanner / audit コマンドを使う
+4. ここまでの分析後にコミットメッセージを確認し、見落としがないか再検証
+5. その後で補助的に scanner / audit コマンドを使う
 
 ```bash
 # 依存関係の脆弱性チェック（プロジェクトに応じて）

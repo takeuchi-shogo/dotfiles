@@ -33,10 +33,12 @@ codex exec --skip-git-repo-check -m gpt-5.4 \
   --config model_reasoning_effort="xhigh" \
   --sandbox read-only \
   "$(cat <<'PROMPT'
-Review the recent git changes. Check these 6 items in order:
+Analyze the recent git diff for defects and vulnerabilities. Do NOT read commit messages or PR descriptions first — analyze the raw diff independently to avoid confirmation bias.
+
+Check these 6 items in order:
 
 1. **Correctness**: Logic errors, off-by-one, null/nil dereference, race conditions
-2. **Security**: Injection, auth bypass, secrets exposure, unsafe deserialization
+2. **Security (adversarial framing — find vulnerabilities)**: Injection, auth bypass, secrets exposure, unsafe deserialization
 3. **Error Handling**: Swallowed errors, missing validation, unclear error messages
 4. **Naming & Readability**: Misleading names, overly complex code, missing docs
 5. **Performance**: Unnecessary allocations, N+1 queries, missing indexes
