@@ -244,6 +244,8 @@ run = ['move-node-to-workspace Z', 'layout accordion']
 if.app-id = 'com.anthropic.claudefordesktop'
 run = 'move-node-to-workspace 3'
 
+# cmux: Ghostty-based AI coding terminal (Claude Code main terminal)
+# vertical tabs, agent notifications, socket API, tmux compat CLI
 [[on-window-detected]]
 if.app-id = 'com.cmuxterm.app'
 run = 'move-node-to-workspace 4'
