@@ -59,6 +59,7 @@ CLAUDE_SYMLINK_FILES=(
 )
 CLAUDE_SYMLINK_DIRECTORIES=(
   "agents"
+  "channels"
   "commands"
   "scripts"
   "skills"

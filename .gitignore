@@ -50,3 +50,5 @@ reports/
 
 # Rust build artifacts
 tools/claude-hooks/target/
+
+.env

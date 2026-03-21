@@ -1,5 +1,8 @@
 {
-  "includeCoAuthoredBy": false,
-  "enabledMcpjsonServers": ["playwright", "context7"],
-  "enableAllProjectMcpServers": true
+	"includeCoAuthoredBy": false,
+	"enableAllProjectMcpServers": true,
+	"enabledMcpjsonServers": ["playwright", "context7"],
+	"permissions": {
+		"allow": ["mcp__plugin_discord_discord__reply"]
+	}
 }

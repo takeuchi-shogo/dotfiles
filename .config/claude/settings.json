@@ -49,6 +49,8 @@
 			"Bash(ruff *)",
 			"Bash(npx oxlint *)",
 			"Bash(npx @biomejs/biome *)",
+			"WebFetch(*)",
+			"WebSearch",
 			"Bash(*gh-unresolved-threads*)",
 			"Bash(gh pr view *)",
 			"Bash(gh pr checks *)",
@@ -86,7 +88,7 @@
 	},
 	"model": "opus[1m]",
 	"enableAllProjectMcpServers": false,
-	"enabledMcpjsonServers": ["context7"],
+	"enabledMcpjsonServers": ["context7", "alphaxiv"],
 	"hooks": {
 		"SessionStart": [
 			{
@@ -290,6 +292,16 @@
 						"command": "python3 $HOME/.claude/scripts/policy/file-proliferation-guard.py",
 						"timeout": 5,
 						"statusMessage": "File proliferation check..."
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/learner/edit-failure-tracker.py",
+						"timeout": 5
 					}
 				]
 			},
