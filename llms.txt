@@ -1,0 +1,64 @@
+# takeuchishougo/dotfiles
+
+> Claude Code のハーネスエンジニアリング設定。hooks, skills, agents, references の4層構造で
+> AI コーディングエージェントの品質・安全性・自律性を制御する dotfiles リポジトリ。
+
+## Directory Structure
+
+.config/claude/
+  CLAUDE.md          — エージェントへの指示書（Progressive Disclosure 設計）
+  settings.json      — 権限、hooks、MCP サーバー設定
+  skills/            — 62+ スキル定義（知識ベース）
+  agents/            — 31+ エージェント定義（実行コンテキスト）
+  commands/          — 28+ スラッシュコマンド
+  scripts/
+    policy/          — PreToolUse/PostToolUse フック（19スクリプト）
+    runtime/         — セッション管理・コンテキスト制御
+    lifecycle/       — プラン・ドキュメントライフサイクル
+    learner/         — セッション学習・AutoEvolve データ収集
+    lib/             — 共有ユーティリティ（hook_utils 等）
+  references/        — 50+ リファレンスドキュメント
+  rules/             — 言語別ルール・委譲ルール
+docs/
+  plans/             — 実装プラン（長期保存）
+  research/          — 外部知見分析
+  playbooks/         — 運用 playbook
+tools/               — Rust hooks バイナリ、CLI ツール
+
+## Workflow
+
+タスク規模に応じた3段階ワークフロー:
+
+- S (typo, 1行変更): Implement → Verify
+- M (関数追加, バグ修正): Plan → Risk Analysis → Implement → Test → Verify
+- L (新機能, リファクタリング): Plan → Risk Analysis → Implement → Test → Review → Verify → Security Check
+
+## Key Skills
+
+/commit, /review, /rpi, /spec, /spike, /epd, /absorb, /checkpoint, /morning, /improve
+
+## Key Agents
+
+code-reviewer, security-reviewer, debugger, test-engineer, build-fixer,
+codex-reviewer, codex-risk-reviewer, gemini-explore, triage-router
+
+## Design Principles
+
+- KISS: シンプルが最優先
+- YAGNI: 今必要なものだけ作る
+- DRY: 繰り返さない（ただし文脈が異なる場合は許容）
+- Search First: 既存の解決策を探してから実装
+- Fail Fast: 壊れたら即停止、再プラン
+
+## Multi-Model Integration
+
+3層構造: Claude Code (orchestrator) → Subagents → CLI tools
+- Codex CLI: 設計/推論/リスク分析 (gpt-5.4)
+- Gemini CLI: 1M コンテキスト分析/リサーチ
+- 自動委譲 hooks が適切なモデルを選択
+
+## Links
+
+- CLAUDE.md: .config/claude/CLAUDE.md
+- Workflow Guide: .config/claude/references/workflow-guide.md
+- Agent Harness Contract: docs/agent-harness-contract.md
