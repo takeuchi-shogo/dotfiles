@@ -5,6 +5,10 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree, EnterP
 user-invocable: true
 metadata:
   pattern: pipeline
+  version: 1.0.0
+  category: workflow
+  sources:
+    - "Harrison Chase: Builder or Reviewer"
 ---
 
 # EPD: Engineering, Product & Design Workflow
@@ -145,13 +149,24 @@ commit コマンドでコミットする。
 | 小さな変更                     | `/rpi` を直接使用（`/epd` 不要）   |
 | Interview で spec を深掘りしたい | `/interview` → spec 保存 → 新セッション |
 
+## Decision: spike vs rpi vs epd
+
+| 状況 | 推奨 | 理由 |
+|------|------|------|
+| 仕様が曖昧、実現可能性が不明 | `/spike` | 最小実装で検証 |
+| 仕様は明確、複雑度が中程度 | `/rpi` | Research→Plan→Implement |
+| 仕様が曖昧 + 大規模 | `/epd` | Spec→Spike→Validate→Build→Review |
+| spec が既にあり、仕様は明確 | `/rpi` | Research 不要なら直接 Plan |
+
 ## Anti-Patterns
 
-- spike のコードを本番に持ち込む（Phase 4 で正式実装する）
-- Decide フェーズをスキップする（ユーザー判断は必須）
-- spec なしで Build に進む（最低限 acceptance criteria が必要）
-- 要件が曖昧なまま spike に入る（Phase 1 で明確化する）
-- 反復（Phase 3）を面倒がってスキップする（手戻りコストの方が高い）
+| # | ❌ Don't | ✅ Do Instead |
+|---|---------|--------------|
+| 1 | spike のコードを本番に持ち込む | Phase 5 で `/rpi` を使って正式実装する |
+| 2 | Decide フェーズをスキップする | ユーザー判断は必須。Proceed/Pivot/Abandon を確認する |
+| 3 | spec なしで Build に進む | 最低限 acceptance criteria を定義してから実装する |
+| 4 | 要件が曖昧なまま spike に入る | Phase 1 で `/spec` を使って要件を明確化する |
+| 5 | 反復（Phase 3）を面倒がってスキップする | 手戻りコストの方が高い。Spike 結果を spec にフィードバックする |
 
 ## Artifact Generation
 

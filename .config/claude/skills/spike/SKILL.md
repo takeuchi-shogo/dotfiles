@@ -10,6 +10,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree
 user-invocable: true
 metadata:
   pattern: pipeline
+  version: 1.0.0
+  category: workflow
 ---
 
 # Spike: Prototype-First Development
@@ -114,10 +116,12 @@ spec の status を `abandoned` に更新し、worktree を削除する。
 
 ## Anti-Patterns
 
-- spike のコードをそのまま本番に持ち込む（必ず /rpi で正式実装）
-- テストやリファクタリングに時間をかける（spike は検証が目的）
-- spec なしで spike する（何を検証するか不明確になる）
-- 長時間の spike（目安: 30分以内の作業量に収める）
+| # | ❌ Don't | ✅ Do Instead |
+|---|---------|--------------|
+| 1 | spike のコードをそのまま本番に持ち込む | `/rpi` で正式実装する |
+| 2 | テストやリファクタリングに時間をかける | spike は検証が目的。動けば十分 |
+| 3 | spec なしで spike する | 先に `/spec` で何を検証するか明確にする |
+| 4 | 長時間の spike を行う | 30分以内の作業量に収める |
 
 ## Reference Files
 

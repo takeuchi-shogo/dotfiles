@@ -95,24 +95,69 @@ SKILL.md → reference.md は OK。reference.md → detail.md は禁止。
 
 全スキルの SKILL.md に `## Anti-Patterns` セクションを含めることを推奨する。
 
-**形式:**
-- 1行に1アンチパターン
-- 行動（何をしているか）で始め、なぜダメかは省略するか1句で添える
-- 段落説明は不要
+**形式（デフォルト: ❌/✅ 対比テーブル）:**
 
-**例:**
 ```markdown
 ## Anti-Patterns
 
-- エラー分析を完了する前に評価器を構築する
-- トレースを読まずにカテゴリをブレインストーミングする
-- Likert スケール (1-5) を binary pass/fail の代わりに使用する
-- 開発/テストセットの例を few-shot に使用する（データリーケージ）
+| # | ❌ Don't | ✅ Do Instead |
+|---|---------|--------------|
+| 1 | エラー分析を完了する前に評価器を構築する | まずトレースを分析し失敗モードを特定する |
+| 2 | Likert スケール (1-5) で評価する | binary pass/fail を使用する |
 ```
+
+**テーブル形式のメリット:**
+- Bad → Good の対比で「代わりに何をすべきか」が明確
+- 番号付きで参照しやすい
+- 箇条書きより情報密度が高い
 
 **適用判断:**
 - 繰り返し違反されるルールには Good/Bad 例を併記（feedback_bad_example_pattern.md 参照）
 - 1回の観察のみの場合はアンチパターンに追加しない
+
+## Metadata フィールド
+
+frontmatter の `metadata` セクションに以下のフィールドを含めることを推奨する。
+
+**必須フィールド:**
+- `pattern`: スキルの設計パターン（pipeline, reviewer, generator 等）
+
+**推奨フィールド:**
+- `version`: セマンティックバージョニング（例: `1.0.0`）。破壊的変更時にメジャーを上げる
+- `category`: スキルの分類。以下から選択:
+  - `workflow` — epd, spike, rpi, autonomous
+  - `quality` — review, validate, verification-before-completion
+  - `generation` — spec, frontend-design, autocover
+  - `research` — research, absorb, debate, gemini
+  - `operations` — morning, daily-report, weekly-review, timekeeper
+  - `tooling` — codex, codex-review, webapp-testing
+  - `architecture` — senior-architect, senior-backend, senior-frontend
+  - `knowledge` — obsidian-*, digest, eureka, continuous-learning
+  - `security` — careful, freeze, security-review
+  - `meta` — skill-creator, skill-audit, ai-workflow-audit, improve
+
+**オプショナルフィールド:**
+- `sources`: スキルの知識ソース（例: `"Harrison Chase: Builder or Reviewer"`）
+
+## Decision Table ガイダンス
+
+類似スキルとの使い分けが曖昧な場合、`## Decision: X vs Y vs Z` セクションを追加する。
+
+**形式:**
+
+```markdown
+## Decision: spike vs rpi vs epd
+
+| 状況 | 推奨 | 理由 |
+|------|------|------|
+| 仕様が曖昧、実現可能性が不明 | `/spike` | 最小実装で検証 |
+| 仕様は明確、複雑度が中程度 | `/rpi` | Research→Plan→Implement |
+```
+
+**配置ルール:**
+- Anti-Patterns セクションの直前、または Shortcuts セクションの直前に配置
+- テーブルは 3-5 行に収める（多すぎると判断が遅くなる）
+- 推奨列はコマンド名を使う（`/spike` 等）
 
 ## 8. 出力を自己スコアリングせよ (Self-score your output)
 

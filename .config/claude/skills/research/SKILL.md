@@ -149,6 +149,15 @@ docs/research/             # 最終レポートの保存先（git 管理）
 
 - `templates/research-report-template.md` — リサーチレポート出力テンプレート
 
+## Decision: research vs gemini vs debate
+
+| 状況 | 推奨 | 理由 |
+|------|------|------|
+| 深い調査、複数ソースの統合が必要 | `/research` | マルチモデル並列リサーチ |
+| 1M超の大規模コード/ドキュメント分析 | `/gemini` | 1Mコンテキスト活用 |
+| 技術選定、トレードオフ比較 | `/debate` | 複数モデルの独立見解を収集 |
+| 単純な検索クエリ | WebSearch | スキル不要 |
+
 ## Anti-Patterns
 
 - ユーザー承認なしに並列実行を開始する
