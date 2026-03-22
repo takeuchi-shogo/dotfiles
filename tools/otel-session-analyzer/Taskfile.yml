@@ -1,0 +1,45 @@
+version: "3"
+
+tasks:
+  build:
+    desc: Build osa binary
+    cmds:
+      - go build -o osa .
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - osa
+
+  install:
+    desc: Install osa to $GOPATH/bin
+    cmds:
+      - go install .
+
+  analyze:
+    desc: Analyze latest session (pass args with -- , e.g. task osa:analyze -- -p dotfiles -n 5)
+    cmds:
+      - go run . analyze {{.CLI_ARGS}}
+
+  list:
+    desc: List discovered sessions
+    cmds:
+      - go run . list {{.CLI_ARGS}}
+
+  export:
+    desc: Export session spans
+    cmds:
+      - go run . export {{.CLI_ARGS}}
+
+  jaeger:
+    desc: Start Jaeger for trace visualization
+    cmds:
+      - docker compose up -d
+    status:
+      - docker compose ps --status running | grep -q jaeger
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -f osa
