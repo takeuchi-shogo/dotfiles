@@ -15,7 +15,7 @@ Stage 2 で検出した齟齬ポイントから暗黙知を抽出するための
 各齟齬ポイントについて、以下の3つの観点で分析してください:
 
 1. **何がズレていたか（gap）**: AIの出力と修正後を比較し、具体的なズレを特定
-2. **なぜそう判断したか（implicit_knowledge）**: 修正指示の言葉から、ユーザーが持つ暗黙の判断基準を推測
+2. **なぜそう判断したか（knowledge）**: 修正指示の言葉から、ユーザーが持つ暗黙の判断基準を推測
 3. **どのドメインか（domain）**: この知見が属するドメインカテゴリを分類
 
 ### Domain Categories
@@ -43,7 +43,7 @@ extracted_knowledge:
   - id: tk-{date}-{seq}
     gap: "{AIの出力とユーザーの期待のズレ}"
     user_correction: "{ユーザーの修正指示の要約}"
-    implicit_knowledge: "{抽出された暗黙知}"
+    knowledge: "{抽出された暗黙知}"
     domain: "{domain category}"
     confidence: {0.0-1.0}
     evidence:

@@ -121,7 +121,7 @@ Stage 1: Ingest   → Stage 2: Detect   → Stage 3: Extract
 1. 各知見の layer と verdict に基づき、反映先を決定:
    - `new` (Layer 2) → スキルルール追記 or 個別の学び作成
    - `reinforce` → 既存エントリの更新のみ（ファイル反映は不要）
-   - `promote` → 上位原則ドキュメントの作成/更新
+   - `promote` → 上位原則ドキュメントの新規作成（`principle_creation`）or 既存への追記（`principle_update`）
    - `contradict` → Stage 6 の議論対象としてマーク
 
 2. 反映先のファイルが存在するか確認し、具体的な変更内容を生成
