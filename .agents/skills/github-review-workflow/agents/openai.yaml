@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Review Workflow"
+  short_description: "Route between PR comments and failing CI workflows"
+  default_prompt: "Use $github-review-workflow to choose between PR comment handling and CI failure debugging, ask for missing context, and proceed with the right GitHub workflow."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artifact Workflow"
+  short_description: "Route document, PDF, slides, and screenshot tasks"
+  default_prompt: "Use $artifact-workflow to choose the right artifact skill, ask for missing inputs, and apply the correct validation expectations."
