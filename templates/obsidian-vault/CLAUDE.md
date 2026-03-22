@@ -3,9 +3,9 @@
 ## Identity
 
 <!-- ここにあなたの情報を記入（/obsidian-vault-setup スキルで自動カスタマイズ可能） -->
-- 名前: [YOUR_NAME]
-- 役割: [YOUR_ROLE]
-- 関心分野: [YOUR_INTERESTS]
+- 名前: takeuchishougo
+- 役割: ソフトウェアエンジニア
+- 関心分野: AI エージェント設計、Claude Code ハーネスエンジニアリング、Go、開発者生産性
 
 ## Vault Architecture
 
@@ -20,6 +20,8 @@
 | 04-Galaxy | Zettelkasten パーマネントノート。自分の言葉で書いた知識の原子 |
 | 05-Literature | 読書・動画・記事のノート。ソースからの抽出 |
 | 06-Archive | 完了・非アクティブ項目 |
+| 07-Daily | 日報。/daily-report の出力が自動同期される |
+| 08-Agent-Memory | Claude Code の memory が自動同期される。エージェントの蓄積知識 |
 
 ## Naming Conventions
 
@@ -49,8 +51,8 @@
 ## Writing Style
 
 <!-- ここにあなたのスタイルを記入 -->
-- トーン: [CASUAL/FORMAL/MIXED]
-- 言語: [ja/en/mixed]
+- トーン: MIXED
+- 言語: ja
 - 禁止: ジェネリックなAI臭い表現、曖昧な結論
 
 ## Active Projects

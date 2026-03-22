@@ -16,10 +16,8 @@ DRY_RUN=false
 
 # --- Config ---
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
-DEST_DIR="07-Agent-Memory"
-MEMORY_SOURCES=(
-    "$HOME/.claude/projects/-Users-takeuchishougo-dotfiles/memory"
-)
+DEST_DIR="08-Agent-Memory"
+MEMORY_SOURCES=("$HOME/.claude/projects"/*/memory)
 
 # --- Validation ---
 if [[ -z "$VAULT_PATH" ]]; then
@@ -34,6 +32,17 @@ fi
 
 TARGET="$VAULT_PATH/$DEST_DIR"
 mkdir -p "$TARGET"
+
+# Migration: 07 → 08
+OLD_TARGET="$VAULT_PATH/07-Agent-Memory"
+if [[ -d "$OLD_TARGET" ]] && [[ ! -d "$TARGET" ]]; then
+    mv "$OLD_TARGET" "$TARGET"
+    echo "[sync-memory] Migrated 07-Agent-Memory → 08-Agent-Memory"
+elif [[ -d "$OLD_TARGET" ]] && [[ -d "$TARGET" ]]; then
+    cp -n "$OLD_TARGET"/*.md "$TARGET/" 2>/dev/null || true
+    rm -rf "$OLD_TARGET"
+    echo "[sync-memory] Merged 07-Agent-Memory into 08-Agent-Memory"
+fi
 
 synced=0
 
