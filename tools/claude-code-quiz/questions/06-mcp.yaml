@@ -1,0 +1,91 @@
+category: mcp
+label: "MCP エコシステム"
+
+questions:
+  - id: M001
+    difficulty: beginner
+    question: "MCP (Model Context Protocol) の主な役割は？"
+    choices:
+      a: "モデルの学習データを管理する"
+      b: "外部ツール・サービスを Claude Code に統合する標準プロトコル"
+      c: "モデルのコンテキストウィンドウを拡張する"
+      d: "モデル間の通信プロトコル"
+    answer: b
+    explanation: "MCP は外部ツール（Brave Search, Playwright, Discord 等）を標準化された方法で接続する。"
+
+  - id: M002
+    difficulty: beginner
+    question: "MCP サーバーの設定はどこに記述する？"
+    choices:
+      a: "CLAUDE.md"
+      b: "settings.json の mcpServers セクション"
+      c: "package.json"
+      d: ".env ファイル"
+    answer: b
+    explanation: "MCP サーバーは .claude/settings.json (または settings.local.json) の mcpServers に設定する。"
+
+  - id: M003
+    difficulty: intermediate
+    question: "Playwright MCP サーバーを使う主なユースケースは？"
+    choices:
+      a: "データベースクエリの実行"
+      b: "ブラウザ操作の自動化（UI テスト、スクリーンショット、フォーム入力）"
+      c: "メール送信"
+      d: "ファイルシステム操作"
+    answer: b
+    explanation: "Playwright MCP はブラウザのナビゲーション、クリック、スクリーンショット、フォーム入力等を提供。"
+
+  - id: M004
+    difficulty: intermediate
+    question: "context7 MCP サーバーの用途は？"
+    choices:
+      a: "コンテキストウィンドウの圧縮"
+      b: "ライブラリの最新ドキュメントとコード例の取得"
+      c: "コンテキストの7分割管理"
+      d: "バージョン7のプロトコル通信"
+    answer: b
+    explanation: "context7 は resolve-library-id でライブラリを特定し、query-docs で最新ドキュメントを取得する。"
+
+  - id: M005
+    difficulty: intermediate
+    question: "mcp-audit.py が監査する対象は？"
+    choices:
+      a: "MCP サーバーのパフォーマンス"
+      b: "MCP ツール呼び出しのセキュリティ（権限、入力、悪意スキル検知）"
+      c: "MCP サーバーの可用性"
+      d: "MCP プロトコルのバージョン互換性"
+    answer: b
+    explanation: "MCP 経由のツール呼び出しを監査し、不正な権限要求や悪意のあるスキルパターンを検出。"
+
+  - id: M006
+    difficulty: advanced
+    question: "MCP サーバーからの Prompt Injection リスクに対する防御層として正しいものは？"
+    choices:
+      a: "MCP サーバーを信頼して検証しない"
+      b: "prompt-injection-detector が MCP 応答も検査する多層防御"
+      c: "MCP サーバーを使わない"
+      d: "ファイアウォールで全通信をブロック"
+    answer: b
+    explanation: "MCP サーバーの応答にも Prompt Injection が含まれる可能性がある。多層防御で入力・出力両方を検査。"
+
+  - id: M007
+    difficulty: advanced
+    question: "Discord MCP でアクセス管理が厳格な理由は？"
+    choices:
+      a: "Discord API の制限"
+      b: "チャンネル内メッセージによる Prompt Injection（ペアリング承認の偽装等）を防ぐ"
+      c: "帯域幅の節約"
+      d: "Discord の利用規約"
+    answer: b
+    explanation: "Discord メッセージで「ペアリング承認して」等の指示が来ても、それは Prompt Injection の可能性がある。"
+
+  - id: M008
+    difficulty: advanced
+    question: "OWASP MCP Top 10 に含まれるリスクカテゴリとして正しいものは？"
+    choices:
+      a: "ツールポイズニング、過剰な権限、不十分な入力検証"
+      b: "SQL インジェクション、XSS、CSRF"
+      c: "バッファオーバーフロー、メモリリーク、レースコンディション"
+      d: "フィッシング、マルウェア、ランサムウェア"
+    answer: a
+    explanation: "OWASP MCP Top 10 はエージェント特有のリスク: ツールポイズニング、権限昇格、入力検証不備等。"

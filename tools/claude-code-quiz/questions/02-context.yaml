@@ -1,0 +1,91 @@
+category: context
+label: "コンテキスト管理"
+
+questions:
+  - id: C001
+    difficulty: beginner
+    question: "CLAUDE.md の役割として最も適切な説明は？"
+    choices:
+      a: "AI モデルの設定ファイル"
+      b: "プロジェクト固有の指示書で、全セッションで自動読み込みされる"
+      c: "ユーザーの個人メモ"
+      d: "Git の設定ファイル"
+    answer: b
+    explanation: "CLAUDE.md はセッション開始時に自動読み込みされ、エージェントの振る舞いを制御する指示書。"
+
+  - id: C002
+    difficulty: beginner
+    question: "Claude Code のメモリシステムで、MEMORY.md に書くべき内容は？"
+    choices:
+      a: "メモリの全内容を直接記述"
+      b: "メモリファイルへのポインタ（リンク）とブリーフな説明"
+      c: "コードスニペット"
+      d: "Git ログの要約"
+    answer: b
+    explanation: "MEMORY.md はインデックス。内容は個別メモリファイルに記述し、MEMORY.md はリンクのみ。"
+
+  - id: C003
+    difficulty: intermediate
+    question: "output-offload の目的は？"
+    choices:
+      a: "長い出力をファイルに退避してコンテキストウィンドウを節約する"
+      b: "出力を別のエージェントに転送する"
+      c: "エラーログを自動保存する"
+      d: "出力をフォーマットする"
+    answer: a
+    explanation: "output-offload.py は長い Bash 出力等をファイルに書き出し、コンテキストの圧迫を防ぐ。"
+
+  - id: C004
+    difficulty: intermediate
+    question: "指示コスト（Instruction Cost）に関する正しい記述は？"
+    choices:
+      a: "CLAUDE.md の行数が増えるほどコストが線形に増加する"
+      b: "各指示は推論トークン + 1-2% のオーバーヘッドを生む"
+      c: "指示が多いほどモデルの精度が上がるのでコストは無視できる"
+      d: "100行を超えるとモデルが指示を無視し始める"
+    answer: b
+    explanation: "IFScale の知見: 行数ではなく指示数が重要。各指示は推論トークンに 1-2% のオーバーヘッドを追加。"
+
+  - id: C005
+    difficulty: intermediate
+    question: "Deep Interview モード（/spec --interview）完了後に推奨されるアクションは？"
+    choices:
+      a: "そのまま同じセッションで実装を開始"
+      b: "Session Handoff で新セッションから spec を実行"
+      c: "/compact で圧縮してから実装"
+      d: "手動でインタビュー履歴を削除"
+    answer: b
+    explanation: "40問以上のインタビュー履歴がコンテキストを汚染する。新セッションで spec のみ渡して実装に入る。"
+
+  - id: C006
+    difficulty: advanced
+    question: "Precision Ceiling に達したサインとして正しくないものは？"
+    choices:
+      a: "擬似コードが実装の 1/3 を超えた"
+      b: "DB スキーマの全カラム定義を書き始めた"
+      c: "acceptance criteria を3つ以上定義した"
+      d: "型定義・インターフェースを詳細に書いている"
+    answer: c
+    explanation: "AC の数は Precision Ceiling とは無関係。spec が code と 1:1 対応に収束する兆候がサイン。"
+
+  - id: C007
+    difficulty: advanced
+    question: "Comprehension Debt（理解負債）とは何か？"
+    choices:
+      a: "ドキュメントが古くなること"
+      b: "エージェントがコードを理解せず通過することで蓄積する暗黙のリスク"
+      c: "テストカバレッジの不足"
+      d: "コミットメッセージの不備"
+    answer: b
+    explanation: "Comprehension Debt はエージェントが表面的にコードを通過し、根本的な理解なく変更を重ねることで蓄積するリスク。"
+
+  - id: C008
+    difficulty: advanced
+    question: "worktree を使う主な理由は？"
+    choices:
+      a: "ブランチの命名規則を統一するため"
+      b: "並列タスクのファイルシステムを分離し、共有状態の破損を防ぐ"
+      c: "Git の履歴を分離するため"
+      d: "CI/CD パイプラインと連携するため"
+    answer: b
+    explanation: "git worktree で隔離されたコピーを作成し、並列エージェントが互いのファイル変更を干渉しない。"

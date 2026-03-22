@@ -1,0 +1,91 @@
+category: skills_agents
+label: "スキル・エージェント設計"
+
+questions:
+  - id: SA001
+    difficulty: beginner
+    question: "スキルとエージェントの違いとして正しいものは？"
+    choices:
+      a: "スキルはコードを書き、エージェントは読み取り専用"
+      b: "スキルは知識ベース、エージェントは実行コンテキスト"
+      c: "スキルは Python、エージェントは JavaScript"
+      d: "違いはなく、同じものの別名"
+    answer: b
+    explanation: "スキルはドメイン知識・手順を定義、エージェントは特定のツールセットを持つ実行環境。"
+
+  - id: SA002
+    difficulty: beginner
+    question: "/epd ワークフローの正しい順序は？"
+    choices:
+      a: "Plan → Implement → Test → Review"
+      b: "Spec → Spike → Validate → Implement → Review"
+      c: "Research → Plan → Implement"
+      d: "Implement → Test → Deploy"
+    answer: b
+    explanation: "/epd は Harrison Chase の Builder or Reviewer パラダイムに基づく統合ワークフロー。"
+
+  - id: SA003
+    difficulty: intermediate
+    question: "不確実性が高い L 規模タスクで推奨される方法論の組み合わせは？"
+    choices:
+      a: "TDD のみ"
+      b: "SDD → BDD → TDD"
+      c: "BDD → TDD"
+      d: "方法論なしで直接実装"
+    answer: b
+    explanation: "/spec(SDD) で仕様策定 → /interviewing-issues(BDD) で振る舞い定義 → テスト先行(TDD) で実装。"
+
+  - id: SA004
+    difficulty: intermediate
+    question: "triage-router エージェントの役割は？"
+    choices:
+      a: "コードレビューの実行"
+      b: "タスクを分析し、最適な専門エージェントを推薦する"
+      c: "テストの自動生成"
+      d: "デプロイの管理"
+    answer: b
+    explanation: "triage-router はタスクのタイプを分類し、code-reviewer, debugger, test-engineer 等の最適エージェントにルーティング。"
+
+  - id: SA005
+    difficulty: intermediate
+    question: "レビュー時にエージェントを並列起動する条件は？"
+    choices:
+      a: "常に全エージェントを並列起動"
+      b: "変更規模に応じてレビューアーを自動選択・並列起動"
+      c: "ユーザーが手動で選択"
+      d: "S 規模でも必ず3エージェント並列"
+    answer: b
+    explanation: "/review スキルが変更規模に応じてレビューアー数を自動スケーリングする。"
+
+  - id: SA006
+    difficulty: advanced
+    question: "Codex CLI をレビューに使う際の reasoning effort 設定は？"
+    choices:
+      a: "常に low"
+      b: "通常 high、レビュー時 xhigh"
+      c: "常に medium"
+      d: "タスクに関わらず high"
+    answer: b
+    explanation: "Codex は設計/推論に high、レビュー時は深い注意が必要なため xhigh に設定。"
+
+  - id: SA007
+    difficulty: advanced
+    question: "Claude と Gemini の性格傾向バイアスとして正しいペアは？"
+    choices:
+      a: "Claude = 楽観的、Gemini = 萎縮"
+      b: "Claude = 失敗蓄積で萎縮、Gemini = 過度に楽観的"
+      c: "両方とも中立"
+      d: "Claude = 攻撃的、Gemini = 保守的"
+    answer: b
+    explanation: "Claude は失敗経験の蓄積で萎縮しやすく、Gemini は問題を軽視する傾向。相互補完に使う。"
+
+  - id: SA008
+    difficulty: advanced
+    question: "SkillNet の5D評価軸に含まれないものは？"
+    choices:
+      a: "Relevance"
+      b: "Execution Speed"
+      c: "Novelty"
+      d: "Actionability"
+    answer: b
+    explanation: "SkillNet は5次元評価 + 5関係タイプでスキル間の関連を管理。速度は評価軸に含まれない。"

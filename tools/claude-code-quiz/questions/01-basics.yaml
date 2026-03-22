@@ -1,0 +1,91 @@
+category: basics
+label: "基本操作"
+
+questions:
+  - id: B001
+    difficulty: beginner
+    question: "Claude Code でコンテキストウィンドウをリセットするコマンドは？"
+    choices:
+      a: "/reset"
+      b: "/clear"
+      c: "/compact"
+      d: "/refresh"
+    answer: b
+    explanation: "/clear はコンテキストをリセットする。/compact は要約して圧縮するが全消去ではない。"
+
+  - id: B002
+    difficulty: beginner
+    question: "Claude Code の5つの権限モードのうち、最も制限が厳しいものは？"
+    choices:
+      a: "default"
+      b: "plan"
+      c: "dontAsk"
+      d: "bypassPermissions"
+    answer: b
+    explanation: "plan モードは読み取り専用で、Edit/Write/Bash が制限される。default は確認付きで実行可能。"
+
+  - id: B003
+    difficulty: beginner
+    question: "Claude Code でファイルを検索するとき、Bash の find コマンドの代わりに使うべきツールは？"
+    choices:
+      a: "Read"
+      b: "Grep"
+      c: "Glob"
+      d: "Agent"
+    answer: c
+    explanation: "Glob はファイルパターンマッチングに特化。Grep はファイル内容検索用。"
+
+  - id: B004
+    difficulty: beginner
+    question: "コミットメッセージで新機能追加を示す conventional commit プレフィックスは？"
+    choices:
+      a: "fix:"
+      b: "feat:"
+      c: "chore:"
+      d: "refactor:"
+    answer: b
+    explanation: "feat: は新機能。このセットアップでは絵文字プレフィックスも併用する（例: feat:）。"
+
+  - id: B005
+    difficulty: intermediate
+    question: "Claude Code で長いコンテキストを圧縮する /compact はいつ実行すべきか？"
+    choices:
+      a: "セッション開始時に毎回"
+      b: "コンテキスト使用率が約70%に達したとき"
+      c: "エラーが発生したとき"
+      d: "コミット前に毎回"
+    answer: b
+    explanation: "コンテキスト使用率70%が /compact のトリガー閾値。早すぎると有用な情報が失われる。"
+
+  - id: B006
+    difficulty: intermediate
+    question: "Claude Code の Explore サブエージェントの特徴として正しいものは？"
+    choices:
+      a: "ファイルの編集が可能"
+      b: "Agent ツールをネストして使える"
+      c: "読み取り専用でコードベース探索に特化"
+      d: "Web検索が主な用途"
+    answer: c
+    explanation: "Explore エージェントは Edit/Write/Agent ツールが無効で、読み取り専用の高速探索に特化。"
+
+  - id: B007
+    difficulty: intermediate
+    question: "タスク規模 S/M/L の判定で、最終的な規模を決定する基準は？"
+    choices:
+      a: "変更行数のみで判定"
+      b: "各因子のうち最も高いレベルに合わせる"
+      c: "各因子の平均値で判定"
+      d: "ユーザーが毎回指定する"
+    answer: b
+    explanation: "多因子判定で、変更行数・リスク・スコープの最も高い因子に合わせる。10行でもリスク高ならL。"
+
+  - id: B008
+    difficulty: advanced
+    question: "Claude Code の CLAUDE.md で <important if=\"...\"> タグを使う設計の名前は？"
+    choices:
+      a: "Lazy Loading"
+      b: "Progressive Disclosure"
+      c: "Conditional Rendering"
+      d: "Feature Flagging"
+    answer: b
+    explanation: "Progressive Disclosure: 条件付きタグで関連する指示のみを注意喚起し、常時読み込みのトークンコストを抑える。"

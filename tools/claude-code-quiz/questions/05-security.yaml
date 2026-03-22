@@ -1,0 +1,91 @@
+category: security
+label: "セキュリティ"
+
+questions:
+  - id: S001
+    difficulty: beginner
+    question: "Prompt Injection 攻撃とは何か？"
+    choices:
+      a: "プロンプトの文法エラー"
+      b: "悪意のある入力でエージェントの振る舞いを乗っ取る攻撃"
+      c: "プロンプトが長すぎてタイムアウトする問題"
+      d: "プロンプトのスペルミス"
+    answer: b
+    explanation: "Prompt Injection は入力に隠された指示でエージェントに意図しない操作をさせる攻撃手法。"
+
+  - id: S002
+    difficulty: beginner
+    question: "prompt-injection-detector.py が検出するパターンに含まれないものは？"
+    choices:
+      a: "Zero-width Unicode 文字"
+      b: "ANSI エスケープシーケンス"
+      c: "通常の日本語テキスト"
+      d: "Base64 エンコードされた隠しコマンド"
+    answer: c
+    explanation: "通常のテキストは攻撃パターンではない。検出対象は不可視文字、エスケープシーケンス、エンコード済みコマンド等。"
+
+  - id: S003
+    difficulty: intermediate
+    question: "MCP サーバーのセキュリティ監査で最も重要な観点は？"
+    choices:
+      a: "レスポンス速度"
+      b: "ツール定義の権限範囲と入力検証"
+      c: "UI のデザイン"
+      d: "ドキュメントの充実度"
+    answer: b
+    explanation: "OWASP MCP Top 10 に基づき、ツールが持つ権限の範囲と入力の検証が最重要。"
+
+  - id: S004
+    difficulty: intermediate
+    question: "LLM Confirmation Bias への対策として security-reviewer に組み込まれている手法は？"
+    choices:
+      a: "複数モデルの多数決"
+      b: "Blind-first + adversarial framing"
+      c: "ランダムサンプリング"
+      d: "ユーザーへの毎回確認"
+    answer: b
+    explanation: "先にコード単体で脆弱性を探し（Blind-first）、次に攻撃者視点で再評価（adversarial framing）する2段階手法。"
+
+  - id: S005
+    difficulty: intermediate
+    question: "docker-safety.py hook の役割は？"
+    choices:
+      a: "Docker イメージのビルド最適化"
+      b: "危険な Docker コマンド（特権モード、ホストネットワーク等）の実行を防止"
+      c: "Docker Compose の文法チェック"
+      d: "コンテナのログ管理"
+    answer: b
+    explanation: "特権コンテナ実行やホストファイルシステムへの危険なマウント等を検出・ブロックする。"
+
+  - id: S006
+    difficulty: advanced
+    question: "agentshield-filter.py が検出する脅威カテゴリに含まれるものは？"
+    choices:
+      a: "コンパイルエラー"
+      b: "権限昇格、データ漏洩、設定改竄のパターン"
+      c: "コードスタイル違反"
+      d: "パフォーマンスボトルネック"
+    answer: b
+    explanation: "AgentShield はエージェントの操作が権限境界を越えたり、機密データにアクセスするパターンを検出。"
+
+  - id: S007
+    difficulty: advanced
+    question: "Snyk ToxicSkills 調査によると、公開スキルのうちセキュリティ欠陥を持つ割合は？"
+    choices:
+      a: "約 5%"
+      b: "約 15%"
+      c: "約 37%"
+      d: "約 60%"
+    answer: c
+    explanation: "Snyk 調査: 3,984 スキル中 36.82% にセキュリティ欠陥。サードパーティスキルの監査が必須。"
+
+  - id: S008
+    difficulty: advanced
+    question: "tool-scope-enforcer.py の目的は？"
+    choices:
+      a: "ツールの実行速度を制限する"
+      b: "エージェントが許可された範囲外のツール操作を行うことを防止する"
+      c: "ツールのバージョン管理"
+      d: "ツールの自動インストール"
+    answer: b
+    explanation: "スコープ外のファイル操作やコマンド実行を検出し、エージェントの行動範囲を制限する。"

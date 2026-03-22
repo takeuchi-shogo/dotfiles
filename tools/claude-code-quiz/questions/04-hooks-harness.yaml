@@ -1,0 +1,102 @@
+category: hooks_harness
+label: "Hook・ハーネス"
+
+questions:
+  - id: HH001
+    difficulty: beginner
+    question: "Claude Code のハーネスにおける hook の4層構造で、正しい順序は？"
+    choices:
+      a: "Policy → Runtime → Lifecycle → Learner"
+      b: "Runtime → Policy → Lifecycle → Learner"
+      c: "Learner → Lifecycle → Runtime → Policy"
+      d: "Policy → Lifecycle → Runtime → Learner"
+    answer: b
+    explanation: "Runtime(自動整形等) → Policy(ゴールデンチェック等) → Lifecycle(計画管理等) → Learner(自己改善)。"
+
+  - id: HH002
+    difficulty: beginner
+    question: "git commit --no-verify がこのセットアップで禁止されている理由は？"
+    choices:
+      a: "コミットが遅くなるから"
+      b: "hook 体系が無効化されるから"
+      c: "セキュリティ上の理由"
+      d: "Git の仕様で非推奨だから"
+    answer: b
+    explanation: "--no-verify は pre-commit/commit-msg hook をスキップし、品質ゲート全体が無効化される。"
+
+  - id: HH003
+    difficulty: intermediate
+    question: "golden-check.py の役割は？"
+    choices:
+      a: "ゴールデンテスト（スナップショットテスト）の実行"
+      b: "コア設計原則（KISS/YAGNI/DRY等）からの逸脱を検出"
+      c: "ゴールドスタンダードとのパフォーマンス比較"
+      d: "金色のシンタックスハイライトの適用"
+    answer: b
+    explanation: "golden-check.py は CLAUDE.md の core_principles に定義された設計原則への準拠を検証する Policy hook。"
+
+  - id: HH004
+    difficulty: intermediate
+    question: "completion-gate.py が防ぐ問題は？"
+    choices:
+      a: "自動補完の誤動作"
+      b: "検証なしに作業完了を宣言すること"
+      c: "コンパイルエラー"
+      d: "タイムアウト"
+    answer: b
+    explanation: "completion-gate は「完了しました」宣言前に実際の検証コマンド実行を強制するゲート。"
+
+  - id: HH005
+    difficulty: intermediate
+    question: "protect-linter-config.py が lint 設定ファイルの編集をブロックする理由は？"
+    choices:
+      a: "lint 設定は変更不要だから"
+      b: "設定ではなくコードを直すべきだから"
+      c: "lint 設定は別リポジトリで管理するから"
+      d: "パフォーマンスに影響するから"
+    answer: b
+    explanation: "エージェントが lint エラーに対して設定を緩める方向に「修正」するのを防ぐ。正しいのはコードの修正。"
+
+  - id: HH006
+    difficulty: intermediate
+    question: "hook の正規表現で \\b（ワード境界）を日本語テキストに使うと何が起きるか？"
+    choices:
+      a: "正常に動作する"
+      b: "誤動作する（日本語文字間に境界がない）"
+      c: "エラーになる"
+      d: "英語部分のみマッチする"
+    answer: b
+    explanation: "\\b は ASCII ワード境界。日本語では (?=[^a-zA-Z0-9]|$) を使う。"
+
+  - id: HH007
+    difficulty: advanced
+    question: "AutoEvolve の4層ループの正しい順序は？"
+    choices:
+      a: "日次 → セッション → バックグラウンド → オンデマンド"
+      b: "セッション → 日次 → バックグラウンド → オンデマンド"
+      c: "オンデマンド → セッション → 日次 → バックグラウンド"
+      d: "バックグラウンド → 日次 → セッション → オンデマンド"
+    answer: b
+    explanation: "最も頻度が高いセッション単位から始まり、日次集約、バックグラウンド改善、/improve によるオンデマンドへ。"
+
+  - id: HH008
+    difficulty: advanced
+    question: "Determinism Boundary（決定性境界）の設計原則とは？"
+    choices:
+      a: "全ての挙動を hook で制御すべき"
+      b: "hook は確実に実行したいポリシーに、instruction は柔軟な判断に使い分ける"
+      c: "instruction は使わず全て hook にすべき"
+      d: "hook と instruction に違いはない"
+    answer: b
+    explanation: "hook は決定的に実行される（エージェントが無視できない）。instruction は判断の余地がある。境界の設計が重要。"
+
+  - id: HH009
+    difficulty: advanced
+    question: "file-proliferation-guard.py の目的は？"
+    choices:
+      a: "ファイルサイズの制限"
+      b: "不要なファイル生成を防ぎ、既存ファイルの編集を優先させる"
+      c: "ファイルの暗号化"
+      d: "ファイル名の命名規則チェック"
+    answer: b
+    explanation: "エージェントは新規ファイルを作りがち。このガードは既存ファイルの編集を優先させる。"
