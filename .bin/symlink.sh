@@ -108,6 +108,8 @@ CODEX_SHARED_PROJECT_SKILLS=(
   "codex-memory-capture"
   "codex-session-hygiene"
   "openai-frontend-prompt-workflow"
+  "github-review-workflow"
+  "artifact-workflow"
 )
 
 share_skill_directory() {

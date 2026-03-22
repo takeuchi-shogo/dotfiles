@@ -45,6 +45,8 @@
   - `$ai-workflow-audit`: harness 改善や repo 横断共有で、skill / memory / script の昇格先を決める
   - `$openai-frontend-prompt-workflow`: GPT-5.4 frontend prompt template の再利用、公式 guidance の運用化、不足情報の聞き返し
   - `$frontend-skill`: visually strong な landing page / app / dashboard を実装するときの art direction と hard rules
+  - `$github-review-workflow`: PR comments と GitHub Actions CI の振り分けと処理
+  - `$artifact-workflow`: doc / pdf / slides / screenshot の振り分けと成果物 workflow
   - `$codex-verification-before-completion`: 完了前の実コマンド検証
   - `$dotfiles-config-validation`: dotfiles 向け validation コマンド選定
   - `$codex-checkpoint-resume`: 長時間タスクの checkpoint と再開補助

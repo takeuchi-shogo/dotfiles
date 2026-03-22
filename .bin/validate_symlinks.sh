@@ -42,6 +42,8 @@ managed_links = [
     (home / ".codex/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".codex/skills/codex-memory-capture"),
     (home / ".codex/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".codex/skills/codex-session-hygiene"),
     (home / ".codex/skills/openai-frontend-prompt-workflow", root / ".agents/skills/openai-frontend-prompt-workflow", ".codex/skills/openai-frontend-prompt-workflow"),
+    (home / ".codex/skills/github-review-workflow", root / ".agents/skills/github-review-workflow", ".codex/skills/github-review-workflow"),
+    (home / ".codex/skills/artifact-workflow", root / ".agents/skills/artifact-workflow", ".codex/skills/artifact-workflow"),
     (home / ".agents/skills/frontend-design", root / ".config/claude/skills/frontend-design", ".agents/skills/frontend-design"),
     (home / ".agents/skills/react-best-practices", root / ".config/claude/skills/react-best-practices", ".agents/skills/react-best-practices"),
     (home / ".agents/skills/senior-architect", root / ".config/claude/skills/senior-architect", ".agents/skills/senior-architect"),
@@ -54,6 +56,8 @@ managed_links = [
     (home / ".agents/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".agents/skills/codex-memory-capture"),
     (home / ".agents/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".agents/skills/codex-session-hygiene"),
     (home / ".agents/skills/openai-frontend-prompt-workflow", root / ".agents/skills/openai-frontend-prompt-workflow", ".agents/skills/openai-frontend-prompt-workflow"),
+    (home / ".agents/skills/github-review-workflow", root / ".agents/skills/github-review-workflow", ".agents/skills/github-review-workflow"),
+    (home / ".agents/skills/artifact-workflow", root / ".agents/skills/artifact-workflow", ".agents/skills/artifact-workflow"),
 ]
 
 errors = []
