@@ -274,6 +274,123 @@ function snapshotActivePlans() {
 	}
 }
 
+/**
+ * Load feature_list.json and display next incomplete feature.
+ * Also snapshots feature passes state for session-focus detection.
+ */
+function loadFeatureList() {
+	const cwd = process.cwd();
+	const featurePath = path.join(cwd, "feature_list.json");
+
+	if (!fs.existsSync(featurePath)) return;
+
+	try {
+		const data = JSON.parse(fs.readFileSync(featurePath, "utf8"));
+		const features = data.features || [];
+		const done = features.filter((f) => f.passes).length;
+		const total = features.length;
+		const next = features.find((f) => !f.passes);
+
+		const lines = [`[Feature Tracker] ${done}/${total} features completed`];
+		if (next) {
+			lines.push(`  Next: ${next.id} - ${next.description}`);
+			if (next.steps && next.steps.length > 0) {
+				lines.push(
+					`  Steps: ${next.steps.slice(0, 3).join(", ")}${next.steps.length > 3 ? " ..." : ""}`,
+				);
+			}
+		} else {
+			lines.push("  All features completed!");
+		}
+		process.stderr.write(lines.join("\n") + "\n");
+
+		// Snapshot passes state for session-focus detection
+		const stateDir = path.join(
+			require("os").homedir(),
+			".claude",
+			"session-state",
+		);
+		if (!fs.existsSync(stateDir)) {
+			fs.mkdirSync(stateDir, { recursive: true });
+		}
+		const passesSnapshot = {};
+		for (const f of features) {
+			passesSnapshot[f.id] = f.passes || false;
+		}
+		fs.writeFileSync(
+			path.join(stateDir, "feature-passes-snapshot.json"),
+			JSON.stringify({
+				timestamp: Date.now(),
+				passes: passesSnapshot,
+			}),
+		);
+	} catch (err) {
+		process.stderr.write(`[Feature Tracker] Failed to load: ${err.message}\n`);
+	}
+}
+
+/**
+ * Load progress.log and display recent entries.
+ */
+function loadProgressLog() {
+	const cwd = process.cwd();
+	const logPath = path.join(cwd, "progress.log");
+
+	if (!fs.existsSync(logPath)) return;
+
+	try {
+		const content = fs.readFileSync(logPath, "utf8").trim();
+		if (!content) return;
+
+		const allLines = content.split("\n");
+		const recent = allLines.slice(-3);
+		const lines = [`[Progress Log] Recent entries (${allLines.length} total):`];
+		for (const entry of recent) {
+			lines.push(`  ${entry}`);
+		}
+		process.stderr.write(lines.join("\n") + "\n");
+	} catch (err) {
+		process.stderr.write(`[Progress Log] Failed to load: ${err.message}\n`);
+	}
+}
+
+/**
+ * Suggest a refactor session if recent progress.log entries
+ * are all feature-addition work.
+ */
+function suggestRefactorSession() {
+	const cwd = process.cwd();
+	const logPath = path.join(cwd, "progress.log");
+
+	if (!fs.existsSync(logPath)) return;
+
+	try {
+		const content = fs.readFileSync(logPath, "utf8").trim();
+		if (!content) return;
+
+		const lines = content.split("\n");
+		const recent = lines.slice(-5);
+		if (recent.length < 5) return;
+
+		const featKeywords = ["feat", "add", "implement", "new"];
+		const allFeats = recent.every((line) => {
+			const lower = line.toLowerCase();
+			return featKeywords.some((kw) => lower.includes(kw));
+		});
+
+		if (allFeats) {
+			process.stderr.write(
+				"[Refactor Suggestion] 直近5セッションが全て機能追加です。" +
+					"`/refactor-session` でリファクタリングセッションを検討してください。\n",
+			);
+		}
+	} catch (err) {
+		process.stderr.write(
+			`[Refactor Suggestion] check failed: ${err.message}\n`,
+		);
+	}
+}
+
 function detectTools() {
 	const tools = {
 		"Package managers": ["pnpm", "npm", "yarn"],
@@ -536,6 +653,9 @@ process.stdin.on("end", () => {
 
 	loadLearningsForProfile(profile);
 	snapshotActivePlans();
+	loadFeatureList();
+	loadProgressLog();
+	suggestRefactorSession();
 	suggestTestBaseline();
 	runBaselineCheck();
 	loadBoundaries();

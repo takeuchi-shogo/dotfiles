@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 """Checkpoint manager — auto-saves session state during heavy work.
 
 Triggered by: hooks.PostToolUse (Edit|Write)
 Input: stdin JSON (hook protocol)
 Output: stdout JSON (with optional additionalContext)
 """
+
+from __future__ import annotations
+
 import json
 import os
 import subprocess
@@ -22,10 +24,12 @@ MAX_CHECKPOINTS = 5
 
 
 def _get_state_dir() -> Path:
-    return Path(os.environ.get(
-        "CLAUDE_SESSION_STATE_DIR",
-        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
-    ))
+    return Path(
+        os.environ.get(
+            "CLAUDE_SESSION_STATE_DIR",
+            os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+        )
+    )
 
 
 def _get_counter_path() -> Path:
@@ -67,7 +71,10 @@ def should_checkpoint(
     if context_pct >= CONTEXT_PCT_THRESHOLD:
         return "auto:context_threshold"
 
-    if last_checkpoint_time > 0 and (now - last_checkpoint_time) >= TIME_THRESHOLD_SECONDS:
+    if (
+        last_checkpoint_time > 0
+        and (now - last_checkpoint_time) >= TIME_THRESHOLD_SECONDS
+    ):
         return "auto:time_threshold"
 
     if last_checkpoint_time == 0:
@@ -115,7 +122,46 @@ def save_checkpoint(
     pointer.write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
     _cleanup_old_checkpoints(cp_dir)
+    _append_progress_log(ts, trigger, branch, git_status)
     return cp_path
+
+
+def _append_progress_log(
+    ts: datetime,
+    trigger: str,
+    branch: str,
+    git_status: str,
+) -> None:
+    """Append an entry to progress.log in the project root.
+
+    Only writes if feature_list.json or progress.log already exists.
+    """
+    cwd = Path(os.getcwd())
+    feature_list = cwd / "feature_list.json"
+    progress_log = cwd / "progress.log"
+
+    # Only write progress.log if feature_list.json exists or progress.log already exists
+    if not feature_list.exists() and not progress_log.exists():
+        return
+
+    session_id = os.environ.get("CLAUDE_SESSION_ID", ts.strftime("%Y%m%dT%H%M%S"))
+    changed_files = len([line for line in git_status.splitlines() if line.strip()])
+    git_sha = _run_git("rev-parse --short HEAD")
+    description = f"{trigger} | branch:{branch}" if branch else trigger
+
+    ts_str = ts.strftime("%Y-%m-%d %H:%M")
+    parts = [
+        f"[{ts_str}] {session_id}",
+        description,
+        f"{changed_files} files",
+        git_sha,
+    ]
+    entry = " | ".join(parts) + "\n"
+    try:
+        with open(progress_log, "a") as f:
+            f.write(entry)
+    except OSError as exc:
+        print(f"[Checkpoint] progress.log write failed: {exc}", file=sys.stderr)
 
 
 def _cleanup_old_checkpoints(cp_dir: Path) -> None:
@@ -128,7 +174,9 @@ def _run_git(args: str) -> str:
     try:
         result = subprocess.run(
             ["git"] + args.split(),
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         return result.stdout.strip()
     except Exception:
@@ -176,16 +224,19 @@ def main() -> None:
                 edit_count=counter.get("count", 0),
                 focus_files=focus,
             )
-            json.dump({
-                **input_data,
-                "hookSpecificOutput": {
-                    "hookEventName": "PostToolUse",
-                    "additionalContext": (
-                        f"[Checkpoint] セッション状態を保存しました "
-                        f"(trigger: {trigger}, edits: {counter.get('count', 0)})"
-                    ),
+            json.dump(
+                {
+                    **input_data,
+                    "hookSpecificOutput": {
+                        "hookEventName": "PostToolUse",
+                        "additionalContext": (
+                            f"[Checkpoint] セッション状態を保存しました "
+                            f"(trigger: {trigger}, edits: {counter.get('count', 0)})"
+                        ),
+                    },
                 },
-            }, sys.stdout)
+                sys.stdout,
+            )
             return
     except Exception:
         pass

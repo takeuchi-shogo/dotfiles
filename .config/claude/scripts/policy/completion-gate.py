@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 
 MAX_RETRIES = 2
 
@@ -179,6 +180,23 @@ def _is_session_relevant(plan_name: str, plan_path: str, snapshot: dict) -> bool
     return False
 
 
+def _has_active_status(lines: list[str]) -> bool:
+    """Check if plan has 'status: active' in frontmatter — skip these plans."""
+    in_frontmatter = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "---":
+            if not in_frontmatter:
+                in_frontmatter = True
+                continue
+            else:
+                break  # end of frontmatter
+        if in_frontmatter and stripped.startswith("status:"):
+            value = stripped.split(":", 1)[1].strip().lower()
+            return value == "active"
+    return False
+
+
 def _find_incomplete_plan() -> tuple[str, list[str]] | None:
     """Find active plan with unchecked items that is relevant to the current session."""
     import glob
@@ -199,6 +217,11 @@ def _find_incomplete_plan() -> tuple[str, list[str]] | None:
                     lines = f.readlines()
             except OSError:
                 continue
+
+            # status: active means another session owns this plan — skip
+            if _has_active_status(lines):
+                continue
+
             pending = [ln.strip() for ln in lines if ln.strip().startswith("- [ ]")]
             if pending:
                 return (plan_name, pending)
@@ -533,6 +556,127 @@ def _check_design_rationale() -> str | None:
     )
 
 
+def _check_progress_log() -> str | None:
+    """Check if progress.log was updated during this session.
+
+    Advisory only — returns a message if stale, else None.
+    """
+    cwd = os.getcwd()
+    progress_log = os.path.join(cwd, "progress.log")
+    feature_list = os.path.join(cwd, "feature_list.json")
+
+    # Only check if feature_list.json or progress.log exists
+    if not os.path.exists(feature_list) and not os.path.exists(progress_log):
+        return None
+
+    if not os.path.exists(progress_log):
+        return (
+            "[Progress Log] feature_list.json が存在しますが "
+            "progress.log がありません。"
+            "/checkpoint で進捗を記録してください。"
+        )
+
+    # Check if progress.log was updated in the last hour
+    try:
+        mtime = os.path.getmtime(progress_log)
+        age_hours = (time.time() - mtime) / 3600
+        if age_hours > 1:
+            return (
+                "[Progress Log] progress.log が "
+                f"{age_hours:.1f}時間前から更新されていません。"
+                "/checkpoint で進捗を記録してください。"
+            )
+    except OSError as exc:
+        print(
+            f"[Completion Gate] progress.log stat error: {exc}",
+            file=sys.stderr,
+        )
+
+    return None
+
+
+def _check_session_focus() -> str | None:
+    """Warn if multiple features were completed in one session.
+
+    Compares current feature_list.json passes state against
+    the session-start snapshot saved by session-load.js.
+    Advisory only.
+    """
+    cwd = os.getcwd()
+    feature_path = os.path.join(cwd, "feature_list.json")
+    if not os.path.exists(feature_path):
+        return None
+
+    snapshot_path = os.path.join(
+        os.environ.get(
+            "CLAUDE_SESSION_STATE_DIR",
+            os.path.join(
+                os.environ.get("HOME", ""),
+                ".claude",
+                "session-state",
+            ),
+        ),
+        "feature-passes-snapshot.json",
+    )
+
+    try:
+        with open(snapshot_path) as f:
+            snapshot = json.load(f)
+        with open(feature_path) as f:
+            current = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+    old_passes = snapshot.get("passes", {})
+    newly_passed = []
+    for feat in current.get("features", []):
+        fid = feat.get("id", "")
+        if feat.get("passes") and not old_passes.get(fid, False):
+            newly_passed.append(fid)
+
+    if len(newly_passed) >= 2:
+        ids = ", ".join(newly_passed)
+        return (
+            f"[Session Focus] このセッションで {len(newly_passed)} "
+            f"機能が完了しました ({ids})。"
+            "1セッション1機能を推奨します。"
+        )
+
+    return None
+
+
+def _check_clean_state() -> str | None:
+    """Check if workspace is in a clean state (advisory).
+
+    Warns about uncommitted changes at session end.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=os.getcwd(),
+        )
+        if result.returncode != 0:
+            return None
+        dirty = [ln for ln in result.stdout.strip().splitlines() if ln.strip()]
+        if not dirty:
+            return None
+
+        count = len(dirty)
+        return (
+            f"[Clean State] {count} 件の未コミット変更があります。"
+            "セッション終了前にコミットを推奨します。"
+        )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(
+            f"[Completion Gate] git status error: {exc}",
+            file=sys.stderr,
+        )
+        return None
+
+
 def main() -> None:
     retries = _get_retry_count()
 
@@ -596,6 +740,15 @@ def main() -> None:
         rationale_msg = _check_design_rationale()
         if rationale_msg:
             advisories_notests.append(rationale_msg)
+        progress_msg = _check_progress_log()
+        if progress_msg:
+            advisories_notests.append(progress_msg)
+        clean_msg = _check_clean_state()
+        if clean_msg:
+            advisories_notests.append(clean_msg)
+        focus_msg = _check_session_focus()
+        if focus_msg:
+            advisories_notests.append(focus_msg)
         if advisories_notests:
             json.dump({"systemMessage": "\n".join(advisories_notests)}, sys.stdout)
         return
@@ -645,6 +798,15 @@ def main() -> None:
         rationale_msg = _check_design_rationale()
         if rationale_msg:
             advisories.append(rationale_msg)
+        progress_msg = _check_progress_log()
+        if progress_msg:
+            advisories.append(progress_msg)
+        clean_msg = _check_clean_state()
+        if clean_msg:
+            advisories.append(clean_msg)
+        focus_msg = _check_session_focus()
+        if focus_msg:
+            advisories.append(focus_msg)
         if advisories:
             json.dump({"systemMessage": "\n".join(advisories)}, sys.stdout)
         return

@@ -61,3 +61,7 @@ print(f'Checkpoint saved: {path}')
 ```
 
 5. 生成結果をユーザーに報告（ファイルパスと内容サマリ）
+
+6. `feature_list.json` が存在する場合、`progress.log` にもエントリが追記されたことを確認・報告する
+   - フォーマット: `[YYYY-MM-DD HH:MM] session_id | 作業内容 | 変更ファイル数 | git SHA`
+   - checkpoint_manager.py が自動で追記するが、手動 checkpoint の場合も追記される
