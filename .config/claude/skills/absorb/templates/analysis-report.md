@@ -16,17 +16,31 @@ status: {analyzed | integrated | skipped}
 
 **前提条件**: {context_where_valid}
 
-## Gap Analysis
+## Gap Analysis (Pass 1: 存在チェック)
 
 | # | 手法 | 判定 | 詳細 |
 |---|------|------|------|
 | 1 | {technique} | {Already/Partial/Gap/N/A} | {details} |
 
+## Already Strengthening Analysis (Pass 2: 強化チェック)
+
+| # | 既存の仕組み | 記事が示す弱点 | 強化案 | 判定 |
+|---|---|---|---|---|
+| S1 | {existing_mechanism} | {weakness_from_article} | {concrete_enhancement} | {強化不要/強化可能} |
+
 ## Integration Decisions
+
+### Gap / Partial
 
 | # | 項目 | 判定 | 理由 |
 |---|------|------|------|
 | 1 | {item} | {採用/スキップ} | {reason} |
+
+### Already 強化
+
+| # | 項目 | 判定 | 理由 |
+|---|------|------|------|
+| S1 | {item} | {採用/スキップ} | {reason} |
 
 ## Plan
 

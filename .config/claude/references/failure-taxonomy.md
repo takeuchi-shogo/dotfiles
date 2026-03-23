@@ -134,6 +134,15 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx の障害分類を拡張した独自カテゴリ
 
+### FM-016: Result Fabrication
+
+- **定義**: 期待される出力に合わせて中間結果・パラメータを調整し、導出の正しさを偽装する
+- **検出パターン**: 検証なしの「確認しました」、根拠不明の定数・係数、プロットと数式の不整合、ステップ飛ばし表現（「this becomes」「for consistency」）
+- **関連 GP**: —
+- **判定**: 中間ステップの導出が明示されているか、値の根拠が示されているか (pass/fail)
+- **レビューアー**: `code-reviewer`, `codex-reviewer`
+- **着想**: Schwartz "Vibe Physics" (2026-03) — Claude がパラメータ調整でプロットを合わせ、不確定性バンドを美的に平滑化し、検証したと虚偽申告した事例群。FM-012 (Information Invention) とは異なり、参照先は実在するが値・導出が捏造されるパターン
+
 ---
 
 ## Failure Type 分類

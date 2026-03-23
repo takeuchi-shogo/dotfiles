@@ -1,10 +1,14 @@
 # AI Workflow Audit Checklist
 
+> **存在 ≠ 十分** (`rules/common/existence-vs-sufficiency.md`):
+> 「あるか」だけでなく「十分か」も評価する。存在チェック後に十分性チェックを行う。
+
 ## Skills
 - [ ] Skills vs memory vs scripts 境界が適切か
 - [ ] 重複スキルがないか
 - [ ] description が正確でトリガーが適切か
 - [ ] 未使用スキルがないか
+- [ ] **十分性**: 各スキルの内容が最新のベストプラクティス・知見を反映しているか（存在するだけでは不十分）
 
 ## Agents
 - [ ] エージェント定義にドメイン知識が50%以上含まれるか
