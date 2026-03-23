@@ -373,6 +373,17 @@
 				]
 			},
 			{
+				"matcher": "mcp__.*",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/mcp-response-inspector.py",
+						"timeout": 5,
+						"statusMessage": "MCP response check..."
+					}
+				]
+			},
+			{
 				"matcher": "Skill",
 				"hooks": [
 					{

@@ -169,6 +169,8 @@ adversarial framing を使うべきか迷った場合:
 | **Parameter Injection** | ツールパラメータへの悪意ある値の注入 | 入力サニタイズ + パターンマッチ | docker-safety.py, deny rules |
 | **Excessive Autonomy** | 確認なしで高影響操作を連続実行 | 操作カウント + 影響度評価 | completion-gate.py MAX_RETRIES |
 | **Silent Data Corruption** | ツール成功だが結果が不正（誤ったファイル編集等） | 差分検証 + テスト実行 | golden-check.py, completion-gate.py |
+| **Context Bridging Injection** | MCP応答・スキル定義で悪意あるタスクをユーザータスクに文脈接続 | mcp-response-inspector.py + security-reviewer 4d | mcp-response-inspector.py (Soft warning) |
+| **Supply-chain Skill Poisoning** | ClawHub等から取得したスキルの SKILL.md に攻撃パターン埋め込み | skill-security-scan.py G2 拡張 | skill-security-scan.py (Hard block on CRITICAL) |
 
 ### 3本柱との対応
 
@@ -180,6 +182,8 @@ adversarial framing を使うべきか迷った場合:
 | Parameter Injection | Affordances | Hard block |
 | Excessive Autonomy | Goal-directedness | Budget limit |
 | Silent Data Corruption | Goal-directedness | Soft warning |
+| Context Bridging Injection | Affordances | Soft warning |
+| Supply-chain Skill Poisoning | Affordances | Hard block |
 
 ---
 

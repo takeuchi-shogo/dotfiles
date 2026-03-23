@@ -19,7 +19,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from hook_utils import get_emitter, load_hook_input, rotate_and_append, run_hook
+from hook_utils import (
+    get_emitter,
+    load_hook_input,
+    rotate_and_append,
+    run_hook,
+)
 
 # MCP operations that should be blocked
 DANGEROUS_MCP_PREFIXES = [
@@ -29,12 +34,15 @@ DANGEROUS_MCP_PREFIXES = [
 ]
 
 
-def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> None:
-    """Warn if MCP tool is not in the active skill's mcp-tools."""
+def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> bool:
+    """Check if MCP tool is in the active skill's mcp-tools.
+
+    Returns True if scope violation detected (soft block).
+    """
     skills_dir = Path(__file__).resolve().parent.parent.parent / "skills"
     skill_file = skills_dir / skill_name / "SKILL.md"
     if not skill_file.exists():
-        return
+        return False
 
     try:
         content = skill_file.read_text()
@@ -46,18 +54,77 @@ def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> None:
                     server = parts[1]
                     if server not in allowed:
                         print(
-                            f"[MCP Audit] MCP server "
+                            f"[MCP Audit] SCOPE VIOLATION: MCP server "
                             f"'{server}' はスキル "
                             f"'{skill_name}' の "
-                            f"mcp-tools 外です",
+                            f"mcp-tools 外です。"
+                            f"このツールを使用する正当な理由がありますか？",
                             file=sys.stderr,
                         )
-                return
+                        return True
+                return False
     except OSError as exc:
         print(
             f"[MCP Audit] skill scope check error: {exc}",
             file=sys.stderr,
         )
+    return False
+
+
+# ---------------------------------------------------------------------------
+# T5: Tool call sequence anomaly detection (VeriGrey arXiv:2603.17639)
+# ---------------------------------------------------------------------------
+_READ_KEYWORDS = {"read", "get", "fetch", "search", "list", "query", "info"}
+_SEND_KEYWORDS = {
+    "reply",
+    "send",
+    "post",
+    "create_issue",
+    "create_pr",
+    "write_note",
+    "patch_note",
+}
+
+
+def _check_sequence_anomaly(tool_name: str, session_id: str, log_path: str) -> None:
+    """Detect read→send tool transitions that may indicate data exfiltration."""
+    if not os.path.exists(log_path):
+        return
+
+    tool_lower = tool_name.lower()
+    is_send = any(kw in tool_lower for kw in _SEND_KEYWORDS)
+    if not is_send:
+        return
+
+    # Read recent log entries for this session
+    try:
+        with open(log_path, encoding="utf-8") as f:
+            lines = f.readlines()
+    except OSError:
+        return
+
+    # Check last 10 entries for a read→send pattern
+    recent = []
+    for line in reversed(lines[-20:]):
+        try:
+            entry = json.loads(line)
+            if entry.get("session_id") == session_id:
+                recent.append(entry.get("tool", ""))
+                if len(recent) >= 10:
+                    break
+        except (json.JSONDecodeError, KeyError):
+            continue
+
+    for prev_tool in recent[1:]:  # skip current (not yet logged)
+        prev_lower = prev_tool.lower()
+        if any(kw in prev_lower for kw in _READ_KEYWORDS):
+            msg = (
+                f"[MCP Audit] SEQUENCE WARNING: "
+                f"読み取り系ツール ({prev_tool}) → 送信系ツール ({tool_name}) "
+                f"の遷移を検出。データ漏洩パターンの可能性があります。"
+            )
+            print(msg, file=sys.stderr)
+            return
 
 
 def _summarize_input(tool_input: object) -> dict[str, str] | str:
@@ -99,10 +166,17 @@ def _audit(data: dict) -> None:
             print(f"BLOCKED: MCP audit block — {reason} ({tool_name})", file=sys.stderr)
             sys.exit(2)
 
-    # Skill-level MCP tool scoping (advisory)
+    # Skill-level MCP tool scoping (soft block — VeriGrey Tool Filter)
     skill_name = os.environ.get("CLAUDE_SKILL", "")
     if skill_name:
-        _check_skill_mcp_scope(tool_name, skill_name)
+        scope_violated = _check_skill_mcp_scope(tool_name, skill_name)
+        if scope_violated:
+            audit_entry["scope_violation"] = True
+            rotate_and_append(log_path, json.dumps(audit_entry))
+            sys.exit(2)
+
+    # Sequence anomaly detection (VeriGrey arXiv:2603.17639)
+    _check_sequence_anomaly(tool_name, data.get("session_id", "unknown"), log_path)
 
     # Emit event for AutoEvolve tracking
     emit = get_emitter()

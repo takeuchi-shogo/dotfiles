@@ -97,6 +97,25 @@ G2_PATTERNS = [
         "隠し命令タグ (HTML コメント)",
     ),
     (r"\[hidden\]", "MEDIUM", "hidden-tag", "隠しタグ ([hidden])"),
+    # VeriGrey-discovered SKILL.md attack patterns (arXiv:2603.17639)
+    (
+        r"(?:step\s*\d|手順\s*\d).*(?:install|pip|npm|curl|wget|apt)\b",
+        "HIGH",
+        "natural-step-framing",
+        "悪意ある操作を手順として偽装 (VeriGrey)",
+    ),
+    (
+        r"(?:no\s+manual\s+intervention|自動的に|確認不要|without\s+(?:user\s+)?(?:confirmation|approval|permission))",
+        "HIGH",
+        "autonomy-emphasis",
+        "ユーザー確認スキップを誘導 (VeriGrey)",
+    ),
+    (
+        r"(?:import|require|from)\s+\S+(?:openclaw|malicious|payload|backdoor)",
+        "MEDIUM",
+        "fabricated-example",
+        "偽パッケージ使用例 (VeriGrey)",
+    ),
 ]
 
 # G2 対象: すべてのテキストファイル
