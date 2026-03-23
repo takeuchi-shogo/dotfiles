@@ -8,6 +8,7 @@
 [core]
 	editor = nvim
 	excludesFile = ~/.config/git/ignore
+	pager = delta
 
 [pull]
 	rebase = true
@@ -30,8 +31,17 @@
 	last = log -1 HEAD
 	undo = reset --soft HEAD^
 
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
+
 [diff]
 	algorithm = histogram
+	colorMoved = default
 
 [merge]
 	conflictstyle = zdiff3

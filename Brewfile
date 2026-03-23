@@ -11,6 +11,13 @@ brew "fzf"        # ファジーファインダー
 # brew "sketchybar" # macOS ステータスバー (Ice に移行、設定は .config/sketchybar/ に保持)
 brew "lua"        # Neovim スクリプト
 brew "ripgrep"    # 高速 grep (rg)
+brew "bat"        # cat 上位互換 (シンタックスハイライト)
+brew "eza"        # ls 上位互換 (アイコン/Git 表示)
+brew "zoxide"     # cd 上位互換 (学習型ディレクトリジャンプ)
+brew "atuin"      # history 上位互換 (DB 管理/同期)
+brew "git-delta"  # git diff 上位互換 (シンタックスハイライト)
+brew "dust"       # du 上位互換 (ツリー表示)
+brew "yazi"       # ターミナルファイルマネージャー
 brew "fd"         # 高速 find
 brew "tree-sitter-cli" # Tree-sitter パーサ CLI (Neovim)
 brew "grep"       # GNU grep (macOS 標準より高機能)
