@@ -31,7 +31,11 @@
   // ===================
   "tab_size": 2,
   "soft_wrap": "editor_width",
-  "autosave": "on_focus_change",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 500
+    }
+  },
   "format_on_save": "off",
   "hover_popover_enabled": true,
   "inlay_hints": {
