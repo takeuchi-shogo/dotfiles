@@ -384,6 +384,7 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - 重複記録を避ける。既存のメモリを確認してから書く
 - 間違っていた記録は速やかに更新・削除する
 - `/memory-status` でメモリの健全性を確認できる
+- **Snapshot 制限**: MEMORY.md はセッション開始時に読み込まれる静的スナップショット。セッション中に memory を更新しても、その変更は次のセッションまで system prompt に反映されない。checkpoint/handoff 時は、後続セッションが必要とする情報を plan や checkpoint ファイルにも書くこと
 
 ### Plan と checkpoint の関係
 
