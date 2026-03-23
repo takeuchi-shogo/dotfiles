@@ -83,6 +83,7 @@
 24. **Knowledge Pyramid Tier 要件** — 学習データには `tier`（Raw/Exploratory/Benchmark/Doctrine）と `score`（0.0-1.0）を付与する。L3 (Rules) への昇格には Tier 2 (Benchmark) 以上、L4 (Golden Principles) には Tier 3 (Doctrine) を必須とする。詳細は `references/knowledge-pyramid.md` を参照
 25. **Contradiction Mapping** — Garden フェーズで同一トピックに対する方向性の逆転（矛盾）を検出する。検出時は `boundary_condition` フィールドを付与して適用条件を明示するか、低品質側を降格する。自動解決は行わずユーザーに判断を委ねる。詳細は `references/contradiction-mapping.md` を参照
 26. **Governance Levels** — カテゴリごとに自律性レベル（0:Observe / 1:Review / 2:Auto-Merge / 3:Trusted）を設定する。デフォルトは Level 1（現在の動作維持）。Level 2 以上への昇格は承認率・CQS に基づく。Level 3 は opt-in 必須。詳細は `references/governance-levels.md` を参照
+27. **Stepwise Change Budget** — 1サイクル内の変更は段階的に保守的にする。1st change: epsilon=0.2（通常の変更幅）、2nd change: epsilon=0.15（やや保守的）、3rd change: epsilon=0.1（最も保守的）。根拠: HACRL Stepwise Clipping — 後半ほど保守的にしてドリフトを防止。`scripts/lib/rl_advantage.py` の `stepwise_clip_ratio()` で計算
 
 ### 品質基準
 
@@ -257,6 +258,16 @@ PPO スタイルの変更比率クリッピング。
 
 `skill_amender.gate_proposal()` で自動適用。
 クリップ発動時は reason に `[CLIP WARNING]` を追記。
+
+### Stepwise Clipping
+
+HACRL の Stepwise Clipping に着想。1サイクル内で複数変更を重ねる場合、
+更新回数に応じて許容変更幅を段階的に狭める。
+
+`stepwise_clip_ratio(after, before, step)` で計算。
+step=0 は通常の clipping、step が進むごとに epsilon が step_decay 分だけ減少（下限 0.05）。
+
+`skill_amender.gate_proposal()` で step 番号を渡して自動適用。
 
 ### Per-step Credit Assignment
 

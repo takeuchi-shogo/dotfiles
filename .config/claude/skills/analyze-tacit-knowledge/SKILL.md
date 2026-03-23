@@ -89,13 +89,16 @@ Stage 1: Ingest   → Stage 2: Detect   → Stage 3: Extract
 
 1. detection_points をプロンプトに埋め込み、LLM に暗黙知の抽出を依頼
 2. 同一セッション内の重複パターンをグルーピング
-3. 各暗黙知に id, domain, confidence を付与
+3. 各暗黙知に id, domain, confidence, model_attribution を付与
+   - `model_attribution`: どのモデルが発見した知見か（`claude` / `codex` / `gemini` / `unknown`）
+   - セッションログの委譲元（Agent ツール呼び出し、`codex exec`、`gemini-explore` 等）から判定
+   - 判定できない場合は `unknown` を設定
 
 **User Interaction Point**: 抽出結果をユーザーに提示。
 ```
 以下の暗黙知が見つかりました:
 
-1. [domain] {knowledge} (confidence: {n})
+1. [domain] {knowledge} (confidence: {n}, model: {model_attribution})
    Gap: {gap}
    Your correction: {correction}
 
@@ -181,7 +184,8 @@ Agent Teams の議論結果:
    - 既存エントリの confidence/sources 更新
    - 昇格済みエントリの layer を 3 に、status を `promoted` に変更
 3. 分析レポートを `analysis-history/` に保存（`templates/analysis-report.md` 使用）
-4. 変更サマリを出力
+4. **Cross-Model Insight Export**: `model_attribution` が `codex` or `gemini` の知見を `references/cross-model-insights.md` の該当セクションに追記する。HACRL の双方向知識転移に基づき、モデル固有の発見を他モデルのコンテキストに還元する
+5. 変更サマリを出力
 
 ```
 ## Applied Changes

@@ -54,6 +54,10 @@ Codex (GPT系) は `apply_patch` 形式に最適化されているが、`str_rep
 
 Codex (GPT系) は指示に忠実で、失敗データに対しても比較的ニュートラル。ただし「精度を上げろ」等の曖昧な指示には教科書的な定番施策のみ提案する傾向がある。**具体的な仮説や方向性を含む指示**を与えることで提案の質が上がる。
 
+## Expertise Map
+
+ドメイン別の expertise score は `references/model-expertise-map.md` を参照。`/debate` の重み付けに使用。
+
 ## 言語プロトコル
 
 Codex への指示は英語。結果はユーザーの言語（日本語）で報告。

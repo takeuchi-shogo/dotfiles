@@ -260,3 +260,36 @@ def step_credit(
         name: round(outcome * count / total_invocations, 4)
         for name, count in skill_counts.items()
     }
+
+
+def stepwise_clip_ratio(
+    after: float,
+    before: float,
+    step: int,
+    epsilon: float = 0.2,
+    step_decay: float = 0.025,
+) -> float:
+    """Stepwise PPO clipping — tightens bounds with each update step.
+
+    HACRL の Stepwise Clipping に着想。AutoEvolve の1サイクル内で
+    更新回数に応じて許容変更幅を段階的に狭める。
+    後半の変更ほど保守的になり、ドリフトを防止する。
+
+    Args:
+        after: 変更後の値
+        before: 変更前の値
+        step: 現在のステップ番号 (0-indexed)
+        epsilon: 初期クリップ範囲 (デフォルト 0.2 = ±20%)
+        step_decay: ステップごとの減衰量 (デフォルト 0.025)
+
+    Returns:
+        クリップされた比率。before=0 の場合は 1.0。
+
+    Examples:
+        >>> stepwise_clip_ratio(2.0, 1.0, step=0)  # epsilon=0.2
+        1.2
+        >>> stepwise_clip_ratio(2.0, 1.0, step=4)  # epsilon=0.1
+        1.1
+    """
+    effective_eps = max(epsilon - step * step_decay, 0.05)
+    return clip_ratio(after, before, effective_eps)

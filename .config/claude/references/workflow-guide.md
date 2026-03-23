@@ -77,6 +77,7 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 
 - 要件を明確化し、既存コードを調査する
 - **`/check-health` を実行** — ドキュメント鮮度・参照整合性を確認する
+- **cross-model insight 確認** — 過去のセッションで他モデルが発見した関連知見がないか `references/cross-model-insights.md` を確認する
 - `search-first` スキル — 実装前に既存の解決策を検索する
 - brainstorming スキルでアイデアを設計に落とす
 - writing-plans スキルで実装計画を策定する
@@ -450,6 +451,26 @@ LLM は長いコンテキストの中間部分を見落としやすい（Lost-in
 - 片方の task が symlink、formatter、checkpoint、生成物を更新しても、もう片方に影響を漏らさない
 - 1 task 1 session に加えて、1 branch 1 worktree を基本とする
 - 運用詳細は `docs/playbooks/worktree-based-tasking.md` を参照する
+
+---
+
+## 新モデル追加ランブック
+
+新しい LLM プロバイダ（CLI ツール）を委譲先として追加する際の手順。
+
+1. **委譲ルール作成**: `rules/{model-name}-delegation.md` を作成。テンプレート:
+   - 委譲すべきケース（そのモデルの強み）
+   - 委譲方法（エージェント / スキル / 直接呼び出し）
+   - 委譲しないケース（他モデルの方が適切な場面）
+   - 性格傾向バイアス（既知の出力傾向と軽減策）
+   - 言語プロトコル
+2. **Expertise Map 更新**: `references/model-expertise-map.md` にドメイン別スコアを追加
+3. **エージェント作成**（任意）: 専用エージェントが必要なら `agents/{model-name}-*.md` を作成
+4. **agent-router.py 更新**: 自動委譲 hook のルーティング条件にモデルを追加
+5. **`/debate` 対応**: `skills/debate/SKILL.md` のモデルリストに追加
+
+> 既存の `rules/codex-delegation.md` と `rules/gemini-delegation.md` を参考にする。
+> 各ファイルの構造を揃えることで、モデル間の比較・選択が容易になる。
 
 ---
 

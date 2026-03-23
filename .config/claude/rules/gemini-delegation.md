@@ -39,6 +39,10 @@ Gemini CLI は 1M コンテキストの大規模分析、Google Search grounding
 
 Gemini は分析結果に対して過度に楽観的・興奮的になる傾向がある（「宝の山を見つけた」等）。Gemini の分析結果を受け取る際は、**提案の実効性を Claude 側で冷静に再評価**してから採用すること。特にリサーチ結果の「これは画期的」という評価は割り引いて解釈する。
 
+## Expertise Map
+
+ドメイン別の expertise score は `references/model-expertise-map.md` を参照。`/debate` の重み付けに使用。
+
 ## 言語プロトコル
 
 Gemini への指示は英語。結果はユーザーの言語（日本語）で報告。

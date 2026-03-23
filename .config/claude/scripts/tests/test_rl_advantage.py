@@ -16,6 +16,7 @@ from rl_advantage import (
     normalize_advantages,
     rloo_advantage,
     step_credit,
+    stepwise_clip_ratio,
 )
 
 
@@ -289,3 +290,41 @@ class TestPlackettLuceRanking:
 
         result = plackett_luce_ranking([5.0, 5.0, 5.0])
         assert all(r == pytest.approx(1 / 3) for r in result)
+
+
+# --- stepwise_clip_ratio ---
+
+
+class TestStepwiseClipRatio:
+    def test_step_zero_same_as_clip_ratio(self):
+        """step=0 では通常の clip_ratio と同じ動作。"""
+        assert stepwise_clip_ratio(2.0, 1.0, step=0) == clip_ratio(
+            2.0, 1.0, epsilon=0.2
+        )
+
+    def test_epsilon_tightens_with_steps(self):
+        """ステップ増加で epsilon が縮小する。"""
+        r0 = stepwise_clip_ratio(2.0, 1.0, step=0)  # eps=0.2 → 1.2
+        r2 = stepwise_clip_ratio(2.0, 1.0, step=2)  # eps=0.15 → 1.15
+        r4 = stepwise_clip_ratio(2.0, 1.0, step=4)  # eps=0.1 → 1.1
+        assert r0 > r2 > r4
+
+    def test_epsilon_floor(self):
+        """epsilon は 0.05 を下回らない。"""
+        # step=100 でも epsilon >= 0.05
+        result = stepwise_clip_ratio(2.0, 1.0, step=100)
+        assert result == pytest.approx(1.05)
+
+    def test_before_zero(self):
+        """before=0 は 1.0 を返す。"""
+        assert stepwise_clip_ratio(5.0, 0.0, step=3) == 1.0
+
+    def test_within_range_no_clip(self):
+        """範囲内の比率はクリップされない。"""
+        assert stepwise_clip_ratio(1.05, 1.0, step=0) == pytest.approx(1.05)
+
+    def test_custom_decay(self):
+        """カスタム step_decay で動作する。"""
+        # step=2, epsilon=0.2, decay=0.05 → effective_eps=0.1
+        result = stepwise_clip_ratio(2.0, 1.0, step=2, step_decay=0.05)
+        assert result == pytest.approx(1.1)

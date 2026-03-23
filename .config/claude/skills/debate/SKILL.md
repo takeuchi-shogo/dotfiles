@@ -66,11 +66,22 @@ gemini --approval-mode plan -p "{english_prompt}" 2>/dev/null
 
 ## Step 4: Synthesize — 統合
 
+### 4a. ドメイン判定と Expertise Weighting
+
+1. 質問のドメインを `references/model-expertise-map.md` の Domain Classification Guide に基づき判定する
+2. 判定したドメインの各モデルの expertise score を取得する
+3. 統合時、各モデルの意見に expertise score で重み付けする: `weighted_opinion = opinion * expertise_score[model][domain]`
+4. 重み付けは最終的な推奨の優先度に影響するが、情報の除外は行わない（全意見を提示）
+
+> 根拠: HACRL (arXiv:2603.02604) の Exponential IS — 出力分布が近いエージェントからの学習を優先する。
+
+### 4b. 統合整理
+
 Claude として以下を整理する:
 
 1. **合意点 (Agreement)**: 両モデルが同じ結論に達した点
-2. **相違点 (Disagreement)**: 異なる結論や推奨（各モデルの根拠を併記）
-3. **独自の洞察 (Unique Insights)**: 片方だけが指摘した重要な点
+2. **相違点 (Disagreement)**: 異なる結論や推奨（各モデルの根拠を併記）。expertise score が高いモデルの意見を先に記載
+3. **独自の洞察 (Unique Insights)**: 片方だけが指摘した重要な点。expertise score を付記
 4. **合意率**: 合意点 / (合意点 + 相違点) × 100%
 5. **Claude の所見**: オーケストレーターとして気づいた補足（任意）
 
@@ -78,6 +89,8 @@ Claude として以下を整理する:
 
 ```markdown
 ## Debate: {topic}
+
+### Domain: {domain} (Expertise: Codex {codex_score}, Gemini {gemini_score})
 
 ### Codex の視点 (深さ)
 {codex_summary}
