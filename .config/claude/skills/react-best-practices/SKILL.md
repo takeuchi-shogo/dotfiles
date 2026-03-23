@@ -214,3 +214,11 @@ When optimizing a React application:
 - Initial release from Vercel Engineering
 - 40+ performance rules across 8 categories
 - Comprehensive code examples and impact analysis
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| 全ルールを一度に適用する | 優先度の高いボトルネックから順に対処する。計測なしの最適化は無意味 |
+| Server Components を盲目的に使う | クライアント側の状態が必要な箇所では Client Component が正解 |
+| バンドルサイズだけ見てUXを無視する | 体感速度（LCP/INP）が本当の指標。サイズは手段であって目的ではない |

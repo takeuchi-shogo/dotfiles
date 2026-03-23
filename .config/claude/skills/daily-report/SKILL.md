@@ -163,3 +163,11 @@ cat ~/.claude/agent-memory/learnings/quality.jsonl 2>/dev/null | jq -r --arg dat
 
 - セッション統計収集: `scripts/collect-session-stats.sh` — `sh scripts/collect-session-stats.sh [YYYY-MM-DD]`
 - 日報テンプレート: `templates/daily-report-template.md` (既存)
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| セッションログなしで日報を書く | 記憶頼みだと作業漏れが発生する。ログベースで生成する |
+| 全プロジェクトを手動で列挙する | スクリプトで自動収集し、漏れを防ぐ |
+| 翌日以降にまとめて書く | 鮮度が落ちて詳細を忘れる。当日中に生成する |

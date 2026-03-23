@@ -138,3 +138,11 @@ Step 2 に戻り、CIを再度監視する。
 ## Skill Assets
 
 - `templates/ci-fix-log.md` — CI fix attempt log template (attempt table, final status)
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| CI 失敗を無限リトライする | 根本原因を調べずにリトライしても同じ失敗を繰り返す |
+| lint エラーを --no-verify で回避する | hook 体系が無効化される。コードを直す |
+| テストを skip して CI を通す | 偽の成功。後で本番障害として返ってくる |

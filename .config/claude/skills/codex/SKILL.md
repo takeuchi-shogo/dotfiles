@@ -88,3 +88,11 @@ Use `/model` slash command within a Codex session to switch models, or configure
 
 - モデル選択ガイド: `references/model-selection.md`
 - ヘルパースクリプト: `scripts/codex-helper.sh`
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| Codex にレビューを依頼する | read-only レビューは /codex-review を使う。codex スキルは実行・編集用 |
+| reasoning effort を指定しない | デフォルト high だがレビュー時は xhigh が必要。タスクに応じて調整する |
+| 200K 以内のタスクに使う | Claude 単体で十分。Codex は深い推論や大規模分析に使う |

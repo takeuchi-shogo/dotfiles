@@ -106,3 +106,11 @@ PROMPT
 
 - レビュー出力テンプレート: `templates/review-output.md`
 - レビューチェックリスト: `references/review-checklist.md`
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| 100行未満の変更に使う | 小規模レビューは /review で十分。Codex はオーバーヘッドが大きい |
+| Codex の指摘を無批判に適用する | Codex も誤判定する。指摘は検証してから適用する |
+| codex-review でコードを編集する | read-only スキル。編集が必要なら /codex を使う |

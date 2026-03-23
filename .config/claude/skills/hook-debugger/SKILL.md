@@ -6,6 +6,8 @@ description: >
   'hook debug', 'PostToolUse が発火しない', 'PreToolUse が効かない'.
   Do NOT use for hook の新規作成 — use /update-config skill instead.
 allowed-tools: Read, Bash, Grep, Glob
+metadata:
+  pattern: runbook
 ---
 
 # Hook Debugger — Runbook

@@ -68,3 +68,11 @@ metadata:
 - 改善レポートテンプレート: `templates/improvement-report.md`
 - 実験ログテンプレート: `templates/experiment-log.md`
 - 分析カテゴリ判断基準: `references/analysis-categories.md`
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| データなしで改善提案する | 学習データ・セッションログに基づかない提案は的外れになる |
+| 1サイクルで10件以上変更する | 消化不良になる。1サイクル最大3ファイルの制約を守る |
+| 改善を検証せずに適用する | A/B テストなしの変更は劣化リスクがある |

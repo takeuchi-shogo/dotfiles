@@ -52,3 +52,11 @@ PR品質を繰り返しチェックし、マージ判断を行う。
 - **concurrent reviewer changes**: 複数 reviewer が同時にコメントすると対応漏れが発生。コメント一覧を毎回取得し直す
 - **draft PR の自動マージ**: draft 状態の PR に auto-merge を設定しても ready-for-review に変更されるまで発動しない
 - **大規模 diff**: 500行超の diff は reviewer の負荷が高い。可能なら PR を分割
+
+## Anti-Patterns
+
+| NG | 理由 |
+|----|------|
+| レビューコメントを読まずに一括 resolve する | 指摘の意図を見落とし、同じ問題が再発する |
+| CI 失敗のまま merge 判断する | CI が通っていない PR をマージすると本番障害のリスク |
+| セルフレビューせずにマージ要求する | 自分の diff を見直さないと明らかな問題を見逃す |

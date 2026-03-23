@@ -5,6 +5,8 @@ description: >
   Blocks rm -rf, DROP TABLE, force-push, kubectl delete via PreToolUse guard.
   Triggers: 'careful', 'prod操作', '本番', 'production', '慎重モード'.
   Do NOT use for: normal development — overhead is too high for routine work.
+metadata:
+  pattern: guard
 hooks:
   PreToolUse:
     - matcher: "Bash"
