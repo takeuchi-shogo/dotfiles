@@ -1,6 +1,9 @@
 ---
 name: web-design-guidelines
-description: Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".
+description: >
+  Review UI code for Web Interface Guidelines compliance.
+  Triggers: 'UI レビュー', 'review my UI', 'check accessibility', 'audit design', 'review UX', 'ベストプラクティス確認', 'Web Interface Guidelines'.
+  Do NOT use for: UI実装・コード生成（use /frontend-design）、UI/UXデザインシステム構築（use /ui-ux-pro-max）、アニメーション実装のみ（use /userinterface-wiki）。
 ---
 
 ## Skill Assets

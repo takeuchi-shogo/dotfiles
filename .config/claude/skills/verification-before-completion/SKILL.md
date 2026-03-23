@@ -3,6 +3,7 @@ name: verification-before-completion
 description: >
   Mandatory verification before claiming work is complete. Run actual commands to
   confirm success — never claim completion based on assumptions. Evidence before assertions.
+  Do NOT use for: テスト実行のみ（use test-engineer agent）、コードレビュー（use /review）、仕様検証（use /validate）。
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:
   pattern: pipeline+reviewer

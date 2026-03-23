@@ -5,6 +5,8 @@ description: >
   イベントルーティング、ガバナンス設定のテンプレートを生成。
   "The Self-Driving Codebase" の3本柱（Isolated Compute, Event Routing, Governance）に基づく。
   新プロジェクトでのCI/CDエージェント統合や、既存プロジェクトへの自動化追加に使用。
+  Triggers: 'background agent', 'バックグラウンドエージェント', 'CI/CD agent', 'GitHub Actions agent', 'self-driving codebase', '自動化エージェント'.
+  Do NOT use for: プロジェクト初期化全般（use /init-project）、既存 CI の修正（直接編集で十分）、スケジュール実行（use /schedule）。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: generator

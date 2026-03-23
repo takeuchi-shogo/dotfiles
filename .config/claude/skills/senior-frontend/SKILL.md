@@ -4,7 +4,8 @@ description: >
   React/Next.js のフロントエンドアーキテクチャ意思決定ガイド。コンポーネント設計、状態管理選定、
   アクセシビリティ計画。Use when making frontend architecture decisions: component design,
   state management selection, or accessibility planning.
-  Do NOT use for specific React performance optimization — use react-best-practices skill instead.
+  Triggers: 'フロントエンド設計', 'コンポーネント設計', '状態管理', 'state management', 'accessibility planning', 'frontend architecture'.
+  Do NOT use for: specific React performance optimization — use react-best-practices skill instead.
 allowed-tools: "Read, Grep, Glob"
 metadata:
   pattern: tool-wrapper

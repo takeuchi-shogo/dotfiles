@@ -4,7 +4,8 @@ description: >
   システムアーキテクチャの意思決定ガイド。マイクロサービス境界、技術選定、スケーラビリティ設計、
   アーキテクチャ図生成。Use when designing system architecture, choosing between monolith vs
   microservices, planning scalability, or creating architecture diagrams.
-  Do NOT use for implementation-level code decisions — use senior-backend or senior-frontend instead.
+  Triggers: 'アーキテクチャ', 'システム設計', 'マイクロサービス', 'technology selection', '技術選定', 'scalability', 'architecture diagram'.
+  Do NOT use for: implementation-level code decisions — use senior-backend or senior-frontend instead.
 allowed-tools: "Read, Grep, Glob"
 metadata:
   pattern: tool-wrapper

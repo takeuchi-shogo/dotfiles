@@ -1,6 +1,10 @@
 ---
 name: webapp-testing
-description: Toolkit for interacting with and testing local web applications using agent-browser CLI. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+description: >
+  Toolkit for interacting with and testing local web applications using agent-browser CLI.
+  Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+  Triggers: 'ブラウザテスト', 'UIテスト', 'webapp test', 'browser test', 'スクリーンショット確認', 'UI動作確認'.
+  Do NOT use for: ユニットテスト（use test-engineer agent）、E2Eテストフレームワーク設定（use Playwright MCP directly）、API テスト（use Bash with curl）。
 license: Complete terms in LICENSE.txt
 metadata:
   pattern: tool-wrapper

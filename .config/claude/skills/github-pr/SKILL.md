@@ -2,7 +2,8 @@
 name: github-pr
 description: >
   PRセルフレビュー・レビューコメント対応・マージ判断。
-  「セルフレビューして」「PR確認して」「コメント対応して」「マージしていい？」で発動。
+  Triggers: 'セルフレビュー', 'PR確認', 'コメント対応', 'マージしていい', 'PR review', 'merge check'.
+  Do NOT use for: PR作成（use /pull-request or /create-pr-wait）、コードレビュー（use /review）、CI修正（use /create-pr-wait）。
 allowed-tools: Bash(*gh-unresolved-threads*), Bash(gh pr *), Bash(gh api graphql *)
 metadata:
   pattern: pipeline

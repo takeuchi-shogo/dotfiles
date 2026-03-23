@@ -2,8 +2,9 @@
 name: codex
 description: >
   Use when the user asks to run Codex CLI (codex exec, codex resume) or references
-  OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.4
-  by default. NOT for code review (use codex-review) or debugging (use debugger agent).
+  OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.4 by default.
+  Triggers: 'codex', 'codex exec', 'codex resume', 'Codex で', 'gpt-5.4 で分析'.
+  Do NOT use for: コードレビュー（use /codex-review）、デバッグ（use debugger agent）、リサーチ（use /gemini or /research）。
 metadata:
   pattern: tool-wrapper
 ---

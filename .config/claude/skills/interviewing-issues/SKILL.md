@@ -1,6 +1,9 @@
 ---
 name: interviewing-issues
-description: "曖昧なGitHub Issueを4段階のインタビューで明確化し、構造化された仕様を出力する。実装前の要件定義・スコープ確定に使用。"
+description: >
+  曖昧なGitHub Issueを4段階のインタビューで明確化し、構造化された仕様を出力する。実装前の要件定義・スコープ確定に使用。
+  Triggers: 'Issue 明確化', '要件定義', 'スコープ確定', 'interview issue', '曖昧な Issue', 'Issue を仕様に'.
+  Do NOT use for: 仕様書作成（use /spec）、実装込みフロー（use /epd）、既に明確な Issue の実装（use /rpi）。
 metadata:
   pattern: inversion
 ---

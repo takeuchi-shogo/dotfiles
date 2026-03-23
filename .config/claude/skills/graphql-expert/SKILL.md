@@ -4,8 +4,9 @@ description: >
   GraphQL API の設計・実装・レビューを支援するエキスパートガイド。スキーマ設計、Mutation パターン、
   ページネーション、エラーハンドリング、セキュリティ、パフォーマンス最適化を網羅。
   Use when designing GraphQL schemas, implementing resolvers, reviewing GraphQL code,
-  or optimizing GraphQL API performance. Do NOT use for REST API design (use senior-backend)
-  or general system architecture (use senior-architect).
+  or optimizing GraphQL API performance.
+  Triggers: 'GraphQL', 'スキーマ設計', 'resolver', 'mutation', 'subscription', 'GraphQL performance'.
+  Do NOT use for: REST API design (use senior-backend) or general system architecture (use senior-architect).
 allowed-tools: "Read, Grep, Glob, Bash"
 metadata:
   pattern: tool-wrapper

@@ -1,6 +1,10 @@
 ---
 name: react-expert
-description: Use when researching React APIs or concepts for documentation. Use when you need authoritative usage examples, caveats, warnings, or errors for a React feature.
+description: >
+  Use when researching React APIs or concepts for documentation. Use when you need authoritative
+  usage examples, caveats, warnings, or errors for a React feature.
+  Triggers: 'React API', 'useEffect の挙動', 'React hooks', 'React ドキュメント', 'React feature research'.
+  Do NOT use for: パフォーマンス最適化（use /react-best-practices）、コンポーネント設計（use /senior-frontend）、UI実装（use /frontend-design）。
 metadata:
   pattern: tool-wrapper
 ---

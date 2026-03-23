@@ -4,6 +4,8 @@ description: >
   Audit and upgrade a repo's AI operating model. Use when improving Claude Code or
   Codex workflows, deciding what belongs in skills vs memory vs scripts, or carrying
   reusable AI practices across repos.
+  Triggers: 'AI ワークフロー', 'workflow audit', 'スキル整理', 'skills vs memory', 'AI 運用改善', 'AI practices'.
+  Do NOT use for: コードベース監査（use /audit）、スキル個別の改善（use /skill-creator）、ドキュメント鮮度チェック（use /check-health）。
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:
   pattern: reviewer

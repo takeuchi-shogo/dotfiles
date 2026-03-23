@@ -3,7 +3,9 @@ name: senior-backend
 description: >
   バックエンドAPI設計・DB選定・セキュリティの意思決定ガイド。REST vs GraphQL、RDB vs NoSQL、
   認証方式の選定を支援。Use when designing APIs, optimizing databases, or planning backend
-  security architecture. Do NOT use for frontend component design (use senior-frontend)
+  security architecture.
+  Triggers: 'API設計', 'DB選定', 'REST vs GraphQL', '認証方式', 'backend architecture', 'データベース最適化'.
+  Do NOT use for: frontend component design (use senior-frontend)
   or system-level architecture decisions (use senior-architect).
 allowed-tools: "Read, Grep, Glob"
 metadata:
