@@ -17,6 +17,8 @@ if (( $+commands[nb] )); then
   alias nd="nb delete"
   alias nsh="nb show"
 
-  # nb の補完を有効化
-  eval "$(nb completions zsh)"
+  # nb の補完を有効化 (completions install で ~/.zsh_completion に配置済みの場合に有効)
+  if [[ -f ~/.zsh_completion/_nb ]]; then
+    fpath=(~/.zsh_completion $fpath)
+  fi
 fi
