@@ -1,6 +1,9 @@
 ---
 name: capture
-description: GTD式の即時キャプチャ。思いつき、TODO、メモを GitHub Issue として即座に登録する。考えと記録を分離し、後で /morning や /weekly-review で整理する。
+description: >
+  GTD式の即時キャプチャ。思いつき、TODO、メモを GitHub Issue として即座に登録する。考えと記録を分離し、後で /morning や /weekly-review で整理する。
+  Triggers: 'capture', '思いついた', 'TODO登録', 'メモっておいて', 'quick capture', 'inbox'.
+  Do NOT use for: Obsidian への知見保存（use /note）、仕様書作成（use /spec）、既存 Issue の操作（use /kanban）。
 disable-model-invocation: true
 allowed-tools: Bash(gh *)
 argument-hint: "<memo text>"

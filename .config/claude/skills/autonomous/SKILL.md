@@ -5,6 +5,8 @@ description: >
   claude -p ヘッドレスモードで子セッションを生成し、task_list.md で進捗を追跡。
   並列タスクは worktree で隔離し、共有状態の破損を防止。
   長時間のリファクタリング、マイグレーション、大規模実装に使用。
+  Triggers: '自律実行', 'autonomous', 'セッション跨ぎ', 'バックグラウンドで', '並列実行', 'long-running task'.
+  Do NOT use for: 単一セッションで完了する作業（直接実行で十分）、単純な並列タスク（use Agent tool directly）。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline

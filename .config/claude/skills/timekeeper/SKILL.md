@@ -4,6 +4,8 @@ description: >
   朝の計画と夕方の振り返りを対話形式で行い、Obsidian Vault に保存する。
   /timekeeper plan で計画、/timekeeper review で振り返り。引数なしは plan。
   全項目が埋まるまでユーザーに1問ずつ質問し、言語化を促すコーチング型アプローチ。
+  Triggers: '/timekeeper', '振り返り', '計画を立てたい', 'plan my day', 'daily reflection'.
+  Do NOT use for: 朝の開発タスク提案（use /morning）、日報作成（use /daily-report）、週次棚卸し（use /weekly-review）。
 argument-hint: plan | review
 allowed-tools: Read, Write, Edit, Glob
 metadata:

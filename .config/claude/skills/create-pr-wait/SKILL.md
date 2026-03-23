@@ -1,6 +1,6 @@
 ---
 name: create-pr-wait
-description: "PR作成→CI監視→失敗時自動修正→再pushを自動化するワークフロー。/pull-request の拡張版で、CIが通るまで面倒を見る。"
+description: "PR作成→CI監視→失敗時自動修正→再pushを自動化するワークフロー。/pull-request の拡張版で、CIが通るまで面倒を見る。Triggers: 'PR作って待って', 'CI通るまで', 'create-pr-wait', 'PR自動化', 'push and wait'. Do NOT use for: PR作成のみ（use /pull-request）、セルフレビュー（use /github-pr）、手動 CI 修正。"
 metadata:
   pattern: pipeline
 ---

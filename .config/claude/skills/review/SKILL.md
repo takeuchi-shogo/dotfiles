@@ -4,6 +4,8 @@ description: >
   コード変更のレビューを実行。変更規模に応じてレビューアーを自動選択・並列起動し、結果を統合する。
   コード変更後の Review 段階で使用、または /review で手動起動。
   言語固有チェックリストは references/review-checklists/ に配置。code-reviewer のプロンプトに注入して使用。
+  Triggers: 'レビューして', 'review', 'コードレビュー', 'セルフレビュー', 'check my code'.
+  Do NOT use for: 直近の差分確認のみ（use git diff）、100行超の Codex レビュー（use /codex-review）、Product 観点の検証（use /validate）。
 allowed-tools: Read, Bash, Grep, Glob, Agent
 hooks:
   PreToolUse:

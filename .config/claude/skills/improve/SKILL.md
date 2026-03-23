@@ -1,6 +1,9 @@
 ---
 name: improve
-description: AutoEvolve のオンデマンド改善サイクルを実行。学習データの分析 → 知識整理 → 設定改善提案を一括で行う。/improve で起動。
+description: >
+  AutoEvolve のオンデマンド改善サイクルを実行。学習データの分析 → 知識整理 → 設定改善提案を一括で行う。/improve で起動。
+  Triggers: '/improve', '改善提案', '設定見直し', 'autoevolve', 'optimize setup'.
+  Do NOT use for: 外部記事の統合（use /absorb）、スキル個別の改善（use /skill-creator）、コードベース監査（use /audit）。
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline

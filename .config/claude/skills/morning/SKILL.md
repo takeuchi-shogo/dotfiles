@@ -1,6 +1,9 @@
 ---
 name: morning
-description: 朝の開発計画を生成する。GitHub Issues/Projects の状態、進行中タスク、優先度を分析し、今日取り組むべきタスクを提案。毎朝のセッション開始時に使用。
+description: >
+  朝の開発計画を生成する。GitHub Issues/Projects の状態、進行中タスク、優先度を分析し、今日取り組むべきタスクを提案。毎朝のセッション開始時に使用。
+  Triggers: 'おはよう', '今日の計画', 'morning', '朝のプラン', 'what should I work on today'.
+  Do NOT use for: 日報作成（use /daily-report）、週次レビュー（use /weekly-review）、振り返り（use /timekeeper review）。
 ---
 
 ## Skill Assets

@@ -1,6 +1,9 @@
 ---
 name: kanban
-description: GitHub Projects カンバンの操作と進捗確認。ステータス変更、進捗一覧表示、Issue の開始/完了処理を自動化。「次は何したらいい？」にも応答。
+description: >
+  GitHub Projects カンバンの操作と進捗確認。ステータス変更、進捗一覧表示、Issue の開始/完了処理を自動化。「次は何したらいい？」にも応答。
+  Triggers: 'kanban', 'ステータス変更', 'Issue 完了', '次は何', 'board status', 'move to done'.
+  Do NOT use for: フィーチャーリスト管理（use /feature-tracker）、新規 Issue 即時作成（use /capture）、朝の計画（use /morning）。
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read
 argument-hint: "[status | start #N | done #N | view]"

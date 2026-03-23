@@ -1,6 +1,9 @@
 ---
 name: daily-report
-description: 1日の全プロジェクト横断セッションをまとめた日報を生成する。/daily-report で今日、/daily-report yesterday で昨日、/daily-report YYYY-MM-DD で指定日の日報を作成。
+description: >
+  1日の全プロジェクト横断セッションをまとめた日報を生成する。/daily-report で今日、/daily-report yesterday で昨日、/daily-report YYYY-MM-DD で指定日の日報を作成。
+  Triggers: '日報', 'daily-report', '今日何した', 'what did I do today', '作業ログ'.
+  Do NOT use for: 朝の計画（use /morning）、週次レビュー（use /weekly-review）、セッション分析（use /analyze-tacit-knowledge）。
 metadata:
   pattern: generator
 ---

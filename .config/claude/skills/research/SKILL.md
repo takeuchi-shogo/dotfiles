@@ -3,6 +3,7 @@ name: research
 description: >
   マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に
   自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
+  Triggers: '調査して', '深掘り', 'research', '複数ソース', '並列調査', 'multi-source investigation'.
   Do NOT use for simple single-query searches — use WebSearch or gemini skill instead.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
