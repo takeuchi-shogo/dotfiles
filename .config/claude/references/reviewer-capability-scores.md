@@ -25,6 +25,24 @@
 | product-reviewer | 0.65 | 0.40 | 0.40 | 0.60 | 0.51 |
 | design-reviewer | 0.60 | 0.45 | 0.50 | 0.85 | 0.60 |
 
+### Domain Signal Trust
+
+> Del et al. (arXiv:2603.19118): 不確実性信号の品質はドメインに強く依存する。
+> 検証可能な（deterministic）タスクでは confidence score (VC) の識別力が高く、
+> 主観的なタスクでは agreement rate (SC) の方が相対的に信頼できる。
+
+レビュー合成時、タスクの性質に応じて confidence と agreement の信頼度を調整する:
+
+| タスク性質 | 例 | confidence 信頼度 | agreement 信頼度 | 根拠 |
+|-----------|-----|-------------------|------------------|------|
+| **Deterministic** | 型チェック、ロジック検証、セキュリティ脆弱性 | 高 | 中 | 正解が一意。VC の AUROC が高い（数学: 81.4 @ K=8） |
+| **Semi-deterministic** | パフォーマンス、テスト設計、エラーハンドリング | 中 | 中 | 複数の妥当解がある。VC/SC 同程度（STEM: 78.4/各タスク依存） |
+| **Subjective** | 命名、コメント品質、デザイン、UX | 低 | 高 | 正解が文脈依存。VC の識別力が低い（人文: 72.6 @ K=8） |
+
+**活用方法**: `review-consensus-policy.md` §6 SCVC Hybrid Signal の hybrid_score 判定時、
+deterministic タスクでは confidence スコアの高い指摘をより信頼し、
+subjective タスクでは agreement rate の高い指摘を優先する（λ の微調整ではなく、判定の解釈指針として）。
+
 ### Score Rationale
 
 - **code-reviewer**: 汎用レビューア。Style が最も高い (言語チェックリスト注入により精度向上)。全ドメインで安定
