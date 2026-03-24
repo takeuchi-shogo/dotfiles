@@ -213,7 +213,35 @@ comprehension_confidence: ?/5
 - 2: 部分的にしか理解できていない
 - 1: 変更の意図が不明確
 
-## Step 5: Findings Persistence（フィードバックループ）
+## Step 5: Review-Fix Cycle
+
+Step 4 の verdict に応じて、修正→再レビューのサイクルを実行する。
+
+```
+Review → verdict 判定
+  ├─ PASS           → Step 6 (Findings Persistence) → タスク完了をユーザーに報告
+  ├─ NEEDS_FIX      → 指摘を修正 → 差分のみ再 Review → verdict 再判定
+  ├─ BLOCK          → 指摘を修正 → フル再 Review → verdict 再判定
+  └─ NEEDS_HUMAN_REVIEW → ユーザーに判断を委ねる
+```
+
+### サイクルルール
+
+1. **PASS**: 修正不要。Step 6 に進み、完了をユーザーに報告する
+2. **NEEDS_FIX**: Important 指摘を修正後、**修正差分のみ**を対象に再レビューする（レビューアー構成は修正行数で再スケーリング）
+3. **BLOCK**: Critical 指摘を修正後、**全変更**を対象にフルレビューを再実行する
+4. **NEEDS_HUMAN_REVIEW**: レビュー結果をユーザーに提示し、判断を委ねる
+5. **最大サイクル数**: 3回。3回で PASS にならない場合はユーザーにエスカレーションする
+6. **修正なし判定**: 再レビューで新規指摘がゼロなら PASS に昇格する
+
+### 完了報告
+
+サイクルが PASS で終了したら、ユーザーに以下を報告する:
+- 変更サマリ（何を変えたか）
+- レビュー結果（PASS + 主要な確認ポイント）
+- 次のアクション提案（commit / 追加作業など）
+
+## Step 6: Findings Persistence（フィードバックループ）
 
 Step 4 の統合後、最終レポートに含まれる各指摘を `review-findings.jsonl` に保存する。
 これにより、後続の git commit 時に `review-feedback-tracker.py` hook が
