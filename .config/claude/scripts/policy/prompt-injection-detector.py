@@ -46,7 +46,8 @@ COMMAND_SUB_OPEN = re.compile(r"\$\(")
 # Sensitive file access (Bash only) — defense-in-depth over permissions deny list
 SENSITIVE_FILE_RE = re.compile(
     r"(?:cat|less|head|tail|vi|vim|nano|code|bat)\s+.*"
-    r"(?:\.env\b|~/\.aws/credentials|~/\.ssh/id_|\.pem\b)"
+    r"(?:\.env\b|~/\.aws/credentials|~/\.ssh/id_|\.pem\b)",
+    re.IGNORECASE,
 )
 
 # Dangerous Bash commands (Bash only) — pipe-to-shell, destructive ops, credential theft
@@ -54,14 +55,15 @@ DANGEROUS_BASH_RE = re.compile(
     r"(?:curl|wget)\s+\S+\s*\|\s*(?:ba)?sh"
     r"|rm\s+-rf\s+[/~]"
     r"|security\s+find-generic-password\s+-w"
-    r"|gh\s+auth\s+token"
+    r"|gh\s+auth\s+token",
+    re.IGNORECASE,
 )
 
 # ---------------------------------------------------------------------------
 # Dual-mode sanitization (strip quoted strings / heredocs)
 # ---------------------------------------------------------------------------
 
-_QUOTED_RE = re.compile(r"""(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')""")
+_QUOTED_RE = re.compile(r"""(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`)""")
 _HEREDOC_RE = re.compile(r"<<-?\s*(\w+).*?\n.*?\1", re.DOTALL)
 
 
@@ -231,7 +233,7 @@ def _check_suspicious_flag() -> None:
                 f"age={int(age)}s)",
                 file=sys.stderr,
             )
-    except (json.JSONDecodeError, OSError, ValueError) as exc:
+    except (json.JSONDecodeError, OSError, ValueError, TypeError) as exc:
         print(f"[prompt-injection-detector] flag check error: {exc}", file=sys.stderr)
 
 

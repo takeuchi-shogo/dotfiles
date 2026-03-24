@@ -33,7 +33,7 @@ DANGEROUS_MCP_PREFIXES = [
     ("mcp__github__delete", "Destructive GitHub operation"),
     ("mcp__filesystem__delete", "Filesystem deletion via MCP"),
     ("mcp__filesystem__move", "Filesystem move via MCP"),
-    ("^mcp__.*__truncate", "Destructive truncate operation"),
+    ("^mcp__.*__truncate$", "Destructive truncate operation"),
 ]
 
 # Known MCP servers (unknown servers trigger a warning, not a block)
