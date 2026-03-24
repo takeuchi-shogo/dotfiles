@@ -82,6 +82,24 @@ agreement_rate = 1 - (conflict_count / total_findings)
 
 異種間不一致は Agreement Rate 計算から除外する（異なるドメインの指摘は「矛盾」ではなく「補完」）。
 
+### 段階的 Escalation
+
+> context-and-impact の Ensemble Quality Gate（stddev>20 → collect_more）の応用。
+> 即座に CONVERGENCE STALL とせず、追加レビューアーで合意改善を試みる。
+
+Agreement Rate が中程度（70-89%）で同種間不一致が存在する場合、段階的に対応する:
+
+| 条件 | アクション |
+|------|----------|
+| Agreement Rate 70-89% かつ同種間不一致 >= 2件 | 未参加のスペシャリスト1体を追加起動 |
+| 追加レビュー後、Agreement Rate >= 70% | 通常合成（Conflicts セクション付き） |
+| 追加レビュー後、Agreement Rate < 70% | CONVERGENCE STALL（下記の「対応」フロー） |
+
+**制約**:
+- 追加するレビューアーは §1 Reviewer Scaling Upper Bound を超えない
+- 追加は1回のみ（escalation ループを防止）
+- 追加するレビューアーは既存レビューアーと**異なる観点**を持つものを選ぶ（§1 Heterogeneous Signal Priority に従う）
+
 ### 対応
 
 収束停滞を検出した場合:

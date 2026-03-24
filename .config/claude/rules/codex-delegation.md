@@ -63,6 +63,19 @@ codex exec --skip-git-repo-check -m gpt-5.4 \
 
 Claude はプラン策定・レビュー・統合の上流/下流を担当し、Codex は中間の実装を担当する分業モデル。
 
+## タスク性質別の委譲ガイダンス
+
+> context-and-impact のタスク分類器の知見を応用。タスクの性質に応じて最適なモデルにルーティングする。
+
+| タスク性質 | 推奨先 | 理由 |
+|-----------|--------|------|
+| fix / debug / root-cause | Codex | 深い推論が必要。reasoning effort: high〜xhigh |
+| feat / refactor / large-scope | Gemini | 広いコンテキストが必要。1M ウィンドウ活用 |
+| review / security | Codex + Claude | 多角的検証。異種シグナルの組み合わせ |
+| docs / config / small-edit | Claude 直接 | 委譲のオーバーヘッドが利益を上回る |
+
+**既存ルーティングとの関係**: `agent-router.py` のキーワードベースルーティングと競合しない。agent-router は特定エージェントへの振り分け、このガイダンスはモデル選択の指針。両方を組み合わせて使う。
+
 ## 委譲しないケース
 
 - 単純なコード編集、git操作、ファイル作成
