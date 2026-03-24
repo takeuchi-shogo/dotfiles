@@ -189,20 +189,45 @@ weakest: <最低スコアの次元名>
 - 変更が小さく評価不可能な次元は `N/A` とする
 - weakest は改善優先度の指標として使用される
 
-## レビュー手順
+## レビュー手順（2パスサイクル）
+
+1パスで「発見」と「優先付け」を同時にやると、重要な指摘がノイズに埋もれる。
+2パスに分離して精度を上げる。
+
+### Pass 1: 全列挙
 
 1. `git diff` で変更差分を確認
 2. 変更ファイルの拡張子を確認し、対応する言語チェックリストの観点も適用
-3. 汎用観点 → 言語固有観点の順でレビュー
-4. 指摘はファイルパスと行番号を `ファイルパス:行番号` 形式で明記
-5. 出力フォーマット: `[MUST/CONSIDER/NIT/ASK/FYI] file:line - description`
+3. 汎用観点 → 言語固有観点の順で、目に付いた問題を重要度に関わらず **すべて** 列挙する
 
-Provide feedback organized by priority:
-- Critical issues (must fix)
-- Warnings (should fix)
-- Suggestions (consider improving)
+### Pass 2: 再評価・フィルタ
+
+4. Pass 1 の全指摘を見直し、重要度を再判定する（判定境界の例を参照）
+5. 重複・冗長な指摘を統合する
+6. 最終出力は重要度順に整理:
+   - Critical issues (must fix)
+   - Warnings (should fix)
+   - Suggestions (consider improving)
+7. 指摘はファイルパスと行番号を `ファイルパス:行番号` 形式で明記
+8. 出力フォーマット: `[MUST/CONSIDER/NIT/ASK/FYI] file:line - description`
 
 Include specific examples of how to fix issues.
+
+## ガイドライン自己提案
+
+レビュー完了後、既存チェックリスト（`references/review-checklists/`）でカバーされていないパターンを発見した場合:
+
+1. 指摘の末尾に `[NEW_PATTERN]` タグを付与する
+2. レビュー出力の最後に以下を追加:
+
+```
+## Proposed Guideline Additions
+- **対象チェックリスト**: {cross-cutting.md / go.md / typescript.md 等}
+- **ルール**: {追加すべきルールの1行要約}
+- **根拠**: {今回検出した問題の概要}
+```
+
+この提案は AutoEvolve と連携し、頻出する場合にチェックリストへ反映される。
 
 ## Memory Management
 
