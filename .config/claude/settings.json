@@ -450,17 +450,6 @@
 				]
 			}
 		],
-		"ExitWorktree": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'Worktree セッション完了' glass",
-						"timeout": 5
-					}
-				]
-			}
-		],
 		"SubagentStop": [
 			{
 				"hooks": [
