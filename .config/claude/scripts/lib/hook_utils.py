@@ -124,6 +124,50 @@ def get_emitter() -> Callable:
 
 
 # ============================================================================
+# Guard Mode (HOOK_GUARD_MODE: audit / warn / block)
+# ============================================================================
+
+
+def guard_action(hook_name: str, pattern: str, detail: str) -> bool:
+    """Apply HOOK_GUARD_MODE policy. Returns True if caller should block.
+
+    Modes:
+        audit — log only, no output, no block
+        warn  — log + stderr warning, no block
+        block — log + stderr + return True (caller should sys.exit(2))
+    """
+    import os
+    from datetime import datetime, timezone
+
+    mode = os.environ.get("HOOK_GUARD_MODE", "block")
+
+    # Always log
+    log_dir = os.path.expanduser("~/.claude/agent-memory/logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, "security-guard.jsonl")
+    entry = json.dumps(
+        {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "hook": hook_name,
+            "pattern": pattern,
+            "detail": detail,
+            "mode": mode,
+        }
+    )
+    rotate_and_append(log_path, entry)
+
+    msg = f"[{hook_name}] {pattern}: {detail}"
+    if mode == "audit":
+        return False
+    if mode == "warn":
+        print(msg, file=sys.stderr)
+        return False
+    # block (default)
+    print(f"BLOCKED: {msg}", file=sys.stderr)
+    return True
+
+
+# ============================================================================
 # Error Handling
 # ============================================================================
 

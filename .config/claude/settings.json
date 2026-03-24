@@ -201,6 +201,16 @@
 						"statusMessage": "Agent routing..."
 					}
 				]
+			},
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/user-input-guard.py",
+						"timeout": 5,
+						"statusMessage": "Input guard..."
+					}
+				]
 			}
 		],
 		"PreToolUse": [

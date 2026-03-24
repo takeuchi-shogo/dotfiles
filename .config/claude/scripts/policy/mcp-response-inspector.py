@@ -134,6 +134,21 @@ def _main() -> None:
             },
         )
 
+        # Write suspicious flag for PreToolUse block chain
+        flag_dir = os.path.expanduser("~/.claude/agent-memory/flags")
+        os.makedirs(flag_dir, exist_ok=True)
+        flag_path = os.path.join(flag_dir, "mcp-suspicious.json")
+        flag_entry = {
+            "tool": tool_name,
+            "pattern": pattern_name,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        try:
+            with open(flag_path, "w", encoding="utf-8") as f:
+                json.dump(flag_entry, f)
+        except OSError as exc:
+            print(f"[MCP Response Inspector] flag write error: {exc}", file=sys.stderr)
+
         # Soft warning (advisory, do not block)
         msg = (
             f"[MCP Response Inspector] {tool_name} のレスポンスに"

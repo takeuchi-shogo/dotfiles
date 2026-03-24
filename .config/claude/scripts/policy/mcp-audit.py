@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,11 +28,23 @@ from hook_utils import (
 )
 
 # MCP operations that should be blocked
+# Entries starting with ^ are treated as regex patterns, others use startswith.
 DANGEROUS_MCP_PREFIXES = [
     ("mcp__github__delete", "Destructive GitHub operation"),
     ("mcp__filesystem__delete", "Filesystem deletion via MCP"),
     ("mcp__filesystem__move", "Filesystem move via MCP"),
+    ("^mcp__.*__truncate", "Destructive truncate operation"),
 ]
+
+# Known MCP servers (unknown servers trigger a warning, not a block)
+KNOWN_MCP_SERVERS = {
+    "obsidian",
+    "playwright",
+    "brave-search",
+    "context7",
+    "alphaxiv",
+    "plugin_discord_discord",
+}
 
 
 def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> bool:
@@ -160,11 +173,29 @@ def _audit(data: dict) -> None:
     log_path = os.path.join(log_dir, "mcp-audit.jsonl")
     rotate_and_append(log_path, json.dumps(audit_entry))
 
-    # Check for dangerous operations (startswith for precision)
+    # Check for dangerous operations (startswith or regex)
     for prefix, reason in DANGEROUS_MCP_PREFIXES:
-        if tool_name.startswith(prefix):
+        if prefix.startswith("^"):
+            if re.match(prefix, tool_name):
+                print(
+                    f"BLOCKED: MCP audit block — {reason} ({tool_name})",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+        elif tool_name.startswith(prefix):
             print(f"BLOCKED: MCP audit block — {reason} ({tool_name})", file=sys.stderr)
             sys.exit(2)
+
+    # Warn on unknown MCP servers
+    parts = tool_name.split("__")
+    if len(parts) >= 2:
+        server = parts[1]
+        if server not in KNOWN_MCP_SERVERS:
+            print(
+                f"[MCP Audit] WARNING: Unknown MCP server '{server}' "
+                f"(tool: {tool_name}). Verify this server is trusted.",
+                file=sys.stderr,
+            )
 
     # Skill-level MCP tool scoping (soft block — VeriGrey Tool Filter)
     skill_name = os.environ.get("CLAUDE_SKILL", "")
