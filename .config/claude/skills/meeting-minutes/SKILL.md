@@ -121,6 +121,34 @@ gh project item-edit --project-id {project_id} --id {item_id} \
 - 大量の変更（10件超）の場合は特に慎重に確認を促す
 - 実行前にドライランとして `gh` コマンドを表示する選択肢も提供
 
+## Proposal Mode
+
+議事録やミーティングメモから **プロダクト提案書** を生成するモード。
+`/meeting-minutes --proposal` または「提案書にして」「proposal にまとめて」で起動。
+
+通常モード（GitHub Issues 更新）とは異なり、コードベースと過去文書を照合して提案書を生成する。
+
+### Proposal フロー
+
+1. **コンテキスト収集** (並列):
+   - 議事録からアイデア・要件・制約を抽出
+   - `Glob("docs/specs/**", "docs/plans/**")` で過去の仕様書・戦略文書を一覧
+   - `Grep` でコードベースから関連モジュール・パターンを特定
+2. **照合・分析**:
+   - 過去文書との整合性（矛盾・重複・発展関係）を確認
+   - コードベースの現状から実現可能性を評価
+3. **提案書生成**:
+   - ゴール、ユーザーストーリー、技術アプローチ、マイルストーンを構造化
+   - 既存コードとの接続点を明示
+4. **出力**: `docs/specs/` にマークダウンとして保存（ユーザー承認後）
+
+### 通常モードとの使い分け
+
+| モード | トリガー | 出力 |
+|--------|---------|------|
+| 通常 | `/meeting-minutes {text}` | GitHub Issues 更新 |
+| Proposal | `/meeting-minutes --proposal {text}` | `docs/specs/` に提案書 |
+
 ## Skill Assets
 
 - `templates/minutes-template.md` — Meeting minutes template (agenda, discussion, decisions, action items, next meeting)
