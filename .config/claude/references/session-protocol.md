@@ -32,9 +32,20 @@
 | **memory** (MEMORY.md) | グローバル / プロジェクト | 永続 | セッション横断の学び・パターン |
 | **progress.log** | プロジェクト固有 | プロジェクト寿命 | 時系列の作業ファクト記録 |
 | **checkpoint** | セッション | 短期（5世代保持） | セッション再開用の runtime state |
-| **HANDOFF.md** | セッション間 | 次セッションまで | セッション引き継ぎの作業コンテキスト |
+| **HANDOFF.md** | セッション間 | 次セッションまで | セッション引き継ぎの作業コンテキスト + 失敗アプローチ記録 |
 | **feature_list.json** | プロジェクト固有 | プロジェクト寿命 | 機能単位の構造化進捗管理 |
 | **Plan** (docs/plans/) | プロジェクト固有 | タスク寿命 | Goal/Scope/Validation/Decision の記録 |
+
+## Dead-End Prevention (失敗アプローチ記録)
+
+> Ref: "Long-Running Claude" — "Without them, successive sessions will re-attempt the same dead ends."
+
+セッション跨ぎの長時間タスクでは、失敗したアプローチを構造的に記録する:
+
+1. **記録場所**: `HANDOFF.md` の「3.5. 失敗したアプローチ (Dead Ends)」セクション
+2. **記録タイミング**: アプローチを試して失敗した直後（記憶が新鮮なうちに）
+3. **必須項目**: アプローチ名、失敗理由、次セッションへの学び
+4. **セッション開始時**: `HANDOFF.md` の Dead Ends セクションを必ず確認し、同じアプローチを再試行しない
 
 ## Session Granularity Rules
 

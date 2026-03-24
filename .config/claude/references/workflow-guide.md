@@ -48,6 +48,30 @@ AI-DLC の Unit of Work 概念に基づく。
 - **依存の明示**: 依存関係がある場合は DAG として表現
 - **並列実行**: 依存関係がない Unit は `/autonomous` + worktree で並列実行
 
+### 反復 Build-QA パターン（長時間タスク向け）
+
+> 出典: Anthropic "Harness Design for Long-Running Apps" (2026-03) — DAW 構築で 3 ラウンドの Build→QA で残存バグが収束
+
+数時間規模の長時間タスクでは、Build → QA → Build → QA の反復ループで品質を収束させる。
+`/epd` の Build→Review に相当するが、自動化された反復を前提とする。
+
+```
+Build Round 1 → QA Round 1（残存バグ一覧）
+  → Build Round 2（バグ修正 + 未実装補完） → QA Round 2
+  → Build Round 3（仕上げ） → QA Round 3（最終確認）
+```
+
+#### 適用条件
+
+- タスク推定時間 > 2時間
+- `/autonomous` スキルまたは Agent SDK での長時間実行
+- QA は Playwright MCP 等で実際の UI を操作して検証
+
+#### QA ラウンドの注意
+
+- FM-018 (Evaluator Rationalization) に注意: QA が問題を見つけた後に rationalize して承認しないよう、adversarial framing を適用
+- 各ラウンドの QA 結果は構造化アーティファクト（ファイル）で次の Build に引き継ぐ
+
 ### Decision Log フォーマット
 
 Plan の Decision Log は「何を決めたか」だけでなく「なぜ」「何を捨てたか」を記録する:
@@ -394,6 +418,20 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - plan は goal、scope、validation、decision を残す作業記録
 - 長時間タスクでは両方を使う
 - checkpoint だけで plan を代用しない
+
+---
+
+## Effort Level 使い分け
+
+| effort | 用途 | コスト影響 |
+|--------|------|-----------|
+| **medium** | 単純な修正、定型タスク、read-only 調査 | thinking トークン節約 |
+| **high** | 通常の開発作業（デフォルト） | 標準 |
+| **max** | 高リスク判断、セキュリティレビュー、複雑なアーキテクチャ設計、デバッグの最終手段 | thinking トークン大量消費 |
+
+- グローバル設定は `"effortLevel": "high"`。スキル/エージェント単位で `effort` frontmatter でオーバーライド可能
+- "max" は Opus 4.6 専用。Sonnet では効果が限定的
+- 1日の "max" 使用は 3-5 回を目安に。コスト: thinking トークンが output 単価 ($25/M for Opus) で課金される
 
 ---
 

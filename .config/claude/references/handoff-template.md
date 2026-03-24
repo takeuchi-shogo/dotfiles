@@ -20,6 +20,15 @@
 - **試行した解決策**: [試みた解決策とその結果、各1行]
 - **エラー出力**: [関連するエラーメッセージやスタックトレース]
 
+### 3.5. 失敗したアプローチ (Dead Ends)
+> セッション跨ぎで同じ dead-end を再試行しないための記録。
+> Ref: "Long-Running Claude" — "Without them, successive sessions will re-attempt the same dead ends."
+
+- **アプローチ**: [試みた手法の1行要約]
+  - **結果**: [なぜ失敗したか、具体的な理由]
+  - **学び**: [この失敗から得た知見（次セッションが避けるべきこと）]
+- _(複数ある場合は繰り返す)_
+
 ### 4. 推奨アクション
 - **即座に必要なこと**: [次に取るべきアクション]
 - **判断が必要な点**: [人間の意思決定が必要な事項]
@@ -67,6 +76,11 @@
   - `docker-compose.staging.yml` の network 設定確認 → ローカルと同一
   - timeout 延長 → CI で再実行したが同じ箇所で FAIL
 - **エラー出力**: `oauth_test.go:142: context deadline exceeded: POST https://idp.staging.internal/token`
+
+### 3.5. 失敗したアプローチ (Dead Ends)
+- **アプローチ**: timeout 値を 5s → 15s に増加
+  - **結果**: CI で同じ箇所で FAIL。タイムアウトではなくネットワーク到達性の問題
+  - **学び**: timeout 調整では解決不可。IdP endpoint 自体の疎通を先に確認すべき
 
 ### 4. 推奨アクション
 - **即座に必要なこと**: staging 環境から `idp.staging.internal` への疎通確認（`curl` / `dig`）

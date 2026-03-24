@@ -33,10 +33,17 @@ COUNTER_DIR = os.path.join(tempfile.gettempdir(), "claude-completion-gate")
 COUNTER_FILE = os.path.join(COUNTER_DIR, "retries")
 
 # Ralph Loop — active plan detection
+# Ref: "Long-Running Claude" — Ralph Loop with success criteria + max iterations
 PLAN_DIRS = [
     os.path.join(os.getcwd(), "docs", "plans", "active"),
     os.path.join(os.getcwd(), "tmp", "plans"),
 ]
+
+# Ralph Loop — success criteria support
+# Set COMPLETION_PROMISE to a string the agent must output to signal true completion
+COMPLETION_PROMISE = os.environ.get("COMPLETION_PROMISE", "")
+# Max iterations before Ralph Loop allows stop (prevents infinite loops)
+MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "10"))
 
 # Review Gate — edit count threshold for review reminder
 REVIEW_EDIT_THRESHOLD = 10
@@ -197,8 +204,27 @@ def _has_active_status(lines: list[str]) -> bool:
     return False
 
 
-def _find_incomplete_plan() -> tuple[str, list[str]] | None:
-    """Find active plan with unchecked items that is relevant to the current session."""
+def _extract_success_criteria(lines: list[str]) -> str | None:
+    """Extract success_criteria from plan frontmatter."""
+    in_frontmatter = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "---":
+            if not in_frontmatter:
+                in_frontmatter = True
+                continue
+            else:
+                break
+        if in_frontmatter and stripped.startswith("success_criteria:"):
+            return stripped.split(":", 1)[1].strip()
+    return None
+
+
+def _find_incomplete_plan() -> tuple[str, list[str], str | None] | None:
+    """Find active plan with unchecked items that is relevant to the current session.
+
+    Returns (plan_name, pending_items, success_criteria) or None.
+    """
     import glob
 
     snapshot = _load_plan_snapshot()
@@ -224,7 +250,8 @@ def _find_incomplete_plan() -> tuple[str, list[str]] | None:
 
             pending = [ln.strip() for ln in lines if ln.strip().startswith("- [ ]")]
             if pending:
-                return (plan_name, pending)
+                criteria = _extract_success_criteria(lines)
+                return (plan_name, pending, criteria)
     return None
 
 
@@ -645,6 +672,37 @@ def _check_session_focus() -> str | None:
     return None
 
 
+def _check_knowledge_extraction() -> str | None:
+    """Suggest /analyze-tacit-knowledge when session had significant activity.
+
+    Inspired by 724-office compress_async pattern: auto-trigger knowledge
+    extraction when session crosses activity threshold.
+    Advisory only — does not block stop.
+    """
+    try:
+        with open(EDIT_COUNTER_FILE) as f:
+            counter = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+    edit_count = counter.get("count", 0)
+    if edit_count < 15:
+        return None
+
+    # Check if analyze-tacit-knowledge was already run this session
+    marker = os.path.join(
+        os.path.dirname(EDIT_COUNTER_FILE),
+        "tacit-knowledge-ran.marker",
+    )
+    if os.path.exists(marker):
+        return None
+
+    return (
+        f"[Knowledge Capture] このセッションで {edit_count} 回の編集がありました。"
+        "`/analyze-tacit-knowledge` でセッションの知見を抽出することを推奨します。"
+    )
+
+
 def _check_clean_state() -> str | None:
     """Check if workspace is in a clean state (advisory).
 
@@ -702,14 +760,37 @@ def main() -> None:
     # --- Ralph Loop: check for incomplete active plans ---
     incomplete = _find_incomplete_plan()
     if incomplete:
-        plan_name, pending = incomplete
+        plan_name, pending, success_criteria = incomplete
+
+        # Ralph Loop iteration limit — prevent infinite loops
+        ralph_iteration = retries + 1
+        if ralph_iteration > MAX_RALPH_ITERATIONS:
+            _reset_retries()
+            json.dump(
+                {
+                    "decision": "allow",
+                    "reason": (
+                        f"[Ralph Loop] max iterations "
+                        f"({MAX_RALPH_ITERATIONS}) 到達。停止を許可。"
+                    ),
+                },
+                sys.stdout,
+            )
+            return
+
         shown = pending[:5]
         remaining_count = len(pending) - len(shown)
 
         ctx_parts = [
-            f"[Ralph Loop] アクティブプラン '{plan_name}' に未完了ステップがあります:",
+            f"[Ralph Loop] アクティブプラン '{plan_name}' に未完了ステップがあります "
+            f"(iteration {ralph_iteration}/{MAX_RALPH_ITERATIONS}):",
             "",
         ]
+        # Show success criteria if defined in plan frontmatter or env
+        effective_criteria = success_criteria or COMPLETION_PROMISE
+        if effective_criteria:
+            ctx_parts.append(f"  成功基準: {effective_criteria}")
+            ctx_parts.append("")
         ctx_parts.extend(shown)
         if remaining_count > 0:
             ctx_parts.append(f"  ...他 {remaining_count} 件")
@@ -749,6 +830,9 @@ def main() -> None:
         focus_msg = _check_session_focus()
         if focus_msg:
             advisories_notests.append(focus_msg)
+        knowledge_msg = _check_knowledge_extraction()
+        if knowledge_msg:
+            advisories_notests.append(knowledge_msg)
         if advisories_notests:
             json.dump({"systemMessage": "\n".join(advisories_notests)}, sys.stdout)
         return
@@ -807,6 +891,9 @@ def main() -> None:
         focus_msg = _check_session_focus()
         if focus_msg:
             advisories.append(focus_msg)
+        knowledge_msg = _check_knowledge_extraction()
+        if knowledge_msg:
+            advisories.append(knowledge_msg)
         if advisories:
             json.dump({"systemMessage": "\n".join(advisories)}, sys.stdout)
         return

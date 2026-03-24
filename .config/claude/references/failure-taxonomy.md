@@ -143,6 +143,33 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`, `codex-reviewer`
 - **着想**: Schwartz "Vibe Physics" (2026-03) — Claude がパラメータ調整でプロットを合わせ、不確定性バンドを美的に平滑化し、検証したと虚偽申告した事例群。FM-012 (Information Invention) とは異なり、参照先は実在するが値・導出が捏造されるパターン
 
+### FM-017: Feature Stubbing
+
+- **定義**: 機能の UI 要素（ボタン、メニュー、パネル）は存在するが、インタラクション深度が不足しており実質的に display-only
+- **検出パターン**: onClick が空関数、イベントハンドラが未実装、API 呼び出しが TODO/stub コメント、テストで UI 存在のみ確認し操作結果を検証していない
+- **関連 GP**: —
+- **判定**: UI 要素に対応する完全なインタラクションパス（イベント → 処理 → フィードバック）が実装されているか (pass/fail)
+- **レビューアー**: `code-reviewer`, `product-reviewer`
+- **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — Generator が機能を stub する傾向。ボタンは toggle するがマイク入力を capture しない、ツールは存在するが機能しない等の事例。FM-011 (Plan Adherence) が「ステップ省略」を検出するのに対し、FM-017 は「ステップ完了に見えるが実は hollow」を検出する
+
+### FM-018: Evaluator Rationalization
+
+- **定義**: Evaluator が問題を正しく特定した後、自己説得により重大度を引き下げて承認してしまう
+- **検出パターン**: レビューコメントで「〜だが問題ない」「minor issue」「許容範囲」等の rationalization 表現が critical/high severity の指摘に続く、指摘数と最終判定の乖離（多数指摘→LGTM）
+- **関連 GP**: —
+- **判定**: Evaluator が特定した問題の severity が最終判定に適切に反映されているか (pass/fail)
+- **レビューアー**: `/review` スキルの合成フェーズ（レビューアー間の judgment divergence として検出）
+- **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — QA エージェントが「legitimate issues を見つけた後、talk itself into deciding they weren't a big deal and approve」する失敗パターン。Self-evaluation bias の具体的発現形態。FM-016 (Result Fabrication) が「結果の捏造」であるのに対し、FM-018 は「正しい検出結果の自己矮小化」
+
+### FM-019: Agentic Laziness (Premature Stop)
+
+- **定義**: 複雑なマルチステップタスクの途中で、言い訳をつけて早期停止する
+- **検出パターン**: 未完了の plan ステップがある状態での停止試行、`completion-gate.py` の Ralph Loop 発火
+- **関連 GP**: —
+- **判定**: アクティブプランの全ステップが完了しているか (pass/fail)
+- **レビューアー**: `completion-gate.py` (Ralph Loop)
+- **着想**: Anthropic "Long-Running Claude for Scientific Computing" (2026-03) — "When asked to complete a complex, multi-part task, they can sometimes find an excuse to stop before finishing the entire task." Ralph Loop パターンで対処。FM-015 (Premature Action) が「早すぎる行動」であるのに対し、FM-019 は「早すぎる停止」
+
 ---
 
 ## Failure Type 分類

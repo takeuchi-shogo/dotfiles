@@ -62,6 +62,29 @@ When invoked:
 - 成功フィードバックがあるか
 - 部分的な読み込み/スケルトン UI を考慮しているか
 
+### Subjective Quality（主観的品質 — フロントエンドデザイン向け）
+
+> 出典: Anthropic "Harness Design for Long-Running Apps" (2026-03) — 4次元評価基準
+
+UI の全体的なデザイン品質を以下の4次元で評価する。コードレビューの Logic/Security/Performance/Style とは独立した、デザイン固有の評価軸。
+
+- **Design Quality**: デザインが「部品の寄せ集め」ではなく「一貫した全体」として機能しているか。色・タイポグラフィ・レイアウトが統一された雰囲気を持つか
+- **Originality**: テンプレートデフォルトや AI 生成の定番パターンではなく、独自のデザイン判断があるか
+- **Craft**: タイポグラフィ階層、スペーシング、色の調和、コントラスト比の技術的精度
+- **Functionality**: ユーザーがインターフェースの目的を理解し、アクションを見つけ、推測なしにタスクを完了できるか
+
+**重み**: Design Quality と Originality を Craft と Functionality より重視する。
+
+#### AI Slop 検出パターン
+
+以下のパターンを検出した場合、Originality を減点する:
+
+- 紫〜青グラデーション over 白カードの定番レイアウト
+- 過度に均一なカード間隔・完璧すぎるグリッド配置
+- Hero セクションの汎用的な大文字見出し + 意味のないサブテキスト
+- グラデーション境界線・光沢効果の過多
+- 「Get Started」「Learn More」等の汎用 CTA の羅列
+
 ## Output Format
 
 各指摘を優先度別に分類して表示:
