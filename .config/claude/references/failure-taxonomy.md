@@ -170,6 +170,15 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `completion-gate.py` (Ralph Loop)
 - **着想**: Anthropic "Long-Running Claude for Scientific Computing" (2026-03) — "When asked to complete a complex, multi-part task, they can sometimes find an excuse to stop before finishing the entire task." Ralph Loop パターンで対処。FM-015 (Premature Action) が「早すぎる行動」であるのに対し、FM-019 は「早すぎる停止」
 
+### FM-020: Probabilistic Cascade
+
+- **定義**: 各ステップの成功確率 p が連鎖すると全体成功確率が p^n で減衰する現象。例: 各ステップ 95% 成功 → 5ステップで 77%、10ステップで 60%
+- **検出パターン**: タスクの分割粒度が大きい（1ステップ10分超）、連続する依存ステップが5以上、または中間検証ゲートなしの長いパイプライン
+- **関連 GP**: —
+- **判定**: 各ステップが5分以内に完了し、ステップ間にテスト/検証ゲートがあるか (pass/fail)
+- **レビューアー**: `completion-gate.py`, plan review
+- **着想**: 逆瀬川 "Coding Agent Workflow 2026" — 確率的カスケード定量モデル。対策: タスク分割粒度を「1ステップ5分以内」に保ち、失敗時は即座に再プランして残りステップに波及させない
+
 ---
 
 ## Failure Type 分類

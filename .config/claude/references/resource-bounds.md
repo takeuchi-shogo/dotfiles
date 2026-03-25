@@ -72,3 +72,23 @@
 | SyntaxError | `SyntaxError`, `parse error` | エラー行 Read → 修正 |
 | RateLimit | `rate limit`, `429` | 別タスク切り替え |
 | Timeout | `timeout`, `ETIMEDOUT` | コマンド分割 / background |
+
+## 1M コンテキスト利用時の調整
+
+2026年3月時点で Claude Opus 4.6 / Sonnet 4.6 が 1M トークンコンテキストに対応。Opus 4.6 は MRCR v2 で 78.3%（長文検索タスクでフロンティアモデル最高スコア）を達成しており、長文コンテキストでの性能劣化が大幅に緩和されている。
+
+**200K → 1M での閾値調整ガイドライン:**
+
+| レベル | 200K 基準 | 1M 利用時の目安 | 備考 |
+|--------|----------|---------------|------|
+| Normal | 〜60% | 〜40% | 通常運用。閾値は比例ではなく保守的に設定 |
+| Warning | 60-80% | 40-60% | Subagent 委譲を検討。compact 準備 |
+| Critical | 80-90% | 60-75% | 新規ファイル読み込み抑制。compact 推奨 |
+| Emergency | 90%+ | 75%+ | 即座に compact or セッション区切り |
+
+**注意:**
+- 1M でも Context Rot は発生する。閾値の緩和は「余裕が増える」であって「品質劣化がなくなる」ではない
+- セッションを短く保つ原則は 1M でも変わらない（1セッション1タスク）
+- 不要な場合は `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` で 200K に制限可能
+
+出典: 逆瀬川 "Coding Agent Workflow 2026", Chroma Research "Context Rot", Morph "What Is Context Rot?"
