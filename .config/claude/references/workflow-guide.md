@@ -48,6 +48,10 @@ AI-DLC の Unit of Work 概念に基づく。
 - **依存の明示**: 依存関係がある場合は DAG として表現
 - **並列実行**: 依存関係がない Unit は `/autonomous` + worktree で並列実行
 
+> **スパン圧縮の理論** (Tu 2026): 線形チェーン (S=Theta(W)) を DAG 化すると S=Theta(log_k W) に圧縮され、
+> 誤り複合が指数的に削減される (e^(-eta*W) -> e^(-eta*D))。Unit 分解は「並列化」だけでなく「信頼性スケーリング」の手段。
+> 詳細: `references/structured-test-time-scaling.md` §1
+
 ### 反復 Build-QA パターン（長時間タスク向け）
 
 > 出典: Anthropic "Harness Design for Long-Running Apps" (2026-03) — DAW 構築で 3 ラウンドの Build→QA で残存バグが収束
@@ -430,6 +434,7 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - 間違っていた記録は速やかに更新・削除する
 - `/memory-status` でメモリの健全性を確認できる
 - **Snapshot 制限**: MEMORY.md はセッション開始時に読み込まれる静的スナップショット。セッション中に memory を更新しても、その変更は次のセッションまで system prompt に反映されない。checkpoint/handoff 時は、後続セッションが必要とする情報を plan や checkpoint ファイルにも書くこと
+- **Retrieval Budget**: メモリ/参照の検索は取得数 3 件前後が最適。取得数が閾値を超えると注意が分散し性能が低下する（非単調パターン）。根拠: MemCollab (arXiv:2603.23234) — p=3 で全ベンチマーク最高性能、p>5 で一貫して低下。セッション中に大量の memory/reference を読み込む場合は、タスクカテゴリに最も関連する 3 件に絞ること
 
 ### Plan と checkpoint の関係
 
@@ -571,3 +576,37 @@ Spec → Spike → Validate → Decide → Build(/rpi) → Review(3軸) → Comm
 | 素早いプロトタイプだけ   | `/spike`             |
 | 仕様書だけ作りたい       | `/spec`              |
 | 実装後の仕様適合チェック | `/validate`          |
+
+---
+
+## Correctness Oracle（機能正確性の統合判定）
+
+> Qoder: E2E/QA/Review が個別に存在するだけでは不十分。統合 oracle が必要。
+
+### 3層検証モデル
+
+| 層 | 検証内容 | ツール | 判定 |
+|---|---|---|---|
+| **Static** | lint + type check | 言語固有ツール（`tsc`, `go vet` 等） | PASS/FAIL |
+| **Dynamic** | unit test + E2E | `/autocover`, `webapp-testing` | PASS/FAIL |
+| **Semantic** | code review + product validation | `/review`, `/validate` | PASS/NEEDS_FIX/BLOCK |
+
+### 統合判定基準
+
+| Static | Dynamic | Semantic | Overall |
+|---|---|---|---|
+| PASS | PASS | PASS | PASS — タスク完了 |
+| FAIL | any | any | FAIL — Static 修正が最優先 |
+| PASS | FAIL | any | FAIL — テスト修正 |
+| PASS | PASS | NEEDS_FIX | NEEDS_FIX — レビュー指摘対応 |
+| PASS | PASS | BLOCK | BLOCK — 設計変更が必要 |
+
+### 既存スキルとのマッピング
+
+新規スクリプトは不要。既存スキルの組み合わせで統合判定を実現する:
+
+- **Static**: `completion-gate.py` が lint/type check を自動実行
+- **Dynamic**: `/autocover` がカバレッジ分析 + テスト生成、`webapp-testing` が E2E
+- **Semantic**: `/review` が並列レビュー、`/validate` が仕様整合性
+
+ワークフローの Verify 段階で、3層すべてが PASS であることを確認してからタスク完了とする。

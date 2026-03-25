@@ -2,6 +2,7 @@
 
 LLM エージェントの失敗モードを体系的に定義する。
 各失敗モードは binary (pass/fail) で判定可能な単一の基準を持つ。
+各失敗モードは「定義」（avoid: やってはいけないこと）と「不変条件」（enforce: 守るべき推論原則）の対で構成される（MemCollab 対比蒸留パラダイム）。
 
 hooks (`session_events.py`) と review agents が共通で参照する。
 
@@ -15,6 +16,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `TypeError: Cannot read properties`, `nil pointer dereference`, `panic:.*nil`
 - **関連 GP**: —
 - **判定**: nullable フィールドへのアクセス前にガードがあるか (pass/fail)
+- **不変条件**: nullable 値へのアクセスは必ずガードの後に行う
 - **レビューアー**: `code-reviewer`, `nil-path-reviewer`
 
 ### FM-002: Error Suppression
@@ -23,6 +25,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `catch\s*\(.*\)\s*\{\s*\}`, `except.*:\s*pass`
 - **関連 GP**: GP-004
 - **判定**: catch/except 内でエラーが記録または再 throw されるか (pass/fail)
+- **不変条件**: catch/except 内では必ずエラーを記録または再送出する
 - **レビューアー**: `silent-failure-hunter`
 
 ### FM-003: Dependency Drift
@@ -31,6 +34,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `package.json`, `go.mod`, `Cargo.toml`, `requirements.txt` への追加行
 - **関連 GP**: GP-003
 - **判定**: 追加された依存に既存代替があるか (pass/fail)
+- **不変条件**: 新依存追加前に既存の代替を検索する
 - **レビューアー**: `code-reviewer`
 
 ### FM-004: Type Safety Violation
@@ -39,6 +43,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `: any`, `as any`, `interface{}`
 - **関連 GP**: GP-005
 - **判定**: 具体的な型で代替可能か (pass/fail)
+- **不変条件**: 具体的な型で表現可能な場合は any/interface{} を使わない
 - **レビューアー**: `type-design-analyzer`
 
 ### FM-005: Boundary Validation Miss
@@ -47,6 +52,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `req.body`, `req.query`, `sys.argv`, `os.Args` のバリデーションなし使用
 - **関連 GP**: GP-002
 - **判定**: 入力に対するバリデーション/サニタイズがあるか (pass/fail)
+- **不変条件**: 外部入力は使用前に必ずバリデーション/サニタイズする
 - **レビューアー**: `security-reviewer`
 
 ### FM-006: Permission/Access Error
@@ -55,6 +61,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `EACCES`, `Permission denied`
 - **関連 GP**: —
 - **判定**: 権限チェックまたはエラーハンドリングがあるか (pass/fail)
+- **不変条件**: ファイル/ネットワーク操作は権限チェックまたはエラーハンドリングで保護する
 - **レビューアー**: `code-reviewer`
 
 ### FM-007: Module Resolution Failure
@@ -63,6 +70,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `Cannot find module`, `ModuleNotFoundError`, `no required module`
 - **関連 GP**: —
 - **判定**: インポートパスが正しく、依存が宣言されているか (pass/fail)
+- **不変条件**: インポートパスと依存宣言の一致を確認してからコミットする
 - **レビューアー**: `code-reviewer`
 
 ### FM-008: Build/Compilation Failure
@@ -71,6 +79,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `build failed`, `compilation failed`, `error\[E\d+\]`, `SyntaxError`
 - **関連 GP**: —
 - **判定**: コードが正しくコンパイルされるか (pass/fail)
+- **不変条件**: コード変更後は必ずビルド/コンパイルを実行して通過を確認する
 - **レビューアー**: `build-fixer`
 
 ### FM-009: Resource Exhaustion
@@ -79,6 +88,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `OOM`, `out of memory`, `timeout`, `ETIMEDOUT`, `SIGSEGV`
 - **関連 GP**: —
 - **判定**: リソース制限の考慮があるか (pass/fail)
+- **不変条件**: リソース消費がスパンに比例する操作にはタイムアウトとメモリ制限を設定する
 - **レビューアー**: `code-reviewer`
 
 ### FM-010: Security Vulnerability
@@ -87,6 +97,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `injection`, `vulnerability`, `XSS`, `CSRF`
 - **関連 GP**: —
 - **判定**: OWASP Top 10 に該当するパターンがないか (pass/fail)
+- **不変条件**: 外部入力を含む処理は OWASP Top 10 のチェックリストで検証する
 - **レビューアー**: `security-reviewer`
 
 ### FM-011: Plan Adherence Failure
@@ -95,6 +106,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `completion-gate.py` の Ralph Loop で未完了ステップ検出、計画からの逸脱
 - **関連 GP**: —
 - **判定**: アクティブプランの全ステップが完了しているか (pass/fail)
+- **不変条件**: アクティブプランの全ステップを完了するまで作業を終了しない
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Plan Adherence Failure
 
@@ -104,6 +116,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `No such file or directory`, `ENOENT`, `404 Not Found`, Read/Glob で対象が見つからない連続パターン
 - **関連 GP**: —
 - **判定**: 参照した情報が実在するか (pass/fail)
+- **不変条件**: 参照するファイル・API・事実は実在を確認してから使用する
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Invention of New Information
 
@@ -113,6 +126,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: 同一コマンドの短時間再実行、エラー直後の同一ファイル再編集
 - **関連 GP**: —
 - **判定**: ツール出力に基づく判断が正しいか (pass/fail)
+- **不変条件**: ツール出力は生テキストを直接読み、推測で解釈しない
 - **レビューアー**: `debugger`
 - **着想**: AgentRx — Misinterpretation of Tool Output
 
@@ -122,6 +136,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: ユーザーからの修正指示（「違う」「そうじゃなく」「〜ではなく」）、ユーザー否認パターン
 - **関連 GP**: —
 - **判定**: 実行した作業がユーザーの要求と一致するか (pass/fail)
+- **不変条件**: 曖昧な指示は実装前に確認し、ユーザーの意図を明示的に言語化する
 - **レビューアー**: `product-reviewer`
 - **着想**: AgentRx — Intent–Plan Misalignment
 
@@ -131,6 +146,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `git push`, `rm -rf`, `DROP TABLE` 等の危険操作を事前確認なしに実行
 - **関連 GP**: —
 - **判定**: 危険操作の前にユーザー確認を取得したか (pass/fail)
+- **不変条件**: 不可逆な操作の前にユーザー確認を取得する
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx の障害分類を拡張した独自カテゴリ
 
