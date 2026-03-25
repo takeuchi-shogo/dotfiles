@@ -36,15 +36,70 @@ DANGEROUS_MCP_PREFIXES = [
     ("^mcp__.*__truncate$", "Destructive truncate operation"),
 ]
 
-# Known MCP servers (unknown servers trigger a warning, not a block)
-KNOWN_MCP_SERVERS = {
+# Server name normalization (display name -> tool_name prefix)
+_SERVER_NAME_MAP = {
+    "discord": "plugin_discord_discord",
+}
+
+# Native servers (built into Claude Code, not in .mcp.json)
+_NATIVE_SERVERS = {
     "obsidian",
-    "playwright",
     "brave-search",
-    "context7",
-    "alphaxiv",
     "plugin_discord_discord",
 }
+
+_known_servers_cache: set[str] | None = None
+
+
+def _load_known_servers() -> set[str]:
+    """Build known server set from config files + native fallback."""
+    known = set(_NATIVE_SERVERS)
+
+    # 1. Load from .mcp.json (cwd then home)
+    for candidate in [
+        Path.cwd() / ".mcp.json",
+        Path.home() / ".mcp.json",
+    ]:
+        try:
+            if candidate.exists():
+                mcp_cfg = json.loads(candidate.read_text())
+                for name in mcp_cfg.get("mcpServers", {}):
+                    known.add(name)
+                    if name in _SERVER_NAME_MAP:
+                        known.add(_SERVER_NAME_MAP[name])
+        except (json.JSONDecodeError, OSError) as exc:
+            print(
+                f"[MCP Audit] .mcp.json read error: {exc}",
+                file=sys.stderr,
+            )
+
+    # 2. Load from settings.json enabledMcpjsonServers
+    settings_path = Path.home() / ".claude" / "settings.json"
+    try:
+        if settings_path.exists():
+            settings = json.loads(settings_path.read_text())
+            for name in settings.get(
+                "enabledMcpjsonServers",
+                [],
+            ):
+                known.add(name)
+                if name in _SERVER_NAME_MAP:
+                    known.add(_SERVER_NAME_MAP[name])
+    except (json.JSONDecodeError, OSError) as exc:
+        print(
+            f"[MCP Audit] settings.json read error: {exc}",
+            file=sys.stderr,
+        )
+
+    return known
+
+
+def _get_known_servers() -> set[str]:
+    """Cached known server set (one load per process)."""
+    global _known_servers_cache  # noqa: PLW0603
+    if _known_servers_cache is None:
+        _known_servers_cache = _load_known_servers()
+    return _known_servers_cache
 
 
 def _check_skill_mcp_scope(tool_name: str, skill_name: str) -> bool:
@@ -190,7 +245,7 @@ def _audit(data: dict) -> None:
     parts = tool_name.split("__")
     if len(parts) >= 2:
         server = parts[1]
-        if server not in KNOWN_MCP_SERVERS:
+        if server not in _get_known_servers():
             print(
                 f"[MCP Audit] WARNING: Unknown MCP server '{server}' "
                 f"(tool: {tool_name}). Verify this server is trusted.",

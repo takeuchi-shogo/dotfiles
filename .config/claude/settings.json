@@ -258,6 +258,17 @@
 				]
 			},
 			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/tdd-guard.py",
+						"timeout": 5,
+						"statusMessage": "TDD check..."
+					}
+				]
+			},
+			{
 				"matcher": "Bash|Edit|Write",
 				"hooks": [
 					{
@@ -362,6 +373,17 @@
 						"type": "command",
 						"command": "python3 $HOME/.claude/scripts/learner/edit-failure-tracker.py",
 						"timeout": 5
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/lifecycle/doc-garden-check.py",
+						"timeout": 5,
+						"statusMessage": "Doc garden check..."
 					}
 				]
 			},

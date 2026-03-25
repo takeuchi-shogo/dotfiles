@@ -24,6 +24,9 @@ pre-commit:
       glob: "*.go"
       run: gofmt -w {staged_files}
       stage_fixed: true
+    check-claudemd-lines:
+      glob: "*.md"
+      run: bash .config/claude/scripts/policy/check-claudemd-lines.sh
 
 commit-msg:
   commands:

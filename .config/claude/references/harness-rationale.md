@@ -22,6 +22,9 @@ Ref: Harness Engineering Best Practices 2026 (逆瀬川)
 
 ## Factory.ai カスタムリンター 4 分類
 
+> **DEPRECATED**: 本セクションは [`lint-category-map.md`](lint-category-map.md) の7カテゴリフレームワークに移行しました。
+> 新規ルール設計時は `lint-category-map.md` を参照してください。
+
 カスタム lint ルールを設計する際の分類フレームワーク:
 
 ### 1. Grep-ability（検索可能性）

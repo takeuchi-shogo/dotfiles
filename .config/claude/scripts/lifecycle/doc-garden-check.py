@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-"""Doc Garden check — detects stale documentation at session start.
+"""Doc Garden check — detects stale documentation.
 
-Triggered by: hooks.SessionStart
-Input: (none — SessionStart hooks receive no stdin)
-Output: stdout message as additionalContext
+Two modes:
+  1. SessionStart (no stdin): full scan — git diff, timestamp, references
+  2. PostToolUse (stdin JSON): single-file reference check on edited doc
 
-Three staleness checks:
+Three staleness checks (SessionStart mode):
   A) git diff: code changed but docs not updated
   B) timestamp: docs not updated in 30+ days
   C) content: docs reference non-existent file paths
 """
+
+from __future__ import annotations
+
+import json
 import os
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import List, Tuple
@@ -36,27 +40,29 @@ CODE_DIRS = [
 ]
 
 STALE_DAYS = 30
-FILE_REF_PATTERN = re.compile(
-    r'[`"\']([a-zA-Z0-9_./-]+\.(py|js|ts|md|json|sh))[`"\']'
-)
+FILE_REF_PATTERN = re.compile(r'[`"\']([a-zA-Z0-9_./-]+\.(py|js|ts|md|json|sh))[`"\']')
 
 # 参照チェックから除外するファイル名（検出対象として言及されるもの）
 EXCLUDE_REFS = {
-    "package.json", "go.mod", "Cargo.toml", "requirements.txt",
-    "pyproject.toml", "server.py",
+    "package.json",
+    "go.mod",
+    "Cargo.toml",
+    "requirements.txt",
+    "pyproject.toml",
+    "server.py",
 }
 
 # 比喩・概念的言及を示すパターン（この前後にファイル名があれば除外）
-METAPHOR_PATTERN = re.compile(
-    r'に相当する|のような|に倣い|を参考に|の概念'
-)
+METAPHOR_PATTERN = re.compile(r"に相当する|のような|に倣い|を参考に|の概念")
 
 
 def get_repo_root() -> str | None:
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else None
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -69,7 +75,10 @@ def check_git_diff(repo_root: str) -> List[str]:
     try:
         result = subprocess.run(
             ["git", "log", "--name-only", "--pretty=format:", "-n", "10"],
-            capture_output=True, text=True, cwd=repo_root, timeout=10,
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+            timeout=10,
         )
         if result.returncode != 0:
             return []
@@ -77,12 +86,8 @@ def check_git_diff(repo_root: str) -> List[str]:
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return []
 
-    code_changed = any(
-        any(f.startswith(cd) for cd in CODE_DIRS) for f in changed_files
-    )
-    doc_changed = any(
-        any(f.startswith(dd) for dd in DOC_DIRS) for f in changed_files
-    )
+    code_changed = any(any(f.startswith(cd) for cd in CODE_DIRS) for f in changed_files)
+    doc_changed = any(any(f.startswith(dd) for dd in DOC_DIRS) for f in changed_files)
 
     if code_changed and not doc_changed:
         warnings.append("直近10コミットでコード変更あり、ドキュメント更新なし")
@@ -115,9 +120,14 @@ def check_timestamps(repo_root: str) -> List[str]:
 
 
 def _strip_code_blocks(text: str) -> str:
-    """Remove fenced code blocks and pattern-definition lines to avoid false positives."""
-    text = re.sub(r'```[\s\S]*?```', '', text)
-    text = re.sub(r'^-\s+\*\*(?:検出パターン|ファイル|キーワード)\*\*:.*$', '', text, flags=re.MULTILINE)
+    """Remove fenced code blocks and pattern-definition lines."""
+    text = re.sub(r"```[\s\S]*?```", "", text)
+    text = re.sub(
+        r"^-\s+\*\*(?:検出パターン|ファイル|キーワード)\*\*:.*$",
+        "",
+        text,
+        flags=re.MULTILINE,
+    )
     return text
 
 
@@ -172,7 +182,9 @@ def check_references(repo_root: str) -> List[str]:
                     ref_line_idx = content.find(ref_path)
                     if ref_line_idx >= 0:
                         context_start = max(0, ref_line_idx - 50)
-                        context_end = min(len(content), ref_line_idx + len(ref_path) + 50)
+                        context_end = min(
+                            len(content), ref_line_idx + len(ref_path) + 50
+                        )
                         context_text = content[context_start:context_end]
                         if METAPHOR_PATTERN.search(context_text):
                             continue
@@ -182,7 +194,108 @@ def check_references(repo_root: str) -> List[str]:
     return warnings
 
 
+# --- PostToolUse mode: single-file reference check ---
+
+# Dirs whose edits trigger a reference check in PostToolUse mode
+_POST_TOOL_TARGETS = (
+    "CLAUDE.md",
+    "AGENTS.md",
+    "references/",
+)
+
+# Files known to produce false positives (inline mentions, not refs)
+_SKIP_FILES = {
+    "cross-model-insights.md",
+    "tool-scoping-guide.md",
+}
+
+
+def check_single_file_refs(
+    repo_root: str,
+    file_path: str,
+) -> List[str]:
+    """PostToolUse mode: check path references in one edited file."""
+    rel = os.path.relpath(file_path, repo_root)
+
+    if not any(t in rel for t in _POST_TOOL_TARGETS):
+        return []
+    if os.path.basename(rel) in _SKIP_FILES:
+        return []
+    if not os.path.isfile(file_path):
+        return []
+
+    try:
+        content = Path(file_path).read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+    except OSError:
+        return []
+
+    cleaned = _strip_code_blocks(content)
+    refs = FILE_REF_PATTERN.findall(cleaned)
+    warnings: List[str] = []
+
+    for ref_path, _ in refs:
+        if ref_path.startswith(("http", "//", "#")):
+            continue
+        basename = os.path.basename(ref_path)
+        if basename in EXCLUDE_REFS:
+            continue
+        candidates = [
+            os.path.join(repo_root, ref_path),
+            os.path.join(repo_root, ".config/claude", ref_path),
+            os.path.join(os.path.dirname(file_path), ref_path),
+        ]
+        if any(os.path.exists(c) for c in candidates):
+            continue
+        if _find_in_skills(repo_root, basename):
+            continue
+        ref_idx = content.find(ref_path)
+        if ref_idx >= 0:
+            ctx_start = max(0, ref_idx - 50)
+            ctx_end = min(len(content), ref_idx + len(ref_path) + 50)
+            if METAPHOR_PATTERN.search(content[ctx_start:ctx_end]):
+                continue
+        warnings.append(f"`{ref_path}` が存在しない")
+
+    return warnings
+
+
+def _run_post_tool_use() -> None:
+    """PostToolUse entry: read hook JSON from stdin."""
+    try:
+        data = json.load(sys.stdin)
+    except (json.JSONDecodeError, ValueError):
+        return
+
+    file_path = (
+        data.get("tool_input", {}).get("file_path")
+        or data.get("tool_input", {}).get("path")
+        or ""
+    )
+    if not file_path:
+        return
+
+    repo_root = get_repo_root()
+    if not repo_root:
+        return
+
+    warns = check_single_file_refs(repo_root, file_path)
+    if warns:
+        lines = [
+            f"[doc-garden] {os.path.basename(file_path)} のパス参照に問題:",
+        ]
+        for w in warns[:5]:
+            lines.append(f"  - {w}")
+        print("\n".join(lines))
+
+
+# --- Entry points ---
+
+
 def main() -> None:
+    """SessionStart mode: full scan."""
     repo_root = get_repo_root()
     if not repo_root:
         return
@@ -210,14 +323,18 @@ def main() -> None:
         for w in warns[:5]:
             lines.append(f"    - {w}")
 
-    lines.append("doc-gardener エージェントで詳細分析・自動修正できます。")
+    lines.append(
+        "doc-gardener エージェントで詳細分析・自動修正できます。",
+    )
 
     print("\n".join(lines))
 
 
 if __name__ == "__main__":
     try:
-        main()
+        if sys.stdin.isatty():
+            main()  # SessionStart mode (no stdin)
+        else:
+            _run_post_tool_use()  # PostToolUse mode
     except Exception as e:
-        import sys
         print(f"[doc-garden-check] error: {e}", file=sys.stderr)
