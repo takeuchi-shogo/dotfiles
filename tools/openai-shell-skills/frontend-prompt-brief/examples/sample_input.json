@@ -1,0 +1,27 @@
+{
+  "surface_type": "landing page",
+  "product": "Northstar Analytics",
+  "brand": "Northstar",
+  "audience": "operations leads at mid-size ecommerce teams",
+  "goal": "convince visitors to book a product demo",
+  "primary_cta": "Book a demo",
+  "style": "editorial, premium, calm",
+  "palette": "warm neutrals with a deep ink accent",
+  "mood": "confident and trustworthy",
+  "implementation_target": "Responses API",
+  "sections": [
+    "Hero with one dominant product story",
+    "Operational pain points and outcomes",
+    "Key workflow walkthrough",
+    "Final CTA"
+  ],
+  "constraints": [
+    "No hero cards",
+    "Keep the first viewport readable as one composition",
+    "Mobile layout must preserve CTA clarity"
+  ],
+  "references": [
+    "Internal product screenshots if available",
+    "Customer proof points and implementation timeline"
+  ]
+}
