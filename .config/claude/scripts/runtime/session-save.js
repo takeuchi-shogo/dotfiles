@@ -5,7 +5,9 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const STATE_DIR = path.join(process.env.HOME, ".claude", "session-state");
+const STATE_DIR =
+	process.env.CLAUDE_SESSION_STATE_DIR ||
+	path.join(process.env.HOME, ".claude", "session-state");
 const STATE_FILE = path.join(STATE_DIR, "last-session.json");
 
 function run(cmd) {

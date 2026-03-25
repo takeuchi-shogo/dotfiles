@@ -27,6 +27,7 @@ from hook_utils import (
     output_passthrough,
     run_hook,
 )
+from storage import get_data_dir
 
 emit = get_emitter()
 
@@ -37,7 +38,7 @@ SAME_ERROR_TYPE_THRESHOLD = 3
 SAME_FILE_EDIT_THRESHOLD = 5
 COOLDOWN_STEPS = 3
 SESSION_MAX_AGE_SECONDS = 7200  # 2h
-STATE_FILE = Path.home() / ".claude" / "agent-memory" / "stagnation-state.json"
+STATE_FILE = get_data_dir() / "stagnation-state.json"
 
 ERROR_PATTERNS = [
     re.compile(r"Traceback \(most recent call last\)"),

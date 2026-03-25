@@ -80,10 +80,12 @@ function findRecentOffloads() {
 
 // ── 4. Compaction counter ────────────────────────────────────────
 
+const SESSION_STATE_DIR =
+	process.env.CLAUDE_SESSION_STATE_DIR ||
+	path.join(process.env.HOME, ".claude", "session-state");
+
 const COMPACTION_COUNTER_FILE = path.join(
-	process.env.HOME,
-	".claude",
-	"session-state",
+	SESSION_STATE_DIR,
 	"compaction-counter.json",
 );
 
@@ -212,7 +214,7 @@ try {
 
 // ── 7. Set HANDOFF request flag ─────────────────────────────────
 try {
-	const stateDir = path.join(process.env.HOME, ".claude", "session-state");
+	const stateDir = SESSION_STATE_DIR;
 	if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
 	fs.writeFileSync(
 		path.join(stateDir, "handoff-requested.json"),

@@ -2,7 +2,7 @@
 source: https://nyosegawa.com/posts/coding-agent-workflow-2026/
 analysis: docs/research/2026-03-25-coding-agent-workflow-2026-analysis.md
 codex-review: Codex risk review 2026-03-25. Critical→0, High→2, Medium→7
-status: phase2-complete
+status: task3.1-complete
 created: 2026-03-25
 revised: 2026-03-25
 ---
