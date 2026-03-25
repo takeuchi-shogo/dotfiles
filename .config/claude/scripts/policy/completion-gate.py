@@ -672,6 +672,61 @@ def _check_session_focus() -> str | None:
     return None
 
 
+_FRONTEND_EXTENSIONS = {".tsx", ".jsx", ".vue", ".svelte", ".css", ".scss", ".less"}
+
+# UI verification marker — set by webapp-testing / Playwright hooks
+_UI_VERIFIED_MARKER = os.path.join(
+    os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+    ),
+    "ui-verified.marker",
+)
+
+
+def _check_ui_verification() -> str | None:
+    """Check if frontend changes were verified via browser (advisory).
+
+    Detects frontend file changes and checks if agent-browser or Playwright
+    was used during the session. If not, suggests UI self-verification.
+    Ref: Neil Kakkar — "a change isn't done until the agent has verified the UI"
+    """
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=os.getcwd(),
+        )
+        if result.returncode != 0:
+            return None
+        changed = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+    except Exception:
+        return None
+
+    if not changed:
+        return None
+
+    frontend_changes = [
+        f for f in changed if os.path.splitext(f)[1] in _FRONTEND_EXTENSIONS
+    ]
+
+    if not frontend_changes:
+        return None
+
+    # Check if UI was verified this session
+    if os.path.exists(_UI_VERIFIED_MARKER):
+        return None
+
+    files_str = ", ".join(f"`{f}`" for f in frontend_changes[:3])
+    extra = f" 他{len(frontend_changes) - 3}件" if len(frontend_changes) > 3 else ""
+    return (
+        f"[UI Verification] フロントエンド変更を検出: {files_str}{extra}。"
+        "`/webapp-testing` または Playwright MCP でUI検証を推奨します。"
+    )
+
+
 def _check_knowledge_extraction() -> str | None:
     """Suggest /analyze-tacit-knowledge when session had significant activity.
 
@@ -833,6 +888,9 @@ def main() -> None:
         knowledge_msg = _check_knowledge_extraction()
         if knowledge_msg:
             advisories_notests.append(knowledge_msg)
+        ui_msg = _check_ui_verification()
+        if ui_msg:
+            advisories_notests.append(ui_msg)
         if advisories_notests:
             json.dump({"systemMessage": "\n".join(advisories_notests)}, sys.stdout)
         return
@@ -894,6 +952,9 @@ def main() -> None:
         knowledge_msg = _check_knowledge_extraction()
         if knowledge_msg:
             advisories.append(knowledge_msg)
+        ui_msg = _check_ui_verification()
+        if ui_msg:
+            advisories.append(ui_msg)
         if advisories:
             json.dump({"systemMessage": "\n".join(advisories)}, sys.stdout)
         return
