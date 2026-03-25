@@ -1,0 +1,63 @@
+# Background Agent: Continuous Triage
+# Auto-labels new Issues using Claude Code analysis
+name: "Agent: Triage"
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to triage"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/agent-config
+            CLAUDE.md
+
+      - name: Setup Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Determine issue number
+        id: issue
+        env:
+          INPUT_NUMBER: ${{ inputs.issue_number }}
+          EVENT_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            [[ "$INPUT_NUMBER" =~ ^[0-9]+$ ]] || { echo "::error::Invalid issue number"; exit 1; }
+            echo "number=$INPUT_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=$EVENT_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch issue data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --json title,body,labels > /tmp/issue.json
+
+      - name: Triage with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          [[ -z "$ANTHROPIC_API_KEY" ]] && { echo "::error::ANTHROPIC_API_KEY is not set"; exit 1; }
+          cat .github/agent-config/triage.md > /tmp/prompt.txt
+          printf '\n\nIssue number: %s\n\nIssue data:\n' "$ISSUE_NUMBER" >> /tmp/prompt.txt
+          cat /tmp/issue.json >> /tmp/prompt.txt
+          claude -p "$(cat /tmp/prompt.txt)" \
+            --allowedTools "Bash(gh issue edit $ISSUE_NUMBER --add-label *)" \
+            --max-cost 0.50
