@@ -156,6 +156,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: 検証なしの「確認しました」、根拠不明の定数・係数、プロットと数式の不整合、ステップ飛ばし表現（「this becomes」「for consistency」）
 - **関連 GP**: —
 - **判定**: 中間ステップの導出が明示されているか、値の根拠が示されているか (pass/fail)
+- **不変条件**: 中間ステップの導出を省略せず、各値の根拠を明示する
 - **レビューアー**: `code-reviewer`, `codex-reviewer`
 - **着想**: Schwartz "Vibe Physics" (2026-03) — Claude がパラメータ調整でプロットを合わせ、不確定性バンドを美的に平滑化し、検証したと虚偽申告した事例群。FM-012 (Information Invention) とは異なり、参照先は実在するが値・導出が捏造されるパターン
 
@@ -165,6 +166,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: onClick が空関数、イベントハンドラが未実装、API 呼び出しが TODO/stub コメント、テストで UI 存在のみ確認し操作結果を検証していない
 - **関連 GP**: —
 - **判定**: UI 要素に対応する完全なインタラクションパス（イベント → 処理 → フィードバック）が実装されているか (pass/fail)
+- **不変条件**: UI 要素にはイベント→処理→フィードバックの完全なインタラクションパスを実装する
 - **レビューアー**: `code-reviewer`, `product-reviewer`
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — Generator が機能を stub する傾向。ボタンは toggle するがマイク入力を capture しない、ツールは存在するが機能しない等の事例。FM-011 (Plan Adherence) が「ステップ省略」を検出するのに対し、FM-017 は「ステップ完了に見えるが実は hollow」を検出する
 
@@ -174,6 +176,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: レビューコメントで「〜だが問題ない」「minor issue」「許容範囲」等の rationalization 表現が critical/high severity の指摘に続く、指摘数と最終判定の乖離（多数指摘→LGTM）
 - **関連 GP**: —
 - **判定**: Evaluator が特定した問題の severity が最終判定に適切に反映されているか (pass/fail)
+- **不変条件**: 検出した問題の severity を最終判定に適切に反映し、自己矮小化しない
 - **レビューアー**: `/review` スキルの合成フェーズ（レビューアー間の judgment divergence として検出）
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — QA エージェントが「legitimate issues を見つけた後、talk itself into deciding they weren't a big deal and approve」する失敗パターン。Self-evaluation bias の具体的発現形態。FM-016 (Result Fabrication) が「結果の捏造」であるのに対し、FM-018 は「正しい検出結果の自己矮小化」
 
@@ -183,6 +186,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: 未完了の plan ステップがある状態での停止試行、`completion-gate.py` の Ralph Loop 発火
 - **関連 GP**: —
 - **判定**: アクティブプランの全ステップが完了しているか (pass/fail)
+- **不変条件**: 複雑なタスクは計画の全ステップ完了まで継続する
 - **レビューアー**: `completion-gate.py` (Ralph Loop)
 - **着想**: Anthropic "Long-Running Claude for Scientific Computing" (2026-03) — "When asked to complete a complex, multi-part task, they can sometimes find an excuse to stop before finishing the entire task." Ralph Loop パターンで対処。FM-015 (Premature Action) が「早すぎる行動」であるのに対し、FM-019 は「早すぎる停止」
 
@@ -192,6 +196,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: タスクの分割粒度が大きい（1ステップ10分超）、連続する依存ステップが5以上、または中間検証ゲートなしの長いパイプライン
 - **関連 GP**: —
 - **判定**: 各ステップが5分以内に完了し、ステップ間にテスト/検証ゲートがあるか (pass/fail)
+- **不変条件**: 各ステップを5分以内に完了させ、ステップ間に検証ゲートを挟む
 - **レビューアー**: `completion-gate.py`, plan review
 - **着想**: 逆瀬川 "Coding Agent Workflow 2026" — 確率的カスケード定量モデル。対策: タスク分割粒度を「1ステップ5分以内」に保ち、失敗時は即座に再プランして残りステップに波及させない
 
