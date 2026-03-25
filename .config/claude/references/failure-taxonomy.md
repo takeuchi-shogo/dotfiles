@@ -181,6 +181,43 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 
 ---
 
+## Failure Channel 分類
+
+> 着想元: Tu (2026) "Structured Test-Time Scaling" — 2つの独立失敗チャネル
+> 詳細: `references/structured-test-time-scaling.md` §7
+
+各 FM は発生メカニズムに基づき2チャネルに分類される。対策の起点が異なる。
+
+| Channel | 定義 | 対策のレバー |
+|---|---|---|
+| **drift** | 制御フローが長くなるほど蓄積する誤り（スパン/深度駆動） | Mechanism I: トポロジー圧縮（DAG 化、Depth 削減） |
+| **residual** | 個々のタスクノードで発生する誤り（作業駆動） | Mechanism II+III: スコープ分離 + 検証ゲート |
+
+| FM | Channel | 根拠 |
+|---|---|---|
+| FM-003 Dependency Drift | drift | 依存の蓄積はフロー長に比例 |
+| FM-006 Permission/Access Error | drift | セッション中の状態変化で蓄積 |
+| FM-009 Resource Exhaustion | drift | リソース消費がスパンに比例 |
+| FM-011 Plan Adherence Failure | drift | 計画からの逸脱が深度で拡大 |
+| FM-019 Agentic Laziness | drift | 長期タスクで発生頻度が上昇 |
+| FM-020 Probabilistic Cascade | drift | p^n 減衰がスパンに直結 |
+| FM-001 Null Safety Violation | residual | 個別ノードの実装品質 |
+| FM-002 Error Suppression | residual | 個別ノードのエラーハンドリング |
+| FM-004 Type Safety Violation | residual | 個別ノードの型設計 |
+| FM-005 Boundary Validation Miss | residual | 個別ノードの入力検証 |
+| FM-008 Build/Compilation Failure | residual | 個別ノードのコード品質 |
+| FM-010 Security Vulnerability | residual | 個別ノードのセキュリティ |
+| FM-012 Information Invention | residual | 個別ノードのハルシネーション |
+| FM-016 Result Fabrication | residual | 個別ノードの検証捏造 |
+| FM-017 Feature Stubbing | residual | 個別ノードの不完全実装 |
+| FM-018 Evaluator Rationalization | residual | 個別ノードの評価バイアス |
+| FM-007 Module Resolution Failure | hybrid | drift(状態変化) + residual(パス誤り) |
+| FM-013 Tool Output Misinterpretation | hybrid | drift(コンテキスト汚染) + residual(誤読) |
+| FM-014 Intent Misalignment | hybrid | drift(目標ドリフト) + residual(解釈誤り) |
+| FM-015 Premature Action | hybrid | drift(判断劣化) + residual(確認不足) |
+
+---
+
 ## Failure Type 分類
 
 各失敗モードの発生は、さらに2種類に分類される:

@@ -52,6 +52,14 @@ Pass が 90% のデータでは「常に Pass」で accuracy 90% だが TNR は 
 - **目標**: TPR > 90% AND TNR > 90%
 - **最低許容**: TPR > 80% AND TNR > 80%
 
+### 活性制約 (Liveness Constraint)
+
+> Tu (2026): delta_- (偽陰性率 = 1 - TPR) が高すぎると、正しい候補も棄却されシステムが停止する。
+> 正しい候補の生存確率 = (1 - delta_-)^m = TPR^m。m=5, TPR=0.7 で生存率 16.8%。
+> TNR を上げすぎて TPR が下がると、レビューが何も PASS にしなくなる。
+> `review-consensus-policy.md` §3 の NEEDS_HUMAN_REVIEW 判定は活性制約違反の検出に相当する。
+> 詳細: `references/structured-test-time-scaling.md` §6
+
 ## Rogan-Gladen 補正
 
 ジャッジの生スコアにはバイアスがある。集約 pass rate を報告する場合は補正する:
