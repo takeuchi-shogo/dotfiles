@@ -161,3 +161,74 @@ class TestExperimentTracker:
         exps = list_experiments()
         assert "cross_impact" in exps[0]
         assert exps[0]["cross_impact"]["errors"]["after"] == 3
+
+    def test_record_experiment_with_transfer(self):
+        from experiment_tracker import record_experiment
+
+        exp = record_experiment(
+            category="quality",
+            hypothesis="Apply error-fix pattern from errors domain",
+            branch="autoevolve/quality-transfer",
+            files_changed=["references/golden-principles.md"],
+            source_domain="errors",
+            transfer_efficacy=0.75,
+        )
+        assert exp["source_domain"] == "errors"
+        assert exp["transfer_efficacy"] == 0.75
+
+    def test_list_experiments_transfers_only(self):
+        from experiment_tracker import list_experiments, record_experiment
+
+        record_experiment("errors", "h1", "b1", ["f1"])
+        record_experiment(
+            "quality",
+            "h2",
+            "b2",
+            ["f2"],
+            source_domain="errors",
+            transfer_efficacy=0.8,
+        )
+        all_exps = list_experiments()
+        assert len(all_exps) == 2
+        transfers = list_experiments(transfers_only=True)
+        assert len(transfers) == 1
+        assert transfers[0]["source_domain"] == "errors"
+
+    def test_transfer_report(self):
+        from experiment_tracker import record_experiment, transfer_report
+
+        record_experiment(
+            "quality",
+            "h1",
+            "b1",
+            ["f1"],
+            source_domain="errors",
+            transfer_efficacy=0.8,
+        )
+        record_experiment(
+            "quality",
+            "h2",
+            "b2",
+            ["f2"],
+            source_domain="errors",
+            transfer_efficacy=0.6,
+        )
+        report = transfer_report()
+        assert "errors" in report
+        assert "quality" in report
+        assert "0.70" in report  # average of 0.8 and 0.6
+
+    def test_transfer_report_no_data(self):
+        from experiment_tracker import transfer_report
+
+        report = transfer_report()
+        assert "転移データなし" in report
+
+    def test_transfer_efficacy_out_of_range(self):
+        import pytest
+        from experiment_tracker import record_experiment
+
+        with pytest.raises(ValueError):
+            record_experiment("quality", "h", "b", ["f"], transfer_efficacy=1.5)
+        with pytest.raises(ValueError):
+            record_experiment("quality", "h", "b", ["f"], transfer_efficacy=-0.1)

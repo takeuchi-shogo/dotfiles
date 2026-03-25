@@ -34,95 +34,29 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 
 ---
 
-## Phase 1: Analyze（データ分析）
+## Phase 1: Analyze（データ分析）→ meta-analyzer へ委譲
 
-### 入力データ
+Phase 1 は **meta-analyzer エージェント** に委譲する。
+Hyperagents (arXiv:2603.19461) の Task/Meta Agent 分離に基づき、
+分析機能を独立エージェントとして切り出した。
 
-| ファイル | 内容 |
-|---------|------|
-| `learnings/errors.jsonl` | エラーイベント |
-| `learnings/quality.jsonl` | 品質違反 |
-| `learnings/patterns.jsonl` | 成功パターン |
-| `metrics/session-metrics.jsonl` | セッション統計 |
-| `learnings/skill-executions.jsonl` | スキル実行スコア |
-| `learnings/skill-benchmarks.jsonl` | スキル A/B テスト結果 |
-| `learnings/recovery-tips.jsonl` | エラー→回復ペア (Recovery Tips) |
+### 委譲手順
 
-データディレクトリ: `~/.claude/agent-memory/`（`AUTOEVOLVE_DATA_DIR` で上書き可能）
+Agent ツールで `meta-analyzer` を起動する:
 
-### サブロール
-
-Phase 1 は以下の2つのサブロールで構成される（別エージェントではなく同一エージェント内）:
-
-- **Normalizer**: データ正規化、重複排除、次元別スコア集計（review-scores.jsonl の集約）
-- **Pattern Analyst**: エラーパターン分析 + 弱点分析 + CQS トレンド確認
-
-Normalizer → Pattern Analyst の順で実行する。
-
-### 分析タスク
-
-1. **エラーパターン分析**: 同じエラー3回以上 → 繰り返しエラーとして記録
-1.5. **因果帰属分析** (arXiv:2603.10600 Decision Attribution Analyzer):
-   繰り返しエラー（3回以上）に対して以下の3層分析を行う:
-   - **即時原因**: 直接トリガーした条件（エラーメッセージそのもの）
-   - **近因**: その条件を生んだ先行判断（どのコマンド/ツール操作が原因か）
-   - **根本原因**: なぜその判断がなされたか（知識不足? 仕様誤解? ツール制限?）
-   - **Prevention Steps**: 再発防止のための具体的アクション
-   分析結果は insights の「因果帰属分析」セクションに含める。
-2. **品質違反パターン分析**: 同じルール違反の繰り返し → 改善候補
-3. **プロジェクトプロファイル生成**: セッション数、平均エラー数、改善傾向
-4. **クロスカテゴリ相関**: errors × quality, errors × patterns の共起分析
-5. **Evaluator 精度測定**: accept_rate < 70% のレビューアー/FM → プロンプト改善候補
-6. **Spec/Gen 分岐分析**: failure_type ごとにアクション分岐
-7. **スキル健全性分析**: `skill-executions.jsonl` + `skill-benchmarks.jsonl` を分析
-   - **トレンド分析**: スキルごとに直近10回の score 平均と前10回を比較
-   - **閾値判定**:
-     - Healthy: 平均 score >= 0.6
-     - Degraded: 平均 score 0.4-0.6、または前期比 -0.1 以上の低下
-     - Failing: 平均 score < 0.4、または直近5回中4回以上が score < 0.4
-   - **失敗パターン特定**: Degraded/Failing スキルの紐づくエラー・GP違反を分析
-   - **クロスデータ相関**: skill-benchmarks の A/B 結果と実行スコアを突き合わせ
-     - A/B retire + 実行スコア低 → 強い改善根拠
-     - A/B keep + 実行スコア低 → 環境変化による劣化
-     - 実行データなし → 不要スキル候補
-8. **出力信号分類**: `skill-executions.jsonl` の self-score を `scoring-config.json` の `outputSignal.thresholds` で分類
-   - HIGH_SIGNAL (score >= 8) → 成功パターンとして `patterns.jsonl` に記録、insights 昇格候補
-   - CONTEXTUAL (score >= 5) → 通常の分析対象
-   - WATCHLIST (score >= 3) → 監視。3回連続で degraded スキルとして改善候補に
-   - NOISE (score < 3) → 分析対象外。ログのみ保持
-   - 信号分類の集計は insights の「出力信号分布」セクションに含める
-9. **Recovery Tips 分析**: `recovery-tips.jsonl` から頻出する error_pattern → recovery_action ペアを抽出
-   - 同じ error_pattern が3回以上 → error-fix-guides.md への自動追加候補
-   - generalized フィールドを使ってパターンマッチング
-   - recovery_action の有効性を検証（同じエラーの再発有無）
-
-### プログラム的健全性判定
-
-`skill_amender.py` を使って定量的に健全性を判定する:
-
-```bash
-python3 -c "
-import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
-from skill_amender import assess_health
-from pathlib import Path
-from storage import get_data_dir
-
-data_dir = get_data_dir()
-skills_dir = Path.home() / '.claude' / 'skills'
-for skill_dir in sorted(skills_dir.iterdir()):
-    skill_file = skill_dir / 'SKILL.md'
-    if skill_file.exists():
-        report = assess_health(skill_dir.name, data_dir)
-        if report.execution_count > 0:
-            print(f'{report.status:>10} {report.avg_score:.2f} ({report.trend:+.2f}) [{report.execution_count:>3} runs] {report.skill_name}')
-"
+```
+セッションデータの分析を実施してください。
+データディレクトリ: ~/.claude/agent-memory/
+全分析タスク（エラーパターン、因果帰属、品質違反、スキル健全性、Recovery Tips 等）を実行し、
+insights/analysis-YYYY-MM-DD.md と改善候補リスト（evidence_chain 付き）を出力してください。
 ```
 
-この出力を insights の「スキル健全性分析」セクションに含める。
+### 出力の受け取り
 
-### 出力
-
-`insights/analysis-YYYY-MM-DD.md` — 繰り返しエラー、頻出品質違反、プロジェクト統計、改善提案、昇格提案
+meta-analyzer の出力を Phase 2 (Improve) の入力として使用する:
+- `insights/analysis-YYYY-MM-DD.md` — 分析レポート
+- 改善候補リスト — evidence_chain (data_points, confidence, reasoning, counter_evidence) 付き
+- confidence < 0.5 の提案は「低信頼度」として扱い、Phase 2 での優先度を下げる
 
 ---
 

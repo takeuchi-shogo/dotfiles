@@ -99,6 +99,8 @@ def record_experiment(
     validation_result: dict | None = None,
     outcome_reason: str | None = None,
     related_proposals: list[str] | None = None,
+    source_domain: str | None = None,
+    transfer_efficacy: float | None = None,
 ) -> dict:
     """新しい実験を記録する。
 
@@ -113,10 +115,17 @@ def record_experiment(
         validation_result: EvoSkill バリデーション結果
         outcome_reason: EvoSkill 結果理由
         related_proposals: EvoSkill 関連提案IDリスト
+        source_domain: 改善の元ドメイン（別ドメインからの転移の場合）
+        transfer_efficacy: 転移効率 (0.0-1.0、元ドメインでの delta に対する比率)
 
     Returns:
         記録された実験の dict
     """
+    if transfer_efficacy is not None and not (0.0 <= transfer_efficacy <= 1.0):
+        raise ValueError(
+            f"transfer_efficacy must be in [0.0, 1.0], got {transfer_efficacy}"
+        )
+
     exp_id = _generate_id(category)
     now = _now_iso()
 
@@ -139,6 +148,8 @@ def record_experiment(
         ("validation_result", validation_result),
         ("outcome_reason", outcome_reason),
         ("related_proposals", related_proposals),
+        ("source_domain", source_domain),
+        ("transfer_efficacy", transfer_efficacy),
     ]:
         if val is not None:
             experiment[key] = val
@@ -152,11 +163,15 @@ def record_experiment(
     return experiment
 
 
-def list_experiments(status: str | None = None) -> list[dict]:
+def list_experiments(
+    status: str | None = None,
+    transfers_only: bool = False,
+) -> list[dict]:
     """実験一覧を返す。
 
     Args:
         status: フィルタするステータス (None なら全て)
+        transfers_only: True なら転移実験のみ返す
 
     Returns:
         実験の list[dict]
@@ -164,6 +179,8 @@ def list_experiments(status: str | None = None) -> list[dict]:
     experiments = _load_registry()
     if status is not None:
         experiments = [e for e in experiments if e.get("status") == status]
+    if transfers_only:
+        experiments = [e for e in experiments if e.get("source_domain") is not None]
     return experiments
 
 
@@ -578,6 +595,47 @@ def check_regression(exp_id: str, min_sessions: int = 3) -> dict:
     return {"regression": False, "reason": "no regression detected", "suggestion": ""}
 
 
+def transfer_report() -> str:
+    """転移効率の集計レポートを生成する。
+
+    source_domain が記録されている実験の転移効率を集計し、
+    ドメインペアごとの平均転移効率を出力する。
+
+    Returns:
+        markdown テーブル形式のレポート
+    """
+    experiments = _load_registry()
+    transfers = [e for e in experiments if e.get("source_domain") is not None]
+
+    if not transfers:
+        return "転移データなし"
+
+    # ドメインペア別集計
+    pair_stats: dict[tuple[str, str], list[float]] = {}
+    for exp in transfers:
+        source = exp["source_domain"]
+        target = exp.get("category", "unknown")
+        efficacy = exp.get("transfer_efficacy")
+        if efficacy is not None:
+            pair = (source, target)
+            pair_stats.setdefault(pair, []).append(efficacy)
+
+    if not pair_stats:
+        return "転移効率データなし（source_domain はあるが transfer_efficacy が未記録）"
+
+    lines = [
+        "## 転移効率レポート",
+        "",
+        "| source | target | avg_efficacy | count |",
+        "|--------|--------|-------------|-------|",
+    ]
+    for (source, target), values in sorted(pair_stats.items()):
+        avg = sum(values) / len(values)
+        lines.append(f"| {source} | {target} | {avg:.2f} | {len(values)} |")
+
+    return "\n".join(lines)
+
+
 def export_tsv() -> str:
     """全実験を autoresearch の results.tsv 風フラット TSV で出力する。"""
     experiments = _load_registry()
@@ -650,6 +708,9 @@ def main():
     # list サブコマンド
     list_parser = subparsers.add_parser("list", help="List experiments")
     list_parser.add_argument("--status", default=None, help="Filter by status")
+    list_parser.add_argument(
+        "--transfers", action="store_true", help="Show only transfer experiments"
+    )
 
     # measure サブコマンド
     measure_parser = subparsers.add_parser("measure", help="Measure experiment effect")
@@ -685,6 +746,9 @@ def main():
         help="Min sessions after merge",
     )
 
+    # transfer-report サブコマンド
+    subparsers.add_parser("transfer-report", help="Show transfer efficacy report")
+
     # proposer-context サブコマンド
     proposer_ctx = subparsers.add_parser(
         "proposer-context", help="Build proposer context for a skill"
@@ -704,7 +768,7 @@ def main():
         print(json.dumps(exp, indent=2, ensure_ascii=False))
 
     elif args.command == "list":
-        exps = list_experiments(status=args.status)
+        exps = list_experiments(status=args.status, transfers_only=args.transfers)
         for exp in exps:
             status_mark = {
                 "pending_review": "⏳",
@@ -747,6 +811,9 @@ def main():
             print(f"[ROLLBACK SUGGESTED] {args.exp_id}: {result['reason']}")
         else:
             print(f"OK: {result['reason']}")
+
+    elif args.command == "transfer-report":
+        print(transfer_report())
 
     elif args.command == "proposer-context":
         print(build_proposer_context(args.skill, args.limit))
