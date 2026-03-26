@@ -491,35 +491,7 @@ fn check_golden_principles(content: &str, file_path: &str) -> Vec<String> {
         crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-003", "file": file_path}));
     }
 
-    // GP-004: Empty error handlers
-    let empty_catch = vec![
-        Regex::new(r"catch\s*\([^)]*\)\s*\{\s*\}").unwrap(),
-        Regex::new(r"except\s*.*:\s*\n\s*pass").unwrap(),
-    ];
-    if empty_catch.iter().any(|p| p.is_match(content))
-        && !is_duplicate_warning(file_path, "GP-004")
-    {
-        let msg = "[GP-004] 空の catch/except ブロックが検出されました。エラーを握り潰さず、適切にハンドリングしてください。";
-        warnings.push(msg.to_string());
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-004", "file": file_path}));
-    }
-
-    // GP-005: Unsafe types
-    let unsafe_patterns: Vec<Regex> = match ext.as_str() {
-        "ts" | "tsx" | "js" | "jsx" => vec![
-            Regex::new(r":\s*any\b").unwrap(),
-            Regex::new(r"\bas\s+any\b").unwrap(),
-        ],
-        "go" => vec![Regex::new(r"\binterface\{\}").unwrap()],
-        _ => vec![],
-    };
-    if unsafe_patterns.iter().any(|p| p.is_match(content))
-        && !is_duplicate_warning(file_path, "GP-005")
-    {
-        let msg = "[GP-005] `any` または `interface{}` の使用が検出されました。具体的な型を使用し、型安全性を維持してください。";
-        warnings.push(msg.to_string());
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-005", "file": file_path}));
-    }
+    // GP-004, GP-005 are enforced as BLOCK in pre_tool.rs — no need to re-check here
 
     warnings
 }
@@ -582,7 +554,7 @@ fn check_checkpoint(file_path: &str) -> Option<String> {
     let _ = std::fs::create_dir_all(&cp_dir);
 
     let branch = std::process::Command::new("git")
-        .args(["branch", "--show-current"])
+        .args(["--no-optional-locks", "branch", "--show-current"])
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
@@ -629,6 +601,54 @@ fn check_checkpoint(file_path: &str) -> Option<String> {
     ))
 }
 
+// ── edit-failure-tracker (merged from edit-failure-tracker.py) ───────
+
+fn classify_edit_failure(content: &str) -> &'static str {
+    let c = content.to_lowercase();
+    if c.contains("not found in file") || c.contains("not unique") {
+        "str_replace_mismatch"
+    } else if c.contains("whitespace") || c.contains("indentation") {
+        "whitespace_mismatch"
+    } else if c.contains("no such file") || c.contains("does not exist") {
+        "file_not_found"
+    } else if c.contains("permission") {
+        "permission_denied"
+    } else if c.contains("read") && c.contains("first") {
+        "read_before_edit"
+    } else {
+        "other"
+    }
+}
+
+fn track_edit_failure(tool_name: &str, file_path: &str, data: &serde_json::Value) {
+    let is_error = data["tool_result"]["is_error"].as_bool().unwrap_or(false);
+    if !is_error {
+        return;
+    }
+
+    let result_content = data["tool_result"]["content"]
+        .as_str()
+        .unwrap_or("");
+    let pattern = classify_edit_failure(result_content);
+    let ext = Path::new(file_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    crate::events::emit_event(
+        "error",
+        &serde_json::json!({
+            "message": format!("{} failed: {}", tool_name, &result_content[..result_content.len().min(200)]),
+            "tool_name": tool_name,
+            "file_path": file_path,
+            "file_ext": ext,
+            "failure_pattern": pattern,
+            "failure_mode": "FM-016",
+            "failure_type": "tool_interface",
+        }),
+    );
+}
+
 // ── main entry ──────────────────────────────────────────────────────
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -636,6 +656,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     let file_path = data["tool_input"]["file_path"]
         .as_str()
         .unwrap_or("");
+
+    // Track edit failures (side effect: emits event on failure)
+    track_edit_failure(tool_name, file_path, data);
 
     let content = if tool_name == "Write" {
         data["tool_input"]["content"].as_str().unwrap_or("")

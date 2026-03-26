@@ -175,22 +175,6 @@
 				]
 			}
 		],
-		"SessionEnd": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-save.js",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
-						"timeout": 15
-					}
-				]
-			}
-		],
 		"UserPromptSubmit": [
 			{
 				"hooks": [
@@ -247,29 +231,7 @@
 				]
 			},
 			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/file-pattern-router.py",
-						"timeout": 5,
-						"statusMessage": "File routing..."
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/tdd-guard.py",
-						"timeout": 5,
-						"statusMessage": "TDD check..."
-					}
-				]
-			},
-			{
-				"matcher": "Bash|Edit|Write",
+				"matcher": "Bash",
 				"hooks": [
 					{
 						"type": "command",
@@ -345,17 +307,6 @@
 				]
 			},
 			{
-				"matcher": "Bash",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/stagnation-detector.py",
-						"timeout": 5,
-						"statusMessage": "Stagnation check..."
-					}
-				]
-			},
-			{
 				"matcher": "Write",
 				"hooks": [
 					{
@@ -363,16 +314,6 @@
 						"command": "python3 $HOME/.claude/scripts/policy/file-proliferation-guard.py",
 						"timeout": 5,
 						"statusMessage": "File proliferation check..."
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/learner/edit-failure-tracker.py",
-						"timeout": 5
 					}
 				]
 			},

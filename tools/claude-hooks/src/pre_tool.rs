@@ -184,6 +184,141 @@ fn check_gp_blocking(data: &serde_json::Value) {
     }
 }
 
+// ── file-pattern-router (merged from file-pattern-router.py) ────────
+
+const FILE_AGENT_ROUTES: &[(&str, &str, &str)] = &[
+    (r"\.(tsx|jsx)$", "frontend-developer", "React コンポーネント"),
+    (r"\.(css|scss|less)$", "frontend-developer", "スタイルシート"),
+    (r"\.go$", "golang-pro", "Go コード"),
+    (r"go\.(mod|sum)$", "golang-pro", "Go 依存関係"),
+    (r"\.rs$", "backend-architect", "Rust コード"),
+    (r"\.ts$", "typescript-pro", "TypeScript コード"),
+    (r"\.config/claude/agents/", "document-factory", "エージェント定義"),
+    (r"\.config/claude/scripts/", "build-fixer", "Hook スクリプト"),
+    (r"\.config/claude/references/", "doc-gardener", "リファレンス"),
+    (r"\.proto$", "backend-architect", "Protocol Buffers"),
+    (r"(test_|_test\.|\.test\.|\.spec\.)", "test-engineer", "テストファイル"),
+    (r"\.config/claude/skills/", "security-reviewer", "スキル定義"),
+];
+
+const ROUTE_COOLDOWN_SECS: f64 = 120.0;
+
+/// Load project-specific file-pattern overrides from .claude/file-pattern-routes.json
+fn load_project_overrides() -> Vec<(String, String, String)> {
+    let path = std::path::Path::new(".claude/file-pattern-routes.json");
+    if !path.exists() {
+        return Vec::new();
+    }
+    let content = match std::fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(_) => return Vec::new(),
+    };
+    let data: Vec<serde_json::Value> = match serde_json::from_str(&content) {
+        Ok(v) => v,
+        Err(_) => return Vec::new(),
+    };
+    data.iter()
+        .filter_map(|r| {
+            let pattern = r["pattern"].as_str()?.to_string();
+            let agent = r["agent"].as_str()?.to_string();
+            let desc = r["description"].as_str().unwrap_or("").to_string();
+            Some((pattern, agent, desc))
+        })
+        .collect()
+}
+
+fn check_file_pattern_route(file_path: &str) -> Option<String> {
+    if file_path.is_empty() {
+        return None;
+    }
+
+    // Project overrides take priority
+    let overrides = load_project_overrides();
+    let all_routes: Vec<(&str, &str, &str)> = overrides
+        .iter()
+        .map(|(p, a, d)| (p.as_str(), a.as_str(), d.as_str()))
+        .chain(FILE_AGENT_ROUTES.iter().copied())
+        .collect();
+
+    for (pattern, agent, description) in all_routes {
+        if let Ok(re) = Regex::new(pattern) {
+            if re.is_match(file_path) {
+                // Cooldown check
+                let state_path = crate::io::state_dir().join("file-pattern-router.json");
+                let mut state = crate::io::read_json_state(&state_path);
+                let now = crate::io::now_secs();
+                let last_agent = state["agent"].as_str().unwrap_or("");
+                let last_time = state["time"].as_f64().unwrap_or(0.0);
+
+                if last_agent == agent && now - last_time < ROUTE_COOLDOWN_SECS {
+                    return None;
+                }
+
+                state["agent"] = serde_json::json!(agent);
+                state["time"] = serde_json::json!(now);
+                crate::io::write_json_state(&state_path, &state);
+
+                let basename = Path::new(file_path)
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                return Some(format!(
+                    "[File-Pattern Router] {} ({}) の編集を検出。\
+                     専門エージェント `{}` の使用を検討してください。",
+                    description, basename, agent
+                ));
+            }
+        }
+    }
+    None
+}
+
+// ── tdd-guard (merged from tdd-guard.py) ────────────────────────────
+
+const TDD_TEST_MARKERS: &[&str] = &["test_", "_test.", ".test.", ".spec.", "__tests__", "testdata"];
+
+fn check_tdd_guard(file_path: &str) -> Option<String> {
+    if std::env::var("TDD_MODE").as_deref() != Ok("1") {
+        return None;
+    }
+
+    if TDD_TEST_MARKERS.iter().any(|m| file_path.contains(m)) {
+        return None;
+    }
+
+    let p = Path::new(file_path);
+    let ext = p.extension().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
+    let stem = p.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
+    let parent = p.parent();
+
+    let test_patterns: &[&str] = match ext.as_str() {
+        "go" => &["{stem}_test.go"],
+        "ts" => &["{stem}.test.ts", "{stem}.spec.ts"],
+        "tsx" => &["{stem}.test.tsx", "{stem}.spec.tsx"],
+        "py" => &["{stem}_test.py", "test_{stem}.py"],
+        _ => return None,
+    };
+
+    if let Some(dir) = parent {
+        for tmpl in test_patterns {
+            let test_name = tmpl.replace("{stem}", &stem);
+            if dir.join(&test_name).exists() {
+                return None;
+            }
+            if dir.join("__tests__").join(&test_name).exists() {
+                return None;
+            }
+        }
+    }
+
+    let basename = p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    Some(format!(
+        "[TDD Guard] `{}` に対応するテストファイルが見つかりません。\
+         TDD モードが有効です。先にテストを作成してください。",
+        basename
+    ))
+}
+
 pub fn pre_edit(_raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // protect-linter-config (may call deny → exit 2)
     check_protect_linter(data);
@@ -191,11 +326,30 @@ pub fn pre_edit(_raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // GP-004/GP-005 blocking check (may call deny → exit 2)
     check_gp_blocking(data);
 
+    let file_path = data["tool_input"]["file_path"]
+        .as_str()
+        .unwrap_or("");
+
+    let mut contexts: Vec<String> = Vec::new();
+
     // search-first-gate
     if let Some(ctx) = check_search_first_edit(data) {
-        crate::io::context("PreToolUse", &ctx);
+        contexts.push(ctx);
     }
-    // If no context was output, no stdout is needed for PreToolUse allow
+
+    // file-pattern-router
+    if let Some(ctx) = check_file_pattern_route(file_path) {
+        contexts.push(ctx);
+    }
+
+    // tdd-guard
+    if let Some(ctx) = check_tdd_guard(file_path) {
+        contexts.push(ctx);
+    }
+
+    if !contexts.is_empty() {
+        crate::io::context("PreToolUse", &contexts.join("\n\n"));
+    }
 
     Ok(())
 }
@@ -282,7 +436,7 @@ pub fn pre_commit(raw: &str, data: &serde_json::Value) -> Result<(), String> {
 
     // Get staged diff to check for secrets
     let diff = std::process::Command::new("git")
-        .args(["diff", "--cached", "--diff-filter=ACM"])
+        .args(["--no-optional-locks", "diff", "--cached", "--diff-filter=ACM"])
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).to_string())

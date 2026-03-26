@@ -298,7 +298,7 @@ fn check_plan_lifecycle(command: &str, output: &str) -> Option<String> {
     }
 
     let repo_root = std::process::Command::new("git")
-        .args(["rev-parse", "--show-toplevel"])
+        .args(["--no-optional-locks", "rev-parse", "--show-toplevel"])
         .output()
         .ok()
         .filter(|o| o.status.success())
@@ -317,7 +317,7 @@ fn check_plan_lifecycle(command: &str, output: &str) -> Option<String> {
     }
 
     let commit_msg = std::process::Command::new("git")
-        .args(["log", "-1", "--pretty=%B"])
+        .args(["--no-optional-locks", "log", "-1", "--pretty=%B"])
         .current_dir(&repo_root)
         .output()
         .ok()
@@ -406,7 +406,7 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
 
     // Get committed diff
     let diff = std::process::Command::new("git")
-        .args(["diff", "HEAD~1..HEAD", "--unified=0"])
+        .args(["--no-optional-locks", "diff", "HEAD~1..HEAD", "--unified=0"])
         .output()
         .ok()
         .filter(|o| o.status.success())
@@ -494,6 +494,105 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
     }
 }
 
+// ── stagnation detector (merged from stagnation-detector.py) ────────
+
+const STAG_WINDOW: usize = 20;
+const STAG_CONSEC_THRESHOLD: usize = 5;
+const STAG_SAME_ERROR_THRESHOLD: usize = 3;
+const STAG_COOLDOWN_SECS: f64 = 30.0;
+const STAG_TTL: f64 = 2.0 * 3600.0;
+
+fn has_error(output: &str) -> bool {
+    let patterns = error_patterns();
+    patterns.iter().any(|p| p.is_match(output))
+}
+
+fn check_stagnation(command: &str, output: &str) -> Option<String> {
+    let cmd_lower = command.trim().to_lowercase();
+    if IGNORE_COMMANDS.iter().any(|ic| cmd_lower.starts_with(ic)) || output.len() < 10 {
+        return None;
+    }
+
+    let now = crate::io::now_secs();
+    let state_path = crate::io::state_dir().join("stagnation-state.json");
+    let mut state = crate::io::read_json_state(&state_path);
+
+    // TTL reset
+    let created = state["created_at"].as_f64().unwrap_or(0.0);
+    if now - created > STAG_TTL || created == 0.0 {
+        state = serde_json::json!({
+            "created_at": now,
+            "bash_history": [],
+            "consecutive_failures": 0,
+            "last_suggestion_time": 0.0
+        });
+    }
+
+    let is_error = has_error(output);
+
+    // Update history
+    let mut history: Vec<serde_json::Value> = state["bash_history"]
+        .as_array().cloned().unwrap_or_default();
+    history.push(serde_json::json!({
+        "command": &command[..command.len().min(200)],
+        "is_error": is_error,
+        "ts": now,
+    }));
+    if history.len() > STAG_WINDOW {
+        history = history[history.len() - STAG_WINDOW..].to_vec();
+    }
+    state["bash_history"] = serde_json::json!(history);
+
+    // Consecutive failures
+    let mut consec = state["consecutive_failures"].as_u64().unwrap_or(0) as usize;
+    if is_error { consec += 1; } else { consec = 0; }
+    state["consecutive_failures"] = serde_json::json!(consec);
+
+    // Cooldown
+    let last_suggest = state["last_suggestion_time"].as_f64().unwrap_or(0.0);
+    if now - last_suggest < STAG_COOLDOWN_SECS {
+        crate::io::write_json_state(&state_path, &state);
+        return None;
+    }
+
+    // Pattern 1: same error type repeated
+    let recent_errors: Vec<_> = history.iter().rev().take(6)
+        .filter(|h| h["is_error"].as_bool().unwrap_or(false))
+        .collect();
+    if recent_errors.len() >= STAG_SAME_ERROR_THRESHOLD {
+        state["last_suggestion_time"] = serde_json::json!(now);
+        crate::events::emit_event("pattern", &serde_json::json!({
+            "type": "stagnation_detected",
+            "stagnation_type": "same_error_type",
+            "consecutive_failures": consec,
+        }));
+        crate::io::write_json_state(&state_path, &state);
+        return Some(
+            "[Stagnation] 同種エラーが3回連続しています。別のアプローチを検討してください\
+             （別ツール、問題の分解、codex-debugger での根本原因分析）。".to_string()
+        );
+    }
+
+    // Pattern 2: consecutive failures
+    if consec >= STAG_CONSEC_THRESHOLD {
+        state["last_suggestion_time"] = serde_json::json!(now);
+        crate::events::emit_event("pattern", &serde_json::json!({
+            "type": "stagnation_detected",
+            "stagnation_type": "consecutive_failures",
+            "consecutive_failures": consec,
+        }));
+        crate::io::write_json_state(&state_path, &state);
+        return Some(format!(
+            "[Stagnation] 連続 {} 回失敗しています。\
+             現在のアプローチに固執せず、問題を再定義してください。",
+            consec
+        ));
+    }
+
+    crate::io::write_json_state(&state_path, &state);
+    None
+}
+
 // ── main entry ──────────────────────────────────────────────────────
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -520,6 +619,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
         contexts.push(ctx);
     }
     if let Some(ctx) = check_review_feedback(command, output) {
+        contexts.push(ctx);
+    }
+    if let Some(ctx) = check_stagnation(command, output) {
         contexts.push(ctx);
     }
 
