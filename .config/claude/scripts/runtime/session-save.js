@@ -24,11 +24,11 @@ function saveState() {
 	const state = {
 		timestamp: new Date().toISOString(),
 		cwd: process.cwd(),
-		branch: run("git branch --show-current"),
-		status: run("git status --porcelain"),
-		recentCommits: run("git log --oneline -5"),
-		modifiedFiles: run("git diff --name-only"),
-		stagedFiles: run("git diff --cached --name-only"),
+		branch: run("git --no-optional-locks branch --show-current"),
+		status: run("git --no-optional-locks status --porcelain"),
+		recentCommits: run("git --no-optional-locks log --oneline -5"),
+		modifiedFiles: run("git --no-optional-locks diff --name-only"),
+		stagedFiles: run("git --no-optional-locks diff --cached --name-only"),
 	};
 
 	fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
