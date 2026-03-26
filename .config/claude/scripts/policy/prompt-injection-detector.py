@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import (
-    get_emitter,
+    emit_audit_event,
     guard_action,
     load_hook_input,
     rotate_and_append,
@@ -253,9 +253,8 @@ def main() -> None:
             sys.exit(2)
         return
 
-    # Clean — emit tracking event
-    emit = get_emitter()
-    emit("pattern", {"type": "injection_scan", "clean": True})
+    # Clean — audit trail only (not patterns.jsonl; Issue #22)
+    emit_audit_event("injection_scan", {"clean": True})
 
 
 if __name__ == "__main__":
