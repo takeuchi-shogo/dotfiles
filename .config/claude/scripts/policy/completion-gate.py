@@ -255,6 +255,40 @@ def _find_incomplete_plan() -> tuple[str, list[str], str | None] | None:
     return None
 
 
+def _check_layer0_verification() -> str | None:
+    """Layer 0: Check if tests exist but were never run in this session (advisory).
+
+    Trust Verification Policy: テスト結果 > レビュー合意 > 自己評価。
+    テストファイルが存在するのにテストが実行されていない場合に警告。
+    Ref: references/trust-verification-policy.md
+    """
+    test_cmd = _detect_test_command()
+    if not test_cmd:
+        return None  # no tests to run
+
+    # Check session state for test execution history
+    _home = os.environ.get("HOME") or os.path.expanduser("~")
+    state_dir = os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(_home, ".claude", "session-state"),
+    )
+    test_history = os.path.join(state_dir, "test-execution.json")
+    try:
+        with open(test_history) as f:
+            history = json.load(f)
+        if history.get("last_run_epoch", 0) > 0:
+            return None  # tests were run
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"[Layer 0] test history not found: {exc}", file=sys.stderr)
+
+    return (
+        "[Layer 0 — Trust Verification] テストコマンドが検出されましたが、"
+        "このセッションでテストが実行された記録がありません。"
+        f"コマンド: `{test_cmd}` を実行してから完了してください。"
+        "テスト結果は LLM の判断より常に優先されます。"
+    )
+
+
 def _check_review_gate() -> str | None:
     """Check if session had significant edits without review.
 
@@ -873,6 +907,9 @@ def main() -> None:
         _reset_retries()
         # Advisory: suggest review if many edits (no tests to run)
         advisories_notests: list[str] = []
+        layer0_msg = _check_layer0_verification()
+        if layer0_msg:
+            advisories_notests.append(layer0_msg)
         review_msg = _check_review_gate()
         if review_msg:
             advisories_notests.append(review_msg)
@@ -934,6 +971,7 @@ def main() -> None:
         print(f"[Completion Gate] テスト通過 ({test_cmd})", file=sys.stderr)
         # Advisory messages (non-blocking)
         advisories: list[str] = []
+        # Layer 0 チェックはスキップ — このブランチは直前にテスト実行・成功済み
         review_msg = _check_review_gate()
         if review_msg:
             advisories.append(review_msg)

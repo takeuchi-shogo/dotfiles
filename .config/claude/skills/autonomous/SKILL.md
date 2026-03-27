@@ -138,6 +138,36 @@ grep -c '^\- \[ \]' .autonomous/{task-name}/task_list.md
 cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 ```
 
+## Step 4.5: QA Phase（Build-QA 自動ループ）
+
+> Anthropic Harness Design v2: Generator→Evaluator→Generator ループ。
+> 「嘘をつけない検証者」（Layer 0）+ 異種モデル評価（Layer 2）の組み合わせ。
+
+**起動条件**: 変更が 30 行以上（`git diff --stat` で判定）。S 規模はスキップ。
+
+**Dual-Model QA**（並列起動）:
+
+1. **Opus Evaluator**: Agent ツールで code-reviewer を懐疑的ペルソナで起動
+   - プロンプト: 「`adversarial-evaluation-criteria.md` の基準で採点せよ。be skeptical, probe edge cases, don't approve easily」
+   - 成果物を `adversarial-evaluation-criteria.md` の Code/API/Doc 基準で評価
+
+2. **Codex Evaluator**: `/codex-review` スキル経由（reasoning effort: xhigh）
+   - 独立した視点からの deep reasoning レビュー
+   - Opus と異なるモデルによる盲点補完
+
+**反復ルール**:
+- Build→QA を最大 3 ラウンド反復
+- 各ラウンドで QA の指摘を元に修正 → 再 QA
+- 修正は指摘箇所のみ（スコープ拡大禁止）
+
+**終了条件**:
+| 条件 | アクション |
+|------|----------|
+| 両モデル PASS | Deliver フェーズへ進行 |
+| 片方 PASS + 片方 NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
+| 両モデル NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
+| UI 変更あり | Playwright MCP でスクリーンショット取得 → Opus Evaluator に視覚評価を追加 |
+
 ## Step 5: Deliver (Stripe Minions Pattern)
 
 セッションループ完了後、自動的に PR を作成しハンドバックする。

@@ -183,8 +183,10 @@ NEEDS_FIX / BLOCK で再レビューに入る際、以下を実行する:
 3. 外れ値の理由を推測して注記（例: 「codex-reviewer のみが検出した深い推論に基づく指摘の可能性」）
 4. 除外した場合、ユーザーに除外した旨を明示
 
-**注意**: Codex の深い推論による指摘は他のレビューアが見逃す可能性が高い。
-Severity 乖離で外れ値判定された場合でも、Codex の指摘は除外せず `[DEEP_REASONING]` タグで保持する。
+**IMPORTANT: codex-reviewer の指摘は Outlier 判定の対象外とする。**
+Codex は deep reasoning (effort: xhigh) で他レビューアーが見落とす問題を検出する設計であり、
+重複率が低いこと自体が期待された動作である。Codex の指摘は常に `[DEEP_REASONING]` タグで
+verdict 計算に含める。Finding 重複率・指摘数の外れ値基準は codex-reviewer 以外のレビューアーにのみ適用する。
 
 ---
 
@@ -259,8 +261,8 @@ hybrid_score = 0.5 * normalized_agreement_rate + 0.5 * normalized_avg_confidence
 
 ### 適用条件
 
-- **3体以上**のレビューアー構成時に適用
-- 2体以下では等価扱い（capability weighting のオーバーヘッドが利益を上回る）
+- **全てのレビューアー構成**（2体以上）で適用する
+- 2体構成（code-reviewer + codex-reviewer）が最頻出であり、ここでの等価扱いは Codex の Logic 指摘（0.90）を code-reviewer と同じ重みにしてしまう。これは品質担保の観点で不適切
 
 ### スコア参照
 

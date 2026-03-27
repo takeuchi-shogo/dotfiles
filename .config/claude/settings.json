@@ -360,6 +360,28 @@
 				]
 			},
 			{
+				"matcher": "Agent",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/rationalization-scanner.py",
+						"timeout": 5,
+						"statusMessage": "Rationalization check..."
+					}
+				]
+			},
+			{
+				"matcher": "Bash|Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 $HOME/.claude/scripts/policy/derivation-honesty-hook.py",
+						"timeout": 5,
+						"statusMessage": "Derivation honesty check..."
+					}
+				]
+			},
+			{
 				"matcher": "Skill",
 				"hooks": [
 					{
