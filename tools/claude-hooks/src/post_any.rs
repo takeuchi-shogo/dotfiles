@@ -10,7 +10,9 @@ const DOOM_LOOP_COOLDOWN: f64 = 300.0;
 const TTL_SECS: f64 = 2.0 * 3600.0;
 
 // ── exploration spiral constants ────────────────────────────────────
-const EXPLORATION_THRESHOLD: usize = 5;
+const EXPLORATION_INFO_THRESHOLD: u64 = 5;
+const EXPLORATION_WARNING_THRESHOLD: u64 = 7;
+const EXPLORATION_CRITICAL_THRESHOLD: u64 = 10;
 const READ_TOOLS: &[&str] = &["Read", "Grep", "Glob", "WebFetch", "WebSearch"];
 const ACTION_TOOLS: &[&str] = &["Edit", "Write", "Bash", "Agent", "Skill"];
 
@@ -177,45 +179,82 @@ fn check_exploration_spiral(tool_name: &str) -> Option<String> {
     if now - last_reset > TTL_SECS {
         state = serde_json::json!({
             "consecutive_reads": 0,
-            "warned": false,
+            "warned_info": false,
+            "warned_warning": false,
+            "warned_critical": false,
             "lastReset": now
         });
     }
 
     let mut consecutive_reads = state["consecutive_reads"].as_u64().unwrap_or(0);
-    let mut warned = state["warned"].as_bool().unwrap_or(false);
+    let mut warned_info = state["warned_info"].as_bool().unwrap_or(false);
+    let mut warned_warning = state["warned_warning"].as_bool().unwrap_or(false);
+    let mut warned_critical = state["warned_critical"].as_bool().unwrap_or(false);
 
     if ACTION_TOOLS.contains(&tool_name) {
-        // Action tool resets the counter
         consecutive_reads = 0;
-        warned = false;
+        warned_info = false;
+        warned_warning = false;
+        warned_critical = false;
     } else if READ_TOOLS.contains(&tool_name) {
         consecutive_reads += 1;
     }
-    // Non-categorized tools: don't change counter
 
     state["consecutive_reads"] = serde_json::json!(consecutive_reads);
-    state["warned"] = serde_json::json!(warned);
+    state["warned_info"] = serde_json::json!(warned_info);
+    state["warned_warning"] = serde_json::json!(warned_warning);
+    state["warned_critical"] = serde_json::json!(warned_critical);
     if state["lastReset"].is_null() {
         state["lastReset"] = serde_json::json!(now);
     }
 
-    let result = if consecutive_reads >= EXPLORATION_THRESHOLD as u64 && !warned {
-        state["warned"] = serde_json::json!(true);
+    // Critical (10): emit event + replan intervention
+    let result = if consecutive_reads >= EXPLORATION_CRITICAL_THRESHOLD && !warned_critical {
+        state["warned_critical"] = serde_json::json!(true);
+        state["warned_warning"] = serde_json::json!(true);
+        state["warned_info"] = serde_json::json!(true);
 
         crate::events::emit_event(
             "pattern",
             &serde_json::json!({
                 "type": "exploration_spiral",
                 "consecutive_reads": consecutive_reads,
+                "severity": "critical",
             }),
         );
 
         Some(format!(
-            "[Exploration Spiral] 読み取りツールが{}回連続しています（Edit/Write/Bash なし）。\n\
+            "[Exploration Spiral: CRITICAL] 読み取りツールが{}回連続しています（Edit/Write/Bash なし）。\n\
+             深刻な探索スパイラルです。現在の計画を見直し、リプランしてください。",
+            consecutive_reads
+        ))
+    // Warning (7): emit event + session warning
+    } else if consecutive_reads >= EXPLORATION_WARNING_THRESHOLD && !warned_warning {
+        state["warned_warning"] = serde_json::json!(true);
+        state["warned_info"] = serde_json::json!(true);
+
+        crate::events::emit_event(
+            "pattern",
+            &serde_json::json!({
+                "type": "exploration_spiral",
+                "consecutive_reads": consecutive_reads,
+                "severity": "warning",
+            }),
+        );
+
+        Some(format!(
+            "[Exploration Spiral: WARNING] 読み取りツールが{}回連続しています（Edit/Write/Bash なし）。\n\
              十分な情報が集まっているなら、行動に移ってください。情報が不足なら、具体的に何を探しているか明確にしてください。",
             consecutive_reads
         ))
+    // Info (5): log only, no event emission
+    } else if consecutive_reads >= EXPLORATION_INFO_THRESHOLD && !warned_info {
+        state["warned_info"] = serde_json::json!(true);
+        eprintln!(
+            "[Exploration Spiral: INFO] consecutive_reads={} — info threshold, no event emitted",
+            consecutive_reads
+        );
+        None
     } else {
         None
     };
