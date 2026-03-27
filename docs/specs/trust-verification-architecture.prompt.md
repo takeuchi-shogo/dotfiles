@@ -1,9 +1,9 @@
 ---
 title: Trust Verification Architecture (TVA)
-status: draft
+status: implemented
 created: 2026-03-27
 scope: L
-phase_scope: "Phase 1 (Critical) + Phase 2 (High) を実装。Phase 3 は研究記録として保全"
+phase_scope: "全 Phase 実装済み（Phase 1+2: commit:fefc275 / Phase 3: Wave 5 実装完了）"
 priority_order: "嘘検出/誠実性 > レビュー精度 > 自律行動"
 research_source: docs/research/2026-03-27-harness-v2-adversarial-honesty-deep-analysis.md
 acceptance_criteria:
@@ -16,6 +16,9 @@ acceptance_criteria:
   - "AC-07: Definition of Done テンプレートが M/L 規模タスクの Plan 段階で pass/fail 基準を事前定義する"
   - "AC-08: Context Compaction 監視が品質劣化を検知し、fallback reset トリガー条件を定義する"
   - "AC-09: Adversarial Framing がレビュー対象の性質に応じて動的に切り替わる"
+  - "AC-10: review-findings.jsonl が AutoEvolve L1 Recovery Tips に自動フィードされ、学習知見として蓄積される"
+  - "AC-11: レビュー結果の蓄積データから reviewer プロンプトの改善提案が自動生成される"
+  - "AC-12: ハーネスコンポーネント（hook/reference）の必要性を定量評価し、陳腐化したコンポーネントを検出・報告する"
 ---
 
 # Trust Verification Architecture (TVA) — Prompt-as-PRD
@@ -222,6 +225,49 @@ Layer 3: Human Escalation（人間エスカレーション）
   | ドキュメント変更 | Accuracy-first（「コードとの乖離を探せ」） | doc-gardener の既存方針と整合 |
 - Framing は reviewer 起動時のプロンプトに注入（agent 側で柔軟に適用）
 
+### Phase 3: 自己学習パイプライン（ハーネスが自ら進化する仕組み）
+
+#### R-11: review-findings → AutoEvolve L1 接続
+
+**ゴール**: レビュー発見事項が学習パイプラインに自動フィードされ、知見として蓄積される
+
+- review-findings.jsonl の各 finding を AutoEvolve L1（Recovery Tips）に変換するスクリプト
+- 変換ルール:
+  - `failure_mode` → L1 カテゴリマッピング（FM-001〜FM-020 → 対応する改善カテゴリ）
+  - `severity: critical/important` → L1 に昇格。`severity: watch` → 蓄積のみ（3 回出現で昇格）
+  - `reviewer_id` + `human_verdict` → reviewer 信頼度の入力データ（R-05 で定義済みのフォーマット）
+- `/improve` 実行時に review-findings.jsonl を入力ソースとして読み込む
+- 既存の AutoEvolve improve-policy.md の Rule 構造と整合させる
+
+#### R-12: QA チューニングフィードバックループ
+
+**ゴール**: レビュー結果の蓄積データから reviewer プロンプトの改善提案を自動生成する
+
+- review-findings.jsonl の蓄積データを分析し、以下を検出:
+  - **見逃しパターン**: human_verdict=DISAGREE が多い reviewer × failure_mode の組み合わせ
+  - **過検出パターン**: 同じ reviewer が繰り返し watch レベルの findings を大量発出
+  - **Rationalization パターン**: R-01 の warning 頻度が高い reviewer
+- 検出結果から reviewer プロンプト改善提案を生成:
+  - 「code-reviewer は FM-003 (Dependency Drift) の見逃しが多い → チェックリストに明示追加を推奨」
+  - 「codex-reviewer は style 系 findings の過検出傾向 → style weight を下げることを推奨」
+- 提案は `/improve` 実行時に advisory として出力。自動適用はしない（Rule 10: LLM self-generated skills excluded from auto-merge）
+- reviewer-capability-scores.md のスコア更新提案も含める
+
+#### R-13: ハーネスコンポーネント陳腐化検出
+
+**ゴール**: 「このコンポーネント（hook/reference）はまだ必要か？」を定量評価し、不要なものを検出する
+
+- Anthropic の核心原則: 「ハーネスの各コンポーネントはモデルの限界への仮定をエンコードしている。仮定は陳腐化する」
+- 検出方法:
+  - **hook 発火率**: 各 hook の発火回数を追跡。30 日間発火 0 回 → `[STALE_HOOK]` 警告
+  - **advisory 採用率**: advisory 出力後にユーザーが実際に行動を変えた割合。採用率 < 10% → 「この advisory は無視されている」
+  - **reference 参照率**: agent がレビュー/実装時に実際に参照した reference の頻度
+- `/improve` 実行時に陳腐化レポートを出力:
+  - 「rationalization-scanner.py: 過去 30 日で 47 回発火、うち 38 回で修正に繋がった → 有効」
+  - 「XX-hook.py: 過去 30 日で 0 回発火 → 除去候補」
+- 除去はユーザー判断（自動除去しない）。Anthropic の方法論: 「1 つずつ除去して品質への影響を測定」
+- 発火ログは `logs/hook-telemetry.jsonl` に蓄積
+
 ## Constraints
 
 - **既存ハーネスとの互換性**: 現行の `/review`、`/autonomous`、completion-gate.py のインターフェースを破壊しない
@@ -232,23 +278,16 @@ Layer 3: Human Escalation（人間エスカレーション）
 
 ## Out of Scope
 
-### Phase 3（研究記録として保全。将来の spec で扱う）
-
-以下は研究ドキュメント（`docs/research/2026-03-27-harness-v2-adversarial-honesty-deep-analysis.md`）に完全な分析と統合方針が記録されている:
+以下は研究ドキュメント（`docs/research/2026-03-27-harness-v2-adversarial-honesty-deep-analysis.md`）に分析・方針が記録されているが、この spec では扱わない:
 
 | ID | ギャップ | テーマ | 将来の方向性 |
 |----|---------|--------|-------------|
-| G4-1 | ハーネスコンポーネント陳腐化検出 | 自己学習 | Anthropic の「仮定のストレステスト」方法論。モデルリリースごとに各 hook/reference の必要性を re-evaluate |
-| G4-2 | QA チューニングフィードバックループ | 自己学習 | review-findings.jsonl → reviewer プロンプト自動改善パイプライン |
-| G4-3 | review-findings → AutoEvolve 接続 | 自己学習 | L1 Recovery Tips への自動フィード |
 | G1-3 | Blueprint 実運用化 | 品質フロー | /autonomous が blueprint YAML を読み込んで実行 |
 | G1-4 | Planner Agent 自動仕様展開 | 品質フロー | 1 文 → 10+ 機能仕様の自動展開（Anthropic v2 の $0.46/4.7min Planner） |
 | G5-1 | Scope Up-lifting | 期待超越 | ユーザーが言及していないが価値のある機能を提案する Planner 的役割 |
 | G5-2 | Creative Iteration Loop | 期待超越 | 主観的品質の 5-15 回自動反復による creative leap |
 | G7-4 | Shared Blind Spot 全合意警告 | 嘘検出 | 全 reviewer が PASS 時に「盲点リスク」を明示警告 |
 | G2-4 | Playwright レビュー連携 | レビュー精度 | /review から自動的に Playwright スクリーンショット → 視覚評価 |
-
-**Phase 3 の研究結果は偽りなく保全されている**: 研究ドキュメントに 22 ギャップ全ての分析、統合方針、Anthropic/Stripe の原文引用が記録済み。Phase 1+2 完了後に Phase 3 の spec を別途作成可能。
 
 ## Technical Notes
 
@@ -266,52 +305,69 @@ R-07 (Build-QA Loop) ───────────── R-06 に依存（QA
 R-08 (Definition of Done) ──────── R-07 と連携（DoD を QA が参照）
 R-09 (Context Compaction) ──────── 独立
 R-10 (Adversarial Framing) ─────── R-06 に軽く依存（ドメイン別基準を参照）
+
+R-11 (AutoEvolve 接続) ─────────── R-05 に依存（データフォーマット使用）
+R-12 (QA チューニング) ─────────── R-11 に依存（蓄積データを分析）+ R-02 に依存（scores 更新）
+R-13 (陳腐化検出) ──────────────── R-11 に軽く依存（発火ログ基盤を共有）
 ```
 
 ### 実装順序（推奨）
 
 ```
-Wave 1（並列可能）: R-01, R-02, R-03 — hook 2 本 + reference 1 本
-Wave 2（Wave 1 完了後）: R-04, R-05 — policy + data format
-Wave 3（並列可能）: R-06, R-09 — reference 2 本
-Wave 4（Wave 3 完了後）: R-07, R-08, R-10 — /autonomous 統合 + DoD + framing
+Wave 1（並列可能）: R-01, R-02, R-03 — hook 2 本 + reference 1 本         [Phase 1 ✅ 実装済み]
+Wave 2（Wave 1 完了後）: R-04, R-05 — policy + data format                [Phase 1 ✅ 実装済み]
+Wave 3（並列可能）: R-06, R-09 — reference 2 本                           [Phase 2 ✅ 実装済み]
+Wave 4（Wave 3 完了後）: R-07, R-08, R-10 — /autonomous + DoD + framing   [Phase 2 ✅ 実装済み]
+Wave 5（Wave 2 完了後）: R-11, R-12, R-13 — 自己学習パイプライン          [Phase 3 ✅ 実装済み]
 ```
 
 ### 変更対象ファイル（予定）
 
-| ファイル | 操作 | 関連 Requirement |
-|---------|------|-----------------|
-| `scripts/policy/rationalization-scanner.py` | 新規 | R-01 |
-| `scripts/policy/derivation-honesty-hook.py` | 新規 | R-03 |
-| `references/reviewer-capability-scores.md` | 新規 | R-02 |
-| `references/trust-verification-policy.md` | 新規 | R-04 |
-| `references/adversarial-evaluation-criteria.md` | 新規 | R-06 |
-| `references/definition-of-done-template.md` | 新規 | R-08 |
-| `references/context-compaction-policy.md` | 新規 | R-09 |
-| `scripts/policy/completion-gate.py` | 修正 | R-04, R-05, R-08 |
-| `skills/review/SKILL.md` | 修正 | R-04, R-10 |
-| `skills/autonomous/SKILL.md` | 修正 | R-07 |
-| `settings.json` | 修正 | R-01, R-03（hook 登録） |
-| `references/review-consensus-policy.md` | 修正 | R-02（scores 参照追加） |
+| ファイル | 操作 | 関連 Requirement | 状態 |
+|---------|------|-----------------|------|
+| `scripts/policy/rationalization-scanner.py` | 新規 | R-01 | ✅ |
+| `scripts/policy/derivation-honesty-hook.py` | 新規 | R-03 | ✅ |
+| `references/reviewer-capability-scores.md` | 新規 | R-02 | ✅ |
+| `references/trust-verification-policy.md` | 新規 | R-04 | ✅ |
+| `references/adversarial-evaluation-criteria.md` | 新規 | R-06 | ✅ |
+| `references/definition-of-done-template.md` | 新規 | R-08 | ✅ |
+| `references/context-compaction-policy.md` | 新規 | R-09 | ✅ |
+| `scripts/policy/completion-gate.py` | 修正 | R-04, R-05, R-08 | ✅ |
+| `skills/review/SKILL.md` | 修正 | R-04, R-10 | ✅ |
+| `skills/autonomous/SKILL.md` | 修正 | R-07 | ✅ |
+| `settings.json` | 修正 | R-01, R-03（hook 登録） | ✅ |
+| `references/review-consensus-policy.md` | 修正 | R-02（scores 参照追加） | ✅ |
+| `scripts/learner/findings-to-autoevolve.py` | 新規 | R-11 | ✅ |
+| `scripts/learner/qa-tuning-analyzer.py` | 新規 | R-12 | ✅ |
+| `scripts/learner/staleness-detector.py` | 新規 | R-13 | ✅ |
+| `logs/hook-telemetry.jsonl` | 新規 | R-13 | ✅ |
+| `references/improve-policy.md` | 修正 | R-11, R-12（入力ソース追加） | ✅ |
+| `references/reviewer-capability-scores.md` | 修正 | R-12（スコア更新提案反映） | ✅ |
 
 ## Open Questions
 
 1. **Rationalization Scanner の閾値**: minimization 表現の出現回数がいくつ以上で warning とするか？（初期値: 1 回でも warning → データ蓄積後に調整）
 2. **reviewer-capability-scores の初期キャリブレーション**: 定性的判断 vs 過去の review-findings.jsonl から統計的に算出するか？（初期は定性的、Phase 3 で統計的キャリブレーション）
 3. **Build-QA ループの QA Agent モデル**: Generator と同じモデル（Opus 4.6）を使うか、異なるモデル（Codex）を使うか？（Anthropic は同一モデルで分離、Stripe は決定論的検証を優先）
+4. **hook-telemetry.jsonl のローテーション**: ログファイルのサイズ制限・ローテーション方針は？（30 日保持 → 月次アーカイブが妥当か）
+5. **QA チューニング提案の適用判断**: 提案は advisory のみか、一定の信頼度を超えたら auto-apply するか？（Rule 10 に従い advisory のみが安全）
 
 ## Prompt
 
-以下の仕様に基づいて Trust Verification Architecture (TVA) を実装してください。
+以下の仕様に基づいて Trust Verification Architecture (TVA) の Phase 3（自己学習パイプライン）を実装してください。
 
-**コンテキスト**: Anthropic Harness Design v2、Stripe Minions Part 2、Opus 4.6 の知見を統合し、現行 dotfiles ハーネスの「嘘検出」「レビュー精度」「自律行動」の 3 つの構造的欠陥を解消します。
+**前提**: Phase 1+2（R-01〜R-10）は実装済み（commit: fefc275）。R-05 で review-findings.jsonl のデータフォーマット拡張が完了しており、Phase 3 の入力基盤は整っている。
 
-**核心原則**: 「信頼は検証の関数であり、能力の関数ではない」— モデルがどれほど賢くなっても自己評価を信頼してはいけない。決定論的検証（テスト、lint）を Layer 0 として最優先し、LLM 判断は Layer 1-2 として補完的に使用する。
+**コンテキスト**: Anthropic Harness Design v2 の核心原則「ハーネスの各コンポーネントはモデルの限界への仮定をエンコードしている。仮定は陳腐化する」に基づき、ハーネス自体が学習・進化する仕組みを構築する。
 
-**実装順序**: Wave 1 → Wave 4 の依存関係に従い、各 Wave 内は並列実装可能。全 hook は advisory（非ブロッキング）で開始。
+**核心原則**: 「信頼は検証の関数であり、能力の関数ではない」— モデルがどれほど賢くなっても自己評価を信頼してはいけない。この原則はハーネス自身にも適用される：ハーネスのコンポーネントも定量的に評価し、不要なものは除去する。
 
-**技術方針（ハイブリッド）**: 明確なパターン（banned phrases, minimization 表現）は hook で自動検出。判断が必要なもの（品質採点、文脈分析）は agent に委ねる。
+**実装対象**: Wave 5（R-11, R-12, R-13）。R-11 → R-12 の依存関係あり。R-13 は R-11 と並列可能だが発火ログ基盤を共有。
 
-**Phase 3 への橋渡し**: R-05 で review-findings.jsonl のデータフォーマットを拡張し、将来の AutoEvolve 接続 + QA チューニングフィードバックループの基盤を準備する。
+**技術方針**:
+- 自己学習スクリプトは `scripts/learner/` に配置（既存の `scripts/policy/` と分離）
+- 全提案は advisory のみ。自動適用しない（improve-policy Rule 10 準拠）
+- 発火ログは `logs/hook-telemetry.jsonl` に蓄積。30 日保持
+- 既存の AutoEvolve improve-policy.md の Rule 構造・CQS と整合させる
 
-研究ドキュメント `docs/research/2026-03-27-harness-v2-adversarial-honesty-deep-analysis.md` に Phase 3 の完全な分析が記録されています。Phase 1+2 完了後に参照してください。
+研究ドキュメント `docs/research/2026-03-27-harness-v2-adversarial-honesty-deep-analysis.md` に TVA 全体の分析が記録されています。
