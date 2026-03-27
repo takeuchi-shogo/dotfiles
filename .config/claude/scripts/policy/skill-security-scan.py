@@ -249,23 +249,36 @@ def main():
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
     # Emit event for AutoEvolve tracking
-    try:
-        from session_events import emit_event
+    scan_data = {
+        "verdict": verdict,
+        "skill_dir": os.path.basename(skill_dir),
+        "critical": counts["CRITICAL"],
+        "high": counts["HIGH"],
+    }
+    if verdict == "PASS":
+        # Audit trail only — PASS は patterns.jsonl に流さない (Issue #22)
+        try:
+            lib = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "lib",
+            )
+            if lib not in sys.path:
+                sys.path.insert(0, lib)
+            from hook_utils import emit_audit_event
 
-        emit_event(
-            "pattern",
-            {
-                "type": "skill_security_scan",
-                "verdict": verdict,
-                "skill_dir": os.path.basename(skill_dir),
-                "critical": counts["CRITICAL"],
-                "high": counts["HIGH"],
-            },
-        )
-    except ImportError:
-        sys.stderr.write(
-            "skill-security-scan: session_events not available, skipping emit\n"
-        )
+            emit_audit_event("skill_security_scan", scan_data)
+        except Exception as exc:  # noqa: BLE001
+            sys.stderr.write(f"skill-security-scan: audit emit failed: {exc}\n")
+    else:
+        try:
+            from session_events import emit_event
+
+            emit_event(
+                "pattern",
+                {"type": "skill_security_scan", **scan_data},
+            )
+        except ImportError:
+            sys.stderr.write("skill-security-scan: session_events not available\n")
 
     sys.exit(1 if has_blocking else 0)
 

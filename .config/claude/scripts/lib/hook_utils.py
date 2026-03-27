@@ -123,6 +123,19 @@ def get_emitter() -> Callable:
         return lambda *a, **kw: None
 
 
+def emit_audit_event(audit_type: str, data: dict) -> None:
+    """PASS/clean イベントを audit.jsonl に記録。
+
+    patterns.jsonl には流さない（Issue #22）。
+    """
+    try:
+        from session_events import append_to_learnings
+
+        append_to_learnings("audit", {"audit_type": audit_type, **data})
+    except Exception as exc:  # noqa: BLE001
+        sys.stderr.write(f"emit_audit_event: {exc}\n")
+
+
 # ============================================================================
 # Guard Mode (HOOK_GUARD_MODE: audit / warn / block)
 # ============================================================================
