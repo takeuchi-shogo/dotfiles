@@ -432,7 +432,34 @@ fn is_gp_excluded(file_path: &str) -> bool {
     GP_EXCLUDE_EXTENSIONS.contains(&ext.as_str())
 }
 
-fn check_golden_principles(content: &str, file_path: &str) -> Vec<String> {
+/// Simple string similarity ratio (2 * matching_chars / total_chars).
+/// Approximates Python's SequenceMatcher.ratio().
+fn similarity_ratio(a: &str, b: &str) -> f64 {
+    if a.is_empty() && b.is_empty() {
+        return 1.0;
+    }
+    if a.is_empty() || b.is_empty() {
+        return 0.0;
+    }
+    let a_chars: Vec<char> = a.chars().collect();
+    let b_chars: Vec<char> = b.chars().collect();
+    let len_a = a_chars.len();
+    let len_b = b_chars.len();
+    // LCS length via DP
+    let mut dp = vec![vec![0usize; len_b + 1]; len_a + 1];
+    for i in 1..=len_a {
+        for j in 1..=len_b {
+            dp[i][j] = if a_chars[i - 1] == b_chars[j - 1] {
+                dp[i - 1][j - 1] + 1
+            } else {
+                dp[i - 1][j].max(dp[i][j - 1])
+            };
+        }
+    }
+    2.0 * dp[len_a][len_b] as f64 / (len_a + len_b) as f64
+}
+
+fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_string: Option<&str>) -> Vec<String> {
     if is_gp_excluded(file_path) {
         return Vec::new();
     }
@@ -491,7 +518,88 @@ fn check_golden_principles(content: &str, file_path: &str) -> Vec<String> {
         crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-003", "file": file_path}));
     }
 
-    // GP-004, GP-005 are enforced as BLOCK in pre_tool.rs — no need to re-check here
+    // GP-004, GP-005 are enforced as BLOCK in pre_tool.rs (with emit_event)
+
+    // GP-009: Ghost file detection (Write only)
+    if tool_name == "Write" && !Path::new(file_path).exists() {
+        if let Some(dir) = Path::new(file_path).parent() {
+            if dir.is_dir() {
+                let new_stem = Path::new(file_path)
+                    .file_stem()
+                    .map(|s| s.to_string_lossy().to_lowercase())
+                    .unwrap_or_default();
+                if let Ok(entries) = std::fs::read_dir(dir) {
+                    for entry in entries.flatten() {
+                        let existing = entry.file_name().to_string_lossy().to_string();
+                        let existing_stem = Path::new(&existing)
+                            .file_stem()
+                            .map(|s| s.to_string_lossy().to_lowercase())
+                            .unwrap_or_default();
+                        if existing_stem != new_stem && similarity_ratio(&new_stem, &existing_stem) > 0.7 {
+                            if !is_duplicate_warning(file_path, "GP-009") {
+                                let msg = format!(
+                                    "[GP-009] 類似名のファイル `{}` が同ディレクトリに存在します。新規作成ではなく既存ファイルの修正を検討してください。",
+                                    existing
+                                );
+                                warnings.push(msg);
+                                crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-009", "file": file_path}));
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // GP-010: Comment ratio (Write only — Edit の new_string はスニペットなので false positive になる)
+    let comment_skip_exts = ["md", "txt", "json", "yaml", "yml", "toml"];
+    if tool_name == "Write" && !comment_skip_exts.contains(&ext.as_str()) {
+        let lines: Vec<&str> = content.lines().filter(|l| !l.trim().is_empty()).collect();
+        if lines.len() >= 20 {
+            let markers: &[&str] = match ext.as_str() {
+                "py" | "sh" | "bash" => &["#"],
+                "ts" | "tsx" | "js" | "jsx" | "go" | "rs" => &["//"],
+                _ => &["//", "#"],
+            };
+            let comment_count = lines.iter().filter(|l| {
+                let trimmed = l.trim_start();
+                markers.iter().any(|m| trimmed.starts_with(m))
+            }).count();
+            let ratio = comment_count as f64 / lines.len() as f64;
+            if ratio > 0.4 && !is_duplicate_warning(file_path, "GP-010") {
+                let pct = (ratio * 100.0) as u32;
+                let msg = format!(
+                    "[GP-010] コメント比率が {}% と高すぎます（閾値: 40%）。コードが自己文書化されるよう、冗長なコメントを削除してください。",
+                    pct
+                );
+                warnings.push(msg);
+                crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-010", "file": file_path}));
+            }
+        }
+    }
+
+    // GP-011: Breaking change detection (Edit only)
+    if tool_name == "Edit" {
+        let old_str = old_string.unwrap_or("");
+        if !old_str.is_empty() && matches!(ext.as_str(), "ts" | "tsx" | "js" | "jsx") {
+            let export_re = Regex::new(r"(?m)^export\s+(?:default\s+)?(?:function|const|type|interface|class|enum)\s+\w+").unwrap();
+            let old_exports: Vec<&str> = export_re.find_iter(old_str).map(|m| m.as_str()).collect();
+            if !old_exports.is_empty() {
+                let new_exports: Vec<&str> = export_re.find_iter(content).map(|m| m.as_str()).collect();
+                let changed: Vec<&&str> = old_exports.iter().filter(|e| !new_exports.contains(e)).collect();
+                if !changed.is_empty() && !is_duplicate_warning(file_path, "GP-011") {
+                    let preview: String = changed[0].chars().take(80).collect();
+                    let msg = format!(
+                        "[GP-011] export されたシグネチャの変更を検出: `{}`。呼び出し元への影響を確認してください（`git grep` で参照元を検索）。",
+                        &preview
+                    );
+                    warnings.push(msg);
+                    crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-011", "file": file_path}));
+                }
+            }
+        }
+    }
 
     warnings
 }
@@ -699,7 +807,8 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // 3. Golden principles check (side effect: emits events)
-    let gp_warnings = check_golden_principles(content, file_path);
+    let old_string = data["tool_input"]["old_string"].as_str();
+    let gp_warnings = check_golden_principles(content, file_path, tool_name, old_string);
     if !gp_warnings.is_empty() {
         let mut all = gp_warnings;
         all.push("golden-cleanup エージェントで詳細なプリンシプルスキャンを実行できます。".to_string());

@@ -157,6 +157,7 @@ fn check_gp_blocking(data: &serde_json::Value) {
         Regex::new(r"except\s*.*:\s*\n\s*pass").unwrap(),
     ];
     if empty_catch_patterns.iter().any(|p| p.is_match(content)) {
+        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-004", "file": file_path}));
         crate::io::deny(
             "BLOCKED [GP-004]: 空の catch/except ブロックが検出されました。\n\
              エラーを握り潰さず、適切にハンドリングしてください。\n\
@@ -175,6 +176,7 @@ fn check_gp_blocking(data: &serde_json::Value) {
         _ => vec![],
     };
     if unsafe_type_patterns.iter().any(|p| p.is_match(content)) {
+        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-005", "file": file_path}));
         crate::io::deny(
             "BLOCKED [GP-005]: `any` または `interface{}` の使用が検出されました。\n\
              具体的な型を使用し、型安全性を維持してください。\n\
