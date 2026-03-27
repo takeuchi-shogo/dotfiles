@@ -52,10 +52,10 @@ def _monitor(data: dict) -> None:
     log_path = os.path.join(log_dir, "subagent-metrics.jsonl")
     rotate_and_append(log_path, json.dumps(log_entry))
 
-    # Emit via session_events
+    # Emit via session_events (telemetry, not pattern — Issue #24)
     emit = get_emitter()
     emit(
-        "pattern",
+        "telemetry",
         {
             "type": "subagent_complete",
             "session_id": session_id,

@@ -264,9 +264,9 @@ def _audit(data: dict) -> None:
     # Sequence anomaly detection (VeriGrey arXiv:2603.17639)
     _check_sequence_anomaly(tool_name, data.get("session_id", "unknown"), log_path)
 
-    # Emit event for AutoEvolve tracking
+    # Emit event for AutoEvolve tracking (telemetry, not pattern — Issue #24)
     emit = get_emitter()
-    emit("pattern", {"type": "mcp_tool_usage", "tool": tool_name})
+    emit("telemetry", {"type": "mcp_tool_usage", "tool": tool_name})
 
 
 def main() -> None:

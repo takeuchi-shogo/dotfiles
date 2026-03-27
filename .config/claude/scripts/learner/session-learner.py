@@ -31,6 +31,7 @@ def build_session_summary(cwd: str | None = None) -> dict:
     quality = [e for e in events if e.get("category") == "quality"]
     patterns = [e for e in events if e.get("category") == "pattern"]
     corrections = [e for e in events if e.get("category") == "correction"]
+    telemetry = [e for e in events if e.get("category") == "telemetry"]
 
     project = Path(cwd).name if cwd else "unknown"
 
@@ -57,6 +58,7 @@ def build_session_summary(cwd: str | None = None) -> dict:
         "quality_issues": len(quality),
         "patterns_found": len(patterns),
         "corrections": len(corrections),
+        "telemetry_count": len(telemetry),
         "outcome": outcome,
         "high_importance_count": high_count,
         "avg_importance": round(avg_importance, 2),
@@ -65,6 +67,7 @@ def build_session_summary(cwd: str | None = None) -> dict:
         "_quality": quality,
         "_patterns": patterns,
         "_corrections": corrections,
+        "_telemetry": telemetry,
     }
 
 
@@ -421,6 +424,10 @@ def process_session(cwd: str | None = None) -> None:
         entry = {k: v for k, v in pattern.items() if k != "category"}
         entry = generalize_entry(entry)
         append_to_learnings("patterns", entry)
+
+    for telem in summary["_telemetry"]:
+        entry = {k: v for k, v in telem.items() if k != "category"}
+        append_to_learnings("telemetry", entry)
 
     # Recovery Tips: error→correction ペアを recovery-tips.jsonl に保存
     # (arXiv:2603.10600 Contextual Learning Generator — Recovery Tips)
