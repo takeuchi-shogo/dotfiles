@@ -48,6 +48,27 @@ fn extract_key_args(tool_name: &str, input: &serde_json::Value) -> String {
     }
 }
 
+fn extract_target(tool_name: &str, input: &serde_json::Value) -> String {
+    match tool_name {
+        "Bash" => {
+            let cmd = input["command"].as_str().unwrap_or("");
+            cmd.chars().take(80).collect()
+        }
+        "Edit" | "Read" | "Write" => input["file_path"].as_str().unwrap_or("").to_string(),
+        "Grep" => {
+            let path = input["path"].as_str().unwrap_or("");
+            if path.is_empty() {
+                let pattern = input["pattern"].as_str().unwrap_or("");
+                format!("pattern:{}", &pattern[..pattern.len().min(60)])
+            } else {
+                path.to_string()
+            }
+        }
+        "Glob" => input["pattern"].as_str().unwrap_or("").to_string(),
+        _ => String::new(),
+    }
+}
+
 fn fingerprint(tool_name: &str, key_args: &str) -> u64 {
     let mut hasher = DefaultHasher::new();
     tool_name.hash(&mut hasher);
@@ -145,6 +166,7 @@ fn check_doom_loop(tool_name: &str, data: &serde_json::Value) -> Option<String> 
         crate::io::write_json_state(&state_path, &state);
 
         let label = tool_label(tool_name, input);
+        let target = extract_target(tool_name, input);
 
         // Emit AutoEvolve event
         crate::events::emit_event(
@@ -154,6 +176,7 @@ fn check_doom_loop(tool_name: &str, data: &serde_json::Value) -> Option<String> 
                 "tool": tool_name,
                 "count": count,
                 "hash": hash,
+                "target": target,
             }),
         );
 

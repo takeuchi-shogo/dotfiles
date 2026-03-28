@@ -64,9 +64,9 @@ Normalizer → Pattern Analyst の順で実行する。
 7. **スキル健全性分析**: `skill-executions.jsonl` + `skill-benchmarks.jsonl` を分析
    - **トレンド分析**: スキルごとに直近10回の score 平均と前10回を比較
    - **閾値判定**:
-     - Healthy: 平均 score >= 0.6
-     - Degraded: 平均 score 0.4-0.6、または前期比 -0.1 以上の低下
-     - Failing: 平均 score < 0.4、または直近5回中4回以上が score < 0.4
+     - Healthy: 平均 score >= 6.0
+     - Degraded: 平均 score 4.0-6.0、または前期比 -1.0 以上の低下
+     - Failing: 平均 score < 4.0、または直近5回中4回以上が score < 4.0
    - **失敗パターン特定**: Degraded/Failing スキルの紐づくエラー・GP違反を分析
    - **クロスデータ相関**: skill-benchmarks の A/B 結果と実行スコアを突き合わせ
      - A/B retire + 実行スコア低 → 強い改善根拠

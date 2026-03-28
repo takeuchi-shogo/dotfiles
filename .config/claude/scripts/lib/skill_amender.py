@@ -114,10 +114,10 @@ def parse_skill(path: Path) -> SkillManifest:
 def assess_health(skill_name: str, data_dir: Path | None = None) -> SkillHealthReport:
     """skill-executions.jsonl からスキルの健全性を判定する。
 
-    閾値 (autoevolve-core.md L60-70 準拠):
-      Healthy:  avg >= 0.6
-      Degraded: avg 0.4-0.6 OR trend <= -0.1
-      Failing:  avg < 0.4 OR 直近5回中4回以上 score < 0.4
+    1-10 スケール閾値 (compute_skill_score / retroactive_scorer と統一):
+      Healthy:  avg >= 6.0
+      Degraded: avg 4.0-6.0 OR trend <= -1.0
+      Failing:  avg < 4.0 OR 直近5回中4回以上 score < 4.0
     """
     if data_dir is None:
         data_dir = get_data_dir()
@@ -135,7 +135,7 @@ def assess_health(skill_name: str, data_dir: Path | None = None) -> SkillHealthR
         )
 
     skill_runs.sort(key=lambda e: e.get("timestamp", ""))
-    scores = [e.get("score", 0.5) for e in skill_runs]
+    scores = [e.get("score", 5.0) for e in skill_runs]
     avg_score = sum(scores) / len(scores)
 
     mid = len(scores) // 2
@@ -147,12 +147,12 @@ def assess_health(skill_name: str, data_dir: Path | None = None) -> SkillHealthR
         trend = 0.0
 
     recent_5 = scores[-5:] if len(scores) >= 5 else scores
-    low_count = sum(1 for s in recent_5 if s < 0.4)
+    low_count = sum(1 for s in recent_5 if s < 4.0)
     mostly_failing = len(recent_5) >= 5 and low_count >= 4
 
     failure_patterns: list[dict] = []
     for run in skill_runs:
-        if run.get("score", 1.0) < 0.4:
+        if run.get("score", 5.0) < 4.0:
             pattern: dict = {}
             if run.get("error_count", 0) > 0:
                 pattern["error_count"] = run["error_count"]
@@ -171,9 +171,9 @@ def assess_health(skill_name: str, data_dir: Path | None = None) -> SkillHealthR
         latest = skill_benchmarks[-1]
         benchmark_delta = latest.get("delta")
 
-    if avg_score < 0.4 or mostly_failing:
+    if avg_score < 4.0 or mostly_failing:
         status: Literal["healthy", "degraded", "failing"] = "failing"
-    elif avg_score < 0.6 or trend <= -0.1:
+    elif avg_score < 6.0 or trend <= -1.0:
         status = "degraded"
     else:
         status = "healthy"

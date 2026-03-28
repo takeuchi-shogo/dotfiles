@@ -484,36 +484,48 @@ def _normalize_event(event: dict) -> dict:
 
 
 def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
-    """セッション中のイベントからスキルの複合スコアを計算する。
+    """セッション中のイベントからスキルの複合スコアを計算する (1-10 スケール)。
 
     Rust hook (events.rs) と Python hook (session_events.py) の
     両方のイベント形式に対応する（_normalize_event で統一）。
 
+    retroactive_scorer.py と同じ 1-10 スケールで統一。
     スコア計算:
-      base = 0.5
-      + 0.5 (タスク正常完了 = デフォルト想定)
-      - 0.3/件 (エラー発生)
-      - 0.5 (テスト失敗)
-      - 0.2/件 (レビュー Critical/Important)
-      - 0.1/件 (GP違反)
-    → clamp(0.0, 1.0)
+      base = 5.0
+      + 1.5 (エラーなし)
+      + 1.0 (テスト全パス)
+      + 0.5 (GP違反なし)
+      + 0.5 (レビュー Critical/Important なし)
+      - 1.5/件 (エラー発生, 最大 -4.5)
+      - 2.5 (テスト失敗)
+      - 0.5/件 (GP違反, 最大 -2.0)
+      - 1.0/件 (レビュー Critical/Important, 最大 -3.0)
+    → clamp(1.0, 10.0)
     """
     normalized = [_normalize_event(e) for e in session_events]
-    score = 1.0  # base(0.5) + completion(0.5)
+    score = 5.0  # ベースライン (retroactive_scorer と同一)
 
     errors = [e for e in normalized if e.get("category") == "error"]
-    score -= 0.3 * len(errors)
+    if not errors:
+        score += 1.5
+    else:
+        score -= min(1.5 * len(errors), 4.5)
 
     test_failures = [e for e in normalized if e.get("test_passed") is False]
-    if test_failures:
-        score -= 0.5
+    if not test_failures:
+        score += 1.0
+    else:
+        score -= 2.5
 
     gp_violations = [
         e
         for e in normalized
         if e.get("category") == "quality" and e.get("rule", "").startswith("GP-")
     ]
-    score -= 0.1 * len(gp_violations)
+    if not gp_violations:
+        score += 0.5
+    else:
+        score -= min(0.5 * len(gp_violations), 2.0)
 
     review_criticals = [
         e
@@ -521,9 +533,12 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
         if e.get("category") == "quality"
         and e.get("review_severity") in ("critical", "important")
     ]
-    score -= 0.2 * len(review_criticals)
+    if not review_criticals:
+        score += 0.5
+    else:
+        score -= min(1.0 * len(review_criticals), 3.0)
 
-    return max(0.0, min(1.0, round(score, 2)))
+    return max(1.0, min(10.0, round(score, 1)))
 
 
 def emit_repeated_topic(
