@@ -103,10 +103,26 @@ fn tool_label(tool_name: &str, input: &serde_json::Value) -> String {
     }
 }
 
+fn is_blocklisted_hash(hash: u64) -> bool {
+    let blocklist_path = crate::io::state_dir().join("doom-loop-blocklist.json");
+    if let Ok(content) = std::fs::read_to_string(&blocklist_path) {
+        if let Ok(hashes) = serde_json::from_str::<Vec<u64>>(&content) {
+            return hashes.contains(&hash);
+        }
+    }
+    false
+}
+
 fn check_doom_loop(tool_name: &str, data: &serde_json::Value) -> Option<String> {
     let input = &data["tool_input"];
     let key_args = extract_key_args(tool_name, input);
     let hash = fingerprint(tool_name, &key_args);
+
+    // Skip known false-positive hashes
+    if is_blocklisted_hash(hash) {
+        return None;
+    }
+
     let now = crate::io::now_secs();
 
     let state_path = crate::io::state_dir().join("doom-loop.json");
