@@ -42,7 +42,11 @@ WARNING_STATE_FILE = (
 def _load_warning_state() -> dict:
     try:
         return json.loads(WARNING_STATE_FILE.read_text())
-    except Exception:
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(
+            f"[golden-check] warning state load failed: {exc}",
+            file=sys.stderr,
+        )
         return {}
 
 

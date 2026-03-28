@@ -94,8 +94,11 @@ def _detect_test_command() -> str | None:
                 if os.path.exists(os.path.join(cwd, "pnpm-lock.yaml")):
                     return "pnpm test"
                 return "npm test"
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            print(
+                f"[completion-gate] package.json parse failed: {exc}",
+                file=sys.stderr,
+            )
 
     # Go
     if os.path.exists(os.path.join(cwd, "go.mod")):
@@ -140,8 +143,12 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
         return result.returncode == 0, output
     except subprocess.TimeoutExpired:
         return False, "テストがタイムアウトしました (120秒)"
-    except Exception:
+    except Exception as exc:
         # If we can't run tests, don't block
+        print(
+            f"[completion-gate] test run failed: {exc}",
+            file=sys.stderr,
+        )
         return True, ""
 
 
@@ -432,7 +439,11 @@ def _check_test_coverage_for_changes() -> str | None:
         if result.returncode != 0:
             return None
         changed = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
-    except Exception:
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(
+            f"[completion-gate] test coverage check git diff failed: {exc}",
+            file=sys.stderr,
+        )
         return None
 
     if not changed:
@@ -736,7 +747,11 @@ def _check_ui_verification() -> str | None:
         if result.returncode != 0:
             return None
         changed = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
-    except Exception:
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print(
+            f"[completion-gate] UI verification git diff failed: {exc}",
+            file=sys.stderr,
+        )
         return None
 
     if not changed:

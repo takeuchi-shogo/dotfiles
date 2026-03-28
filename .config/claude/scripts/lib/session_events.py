@@ -11,6 +11,7 @@ Usage (from other hooks):
 import json
 import logging
 import re
+import sys
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -136,9 +137,9 @@ def _setup_logger() -> logging.Logger:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-    except Exception:
+    except Exception as exc:
         # ロガーセットアップ自体が失敗しても hook をクラッシュさせない
-        pass
+        print(f"[session-events] logger setup failed: {exc}", file=sys.stderr)
 
     return logger
 
@@ -217,8 +218,11 @@ def emit_event(category: str, data: dict) -> None:
     except Exception as exc:
         try:
             logger.error("emit failed: %s", exc)
-        except Exception:
-            pass
+        except Exception as log_exc:
+            print(
+                f"[session-events] emit failed: {exc} (log also failed: {log_exc})",
+                file=sys.stderr,
+            )
 
 
 def read_session_events() -> list[dict]:
@@ -314,16 +318,19 @@ def flush_session() -> list[dict]:
                 except json.JSONDecodeError:
                     try:
                         logger.warning("flush: skipped corrupt line: %s", line[:120])
-                    except Exception:
-                        pass
+                    except Exception as log_exc:
+                        print(
+                            f"[session-events] flush log failed: {log_exc}",
+                            file=sys.stderr,
+                        )
                     continue
     path.unlink(missing_ok=True)
     # Normalize Rust hook nested format to flat format for all downstream consumers
     events = [_normalize_event(e) for e in events]
     try:
         logger.info("flush: %d events collected", len(events))
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[session-events] flush info log failed: {exc}", file=sys.stderr)
     return events
 
 
@@ -343,8 +350,12 @@ def append_to_learnings(filename: str, data: dict) -> None:
     except Exception as exc:
         try:
             logger.error("append_to_learnings failed: %s", exc)
-        except Exception:
-            pass
+        except Exception as log_exc:
+            print(
+                "[session-events] append_to_learnings failed:"
+                f" {exc} (log also failed: {log_exc})",
+                file=sys.stderr,
+            )
 
 
 def emit_review_finding(finding: dict) -> None:
@@ -417,8 +428,11 @@ def append_to_metrics(data: dict) -> None:
     except Exception as exc:
         try:
             logger.error("append_to_metrics failed: %s", exc)
-        except Exception:
-            pass
+        except Exception as log_exc:
+            print(
+                f"[session-events] append_to_metrics failed: {exc} (log: {log_exc})",
+                file=sys.stderr,
+            )
 
 
 def emit_skill_event(event_type: str, data: dict) -> None:
@@ -445,8 +459,11 @@ def emit_skill_event(event_type: str, data: dict) -> None:
     except Exception as exc:
         try:
             logger.error("emit_skill_event failed: %s", exc)
-        except Exception:
-            pass
+        except Exception as log_exc:
+            print(
+                f"[session-events] emit_skill_event failed: {exc} (log: {log_exc})",
+                file=sys.stderr,
+            )
 
 
 def _normalize_event(event: dict) -> dict:
