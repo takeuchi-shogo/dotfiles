@@ -46,6 +46,16 @@ else
   echo "[$(date -Iseconds)] SKIP: rotate-patterns.py not found or not executable" >> "$LOG_FILE"
 fi
 
+# --- Pattern promotion pipeline ---
+PROMOTE_SCRIPT="$(dirname "$0")/promote-patterns.py"
+if [[ -x "$PROMOTE_SCRIPT" ]] || command -v python3 &>/dev/null; then
+  if output=$(python3 "$PROMOTE_SCRIPT" 2>&1); then
+    echo "[$(date -Iseconds)] OK: pattern promotion -- $output" >> "$LOG_FILE"
+  else
+    echo "[$(date -Iseconds)] WARN: pattern promotion failed -- $output" >> "$LOG_FILE"
+  fi
+fi
+
 # --- Patrol Agent heartbeat verification ---
 HEARTBEAT_FILE="${HOME}/.claude/patrol-heartbeat"
 HEARTBEAT_MAX_AGE_MINUTES=15
