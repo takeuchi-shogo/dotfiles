@@ -5,7 +5,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 const DOOM_LOOP_WINDOW: usize = 20;
-const DOOM_LOOP_THRESHOLD: usize = 3;
+const DOOM_LOOP_THRESHOLD: usize = 5;
 const DOOM_LOOP_COOLDOWN: f64 = 300.0;
 const TTL_SECS: f64 = 2.0 * 3600.0;
 
