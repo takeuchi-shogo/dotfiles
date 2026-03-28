@@ -18,6 +18,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: nullable フィールドへのアクセス前にガードがあるか (pass/fail)
 - **不変条件**: nullable 値へのアクセスは必ずガードの後に行う
 - **レビューアー**: `code-reviewer`, `nil-path-reviewer`
+- **autoFixable**: true
+- **suggestedFix**: "nullable ガードの自動挿入（lint --fix）"
 
 ### FM-002: Error Suppression
 
@@ -27,6 +29,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: catch/except 内でエラーが記録または再 throw されるか (pass/fail)
 - **不変条件**: catch/except 内では必ずエラーを記録または再送出する
 - **レビューアー**: `silent-failure-hunter`
+- **autoFixable**: false
+- **suggestedFix**: "エラーハンドリングパターンの手動レビュー"
 
 ### FM-003: Dependency Drift
 
@@ -36,6 +40,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: 追加された依存に既存代替があるか (pass/fail)
 - **不変条件**: 新依存追加前に既存の代替を検索する
 - **レビューアー**: `code-reviewer`
+- **autoFixable**: true
+- **suggestedFix**: "既存依存の検索を促すプロンプト注入"
 
 ### FM-004: Type Safety Violation
 
@@ -45,6 +51,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: 具体的な型で代替可能か (pass/fail)
 - **不変条件**: 具体的な型で表現可能な場合は any/interface{} を使わない
 - **レビューアー**: `type-design-analyzer`
+- **autoFixable**: true
+- **suggestedFix**: "any/interface{} の具体型への自動変換（lint --fix）"
 
 ### FM-005: Boundary Validation Miss
 
@@ -54,6 +62,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: 入力に対するバリデーション/サニタイズがあるか (pass/fail)
 - **不変条件**: 外部入力は使用前に必ずバリデーション/サニタイズする
 - **レビューアー**: `security-reviewer`
+- **autoFixable**: false
+- **suggestedFix**: "入力バリデーションの手動設計"
 
 ### FM-006: Permission/Access Error
 
@@ -63,6 +73,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: 権限チェックまたはエラーハンドリングがあるか (pass/fail)
 - **不変条件**: ファイル/ネットワーク操作は権限チェックまたはエラーハンドリングで保護する
 - **レビューアー**: `code-reviewer`
+- **autoFixable**: false
+- **suggestedFix**: "権限モデルの手動レビュー"
 
 ### FM-007: Module Resolution Failure
 
@@ -72,6 +84,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: インポートパスが正しく、依存が宣言されているか (pass/fail)
 - **不変条件**: インポートパスと依存宣言の一致を確認してからコミットする
 - **レビューアー**: `code-reviewer`
+- **autoFixable**: true
+- **suggestedFix**: "import パスの自動補完（LSP）"
 
 ### FM-008: Build/Compilation Failure
 
@@ -81,6 +95,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: コードが正しくコンパイルされるか (pass/fail)
 - **不変条件**: コード変更後は必ずビルド/コンパイルを実行して通過を確認する
 - **レビューアー**: `build-fixer`
+- **autoFixable**: true
+- **suggestedFix**: "ビルドエラーの自動修正（build-fixer agent）"
 
 ### FM-009: Resource Exhaustion
 
@@ -90,6 +106,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: リソース制限の考慮があるか (pass/fail)
 - **不変条件**: リソース消費がスパンに比例する操作にはタイムアウトとメモリ制限を設定する
 - **レビューアー**: `code-reviewer`
+- **autoFixable**: false
+- **suggestedFix**: "リソース制限の手動設計"
 
 ### FM-010: Security Vulnerability
 
@@ -99,6 +117,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **判定**: OWASP Top 10 に該当するパターンがないか (pass/fail)
 - **不変条件**: 外部入力を含む処理は OWASP Top 10 のチェックリストで検証する
 - **レビューアー**: `security-reviewer`
+- **autoFixable**: false
+- **suggestedFix**: "OWASP チェックリストによる手動レビュー"
 
 ### FM-011: Plan Adherence Failure
 
@@ -109,6 +129,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: アクティブプランの全ステップを完了するまで作業を終了しない
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Plan Adherence Failure
+- **autoFixable**: false
+- **suggestedFix**: "計画ステップの再確認"
 
 ### FM-012: Information Invention
 
@@ -119,6 +141,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 参照するファイル・API・事実は実在を確認してから使用する
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Invention of New Information
+- **autoFixable**: false
+- **suggestedFix**: "参照先の実在確認"
 
 ### FM-013: Tool Output Misinterpretation
 
@@ -129,6 +153,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: ツール出力は生テキストを直接読み、推測で解釈しない
 - **レビューアー**: `debugger`
 - **着想**: AgentRx — Misinterpretation of Tool Output
+- **autoFixable**: false
+- **suggestedFix**: "生出力の再読み取り"
 
 ### FM-014: Intent Misalignment
 
@@ -139,6 +165,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 曖昧な指示は実装前に確認し、ユーザーの意図を明示的に言語化する
 - **レビューアー**: `product-reviewer`
 - **着想**: AgentRx — Intent–Plan Misalignment
+- **autoFixable**: false
+- **suggestedFix**: "ユーザーへの確認質問"
 
 ### FM-015: Premature Action
 
@@ -149,6 +177,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 不可逆な操作の前にユーザー確認を取得する
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx の障害分類を拡張した独自カテゴリ
+- **autoFixable**: false
+- **suggestedFix**: "操作前の確認プロンプト挿入"
 
 ### FM-016: Result Fabrication
 
@@ -159,6 +189,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 中間ステップの導出を省略せず、各値の根拠を明示する
 - **レビューアー**: `code-reviewer`, `codex-reviewer`
 - **着想**: Schwartz "Vibe Physics" (2026-03) — Claude がパラメータ調整でプロットを合わせ、不確定性バンドを美的に平滑化し、検証したと虚偽申告した事例群。FM-012 (Information Invention) とは異なり、参照先は実在するが値・導出が捏造されるパターン
+- **autoFixable**: false
+- **suggestedFix**: "中間ステップの導出検証"
 
 ### FM-017: Feature Stubbing
 
@@ -169,6 +201,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: UI 要素にはイベント→処理→フィードバックの完全なインタラクションパスを実装する
 - **レビューアー**: `code-reviewer`, `product-reviewer`
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — Generator が機能を stub する傾向。ボタンは toggle するがマイク入力を capture しない、ツールは存在するが機能しない等の事例。FM-011 (Plan Adherence) が「ステップ省略」を検出するのに対し、FM-017 は「ステップ完了に見えるが実は hollow」を検出する
+- **autoFixable**: false
+- **suggestedFix**: "インタラクションパスの完全性検証"
 
 ### FM-018: Evaluator Rationalization
 
@@ -179,6 +213,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 検出した問題の severity を最終判定に適切に反映し、自己矮小化しない
 - **レビューアー**: `/review` スキルの合成フェーズ（レビューアー間の judgment divergence として検出）
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — QA エージェントが「legitimate issues を見つけた後、talk itself into deciding they weren't a big deal and approve」する失敗パターン。Self-evaluation bias の具体的発現形態。FM-016 (Result Fabrication) が「結果の捏造」であるのに対し、FM-018 は「正しい検出結果の自己矮小化」
+- **autoFixable**: false
+- **suggestedFix**: "severity と最終判定の整合性チェック"
 
 ### FM-019: Agentic Laziness (Premature Stop)
 
@@ -189,6 +225,8 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 複雑なタスクは計画の全ステップ完了まで継続する
 - **レビューアー**: `completion-gate.py` (Ralph Loop)
 - **着想**: Anthropic "Long-Running Claude for Scientific Computing" (2026-03) — "When asked to complete a complex, multi-part task, they can sometimes find an excuse to stop before finishing the entire task." Ralph Loop パターンで対処。FM-015 (Premature Action) が「早すぎる行動」であるのに対し、FM-019 は「早すぎる停止」
+- **autoFixable**: false
+- **suggestedFix**: "Ralph Loop による完了強制"
 
 ### FM-020: Probabilistic Cascade
 
@@ -199,6 +237,13 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 各ステップを5分以内に完了させ、ステップ間に検証ゲートを挟む
 - **レビューアー**: `completion-gate.py`, plan review
 - **着想**: 逆瀬川 "Coding Agent Workflow 2026" — 確率的カスケード定量モデル。対策: タスク分割粒度を「1ステップ5分以内」に保ち、失敗時は即座に再プランして残りステップに波及させない
+- **autoFixable**: false
+- **suggestedFix**: "ステップ分割粒度の見直し"
+
+### autoFixable 分類基準
+
+- **true**: lint/フォーマット/型注釈/import 解決など、ツールが機械的に修正可能
+- **false**: セキュリティ/アーキテクチャ/ビジネスロジック/設計判断/行動パターンなど、人間の判断が必要
 
 ---
 

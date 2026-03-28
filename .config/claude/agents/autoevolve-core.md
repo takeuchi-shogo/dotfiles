@@ -47,7 +47,7 @@ Agent ツールで `meta-analyzer` を起動する:
 ```
 セッションデータの分析を実施してください。
 データディレクトリ: ~/.claude/agent-memory/
-全分析タスク（エラーパターン、因果帰属、品質違反、スキル健全性、Recovery Tips 等）を実行し、
+全分析タスク（エラーパターン、因果帰属、品質違反、スキル健全性、Recovery Tips、ハーネス診断 等）を実行し、
 insights/analysis-YYYY-MM-DD.md と改善候補リスト（evidence_chain 付き）を出力してください。
 ```
 
@@ -219,6 +219,20 @@ Quality Gate → Custodian の順で実行する。
 - MEMORY.md への追記はユーザー承認なしに行わない
 - skill/rule の変更はユーザー承認なしに行わない
 - 削除は提案のみ、実行はユーザー確認後
+
+---
+
+## Phase 4: Feedback Loop
+
+revert/decline された提案のパターンを分析し、改善サイクルの自己修正能力を強化する。
+
+1. revert/decline された提案のパターンを `learnings/rejected-patterns.jsonl` に記録
+   - 記録形式: `{"date": "YYYY-MM-DD", "proposal": "...", "reason": "...", "category": "..."}`
+2. 同一パターンの再提案は 3回連続 reject で自動 suppress
+3. 承認率トレンド（直近10提案）を tracking し、Governance Level 昇格判定に反映
+4. 毎週の /improve 実行時に rejected-patterns を入力として注入
+
+詳細な suppress 条件・Governance Level 昇格閾値は `references/improve-policy.md` Rule 14 で定義。
 
 ---
 

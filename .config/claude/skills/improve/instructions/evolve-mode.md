@@ -24,7 +24,7 @@
 1. **対象選定**: `experiment_tracker.py next-target --skills {degraded_skills}` でラウンドロビン選定
 2. **失敗収集**: `skill-executions.jsonl` から対象スキルの failure_count >= 3 のパターンを抽出
 3. **Proposer**: `autoevolve-core (phase: improve)` を起動。H（`proposer-context --skill {target}`）+ 失敗トレースを注入。AP-1〜4 チェック
-   - **単一変更規律 (Rule 19)**: Proposer への指示に以下を含める: 「SKILL.md への変更は **1箇所のみ**。仮説を1文で明記すること。」
+   - **単一変更規律 (Rule 20)**: Proposer への指示に以下を含める: 「SKILL.md への変更は **1箇所のみ**。仮説を1文で明記すること。」
    - Proposer は `hypothesis` フィールドを返す（例: "見出しに数値を強制するルールを追加"）
 4. **Builder**: Proposer の提案を **worktree 上で** 実装（`autoevolve/*` ブランチ）
 5. **検証**: `skill-audit` の A/B パイプライン（`run_eval.sh` → `compare.sh` → `aggregate.py`）→ `gate_proposal()` 判定
@@ -47,8 +47,8 @@
 ## 早期終了条件
 
 - 2 イテレーション連続で `auto_reject` → ループ終了
-- **3 イテレーション連続で `revert` → ドリフト検出。ループ停止しユーザーに報告** (Rule 17)
-- **3 イテレーション経過後にベースラインスコアを下回っている → ループ停止** (Rule 18)
+- **3 イテレーション連続で `revert` → ドリフト検出。ループ停止しユーザーに報告** (Rule 18)
+- **3 イテレーション経過後にベースラインスコアを下回っている → ループ停止** (Rule 19)
 - **経過時間が 2 時間を超過 → ループ停止しユーザーに報告** — "Don't trust your agents" 記事: 12時間放置でメトリクス改竄・テスト無効化が発生。2時間は人間レビューの最小安全間隔
 - 全対象スキルが healthy に昇格 → ループ終了
 - `--iterations` 上限に到達 → ループ終了

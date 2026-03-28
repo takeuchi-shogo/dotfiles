@@ -113,6 +113,13 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 - **Plan レビュー（M/L 必須）**: Plan 作成後、ユーザーに提示する**前に** `plan-document-reviewer` サブエージェントを dispatch してレビューを実施する。Issues Found なら修正して再レビュー、Approved ならユーザーへ提示する（writing-plans スキルの Plan Review Loop に従う。最大3イテレーション）
 - **L規模のみ**: チェックポイントコミットを作成してから着手する（`git add -A && git commit -m "checkpoint: before {task description}"`）
 
+### Auto-Accept 判定
+
+Plan 承認後の変更実行時は `references/auto-accept-policy.md` の判定マトリクスに従う:
+- **Auto-Accept**: docs/tests のみ、単一ファイル、追加のみ → 確認なしで実行
+- **Confirm**: 2ファイル超、scripts/hooks 変更 → ユーザー確認
+- **Never**: settings.json, CLAUDE.md, セキュリティ、破壊的操作 → 常に確認必須
+
 ### 1.3. プロジェクト俯瞰 — M/L 規模のみ
 
 大規模な変更では、コードを書く前にプロジェクトのアーキテクチャ的信念を構築する:
@@ -498,6 +505,44 @@ LLM は長いコンテキストの中間部分を見落としやすい（Lost-in
 - 異なるタスクの文脈が混ざると、autocompact 後も前タスクの仮定が残留し、後半の品質が下がる
 - タスク完了後は `/compact` または新セッションで切り替える
 - 例外: 密接に関連するタスク（同一機能のフロント + バック等）は同一セッションでOK
+
+### Context Management Ladder
+
+コンテキスト圧力に応じた段階的対応。Anthropic の知見: Sonnet 4.5 はコンテキスト限界接近で早期終了行動を示す。**Compaction よりも Clean Session が安定**。
+
+| Pressure | Action |
+|----------|--------|
+| 80% | Subagent 委譲を検討。新規の大きな Read/Grep を避ける |
+| 90% | Compaction 実行。不要なツール出力を手動削除 |
+| 95%+ | New Session 推奨。checkpoint を保存してから切り替え |
+| Compaction 3回後 | Session 切り替え必須。これ以上の Compaction は品質劣化を招く |
+
+Compaction は最大3回/セッションを上限とする。Reset > Compaction が原則。
+
+### Loop Monitoring（Build-QA ラウンド監視）
+
+Build-QA ラウンドを反復する際、以下のメトリクスを各ラウンド終了時に確認する:
+
+- **テスト通過率**: 単調増加すべき。前ラウンド比で低下したら approach 再考
+- **Lint 警告数**: 単調減少すべき。増加は regression のシグナル
+- **ビルド時間**: 前ラウンド比 2x 超は異常。不要な依存追加の疑い
+- **編集回数/ラウンド**: 完了に近づくにつれ減少すべき。増加は doom loop の兆候
+
+2ラウンド連続で改善が見られない場合 → approach 変更 or 新セッションに切り替え。
+Morris の On the loop モデル: 結果が不満なら成果物ではなく**ハーネスを修正**する。
+
+### Escalation Ladder（違反蓄積と自動昇格）
+
+同一カテゴリの警告が蓄積した場合、対応レベルを自動昇格する:
+
+| 出現回数 | レベル | 対応 |
+|---------|--------|------|
+| 1回 | L1: Document | CLAUDE.md/rules に明記 |
+| 2回 | L2: AI Check | hook/skill で自動検出 |
+| 3回 | L3: Tool Enforce | リンター/CI で機械的ブロック |
+| 4回+ | L4: Structure Test | アーキテクチャテストで構造的に不可能に |
+
+nogataka「3回ルール」: 同一違反が3セッションで再発したら、次レベルへの昇格を検討。
 
 ### セッション粒度ルール（L 規模プロジェクト）
 

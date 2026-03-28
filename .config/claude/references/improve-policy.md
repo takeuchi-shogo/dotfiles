@@ -70,21 +70,22 @@
 11. **Brevity Bias 対策** — エージェント定義のドメイン知識セクション（Symptom-Cause-Fix テーブル、コードパターン、failure modes）は簡潔化の対象外。ACE 研究 [Zhang+ 2026] で反復最適化がプロンプトを汎用的に崩壊させる傾向が確認されている。行動指示（tools, permissions, format）のみ簡潔化対象
 12. **Knowledge Embedding 比率維持** — エージェント定義の内容比率は「ドメイン知識 ≥ 50%、行動指示 ≤ 50%」を目安とする。`/improve` サイクルでこの比率を下回る変更は discard
 13. **フィードバック履歴 H の注入制限** — Proposer への H 注入は直近 20 件 + 対象スキルフィルタに制限。60 日以上前のエントリはサマリー化。`build_proposer_context()` のデフォルト引数に従う
-14. **Proposer Anti-Patterns 遵守** — `autoevolve-core.md` の AP-1〜4 に従う。violation する提案は却下
-15. **--evolve コスト上限** — デフォルト iterations=3、最大=5。1 イテレーション=1 スキル。2 イテレーション連続 auto_reject で早期終了。コスト上限: 30 LLM 呼び出し/実行
-16. **--evolve は worktree 隔離必須** — イテレーティブループの Builder フェーズは worktree 上で実行。master ブランチへの直接変更禁止
-17. **ドリフトガード: 連続 reject 上限** — `--evolve` ループで 3 イテレーション連続 `revert` が発生した場合、ループを即時停止しユーザーにエスカレーションする。autoresearch 記事: "12時間放置でエージェントが別の問題を解き始めた"。連続 reject = 目的から逸脱のシグナル
-18. **ドリフトガード: 目的メトリクス後退検出** — `--evolve` ループの各イテレーションで、ベースラインスコアからの累積改善を追跡する。3 イテレーション経過後にベースラインを下回っている場合はループを停止し「戦略を再検討」を推奨する
-19. **単一変更規律** — `--evolve` ループの各イテレーションでは SKILL.md への変更を **1箇所のみ** に制限する。仮説を明記し、changelog に記録する。revert された仮説は同一表現で再試行しない。autoresearch 記事: "proposal quality dominates total cost" — 少数の精度の高い変更が多数の探索的変更に勝る
-20. **Proxy Metric 乖離検出（Goodhart 警告）** — skill 改善時にスコアが +5pp 以上上昇した場合、自動で「Why did score increase?」の説明を要求する。以下を追加チェック: (1) テスト難易度が下がっていないか（テスト行数の減少）、(2) assertion 数が減っていないか、(3) スコープが狭まっていないか（対象ファイル数の減少）。Goodhart's Law: 指標が目標になると指標としての機能を失う。検出は `scripts/policy/gaming-detector.py` が実行
-21. **Self-referential Improvement 禁止** — AutoEvolve が自身の評価基準（`improve-policy.md`, `skill-benchmarks.jsonl`, `benchmark-dimensions.md`）を直接変更することを禁止する。評価基準の変更は必ず人間の承認を必要とする。Bengio 論文: エージェントが自身の報酬関数を変更できる場合、reward tampering が最適戦略になり得る
-22. **Metric Diversity 要件** — skill 改善の評価は単一メトリクスではなく最低2つの独立指標で判定する。例: 実行時間 + ユーザー満足度、テスト通過率 + コードレビュースコア。単一メトリクスへの過度な最適化は specification gaming の温床になる
-23. **Self-Edit Justification (3-Question Gate)** — 改善提案時に以下の3質問に必ず回答する: (1) What problem does this solve?（具体的に。"might be better" は不可）、(2) How do we measure if it worked?（定量指標に紐づける）、(3) What if it breaks?（ロールバック計画、regression の blast radius）。いずれかが曖昧・欠落なら提案を draft に留める
-24. **Knowledge Pyramid Tier 要件** — 学習データには `tier`（Raw/Exploratory/Benchmark/Doctrine）と `score`（0.0-1.0）を付与する。L3 (Rules) への昇格には Tier 2 (Benchmark) 以上、L4 (Golden Principles) には Tier 3 (Doctrine) を必須とする。詳細は `references/knowledge-pyramid.md` を参照
-25. **Contradiction Mapping** — Garden フェーズで同一トピックに対する方向性の逆転（矛盾）を検出する。検出時は `boundary_condition` フィールドを付与して適用条件を明示するか、低品質側を降格する。自動解決は行わずユーザーに判断を委ねる。詳細は `references/contradiction-mapping.md` を参照
-26. **Governance Levels** — カテゴリごとに自律性レベル（0:Observe / 1:Review / 2:Auto-Merge / 3:Trusted）を設定する。デフォルトは Level 1（現在の動作維持）。Level 2 以上への昇格は承認率・CQS に基づく。Level 3 は opt-in 必須。詳細は `references/governance-levels.md` を参照
-27. **Stepwise Change Budget** — 1サイクル内の変更は段階的に保守的にする。1st change: epsilon=0.2（通常の変更幅）、2nd change: epsilon=0.15（やや保守的）、3rd change: epsilon=0.1（最も保守的）。根拠: HACRL Stepwise Clipping — 後半ほど保守的にしてドリフトを防止。`scripts/lib/rl_advantage.py` の `stepwise_clip_ratio()` で計算
-28. **Acceleration Guard** — 直近3サイクルの accept_rate が前3サイクル比で +30pp 以上上昇した場合、警告を発行し人間レビューを要求する。Hyperagents 論文 (arXiv:2603.19461) の「加速的改善カーブ」は真の改善を示す場合もあるが、評価基準の緩み（Rule 20 Goodhart 警告に類似）やテスト難易度低下の可能性もある。`compute_cqs()` の verdict 分布と合わせて判断する
+14. **rejected-patterns の /improve 注入** — `/improve` 実行時に `learnings/rejected-patterns.jsonl` を Phase 4 (Feedback Loop) の入力として注入する。直近 30 日の reject エントリのみ注入（古いものは自動アーカイブ）。同一 category の reject が 3件以上 → そのカテゴリの提案を suppress。承認率が 50% 未満の場合、Governance Level を 1段階引き上げ
+15. **Proposer Anti-Patterns 遵守** — `autoevolve-core.md` の AP-1〜4 に従う。violation する提案は却下
+16. **--evolve コスト上限** — デフォルト iterations=3、最大=5。1 イテレーション=1 スキル。2 イテレーション連続 auto_reject で早期終了。コスト上限: 30 LLM 呼び出し/実行
+17. **--evolve は worktree 隔離必須** — イテレーティブループの Builder フェーズは worktree 上で実行。master ブランチへの直接変更禁止
+18. **ドリフトガード: 連続 reject 上限** — `--evolve` ループで 3 イテレーション連続 `revert` が発生した場合、ループを即時停止しユーザーにエスカレーションする。autoresearch 記事: "12時間放置でエージェントが別の問題を解き始めた"。連続 reject = 目的から逸脱のシグナル
+19. **ドリフトガード: 目的メトリクス後退検出** — `--evolve` ループの各イテレーションで、ベースラインスコアからの累積改善を追跡する。3 イテレーション経過後にベースラインを下回っている場合はループを停止し「戦略を再検討」を推奨する
+20. **単一変更規律** — `--evolve` ループの各イテレーションでは SKILL.md への変更を **1箇所のみ** に制限する。仮説を明記し、changelog に記録する。revert された仮説は同一表現で再試行しない。autoresearch 記事: "proposal quality dominates total cost" — 少数の精度の高い変更が多数の探索的変更に勝る
+21. **Proxy Metric 乖離検出（Goodhart 警告）** — skill 改善時にスコアが +5pp 以上上昇した場合、自動で「Why did score increase?」の説明を要求する。以下を追加チェック: (1) テスト難易度が下がっていないか（テスト行数の減少）、(2) assertion 数が減っていないか、(3) スコープが狭まっていないか（対象ファイル数の減少）。Goodhart's Law: 指標が目標になると指標としての機能を失う。検出は `scripts/policy/gaming-detector.py` が実行
+22. **Self-referential Improvement 禁止** — AutoEvolve が自身の評価基準（`improve-policy.md`, `skill-benchmarks.jsonl`, `benchmark-dimensions.md`）を直接変更することを禁止する。評価基準の変更は必ず人間の承認を必要とする。Bengio 論文: エージェントが自身の報酬関数を変更できる場合、reward tampering が最適戦略になり得る
+23. **Metric Diversity 要件** — skill 改善の評価は単一メトリクスではなく最低2つの独立指標で判定する。例: 実行時間 + ユーザー満足度、テスト通過率 + コードレビュースコア。単一メトリクスへの過度な最適化は specification gaming の温床になる
+24. **Self-Edit Justification (3-Question Gate)** — 改善提案時に以下の3質問に必ず回答する: (1) What problem does this solve?（具体的に。"might be better" は不可）、(2) How do we measure if it worked?（定量指標に紐づける）、(3) What if it breaks?（ロールバック計画、regression の blast radius）。いずれかが曖昧・欠落なら提案を draft に留める
+25. **Knowledge Pyramid Tier 要件** — 学習データには `tier`（Raw/Exploratory/Benchmark/Doctrine）と `score`（0.0-1.0）を付与する。L3 (Rules) への昇格には Tier 2 (Benchmark) 以上、L4 (Golden Principles) には Tier 3 (Doctrine) を必須とする。詳細は `references/knowledge-pyramid.md` を参照
+26. **Contradiction Mapping** — Garden フェーズで同一トピックに対する方向性の逆転（矛盾）を検出する。検出時は `boundary_condition` フィールドを付与して適用条件を明示するか、低品質側を降格する。自動解決は行わずユーザーに判断を委ねる。詳細は `references/contradiction-mapping.md` を参照
+27. **Governance Levels** — カテゴリごとに自律性レベル（0:Observe / 1:Review / 2:Auto-Merge / 3:Trusted）を設定する。デフォルトは Level 1（現在の動作維持）。Level 2 以上への昇格は承認率・CQS に基づく。Level 3 は opt-in 必須。詳細は `references/governance-levels.md` を参照
+28. **Stepwise Change Budget** — 1サイクル内の変更は段階的に保守的にする。1st change: epsilon=0.2（通常の変更幅）、2nd change: epsilon=0.15（やや保守的）、3rd change: epsilon=0.1（最も保守的）。根拠: HACRL Stepwise Clipping — 後半ほど保守的にしてドリフトを防止。`scripts/lib/rl_advantage.py` の `stepwise_clip_ratio()` で計算
+29. **Acceleration Guard** — 直近3サイクルの accept_rate が前3サイクル比で +30pp 以上上昇した場合、警告を発行し人間レビューを要求する。Hyperagents 論文 (arXiv:2603.19461) の「加速的改善カーブ」は真の改善を示す場合もあるが、評価基準の緩み（Rule 21 Goodhart 警告に類似）やテスト難易度低下の可能性もある。`compute_cqs()` の verdict 分布と合わせて判断する
 
 ### 品質基準
 

@@ -7,11 +7,11 @@ Output: JSON with additionalContext warning on stdout
 
 Detects proxy metric divergence (Goodhart's Law), self-referential
 improvement attempts, and single-metric evaluations per improve-policy
-Rules 20-22.
+Rules 21-23.
 
 Note: This is an initial implementation focused on proxy metric checks.
 Future iterations will add assertion counting and scope narrowing detection.
-Rule 22 (Metric Diversity) implemented — detects single-metric evaluations.
+Rule 23 (Metric Diversity) implemented — detects single-metric evaluations.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ emit = get_emitter()
 
 # --- Constants ---
 SCORE_JUMP_THRESHOLD = 5  # +5pp triggers Goodhart warning
-MIN_METRIC_COUNT = 2  # Rule 22: require at least 2 distinct metrics
+MIN_METRIC_COUNT = 2  # Rule 23: require at least 2 distinct metrics
 PROTECTED_FILES = [
     "improve-policy.md",
     "skill-benchmarks.jsonl",
@@ -48,7 +48,7 @@ IMPROVE_SKILL_PATTERNS = [
     re.compile(r"(?<![a-zA-Z])evolve(?![a-zA-Z])", re.IGNORECASE),
 ]
 
-# Rule 21: proximity pattern — edit indicator と protected file が 80 文字以内に共起
+# Rule 22: proximity pattern — edit indicator と protected file が 80 文字以内に共起
 _EDIT_NEAR_FILE_PATTERN = re.compile(
     r"(?:Edit|Write|modified|updated|changed)\b.{0,80}(?:"
     + "|".join(re.escape(f) for f in PROTECTED_FILES)
@@ -71,7 +71,7 @@ def _is_improve_related(tool_input: dict) -> bool:
 
 
 def _detect_self_referential_edit(tool_output: str) -> str | None:
-    """Rule 21: Detect attempts to modify evaluation criteria files.
+    """Rule 22: Detect attempts to modify evaluation criteria files.
 
     Limitation: This checks tool_output text for co-occurrence of edit
     indicators and protected file names within 80 chars. A more robust
@@ -85,7 +85,7 @@ def _detect_self_referential_edit(tool_output: str) -> str | None:
             (f for f in PROTECTED_FILES if f in matched_text), "evaluation criteria"
         )
         return (
-            f"[Gaming Detector] Rule 21 警告: "
+            f"[Gaming Detector] Rule 23 警告: "
             f"評価基準ファイル '{protected}' への変更が検出されました。"
             f"AutoEvolve が自身の評価基準を変更することは禁止されています。"
             f"評価基準の変更は人間の承認を必要とします。"
@@ -110,7 +110,7 @@ def _parse_single_delta(delta_str: str) -> float | None:
 
 
 def _detect_single_metric(tool_output: str) -> str | None:
-    """Rule 22: Detect evaluations relying on a single metric.
+    """Rule 23: Detect evaluations relying on a single metric.
 
     When an improve/evolve result reports scores, check that multiple
     distinct metrics are present. Single-metric optimization is vulnerable
@@ -143,7 +143,7 @@ def _detect_single_metric(tool_output: str) -> str | None:
     if len(found_metrics) == 1:
         metric_name = next(iter(found_metrics))
         return (
-            f"[Gaming Detector] Rule 22 警告: "
+            f"[Gaming Detector] Rule 23 警告: "
             f"評価が単一メトリクス '{metric_name}' のみに依存しています。"
             f"少なくとも {MIN_METRIC_COUNT} 個の独立したメトリクスで評価してください。"
             f"単一メトリクスはエージェントの搾取対象になります。"
@@ -153,7 +153,7 @@ def _detect_single_metric(tool_output: str) -> str | None:
 
 
 def _detect_score_jump(tool_output: str) -> str | None:
-    """Rule 20: Detect suspiciously large score improvements."""
+    """Rule 21: Detect suspiciously large score improvements."""
     # Pattern: "score: 70 → 80" or "score 70 -> 80" (narrow match)
     pair_pattern = re.compile(
         r"\bscore[:\s]+(\d+(?:\.\d+)?)\s*(?:→|->|to)\s*(\d+(?:\.\d+)?)"
@@ -166,7 +166,7 @@ def _detect_score_jump(tool_output: str) -> str | None:
             delta = after - before
             if delta >= SCORE_JUMP_THRESHOLD:
                 return (
-                    f"[Gaming Detector] Rule 20 Goodhart 警告: "
+                    f"[Gaming Detector] Rule 21 Goodhart 警告: "
                     f"スコアが +{delta:.1f}pp 上昇しました "
                     f"({before:.1f} → {after:.1f})。"
                     f"以下を確認してください: "
@@ -182,7 +182,7 @@ def _detect_score_jump(tool_output: str) -> str | None:
         delta = _parse_single_delta(match.group(1))
         if delta is not None and delta >= SCORE_JUMP_THRESHOLD:
             return (
-                f"[Gaming Detector] Rule 20 Goodhart 警告: "
+                f"[Gaming Detector] Rule 21 Goodhart 警告: "
                 f"スコアが +{delta:.1f}pp 上昇しました。"
                 f"Goodhart's Law に注意: スコア上昇の原因を説明してください。"
             )
@@ -209,7 +209,7 @@ def main() -> None:
         output_passthrough(data)
         return
 
-    # Rule 21: Self-referential improvement check
+    # Rule 22: Self-referential improvement check
     warning = _detect_self_referential_edit(tool_output)
     if warning:
         emit(
@@ -223,7 +223,7 @@ def main() -> None:
         output_context("PostToolUse", warning)
         return
 
-    # Rule 20: Proxy metric divergence check
+    # Rule 21: Proxy metric divergence check
     warning = _detect_score_jump(tool_output)
     if warning:
         emit(
@@ -237,7 +237,7 @@ def main() -> None:
         output_context("PostToolUse", warning)
         return
 
-    # Rule 22: Metric diversity check
+    # Rule 23: Metric diversity check
     warning = _detect_single_metric(tool_output)
     if warning:
         emit(
