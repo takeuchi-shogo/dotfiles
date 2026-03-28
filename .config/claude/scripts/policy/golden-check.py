@@ -217,7 +217,7 @@ def check_dependency_file(file_path: str) -> str | None:
 def check_empty_catch(content: str, file_path: str = "") -> str | None:
     # Skip non-code files (e.g. .md) — code blocks in docs cause false positives
     ext = os.path.splitext(file_path)[1].lower()
-    if ext in (".md", ".txt", ".rst"):
+    if ext in (".md", ".mdc", ".txt", ".rst"):
         return None
 
     for pattern in EMPTY_CATCH_PATTERNS:
@@ -324,7 +324,7 @@ def check_comment_ratio(content: str, file_path: str = "") -> str | None:
     """
     ext = os.path.splitext(file_path)[1].lower()
 
-    if ext in (".md", ".txt", ".json", ".yaml", ".yml", ".toml"):
+    if ext in (".md", ".mdc", ".txt", ".json", ".yaml", ".yml", ".toml"):
         return None  # Non-code files
 
     lines = [line.strip() for line in content.splitlines() if line.strip()]
