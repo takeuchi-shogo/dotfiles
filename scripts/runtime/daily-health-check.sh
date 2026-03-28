@@ -34,6 +34,18 @@ else
   echo "[$(date -Iseconds)] ERROR: claude CLI not found" >> "$LOG_FILE"
 fi
 
+# --- patterns.jsonl rotation & dedup ---
+ROTATE_SCRIPT="$(dirname "$0")/rotate-patterns.py"
+if [[ -x "$ROTATE_SCRIPT" ]]; then
+  if output=$(python3 "$ROTATE_SCRIPT" 2>&1); then
+    echo "[$(date -Iseconds)] OK: patterns rotation -- $output" >> "$LOG_FILE"
+  else
+    echo "[$(date -Iseconds)] WARN: patterns rotation failed -- $output" >> "$LOG_FILE"
+  fi
+else
+  echo "[$(date -Iseconds)] SKIP: rotate-patterns.py not found or not executable" >> "$LOG_FILE"
+fi
+
 # --- Patrol Agent heartbeat verification ---
 HEARTBEAT_FILE="${HOME}/.claude/patrol-heartbeat"
 HEARTBEAT_MAX_AGE_MINUTES=15
