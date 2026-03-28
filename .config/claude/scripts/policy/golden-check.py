@@ -210,7 +210,12 @@ def check_dependency_file(file_path: str) -> str | None:
     return None
 
 
-def check_empty_catch(content: str) -> str | None:
+def check_empty_catch(content: str, file_path: str = "") -> str | None:
+    # Skip non-code files (e.g. .md) — code blocks in docs cause false positives
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext in (".md", ".txt", ".rst"):
+        return None
+
     for pattern in EMPTY_CATCH_PATTERNS:
         if pattern.search(content):
             return (
@@ -269,7 +274,8 @@ def check_ghost_file(file_path: str, tool_name: str) -> str | None:
         ratio = SequenceMatcher(None, name_without_ext, existing_name).ratio()
         if ratio > 0.7 and existing_file != basename:
             return (
-                f"[GP-009] 類似名のファイル `{existing_file}` が同ディレクトリに存在します。"
+                "[GP-009] 類似名のファイル"
+                f" `{existing_file}` が同ディレクトリに存在します。"
                 "新規作成ではなく既存ファイルの修正を検討してください。"
             )
     return None
@@ -382,7 +388,7 @@ def main() -> None:
     checks: list[tuple[str, str | None]] = [
         ("GP-002", check_boundary_validation(content, file_path)),
         ("GP-003", check_dependency_file(file_path)),
-        ("GP-004", check_empty_catch(content)),
+        ("GP-004", check_empty_catch(content, file_path)),
         ("GP-005", check_unsafe_types(content, file_path)),
         ("GP-009", check_ghost_file(file_path, tool_name)),
         ("GP-010", check_comment_ratio(content, file_path)),
