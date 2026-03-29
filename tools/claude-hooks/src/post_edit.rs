@@ -406,15 +406,16 @@ fn strip_comments(content: &str, ext: &str) -> String {
 
 /// Paths excluded from golden principles checks.
 /// Infrastructure, docs, and config files generate false positives (CRIT-004).
+/// NOTE: `/scripts/` was previously excluded entirely, but this silenced legitimate
+/// GP-004 violations in harness scripts. Now only non-code infra paths are excluded.
 const GP_EXCLUDE_PATTERNS: &[&str] = &[
     "/.worktrees/",
-    "/scripts/",
     "/agent-memory/",
     "/node_modules/",
     "/.git/",
 ];
 
-const GP_EXCLUDE_EXTENSIONS: &[&str] = &["md", "toml", "yml", "yaml"];
+const GP_EXCLUDE_EXTENSIONS: &[&str] = &["md", "mdc", "toml", "yml", "yaml", "txt", "rst"];
 
 fn is_gp_excluded(file_path: &str) -> bool {
     // Check path patterns
