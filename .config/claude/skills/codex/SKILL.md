@@ -13,7 +13,19 @@ metadata:
 
 ## Running a Task
 
-1. Default to `gpt-5.4` model. Ask the user (via `AskUserQuestion`) which reasoning effort to use (`xhigh`,`high`, `medium`, or `low`). User can override model if needed (see Model Options below).
+1. Default to `gpt-5.4` model. Auto-infer reasoning effort from task type (see table below). Inform the user of the auto-selected level and allow override. User can also override model if needed (see Model Options below).
+
+### Reasoning Effort Auto-Inference
+
+| タスク性質 | 自動選択 | 根拠 |
+|-----------|----------|------|
+| セキュリティ分析、脆弱性調査 | `xhigh` | 見落としが致命的 |
+| コードレビュー（~30行以上） | `xhigh` | 正確性が最重要 |
+| アーキテクチャ設計、デバッグ | `high` | 深い推論が必要 |
+| 実装、リファクタリング、テスト生成 | `medium` | 速度とコストのバランス |
+| 簡単な修正、フォーマット | `low` | オーバーヘッド最小化 |
+
+ユーザーが明示的に指定した場合はそちらを優先する。
 2. Select the sandbox mode required for the task; default to `--sandbox read-only` unless edits or network access are necessary.
 3. Assemble the command with the appropriate options:
    - `-m, --model <MODEL>`
