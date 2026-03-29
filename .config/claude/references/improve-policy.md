@@ -334,6 +334,85 @@ outcome スコア: clean_success=1.0, recovery=0.6, failure=0.2
 - テスト環境は worktree で隔離
 - 除去候補でも即削除せず、`[DEPRECATED]` 付与 → 次回テストで再確認 → 削除提案
 
+## Verification Sweep（Garden フェーズ拡張）
+
+`/improve` の Garden フェーズで `lessons-learned.md` の verify: 行を機械実行する。
+"ルールは wish。verify: 付きルールが guardrail。guardrail だけが生き残る。"
+
+### 実行手順
+
+1. `lessons-learned.md` を読み、`verify:` 行を持つエントリを列挙
+2. 各 verify: を実行（Grep, Glob, Read, git diff 等）
+3. 結果を判定:
+   - **PASS**: 無言で次へ
+   - **FAIL**: 違反をレポートに含め、修正提案を出力
+   - **manual**: スキップ（将来の具体化候補としてカウント）
+4. サマリー出力: `verify: X checked, Y passed, Z failed, W manual`
+
+### verify: 行のフォーマット
+
+```
+verify: Grep("pattern", path="scope") → N matches     # grep 検証
+verify: Glob("pattern") → N+ matches                   # ファイル存在検証
+verify: git diff に X が含まれない                       # diff 検証
+verify: manual（理由）                                   # 機械検証不可
+```
+
+- verify: manual は技術的負債。Garden で「具体化できないか」を毎回検討する
+- 新規 lessons-learned エントリは verify: 行を必須とする
+
+## Session Metrics（セッション効果の定量化）
+
+セッション単位でメトリクスを追跡し、AutoEvolve の effectiveness を可視化する。
+記事 "Self-Evolving System" の session scoring を AutoEvolve フレームワークに適応。
+
+### 追跡メトリクス
+
+| メトリクス | 収集方法 | 用途 |
+|-----------|---------|------|
+| corrections_received | feedback memory の新規作成数 | 学習シグナルの量 |
+| verify_checked | Garden sweep の実行数 | 検証カバレッジ |
+| verify_passed | Garden sweep の PASS 数 | ルール遵守率 |
+| verify_failed | Garden sweep の FAIL 数 | 違反検出 |
+| verify_manual | Garden sweep の manual 数 | 技術的負債量 |
+| lessons_added | lessons-learned.md の差分行数 | 知識蓄積速度 |
+
+### トレンド検出（5+ サイクル蓄積後）
+
+- corrections 減少傾向 → システムが機能している
+- corrections 横ばい/増加 → ルールが曖昧 or 参照されていない。ルール具体化を優先
+- verify_failed が同一ルールで再発 → rules/ への昇格候補（L3 への promotion）
+- verify_manual 比率 > 50% → 具体化スプリントを推奨
+
+### `/improve` ダッシュボードへの組み込み
+
+既存の CQS・インフラメトリクスと並べて session metrics を表示する。
+
+## Promotion Ladder（知識の段階的昇格）
+
+知識蒸留パイプライン (L0→L4) を補完する correction-driven な昇格メカニズム。
+記事の "correction 2回→auto-promote" パターンを AutoEvolve の安全ルールに準拠させて適応。
+
+### 昇格条件
+
+| シグナル | 行き先 | 条件 |
+|---------|--------|------|
+| feedback memory 1回目 | 記録のみ | — |
+| 同一パターン 2回目 | `lessons-learned.md` に追記（verify: 行必須） | Garden フェーズで自動検出・提案 |
+| lessons-learned で verify: PASS 10+ サイクル連続 | `rules/common/*.md` or `CLAUDE.md` への昇格候補 | `/improve` で提案、人間承認必須 |
+| `/improve` で reject | 再提案禁止（improve-policy の既存ルール準拠） | evolution-log 相当の記録 |
+
+### 降格条件
+
+- verify: FAIL が 3+ サイクル連続 → ルールが陳腐化。削除 or 書き直しを提案
+- 対象コードが削除された → ルール自体を削除提案
+
+### 容量管理
+
+- lessons-learned.md は **50エントリ上限**（記事の設計に準拠）
+- 上限接近時: verify: PASS 10+ 連続のエントリを昇格候補として優先提示
+- verify: manual のエントリを具体化 or 削除候補として提示
+
 ## 現在のフォーカス
 
 全カテゴリを高頻度で改善する（2026-03-10 設定）
