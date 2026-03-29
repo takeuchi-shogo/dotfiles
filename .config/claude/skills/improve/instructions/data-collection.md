@@ -88,6 +88,18 @@ fi
 - **pending** な実験がある場合 → 一覧を表示し、ユーザーに状況を伝える
 - **merged** だが効果測定未実施の実験がある場合 → Step 3 で測定する
 
+## Step 2.5: 前回 Issue の棚卸し
+
+前回の `/improve` で作成された GitHub Issue の実施状況を確認する:
+
+```bash
+gh issue list -R takeuchi-shogo/dotfiles --label autoevolve --json number,title,state,closedAt --jq '.[] | "\(.number) [\(.state)] \(.title)"'
+```
+
+- open Issue の一覧をユーザーに提示し、対応済み・未着手・不要を確認
+- **実施率** (closed / total) を KPI として Step 7 のレポートに含める
+- 前回提案が全て未対応の場合、「改善ループが停滞しています」と警告する
+
 ## Step 3: マージ済み実験の効果測定
 
 Step 2 で効果測定対象が見つかった場合:
