@@ -50,6 +50,21 @@ select → generate → edit
 
 すべての非自明なタスクは以下の6段階で進める:
 
+### Plan 前の必須チェック
+
+- **M/L タスク**: Plan 作成前に `/check-health` を実行し、関連ドキュメントの矛盾・陳腐化を検出する。矛盾情報は Plan に伝播し、下流の全実装を汚染する（OpenForage: "Pre-Task Contradiction Check"）
+- **L タスク — 複数プラン生成（任意）**: 不確実性が高い場合、N=3 の異なるアプローチを列挙し、保守性・拡張性・シンプルさの 3 軸で比較して選択する。`/debate` を活用してもよい
+
+### Plan 実行中の中間検証（L 規模）
+
+L 規模タスクでは、Plan の **3 ステップ完了ごと** に計画突合チェックを行う:
+
+1. 完了した実装が Plan のステップ定義と一致しているか確認
+2. 逸脱がある場合は Decision Log に記録し、Plan を更新するか差し戻す
+3. カスケード障害（A を作るべきところ A' を作り、下流が全て A' 前提になる）を早期に防止する
+
+> Ref: OpenForage "Planning Deviations" — "verify early and often that the solution is implemented in accordance with your expectations"
+
 ### Plan ファイルの扱い
 
 - root の `PLANS.md` を plan contract として扱う

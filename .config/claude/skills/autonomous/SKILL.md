@@ -47,6 +47,14 @@ metadata:
 └── run.lock              # 排他制御用ロック
 ```
 
+### タスク分解のガイドライン
+
+- **1タスクあたり 100行以下** を目安に分解する。エージェントは RL プロセスで複雑タスクの失敗ペナルティを学習しており、大きなタスクを回避する傾向がある（Complexity Fear）。小さいタスクに分解することで activation energy をゼロに近づけ、stub や "out of scope" 宣言を防ぐ
+- 500個の小タスクを連結する方が、5個の大タスクよりも品質が高くなる
+- 各タスクは独立してテスト可能な単位にする
+
+> Ref: OpenForage "Complexity Fear" — "break a complex problem into many different sub-tasks where every task is a sub-hundred-line task"
+
 ### タスクリストのフォーマット選択
 
 | フォーマット | 用途 | ファイル |
