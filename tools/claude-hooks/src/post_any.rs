@@ -208,7 +208,7 @@ fn check_doom_loop(tool_name: &str, data: &serde_json::Value) -> Option<String> 
 
 // ── exploration spiral detection ────────────────────────────────────
 
-fn check_exploration_spiral(tool_name: &str) -> Option<String> {
+fn check_exploration_spiral(tool_name: &str, data: &serde_json::Value) -> Option<String> {
     let now = crate::io::now_secs();
     let state_path = crate::io::state_dir().join("exploration-tracker.json");
     let mut state = crate::io::read_json_state(&state_path);
@@ -247,6 +247,10 @@ fn check_exploration_spiral(tool_name: &str) -> Option<String> {
         state["lastReset"] = serde_json::json!(now);
     }
 
+    // Extract target for event recording (fixes FM-012 target=N/A)
+    let input = &data["tool_input"];
+    let target = extract_target(tool_name, input);
+
     // Critical (10): emit event + replan intervention
     let result = if consecutive_reads >= EXPLORATION_CRITICAL_THRESHOLD && !warned_critical {
         state["warned_critical"] = serde_json::json!(true);
@@ -259,6 +263,7 @@ fn check_exploration_spiral(tool_name: &str) -> Option<String> {
                 "type": "exploration_spiral",
                 "consecutive_reads": consecutive_reads,
                 "severity": "critical",
+                "target": target,
             }),
         );
 
@@ -278,6 +283,7 @@ fn check_exploration_spiral(tool_name: &str) -> Option<String> {
                 "type": "exploration_spiral",
                 "consecutive_reads": consecutive_reads,
                 "severity": "warning",
+                "target": target,
             }),
         );
 
@@ -457,7 +463,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
         contexts.push(ctx);
     }
 
-    if let Some(ctx) = check_exploration_spiral(tool_name) {
+    if let Some(ctx) = check_exploration_spiral(tool_name, data) {
         contexts.push(ctx);
     }
 

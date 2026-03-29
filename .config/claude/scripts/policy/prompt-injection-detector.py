@@ -17,7 +17,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import (
-    emit_audit_event,
     guard_action,
     load_hook_input,
     rotate_and_append,
@@ -253,8 +252,8 @@ def main() -> None:
             sys.exit(2)
         return
 
-    # Clean — audit trail only (not patterns.jsonl; Issue #22)
-    emit_audit_event("injection_scan", {"clean": True})
+    # Clean — skip recording to avoid audit.jsonl noise (~945 identical records/cycle)
+    # Only blocked/suspicious events are worth recording (via _log_block above)
 
 
 if __name__ == "__main__":
