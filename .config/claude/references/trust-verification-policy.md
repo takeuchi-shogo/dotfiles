@@ -45,3 +45,38 @@ Layer 3: Human Escalation（人間エスカレーション）
 - `/review` Step 4 Synthesis: テスト未実行時は verdict に警告を付加
 - `rationalization-scanner.py`: PostToolUse(Agent) で FM-018 パターンを検出
 - `derivation-honesty-hook.py`: PostToolUse(Bash|Write|Edit) で FM-016 パターンを検出
+
+---
+
+## Verifier 配置ヒューリスティック
+
+Verifier（検証ゲート）の配置は「全ステップに挿入」ではなく**戦略的配置**が最適。
+
+> 出典: Yue et al. 2026 "From Static Templates to Dynamic Runtime Graphs" §7.4
+> "verifiers deliver the largest returns when they are both cheap and semantically meaningful"
+
+### 配置原則
+
+| 原則 | 説明 |
+|------|------|
+| **Cheap + Meaningful** | コストが低く、かつ意味のあるフィードバックを返す箇所に配置 |
+| **候補生成直後** | 高コストな下流ステップの前に配置し、無駄なパスを刈り込む |
+| **高コストステップ前** | LLM 呼び出し、外部 API、長時間処理の前にゲートを置く |
+| **全ステップ配置は非効率** | 軽微な中間ステップごとに verifier を挟むとレイテンシが支配的になる |
+
+### dotfiles での適用マップ
+
+```
+Plan → [Risk Analysis ← cheap verifier: plan-lifecycle.py]
+  → Implement
+    → [Test ← cheap + meaningful: unit test 自動実行]
+      → [Review ← meaningful but costly: 並列 reviewer]
+        → [Verify ← completion-gate.py: テスト実行済み確認]
+          → [Security ← costly: security-reviewer agent]
+```
+
+**配置の ROI 判定**:
+- `completion-gate.py`（Layer 0）: cheap + meaningful → **最高 ROI**
+- `rationalization-scanner.py`: cheap（正規表現）+ meaningful（FM-018）→ **高 ROI**
+- 並列 reviewer（Layer 1-2）: costly + meaningful → **必要だが頻度を制御**
+- 全 Edit/Write への verifier: cheap だが semantically weak → **非推奨**

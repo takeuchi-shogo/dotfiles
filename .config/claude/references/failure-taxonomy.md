@@ -340,3 +340,45 @@ FM-001〜FM-010 はトップダウンで設計された初期分類である。
 - 言語 × エラー種別 × コンテキストサイズ
 - hook が正しく検出するか検証
 - 未検出パターンを FM に追加
+
+---
+
+## Graph vs Prompt 修正診断
+
+失敗を検出した後、**構造変更（graph-level fix）と prompt 修正（node-level fix）のどちらが適切か**を判断する。
+
+> 出典: Yue et al. 2026 "From Static Templates to Dynamic Runtime Graphs" §7.3
+> "if the error arises because the wrong node executed, the right node never existed, or the information path was wrong, a better prompt is unlikely to be the real fix."
+
+### 診断フローチャート
+
+```
+失敗の根本原因は何か?
+│
+├─ 正しいノード（エージェント/ツール）が実行されなかった
+│  → Graph-level fix: ルーティング修正、ノード追加
+│  例: security-reviewer が起動すべき場面で code-reviewer のみ → routing 条件修正
+│
+├─ 必要なノードがワークフローに存在しない
+│  → Graph-level fix: 新ノード追加（agent/hook/skill）
+│  例: DB マイグレーション検証ステップが欠如 → 新 hook 追加
+│
+├─ 情報の流れ（エッジ）が誤っている
+│  → Graph-level fix: エッジ再配線、依存関係修正
+│  例: レビュー結果が completion-gate に伝わっていない → hook 連鎖修正
+│
+├─ 正しいノードが実行されたが出力品質が低い
+│  → Node-level fix: プロンプト改善、パラメータ調整
+│  例: code-reviewer が false positive を出す → agent 定義のプロンプト修正
+│
+└─ 判断できない
+   → 実行トレースを確認し、どのノードが実行されたか・されなかったかを特定
+```
+
+### FM との対応
+
+| 修正レベル | 対象 FM 例 | 典型的修正 |
+|-----------|-----------|-----------|
+| **Graph-level** | FM-011 (Plan Adherence), FM-019 (Agentic Laziness), FM-020 (Probabilistic Cascade) | hook 追加/ルーティング変更/ワークフロー構造修正 |
+| **Node-level** | FM-016 (Result Fabrication), FM-018 (Evaluator Rationalization) | プロンプト強化/検出パターン追加 |
+| **両方** | FM-002 (Error Suppression) | 構造でエラーパスを確保 + プロンプトで抑制を禁止 |
