@@ -6,6 +6,7 @@ description: >
   過去のAIエージェント対話履歴（Claude Code, GitHub Copilot Chat, Cursor, Cline, Roo Code, Windsurf,
   Antigravity, Gemini CLI, OpenAI Codex, OpenCode）を読み取り、技術理解度・プロンプティングパターン・AI依存度を推定してレポートを生成する。
 disable-model-invocation: true
+argument-hint: "[<days> | all | <project> [<days>]]"
 allowed-tools: Read, Write, Glob, Grep, Bash
 context: fork
 metadata:
@@ -39,7 +40,7 @@ metadata:
 
 ```bash
 OUTFILE="/tmp/prompt-review-data_$(date +%Y%m%d%H%M%S).json"
-python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > "$OUTFILE"
+python "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > "$OUTFILE"
 ```
 
 - 引数なし → オプションなし（デフォルト: 過去7日分）
@@ -48,7 +49,7 @@ python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > "$OUTFILE"
 - 文字列のみ（例: `yonshogen`） → `--project yonshogen`
 - 文字列 + 数値（例: `yonshogen 30`） → `--project yonshogen --days 30`
 
-**重要**: スクリプトのパスは、このスキルファイルからの相対パスではなく、スキルが格納されているプロジェクトの `.claude/skills/prompt-review/scripts/collect.py` の絶対パスを使うこと。現在の作業ディレクトリ（`cwd`）を基準に `.claude/skills/prompt-review/scripts/collect.py` を指定する。
+**重要**: スクリプトのパスは `${CLAUDE_SKILL_DIR}/scripts/collect.py` を使うこと。`$CLAUDE_SKILL_DIR` はスキルディレクトリへの絶対パスに自動展開される。
 
 ### 出力の読み取り
 

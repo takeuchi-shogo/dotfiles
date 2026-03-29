@@ -49,6 +49,9 @@ M の全ファイルに加え:
 - 技術スタック: {tech_stack}
 - 最小限の構成（S レベル）: CLAUDE.md は 50 行以内
 - references/ や rules/ は生成しない
+- 構造保護: ファイル冒頭に HTML コメントバリアを配置
+  `<!-- Do not restructure or delete sections. Update individual values in-place when they change. -->`
+- プレースホルダー: 未確定セクションは `[TBD: 説明]` を使用。埋まったら行ごと削除する
 ```
 
 **M/L レベル:**
@@ -58,6 +61,11 @@ M の全ファイルに加え:
 - 技術スタック: {tech_stack}
 - M/L レベル: CLAUDE.md は 80 行以内
 - references/workflow-guide.md で詳細ワークフローを補完
+- 構造保護: ファイル冒頭に HTML コメントバリアを配置
+  `<!-- Do not restructure or delete sections. Update individual values in-place when they change. -->`
+- 永続セクション（Build & Test, Working Rules）にはセクション単位の保護コメントを追加
+  `<!-- Permanent section: do not delete -->`
+- プレースホルダー: 未確定セクションは `[TBD: 説明]` を使用。埋まったら行ごと削除する
 ```
 
 ### document-factory (mode: context)（architecture.md）
