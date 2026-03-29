@@ -73,6 +73,7 @@ const activeNames = items.filter(x => x.active).map(x => x.name);
 
 巨大な構造には要素を追加しない:
 - 巨大なファイル/クラスに新メンバーを追加しない → 先に分割する
+- 巨大な関数に新しい分岐/条件を追加しない → 先に責務を分割する
 - 深いコール階層に新レイヤーを追加しない → 先にフラット化する
 
 ## Error Handling
@@ -100,6 +101,52 @@ const activeNames = items.filter(x => x.active).map(x => x.name);
 - **スコープの判定**: 「この変更を1文で要約できるか？」— できなければ分割する
 - **目安**: 400行超の差分は分割を検討する
 
+## LLM Anti-Slop Patterns
+
+LLM が反復的編集で特に陥りやすいパターン（SlopCodeBench, Orlanski et al. 2026）。
+プロンプトで初期品質は改善できるが、反復ごとの劣化速度はプロンプトだけでは変わらない。
+詳細: `references/iterative-degradation-awareness.md`
+
+### 禁止パターン
+
+- **God function 化**: 既存の大関数にロジックを追加するのではなく、新しい focused callable に分割する
+- **Scaffold コピペ**: 同じ引数パース/バリデーション構造を複数箇所にコピーしない → 共通関数に抽出
+- **elif/case チェーンの成長**: 新しい条件を追加するなら dispatch table やポリモーフィズムを検討
+
+### 冗長コードの回避
+
+```python
+# NG: identity list comprehension（filter で十分）
+result = [x for x in items if x.active]
+
+# OK: filter を使う
+result = list(filter(lambda x: x.active, items))
+# Or: そのままリスト内包表記でも良いが、変換なしの filter 相当なら意図を明確に
+```
+
+```python
+# NG: single-use 中間変数（意味のある名前でなければ不要）
+temp_list = get_items()
+filtered = [x for x in temp_list if x.valid]
+return filtered
+
+# OK: 直接返す（中間変数に意味がない場合）
+return [x for x in get_items() if x.valid]
+```
+
+```python
+# NG: empty check + continue（iteration に組み込める）
+for item in items:
+    if not item.applicable:
+        continue
+    process(item)
+
+# OK: filter してから loop
+for item in filter(lambda x: x.applicable, items):
+    process(item)
+# Or: 条件が単純なら内包表記で十分
+```
+
 ## Code Quality Checklist
 
 Before marking work complete:
@@ -110,3 +157,5 @@ Before marking work complete:
 - [ ] Proper error handling
 - [ ] No hardcoded values — Config Externalization セクションに従う
 - [ ] Command-Query Separation が守られている
+- [ ] No god function 化 — 既存大関数への追加ではなく分割しているか
+- [ ] No scaffold コピペ — 同じ構造の繰り返しが共通化されているか

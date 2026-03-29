@@ -71,6 +71,13 @@ scope: S | M | L
 - 技術的制約
 - 非機能要件（パフォーマンス、セキュリティ等）
 
+## Extensibility Checkpoint
+
+将来の仕様追加で cascading rewrite が起きないか評価する（SlopCodeBench, 2026）:
+- 新しい種類/バリアントの追加は、既存コードの何箇所を変更する必要があるか？
+- ハードコードされた値や条件分岐が、将来の拡張でボトルネックにならないか？
+- インターフェース/プラグイン設計で拡張ポイントを確保しているか？
+
 ## Out of Scope
 
 - 明示的にやらないこと（スコープクリープ防止）
@@ -91,6 +98,7 @@ scope: S | M | L
 3. **成功をどう測るか**（acceptance criteria）
 4. **何をやらないか**（out of scope）
 5. **技術的制約は何か**（既存システムとの統合等）
+6. **将来の拡張で壊れないか**（extensibility checkpoint — 新バリアント追加時の変更箇所数）
 
 ## Deep Interview Protocol
 
