@@ -33,7 +33,15 @@ description: Show memory system status and usage summary
 | 機密情報 | なし | あれば即削除 |
 | 詳細ファイル分離 | 適切 | 長いセクションは分離推奨 |
 
+## Dashboard Statistics
+
+!`echo "=== Memory Type Distribution ===" && for type in user feedback project reference; do count=$(grep -l "type: $type" ~/.claude/projects/*/memory/*.md 2>/dev/null | wc -l | tr -d ' '); echo "  $type: $count files"; done`
+
+!`echo "=== Knowledge Pyramid Coverage ===" && echo "  Lessons Learned:" && wc -l ~/.claude/../.config/claude/references/lessons-learned.md 2>/dev/null | awk '{print "    "$1" lines"}' || echo "    not found" && echo "  Decision Journal:" && grep -c "^### \[" ~/.claude/../.config/claude/references/decision-journal.md 2>/dev/null | awk '{print "    "$1" decisions"}' || echo "    0 decisions"`
+
 上記の情報を確認し、以下を報告すること:
 1. MEMORY.md の現在の行数と上限（200行）までの余裕
-2. 記録されているパターンの概要
-3. 整理が必要な場合は具体的な提案
+2. **Dashboard**: type 別メモリ件数、lessons-learned 行数、decision-journal エントリ数
+3. **カバレッジ**: 知見が薄い領域（type 件数が 0-1 の分類）
+4. **ノイズ検出**: Operational (Tier 1) レベルの内容が混入していないか spot check
+5. 整理が必要な場合は具体的な提案

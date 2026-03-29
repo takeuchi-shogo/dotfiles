@@ -15,6 +15,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -101,6 +102,10 @@ def record_experiment(
     related_proposals: list[str] | None = None,
     source_domain: str | None = None,
     transfer_efficacy: float | None = None,
+    causal_hypothesis: str | None = None,
+    forward_plan: str | None = None,
+    overcorrection_risk: str | None = None,
+    prior_attempts: list[str] | None = None,
 ) -> dict:
     """新しい実験を記録する。
 
@@ -117,6 +122,10 @@ def record_experiment(
         related_proposals: EvoSkill 関連提案IDリスト
         source_domain: 改善の元ドメイン（別ドメインからの転移の場合）
         transfer_efficacy: 転移効率 (0.0-1.0、元ドメインでの delta に対する比率)
+        causal_hypothesis: なぜこの改善が効くと考えるか（因果推論）
+        forward_plan: 次に何を試すべきか
+        overcorrection_risk: 過修正リスク（例: "strict → too restrictive"）
+        prior_attempts: 関連する過去の実験IDリスト
 
     Returns:
         記録された実験の dict
@@ -140,7 +149,7 @@ def record_experiment(
         "updated_at": now,
     }
 
-    # EvoSkill H schema fields (optional)
+    # EvoSkill H schema fields + Hyperagents causal fields (optional)
     for key, val in [
         ("proposal_type", proposal_type),
         ("target_skill", target_skill),
@@ -150,6 +159,10 @@ def record_experiment(
         ("related_proposals", related_proposals),
         ("source_domain", source_domain),
         ("transfer_efficacy", transfer_efficacy),
+        ("causal_hypothesis", causal_hypothesis),
+        ("forward_plan", forward_plan),
+        ("overcorrection_risk", overcorrection_risk),
+        ("prior_attempts", prior_attempts),
     ]:
         if val is not None:
             experiment[key] = val
@@ -264,18 +277,19 @@ def build_proposer_context(
 
     lines = ["## フィードバック履歴", ""]
     if recent:
-        lines.append("| ID | 提案 | 結果 | delta | 理由 |")
-        lines.append("|---|---|---|---|---|")
+        lines.append("| ID | 提案 | 結果 | delta | 因果仮説 | 過修正リスク |")
+        lines.append("|---|---|---|---|---|---|")
         for e in recent:
             exp_id = e.get("id", "?")
             hypothesis = e.get("hypothesis", "?")[:40]
             status = e.get("status", "?")
             vr = e.get("validation_result", {})
             delta = vr.get("ab_delta", "-")
-            reason = (
-                e.get("outcome_reason", "-")[:30] if e.get("outcome_reason") else "-"
+            causal = (e.get("causal_hypothesis", "-") or "-")[:30]
+            risk = (e.get("overcorrection_risk", "-") or "-")[:20]
+            lines.append(
+                f"| {exp_id} | {hypothesis} | {status} | {delta} | {causal} | {risk} |"
             )
-            lines.append(f"| {exp_id} | {hypothesis} | {status} | {delta} | {reason} |")
 
     if archived:
         lines.append("")
@@ -595,6 +609,200 @@ def check_regression(exp_id: str, min_sessions: int = 3) -> dict:
     return {"regression": False, "reason": "no regression detected", "suggestion": ""}
 
 
+def compute_improvement_trend(category: str, window: int = 5) -> dict:
+    """カテゴリ別の改善トレンドを移動平均で計算する。
+
+    merged 実験の measure_effect() 結果から change_pct を時系列取得し、
+    直近 window 件と前 window 件の平均を比較してトレンドを判定する。
+
+    Args:
+        category: 実験カテゴリ
+        window: 移動平均のウィンドウサイズ (>= 1)
+
+    Returns:
+        {
+            "trend": "accelerating" | "decelerating"
+                | "saturating" | "insufficient_data",
+            "recent_avg": float,
+            "older_avg": float,
+            "delta": float,
+        }
+    """
+    if window <= 0:
+        raise ValueError(f"window must be >= 1, got {window}")
+
+    experiments = _load_registry()
+    merged = [
+        e
+        for e in experiments
+        if e.get("status") == "merged" and e.get("category") == category
+    ]
+    merged.sort(key=lambda e: e.get("merged_at", ""))
+
+    # 各実験の change_pct を収集
+    data_points: list[float] = []
+    for exp in merged:
+        result = measure_effect(exp["id"])
+        cp = result.get("change_pct")
+        if cp is not None and result.get("verdict") != "insufficient_data":
+            data_points.append(cp)
+
+    if len(data_points) < window * 2:
+        return {
+            "trend": "insufficient_data",
+            "recent_avg": 0.0,
+            "older_avg": 0.0,
+            "delta": 0.0,
+            "data_points": len(data_points),
+            "required": window * 2,
+        }
+
+    older_avg = sum(data_points[-window * 2 : -window]) / window
+    recent_avg = sum(data_points[-window:]) / window
+    delta = recent_avg - older_avg
+
+    if abs(delta) < 5.0:
+        trend = "saturating"
+    elif delta > 0:
+        trend = "decelerating"  # change_pct が増加 = エラーが増加 = 改善が減速
+    else:
+        trend = "accelerating"  # change_pct が減少 = エラーが減少 = 改善が加速
+
+    return {
+        "trend": trend,
+        "recent_avg": round(recent_avg, 1),
+        "older_avg": round(older_avg, 1),
+        "delta": round(delta, 1),
+    }
+
+
+def archive_snapshot(exp_id: str, snapshot_label: str) -> dict:
+    """マージ済み実験のスナップショットをアーカイブに保存する。
+
+    高パフォーマンスの設定状態を保存し、将来の分岐元として利用可能にする。
+    保存対象: 変更ファイルのハッシュ + メトリクス + 因果仮説。
+    最大 20 スナップショット（古いものを自動削除）。
+
+    Args:
+        exp_id: 実験ID
+        snapshot_label: スナップショットのラベル
+
+    Returns:
+        保存されたスナップショットの dict
+    """
+    experiments = _load_registry()
+    exp = None
+    for e in experiments:
+        if e["id"] == exp_id:
+            exp = e
+            break
+
+    if exp is None:
+        return {"error": "experiment not found"}
+    if exp.get("status") != "merged":
+        return {"error": "experiment not merged"}
+
+    effect = measure_effect(exp_id)
+
+    snapshot = {
+        "exp_id": exp_id,
+        "label": snapshot_label,
+        "category": exp.get("category", ""),
+        "files_changed": exp.get("files_changed", []),
+        "hypothesis": exp.get("hypothesis", ""),
+        "causal_hypothesis": exp.get("causal_hypothesis"),
+        "effect": effect,
+        "archived_at": _now_iso(),
+        "children_count": 0,
+    }
+
+    archive_dir = _get_data_dir() / "experiments" / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = archive_dir / "snapshots.jsonl"
+
+    # 既存スナップショットを読み込み
+    existing: list[dict] = []
+    if archive_path.exists():
+        with open(archive_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        existing.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+
+    existing.append(snapshot)
+
+    # 最大 20 件を維持（古いものを削除）
+    max_snapshots = 20
+    if len(existing) > max_snapshots:
+        existing = existing[-max_snapshots:]
+
+    with open(archive_path, "w", encoding="utf-8") as f:
+        for s in existing:
+            f.write(json.dumps(s, ensure_ascii=False) + "\n")
+
+    return snapshot
+
+
+def select_parent_variant(category: str) -> dict | None:
+    """アーカイブから分岐元バリアントを確率的に選択する。
+
+    パフォーマンス（change_pct の絶対値）に比例した確率で選択し、
+    子の少ないバリアントを優先して探索の多様性を維持する。
+
+    Args:
+        category: 実験カテゴリ
+
+    Returns:
+        選択されたスナップショット dict、またはアーカイブが空なら None
+    """
+
+    archive_path = _get_data_dir() / "experiments" / "archive" / "snapshots.jsonl"
+    if not archive_path.exists():
+        return None
+
+    candidates: list[dict] = []
+    with open(archive_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                snap = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if snap.get("category") == category:
+                candidates.append(snap)
+
+    if not candidates:
+        return None
+
+    # 重み計算: パフォーマンス × 多様性ボーナス
+    weights: list[float] = []
+    for snap in candidates:
+        effect = snap.get("effect", {})
+        cp = abs(effect.get("change_pct") or 0)
+        perf_weight = max(cp, 1.0)  # 最低 1.0
+        children = snap.get("children_count", 0)
+        diversity_bonus = 1.0 / (1.0 + children)
+        weights.append(perf_weight * diversity_bonus)
+
+    total = sum(weights)
+    if total == 0:
+        return random.choice(candidates)
+
+    r = random.random() * total
+    cumulative = 0.0
+    for snap, w in zip(candidates, weights):
+        cumulative += w
+        if r <= cumulative:
+            return snap
+
+    return candidates[-1]
+
+
 def transfer_report() -> str:
     """転移効率の集計レポートを生成する。
 
@@ -684,6 +892,17 @@ def status_summary() -> str:
             f"(keep:{b['keep']} discard:{b['discard']}"
             f" neutral:{b['neutral']})"
         )
+
+    # カテゴリ別トレンド
+    categories = {e.get("category") for e in experiments}
+    trends = []
+    for cat in sorted(c for c in categories if c):
+        t = compute_improvement_trend(cat)
+        if t["trend"] != "insufficient_data":
+            trends.append(f"{cat}: {t['trend']}")
+    if trends:
+        summary += "\nトレンド: " + ", ".join(trends)
+
     return summary
 
 
@@ -703,6 +922,16 @@ def main():
     record_parser.add_argument("--branch", required=True, help="Experiment branch name")
     record_parser.add_argument(
         "--files", nargs="+", required=True, help="Changed files"
+    )
+    record_parser.add_argument(
+        "--causal-hypothesis", default=None, help="Why this improvement works"
+    )
+    record_parser.add_argument("--forward-plan", default=None, help="What to try next")
+    record_parser.add_argument(
+        "--overcorrection-risk", default=None, help="Risk of overcorrection"
+    )
+    record_parser.add_argument(
+        "--prior-attempts", nargs="*", default=None, help="Related experiment IDs"
     )
 
     # list サブコマンド
@@ -746,6 +975,28 @@ def main():
         help="Min sessions after merge",
     )
 
+    # archive-snapshot サブコマンド
+    archive_parser = subparsers.add_parser(
+        "archive-snapshot",
+        help="Archive a merged experiment snapshot",
+    )
+    archive_parser.add_argument("exp_id", help="Experiment ID")
+    archive_parser.add_argument("--label", required=True, help="Snapshot label")
+
+    # select-parent サブコマンド
+    parent_parser = subparsers.add_parser(
+        "select-parent",
+        help="Select parent variant from archive",
+    )
+    parent_parser.add_argument("--category", required=True, help="Experiment category")
+
+    # trend サブコマンド
+    trend_parser = subparsers.add_parser(
+        "trend", help="Show improvement trend for a category"
+    )
+    trend_parser.add_argument("--category", required=True, help="Experiment category")
+    trend_parser.add_argument("--window", type=int, default=5, help="Window size")
+
     # transfer-report サブコマンド
     subparsers.add_parser("transfer-report", help="Show transfer efficacy report")
 
@@ -764,6 +1015,10 @@ def main():
             hypothesis=args.hypothesis,
             branch=args.branch,
             files_changed=args.files,
+            causal_hypothesis=args.causal_hypothesis,
+            forward_plan=args.forward_plan,
+            overcorrection_risk=args.overcorrection_risk,
+            prior_attempts=args.prior_attempts,
         )
         print(json.dumps(exp, indent=2, ensure_ascii=False))
 
@@ -811,6 +1066,21 @@ def main():
             print(f"[ROLLBACK SUGGESTED] {args.exp_id}: {result['reason']}")
         else:
             print(f"OK: {result['reason']}")
+
+    elif args.command == "trend":
+        result = compute_improvement_trend(args.category, args.window)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "archive-snapshot":
+        result = archive_snapshot(args.exp_id, args.label)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "select-parent":
+        result = select_parent_variant(args.category)
+        if result:
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            print("NO_PARENT")
 
     elif args.command == "transfer-report":
         print(transfer_report())

@@ -78,7 +78,7 @@
 19. **ドリフトガード: 目的メトリクス後退検出** — `--evolve` ループの各イテレーションで、ベースラインスコアからの累積改善を追跡する。3 イテレーション経過後にベースラインを下回っている場合はループを停止し「戦略を再検討」を推奨する
 20. **単一変更規律** — `--evolve` ループの各イテレーションでは SKILL.md への変更を **1箇所のみ** に制限する。仮説を明記し、changelog に記録する。revert された仮説は同一表現で再試行しない。autoresearch 記事: "proposal quality dominates total cost" — 少数の精度の高い変更が多数の探索的変更に勝る
 21. **Proxy Metric 乖離検出（Goodhart 警告）** — skill 改善時にスコアが +5pp 以上上昇した場合、自動で「Why did score increase?」の説明を要求する。以下を追加チェック: (1) テスト難易度が下がっていないか（テスト行数の減少）、(2) assertion 数が減っていないか、(3) スコープが狭まっていないか（対象ファイル数の減少）。Goodhart's Law: 指標が目標になると指標としての機能を失う。検出は `scripts/policy/gaming-detector.py` が実行
-22. **Self-referential Improvement 禁止** — AutoEvolve が自身の評価基準（`improve-policy.md`, `skill-benchmarks.jsonl`, `benchmark-dimensions.md`）を直接変更することを禁止する。評価基準の変更は必ず人間の承認を必要とする。Bengio 論文: エージェントが自身の報酬関数を変更できる場合、reward tampering が最適戦略になり得る
+22. **Self-referential Evaluation Criteria Improvement 禁止** — AutoEvolve が自身の評価基準（`improve-policy.md`, `skill-benchmarks.jsonl`, `benchmark-dimensions.md`）を直接変更することを禁止する。評価基準の変更は必ず人間の承認を必要とする。スクリプト/プロンプトの自己改善は Rule 30 で制約付き許可。Bengio 論文: エージェントが自身の報酬関数を変更できる場合、reward tampering が最適戦略になり得る
 23. **Metric Diversity 要件** — skill 改善の評価は単一メトリクスではなく最低2つの独立指標で判定する。例: 実行時間 + ユーザー満足度、テスト通過率 + コードレビュースコア。単一メトリクスへの過度な最適化は specification gaming の温床になる
 24. **Self-Edit Justification (3-Question Gate)** — 改善提案時に以下の3質問に必ず回答する: (1) What problem does this solve?（具体的に。"might be better" は不可）、(2) How do we measure if it worked?（定量指標に紐づける）、(3) What if it breaks?（ロールバック計画、regression の blast radius）。いずれかが曖昧・欠落なら提案を draft に留める
 25. **Knowledge Pyramid Tier 要件** — 学習データには `tier`（Raw/Exploratory/Benchmark/Doctrine）と `score`（0.0-1.0）を付与する。L3 (Rules) への昇格には Tier 2 (Benchmark) 以上、L4 (Golden Principles) には Tier 3 (Doctrine) を必須とする。詳細は `references/knowledge-pyramid.md` を参照
@@ -86,6 +86,23 @@
 27. **Governance Levels** — カテゴリごとに自律性レベル（0:Observe / 1:Review / 2:Auto-Merge / 3:Trusted）を設定する。デフォルトは Level 1（現在の動作維持）。Level 2 以上への昇格は承認率・CQS に基づく。Level 3 は opt-in 必須。詳細は `references/governance-levels.md` を参照
 28. **Stepwise Change Budget** — 1サイクル内の変更は段階的に保守的にする。1st change: epsilon=0.2（通常の変更幅）、2nd change: epsilon=0.15（やや保守的）、3rd change: epsilon=0.1（最も保守的）。根拠: HACRL Stepwise Clipping — 後半ほど保守的にしてドリフトを防止。`scripts/lib/rl_advantage.py` の `stepwise_clip_ratio()` で計算
 29. **Acceleration Guard** — 直近3サイクルの accept_rate が前3サイクル比で +30pp 以上上昇した場合、警告を発行し人間レビューを要求する。Hyperagents 論文 (arXiv:2603.19461) の「加速的改善カーブ」は真の改善を示す場合もあるが、評価基準の緩み（Rule 21 Goodhart 警告に類似）やテスト難易度低下の可能性もある。`compute_cqs()` の verdict 分布と合わせて判断する
+30. **Self-referential Script/Prompt Improvement (Hyperagents Pattern)** — AutoEvolve は自身のスクリプト・エージェント定義も改善対象に含めることができる。ただし以下の制約に従う: 対象: `scripts/learner/*.py`, `agents/meta-analyzer.md`, `agents/autoevolve-core.md`。除外: `experiment_tracker.py`, `lib/*.py`（データ整合性保護）。制約: (1) 必ず worktree で隔離して実行、(2) A/B テスト必須、(3) 通常改善サイクル 5 回に 1 回まで。根拠: Hyperagents (arXiv:2603.19461) のメタ認知的自己修正パターン
+31. **Archive-Based Exploration (Hyperagents Pattern)** — `compute_improvement_trend()` のトレンドが `saturating` の場合、線形改善から分岐探索に切り替える。`archive_snapshot()` で高パフォーマンスバリアントを保存し、`select_parent_variant()` で分岐元を確率的に選択する。分岐探索で改善が見つかったら最良バリアントにマージ。デフォルトは線形改善（最新版を改善）。根拠: Hyperagents (arXiv:2603.19461) のアーカイブベースオープンエンド探索
+
+### メモリ品質ゲート（ノイズ判定基準）
+
+Garden フェーズで既存メモリ・learnings を棚卸しする際、以下の3層で保存価値を判定する。
+テスト: 「人間が次のセッションでこれを知っていたら役立つか？」
+
+| Tier | 分類 | 保存判定 | 例 |
+|------|------|---------|-----|
+| 1 | Operational (LOW) | 診断用のみ。cognitive memory に昇格しない | tool sequence, timing metrics, success rates, file modification logs |
+| 2 | Behavioral (MEDIUM) | 選択的に保存 | ユーザー好み, ワークフローパターン, コミュニケーションスタイル |
+| 3 | Cognitive (HIGH) | 常に保存・昇格 | ドメイン洞察, 根拠付き設計決定, 失敗からの教訓, 知識の境界条件 |
+
+- Tier 1 が L1 以上に昇格していたら降格する
+- Tier 2 は 2+ セッションで確認されたものだけ L2 以上に昇格
+- Tier 3 は `lessons-learned.md` への 1行追記も検討する
 
 ### 品質基準
 

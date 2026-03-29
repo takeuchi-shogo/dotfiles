@@ -17,6 +17,64 @@ from collections import defaultdict
 from pathlib import Path
 
 
+META_IMPROVEMENT_CATEGORIES = {
+    "memory_addition": "永続メモリ・状態保持の追加",
+    "checklist_creation": "チェックリスト・ルールの構造化",
+    "pipeline_stage": "パイプラインへのステージ追加",
+    "prompt_refinement": "プロンプト・指示の精緻化",
+    "guard_addition": "ガードレール・制約の追加",
+    "feedback_loop": "フィードバックループの追加",
+}
+
+# カテゴリ推定用キーワードマップ
+_CATEGORY_KEYWORDS: dict[str, list[str]] = {
+    "memory_addition": [
+        "memory",
+        "メモリ",
+        "persist",
+        "永続",
+        "state",
+        "状態保持",
+    ],
+    "checklist_creation": [
+        "checklist",
+        "チェックリスト",
+        "rule",
+        "ルール",
+        "list",
+    ],
+    "pipeline_stage": [
+        "pipeline",
+        "パイプライン",
+        "stage",
+        "ステージ",
+        "phase",
+    ],
+    "prompt_refinement": [
+        "prompt",
+        "プロンプト",
+        "instruction",
+        "指示",
+        "refine",
+    ],
+    "guard_addition": [
+        "guard",
+        "ガード",
+        "constraint",
+        "制約",
+        "limit",
+        "制限",
+    ],
+    "feedback_loop": [
+        "feedback",
+        "フィードバック",
+        "loop",
+        "ループ",
+        "iterate",
+    ],
+}
+
+
 def _get_data_dir(override: str | None = None) -> Path:
     """データディレクトリを返す。
 
@@ -145,6 +203,95 @@ def format_markdown_table(candidates: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def classify_improvement_method(entry: dict) -> str | None:
+    """実験エントリから改善手法カテゴリを推定する。
+
+    hypothesis, causal_hypothesis, proposal_type のテキストから
+    キーワードマッチでカテゴリを推定する。
+
+    Returns:
+        META_IMPROVEMENT_CATEGORIES のキー、または None
+    """
+    text_parts = []
+    for field in ("hypothesis", "causal_hypothesis", "forward_plan"):
+        val = entry.get(field)
+        if val:
+            text_parts.append(val.lower())
+    text = " ".join(text_parts)
+    if not text.strip():
+        return None
+
+    best_cat = None
+    best_count = 0
+    for cat, keywords in _CATEGORY_KEYWORDS.items():
+        count = sum(1 for kw in keywords if kw.lower() in text)
+        if count > best_count:
+            best_count = count
+            best_cat = cat
+
+    return best_cat
+
+
+def scan_meta_patterns(data_dir: Path) -> list[dict]:
+    """手法カテゴリ×ドメインカテゴリの転移パターンを検出する。
+
+    experiment_tracker のレジストリを読み込み、
+    カテゴリ A で成功した手法がカテゴリ B に未適用の場合を検出。
+
+    Returns:
+        list of dict: method, successful_in, not_tried_in, suggestion
+    """
+    registry_path = data_dir / "experiments" / "experiment-registry.jsonl"
+    entries = _load_jsonl(registry_path)
+
+    # method_cat -> {domain_cat: {"tried": bool, "succeeded": bool}}
+    method_domain: dict[str, dict[str, dict]] = {}
+    all_domains: set[str] = set()
+
+    for entry in entries:
+        method = classify_improvement_method(entry)
+        domain = entry.get("category")
+        if not method or not domain:
+            continue
+
+        all_domains.add(domain)
+        if method not in method_domain:
+            method_domain[method] = {}
+        if domain not in method_domain[method]:
+            method_domain[method][domain] = {
+                "tried": False,
+                "succeeded": False,
+            }
+
+        method_domain[method][domain]["tried"] = True
+        status = entry.get("status")
+        if status == "merged":
+            method_domain[method][domain]["succeeded"] = True
+
+    # 転移候補: 手法 M がドメイン A で成功、ドメイン B で未試行
+    candidates = []
+    for method, domains in sorted(method_domain.items()):
+        successful_in = [d for d, info in domains.items() if info["succeeded"]]
+        not_tried_in = sorted(all_domains - set(domains.keys()))
+
+        if successful_in and not_tried_in:
+            desc = META_IMPROVEMENT_CATEGORIES.get(method, method)
+            candidates.append(
+                {
+                    "method": method,
+                    "method_description": desc,
+                    "successful_in": sorted(successful_in),
+                    "not_tried_in": not_tried_in,
+                    "suggestion": (
+                        f"{method} ({desc}) を"
+                        f" {', '.join(not_tried_in)} に転移可能か検証"
+                    ),
+                }
+            )
+
+    return candidates
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -175,6 +322,21 @@ def main() -> None:
             "\n> 上記の候補を cross-model-insights.md の"
             " Cross-Domain Transfer Candidates セクションに記録してください。"
         )
+
+    # メタ改善パターン転移候補
+    meta_candidates = scan_meta_patterns(data_dir)
+    print(f"\n## Meta-Improvement Transfer Candidates ({len(meta_candidates)} found)\n")
+    if meta_candidates:
+        print("| method | description | successful_in | not_tried_in |")
+        print("|--------|-------------|---------------|--------------|")
+        for mc in meta_candidates:
+            method = mc["method"]
+            desc = mc["method_description"]
+            succ = ", ".join(mc["successful_in"])
+            nottried = ", ".join(mc["not_tried_in"])
+            print(f"| {method} | {desc} | {succ} | {nottried} |")
+    else:
+        print("メタ改善パターン転移候補は検出されませんでした。")
 
 
 if __name__ == "__main__":

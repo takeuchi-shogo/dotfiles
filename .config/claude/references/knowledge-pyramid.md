@@ -50,8 +50,47 @@ L4 Golden principles       × Tier 3（必須）
 - 両軸は独立: L2 のエントリが Tier 1 であることも、Tier 3 であることもあり得る
 - L3 以上への昇格には Tier 2 以上を推奨、L4 には Tier 3 を必須とする
 
+## Doctrine Synthesis（知見クラスタ統合）
+
+同一タグの知見が 3 件以上 Tier 1+ に到達したら、meta-doctrine の合成を検討する。
+
+### 合成手順
+
+1. **クラスタ検出**: 同一 `doctrine_tag` を持つ知見を収集
+2. **Meta-Claim 生成**: 個別知見を横断して見えるより高次の洞察を 1 文で記述
+3. **Tensions 記録**: クラスタ内で知見が矛盾する箇所を明示（`contradiction-mapping.md` と連携）
+4. **Gap 特定**: この doctrine を強化するために足りない知見は何か
+5. **保存**: `references/` に doctrine ファイルとして保存。個別知見へのリンクを含める
+
+### 合成の判断基準
+
+| 条件 | アクション |
+|------|-----------|
+| 3+ 知見が同一タグ、全て Tier 1+ | 合成を推奨 |
+| 合成済み doctrine に新知見が矛盾 | Tensions を更新 |
+| doctrine の Gap が埋まった | Tier 昇格を検討 |
+
+### フォーマット
+
+```markdown
+# Doctrine: [テーマ]
+
+- cluster_tag: [共有タグ]
+- sources: [知見ファイルへのリンク]
+
+## Meta-Claim
+[個別知見を横断した高次の洞察]
+
+## Tensions
+[知見間の矛盾・緊張関係]
+
+## Gap
+[この doctrine を強化するために必要な追加知見]
+```
+
 ## 運用
 
 - `append_to_learnings()` のデフォルト: `tier: "raw"`, `score: 0.0`
 - 呼び出し元が明示的に指定した場合はそちらを優先
 - Garden フェーズで tier と score を再評価し、昇格・降格を判定
+- Garden フェーズで同一タグ 3+ 知見の doctrine 合成チェックを行う
