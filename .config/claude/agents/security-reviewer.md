@@ -3,7 +3,7 @@ name: security-reviewer
 description: "Deep-dive security analysis that complements code-reviewer's surface checks. Use PROACTIVELY when code handles user input, authentication, API endpoints, or sensitive data. Focus on trust boundaries, invariant breaks across transformations, and evidence-backed findings."
 tools: Read, Bash, Glob, Grep
 model: opus
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 15
 skills: security-review

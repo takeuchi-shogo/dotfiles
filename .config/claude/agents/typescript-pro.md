@@ -3,7 +3,7 @@ name: typescript-pro
 description: "高度な型システム機能と厳格な型付けを駆使する TypeScript 専門エージェント。ジェネリック制約、条件型、型推論を最適化する。TypeScript の最適化、複雑な型設計、JavaScript からの移行に使用。"
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 20
 skills: search-first

@@ -3,7 +3,7 @@ name: code-reviewer
 description: Expert code review specialist for quality, security, and maintainability. Use PROACTIVELY after writing or modifying code to ensure high development standards.
 tools: Read, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 12
 ---

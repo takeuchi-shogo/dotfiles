@@ -4,6 +4,7 @@ description: "Go コードレビュー専門エージェント。命名規約、
 tools: Read, Bash, Glob, Grep
 model: sonnet
 maxTurns: 15
+memory: project
 ---
 
 # Go Code Reviewer

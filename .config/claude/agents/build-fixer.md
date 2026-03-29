@@ -3,7 +3,7 @@ name: build-fixer
 description: "Build and compilation error resolution specialist. Use PROACTIVELY when build fails, type errors occur, or dependency issues arise. Fixes build/type errors with minimal diffs — no refactoring, no architecture changes."
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 15
 ---

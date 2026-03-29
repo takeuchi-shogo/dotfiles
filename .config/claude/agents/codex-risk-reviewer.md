@@ -3,7 +3,7 @@ name: codex-risk-reviewer
 description: "Codex CLI (gpt-5.4) を活用した実装前リスク分析エージェント。Plan → Implement の間で起動し、潜在リスク・セキュリティ懸念・障害モード・競合状態を深掘りする。Claude の「注意の幅」を Codex の「注意の深さ」で補完する。"
 tools: Bash, Read, Glob, Grep
 model: haiku
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 10
 skills: codex

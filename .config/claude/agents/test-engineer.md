@@ -3,7 +3,7 @@ name: test-engineer
 description: "Test automation and quality assurance specialist. Use PROACTIVELY for test strategy design, test suite creation, coverage analysis, test refactoring, and CI/CD testing pipeline configuration."
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: project
 permissionMode: plan
 maxTurns: 20
 skills: webapp-testing, superpowers:test-driven-development

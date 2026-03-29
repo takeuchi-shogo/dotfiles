@@ -3,7 +3,7 @@ name: product-reviewer
 description: Product観点のコードレビュー。spec fileとの整合性、ユーザー課題の解決度、スコープクリープ、エッジケース見落としを検出。UI変更やspec file存在時に/reviewから自動起動。
 tools: Read, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: local
 permissionMode: plan
 maxTurns: 10
 ---

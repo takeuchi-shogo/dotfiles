@@ -3,7 +3,7 @@ name: cross-file-reviewer
 description: 変更が他ファイルに与える影響（インターフェース不整合、シグネチャ変更の未追従、import 破損）を検出するレビューエージェント。2ファイル以上の変更時に起動。
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
-memory: user
+memory: project
 maxTurns: 12
 ---
 
