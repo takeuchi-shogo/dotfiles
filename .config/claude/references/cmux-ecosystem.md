@@ -120,6 +120,30 @@ cmux (~/.../cmux.sock)
 - 2本指左右スワイプ: ペイン切り替え
 - 認証はネットワーク層（Tailscale P2P）に委ねる
 
+## dispatch (Worker Router)
+
+サブエージェントと cmux Worker を自動振り分けする `/dispatch` スキル。
+
+### コンポーネント
+
+| ファイル | 役割 |
+|---------|------|
+| `skills/dispatch/SKILL.md` | Worker Router スキル（判定ロジック） |
+| `scripts/runtime/launch-worker.sh` | Worker 起動（cmux ワークスペース作成 + モデル別 CLI 起動） |
+| `scripts/runtime/collect-result.sh` | 結果回収（ポーリング + 完了検出 + リトライ） |
+| `scripts/runtime/dispatch-log.sh` | 通信ログ閲覧（show / filter / summary） |
+| `scripts/lib/dispatch_logger.sh` | ログ記録共通関数（JSONL 追記） |
+| `references/subagent-vs-cmux-worker.md` | 判定基準の比較表 |
+
+### 振り分け基準
+
+- **デフォルト**: サブエージェント（Agent tool）
+- **cmux Worker 昇格条件**: 長時間(30分+)、マルチモデル(Codex/Gemini)、高並列(5+)、人間介入
+
+### 通信ログ
+
+`/tmp/cmux-dispatch-log/{session-id}.jsonl` に全通信を記録。`dispatch-log.sh summary` でサマリ表示。
+
 ## Plugin vs Agent Skills の使い分け
 
 | コンポーネント構成 | 推奨方法 | 理由 |
