@@ -101,11 +101,11 @@ case "$MODEL" in
     ;;
   codex)
     "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
-      "codex exec --skip-git-repo-check -q \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo '${DONE_SIGNAL}'\n"
+      "codex exec --skip-git-repo-check -q \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo \"${DONE_SIGNAL}\"\n"
     ;;
   gemini)
     "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
-      "gemini -p \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo '${DONE_SIGNAL}'\n"
+      "gemini -p \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo \"${DONE_SIGNAL}\"\n"
     ;;
 esac
 
