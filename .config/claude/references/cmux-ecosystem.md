@@ -13,9 +13,27 @@ window          ← OS ウィンドウ
 
 pane（レイアウト）と surface（中身）は分離されている。
 
+## cmux-team 4層アーキテクチャ
+
+```
+Master（ユーザー対話、task 作成）
+└── Manager（アイドル待機、task 検出 → Conductor 起動）
+    └── Conductor（git worktree でタスク自律実行）
+        └── Agent（実装・テスト・リサーチ）
+```
+
+| 層 | 役割 | 通信方式 |
+|----|------|---------|
+| Master | ユーザーと対話し task を作成 | — |
+| Manager | **イベント駆動**でアイドル待機。task 検出時に Conductor を起動 | **pull 型** — Manager が能動的にタスクキューを監視 |
+| Conductor | git worktree 内で自律実行。ワークスペースごとに隔離 | スクリプト化された起動 |
+| Agent | Conductor 配下で実装・テスト・リサーチを担当 | Conductor が指示 |
+
+**設計ポイント**: push ではなく **pull 型通信** により、Manager が自律的にタスクを検出・分配する。
+
 ## ワークスペース分離原則
 
-Conductor（操作側）と Worker（実行側）は **別ワークスペース** に配置する。
+4層アーキテクチャの物理配置。Conductor（操作側）と Worker（実行側）は **別ワークスペース** に配置する。
 
 ```
 workspace:1  → Conductor（親 Claude Code、広いペイン）
@@ -101,6 +119,16 @@ cmux (~/.../cmux.sock)
 - 2本指上下スワイプ: ワークスペース切り替え
 - 2本指左右スワイプ: ペイン切り替え
 - 認証はネットワーク層（Tailscale P2P）に委ねる
+
+## Plugin vs Agent Skills の使い分け
+
+| コンポーネント構成 | 推奨方法 | 理由 |
+|------------------|---------|------|
+| スキルのみ | Agent Skills (`npx skills add`) | 軽量。フック不要なら十分 |
+| スキル + コマンド | Plugin (`/plugin install`) を推奨 | コマンド登録には Plugin が必要 |
+| スキル + コマンド + フック | **Plugin 必須** | SessionStart 等のフックは Plugin でのみ動作 |
+
+**タブ自動表示**: Plugin インストール時、SessionStart フックで `[87] Claude Code` 形式にタブが自動更新され、surface 番号が常に見える。マルチエージェント時の surface 混同を防止する。Agent Skills インストールではこの機能は非対応。
 
 ## エコシステムコンポーネント
 
