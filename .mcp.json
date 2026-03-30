@@ -11,6 +11,10 @@
 		"alphaxiv": {
 			"type": "sse",
 			"url": "https://api.alphaxiv.org/mcp/v1"
+		},
+		"code-review-graph": {
+			"command": "uvx",
+			"args": ["code-review-graph", "serve"]
 		}
 	}
 }

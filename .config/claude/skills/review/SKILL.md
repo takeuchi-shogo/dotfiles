@@ -55,6 +55,13 @@ git diff --name-only HEAD
 diff を見る**前に**、変更された関数・型の呼び出し元を特定する。
 表面上は安全な変更でも、呼び出し元を考慮すると破壊的変更になるケースを防ぐ。
 
+**code-review-graph MCP が利用可能な場合**（優先）:
+1. `detect_changes_tool` で risk-scored な変更分析を取得
+2. `get_impact_radius_tool` (depth=2) で間接依存を含む blast radius を取得
+3. risk score が 0.7 超の関数は Step 2 で自動的にスペシャリスト追加の判断材料にする
+4. 結果を Step 3 で各レビューアーのプロンプトに含める
+
+**MCP が利用不可の場合**（フォールバック）:
 1. `git diff --name-only HEAD` で変更ファイルを取得
 2. 各ファイルの diff から、**追加・削除・シグネチャ変更された export 関数/型** を抽出
 3. `Grep` で各 export の呼び出し元を検索（上位5件まで）

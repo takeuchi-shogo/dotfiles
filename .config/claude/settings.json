@@ -121,7 +121,8 @@
 	"enableAllProjectMcpServers": false,
 	"enabledMcpjsonServers": [
 		"context7",
-		"alphaxiv"
+		"alphaxiv",
+		"code-review-graph"
 	],
 	"hooks": {
 		"SessionStart": [
@@ -140,6 +141,15 @@
 						"type": "command",
 						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true",
 						"timeout": 10
+					}
+				]
+			},
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "date +%s > /tmp/claude-session-start.txt",
+						"timeout": 5
 					}
 				]
 			}
@@ -165,7 +175,13 @@
 					},
 					{
 						"type": "command",
-						"command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'タスクが完了しました' hero"
+						"command": "bash $HOME/.claude/scripts/lifecycle/session-stats.sh",
+						"timeout": 10
+					},
+					{
+						"type": "command",
+						"command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi'",
+						"timeout": 15
 					},
 					{
 						"type": "command",

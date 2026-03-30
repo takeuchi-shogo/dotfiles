@@ -23,6 +23,7 @@ brew "tree-sitter-cli" # Tree-sitter パーサ CLI (Neovim)
 brew "grep"       # GNU grep (macOS 標準より高機能)
 brew "gh"         # GitHub CLI
 brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
+brew "uv"         # Python パッケージマネージャ (uvx で code-review-graph 等を実行)
 brew "borders"    # ウィンドウ枠線ハイライト
 brew "nb"         # ターミナルノート管理 CLI
 brew "direnv"     # ディレクトリ別環境変数マネージャ
