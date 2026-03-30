@@ -73,6 +73,44 @@ fi
 
 **データが全て未作成の場合**: 「学習データがまだ蓄積されていません。セッションを重ねてから再実行してください。」と報告して **終了**。
 
+## Step 1.5: セッション outcome 統計
+
+session-metrics.jsonl から outcome 分布を集計し、改善の方向性を判断する:
+
+```bash
+metrics="$HOME/.claude/agent-memory/metrics/session-metrics.jsonl"
+if [ -f "$metrics" ]; then
+  python3 -c "
+import json, collections, os
+outcomes = collections.Counter()
+path = os.path.expanduser('~/.claude/agent-memory/metrics/session-metrics.jsonl')
+with open(path) as f:
+    for line in f:
+        try:
+            d = json.loads(line)
+            outcomes[d.get('outcome', 'unknown')] += 1
+        except json.JSONDecodeError:
+            pass  # 破損行はスキップ
+total = sum(outcomes.values())
+if total > 0:
+    print(f'セッション outcome 分布 (直近 {total} セッション):')
+    for k, v in outcomes.most_common():
+        print(f'  {k}: {v} ({v*100//total}%)')
+else:
+    print('outcome データなし')
+"
+else
+  echo "session-metrics.jsonl 未作成（スキップ）"
+fi
+```
+
+**分析への活用**:
+- failure 率が 20% 超 → エラーパターン分析を優先（Step 4 で重点配分）
+- recovery 率が高い → 自己修正は効いているが、根本原因の予防策を検討
+- clean_success 率が 80% 超 → 安定期。新機能・効率改善にフォーカス
+
+outcome 分布を `outcome_stats` として保持し、Step 4 の分析プロンプトに渡す。
+
 ## Step 2: 実験トラッカーの確認
 
 過去の改善実験の状態を確認する:

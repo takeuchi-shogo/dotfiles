@@ -65,6 +65,16 @@ gh pr list --author {my_username} --state open --json number,title,reviewDecisio
 gh pr list --search "review-requested:{my_username}" --state open --json number,title,author,createdAt --limit 10
 ```
 
+## TELOS 目標確認（計画生成前）
+
+GitHub タスクを提案する前に、ユーザーの目標体系を確認する:
+
+1. `memory/telos_goals.md` を読み、現在の短期目標を把握
+2. 収集した GitHub タスクを目標に紐づける（どの目標に貢献するか）
+3. GitHub タスクと目標の関連が薄い場合、目標に沿った行動を1つ「目標連動タスク」として提案
+
+**出力に反映**: 計画の各タスクに `[目標: ...]` タグを付与する（該当する場合のみ）。
+
 ## 計画生成
 
 収集した情報を分析し、以下の形式で今日の計画を提案:

@@ -84,6 +84,16 @@ tasks:
     cmds:
       - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js --restore
 
+  build-claude:
+    desc: Build CLAUDE.md from template components
+    cmds:
+      - bash ~/.claude/scripts/lifecycle/build-claude.sh
+
+  build-claude-check:
+    desc: Check if CLAUDE.md matches templates (no write)
+    cmds:
+      - bash ~/.claude/scripts/lifecycle/build-claude.sh --check
+
   codex-janitor:
     desc: Run the repo-local Codex janitor workflow runner
     cmds:
