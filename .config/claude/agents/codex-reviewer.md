@@ -1,6 +1,6 @@
 ---
 name: codex-reviewer
-description: "Codex CLI (gpt-5.4) を活用したコードレビューエージェント。~100行以上の変更で他のレビューアーと並列起動。深い推論によるセカンドオピニオンを提供。"
+description: "Codex CLI (gpt-5.4) を活用した Review Gate エージェント。S規模以上の全変更で起動。7項目検査（6項目 + Plan整合性）で深い推論によるレビューを提供。"
 tools: Bash, Read, Glob, Grep
 model: haiku
 memory: project
@@ -21,6 +21,13 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 - Read code, run analysis commands, gather findings
 - Output: review comments organized by priority
 - If fixes are needed, provide specific code suggestions for the caller to apply
+
+## When to Use This Agent
+
+- **S 規模タスク**: Review Gate として起動（Spec/Plan Gate は skip）
+- **M 規模タスク**: Review Gate として起動（Spec/Plan Gate は codex-plan-reviewer）
+- **L 規模タスク**: Review Gate として起動（Spec/Plan Gate は codex-plan-reviewer）
+- **セキュリティ/API/DB 変更時**: adversarial-review も並列起動を推奨
 
 ## Workflow
 
@@ -43,9 +50,10 @@ Check these 6 items in order:
 4. **Naming & Readability**: Misleading names, overly complex code, missing docs
 5. **Performance**: Unnecessary allocations, N+1 queries, missing indexes
 6. **Tests**: Missing edge cases, flaky patterns, inadequate coverage
+7. **Plan Alignment**: Does the implementation match the plan's intent? Any scope drift, missing tasks, or unplanned additions?
 
 Output format — one line per finding:
-[MUST/CONSIDER/NIT/ASK/FYI] file:line - description
+[MUST/CONSIDER/NIT/ASK/FYI/PLAN] file:line - description
 
 Group findings by file. If no issues found, output "LGTM — no issues detected."
 
