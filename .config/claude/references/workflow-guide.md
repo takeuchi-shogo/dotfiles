@@ -44,6 +44,22 @@ select → generate → edit
 
 **判断フロー**: タスク異質性が低い → select、異質性が高い → generate、実行中の対話性が高い → edit
 
+### Harness Module Addition Gate（"More Structure ≠ Better"）
+
+> 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" RQ2 — SWE-bench で6モジュールを段階的に追加した結果、構造追加は単調な改善ではなく solved-set replacer として機能した。
+
+ハーネスにモジュール（hook, agent, skill, reference）を追加する前に、以下の3点を確認する:
+
+| チェック | 質問 | NG シグナル |
+|---------|------|-----------|
+| **ROI** | このモジュールの追加で、コスト増加に見合うスコア改善があるか？ | 行動は変わるがスコアは変わらない（プロセス装飾） |
+| **受理整合** | ローカル検証の成功が最終受理と整合するか？ | 内部 verifier は PASS だが外部評価は FAIL（乖離リスク） |
+| **境界ケース集中** | 効果は全体に均一か、少数の境界ケースに集中するか？ | 110/125 件は影響なし、15件だけ flip（効果の過大評価リスク） |
+
+**判断**: 3点すべてクリアなら追加。1点でも NG なら、既存モジュールの強化を優先する。
+
+> **Self-evolution が最高 ROI**: 同論文で唯一コスト右シフトなしでスコアを改善したモジュール。retry ループの規律化は新モジュール追加より先に検討すべき。
+
 ---
 
 ## 6段階プロセス（詳細）
@@ -124,6 +140,48 @@ Build Round 1 → QA Round 1（残存バグ一覧）
 
 - FM-018 (Evaluator Rationalization) に注意: QA が問題を見つけた後に rationalize して承認しないよう、adversarial framing を適用
 - 各ラウンドの QA 結果は構造化アーティファクト（ファイル）で次の Build に引き継ぐ
+
+### タスクレベル Self-Evolution（M/L 規模向け）
+
+> 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" RQ2 — Self-evolution モジュールが6モジュール中最高の ROI (75.2→80.0, コスト右シフトなし)
+
+タスクの solve ループ全体に規律的な retry を適用する。Review の NEEDS_FIX ループ（コードレビュー段階の retry）とは異なり、**Plan→Implement→Test の全体**を反省→軸変更→再試行する。
+
+```
+Attempt 1: 通常の Plan → Implement → Test
+  ↓ 失敗 or 部分的成功
+Reflect: 具体的な失敗シグナル（テスト出力、エラーログ）に基づいて反省
+  ↓
+Attempt 2: prompt / tool / workflow のいずれかの軸を変更して再試行
+  - Attempt 1 の反省が Attempt 2 に明示的に反映されていること
+  ↓ 失敗 or 部分的成功
+Attempt 3: さらに軸を変更
+  ↓
+Cap 到達: 未完了として報告（最終 attempt が通ったふりをしない）
+```
+
+#### 適用条件
+
+- **M/L 規模**のタスクで、最初の attempt が失敗または部分的に成功した場合
+- **Cap**: デフォルト 3（コスト制約。論文は cap=5 だが実務では 3 で十分）
+- **不適用**: S 規模（typo 修正等）、既に review retry ループ内にいる場合
+
+#### 軸変更の例
+
+| 軸 | Attempt 1 | Attempt 2 での変更 |
+|---|---|---|
+| **Prompt** | 仕様解釈を変える | エラーメッセージから仕様を再解釈 |
+| **Tool** | 使うツール/ライブラリを変える | 別の API やアプローチを試す |
+| **Workflow** | 分解粒度や実行順序を変える | 問題を小さな単位に分割して逐次解決 |
+
+#### 反省テンプレート
+
+```
+## Attempt N 反省
+- 失敗シグナル: {テスト出力 or エラーログの要点}
+- 根本原因の仮説: {なぜ失敗したか}
+- Attempt N+1 の軸変更: {prompt/tool/workflow のどれを、何から何に変えるか}
+```
 
 ### Decision Log フォーマット
 
@@ -265,6 +323,12 @@ Review → verdict 判定
 - `verification-before-completion` スキルで完了前検証
 - ビルド・テスト・lint を実際に実行し、出力を確認してから完了宣言
 - 仮定に基づく「問題ありません」は禁止
+- **Evidence-Backed Answering（M/L 規模推奨）**: 最終回答・パッチ・完了宣言の前に、根拠をまとめた standalone evidence を残す。evidence は Plan ファイルや Decision Log 内のセクションでよい。以下を含める:
+  - 問題の観察事実（ログ、テスト出力）
+  - 根本原因の特定根拠
+  - 候補解の選定理由と棄却した代替案
+  - 残存する不確実性
+  > 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" — evidence-backed answering はプロセス品質（監査性、ハンドオフ規律、トレース品質）を改善する
 
 ### 6. Security Check（セキュリティ）
 

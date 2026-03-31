@@ -87,6 +87,48 @@ best-of-n-runner.sh -n 2 -p "Fix bug" -d /path/to/project
 - 全 worktree を保持（検査用）
 - cmux-notify.sh で通知
 
+## Candidate Diversity, Pruning, Escalation
+
+> 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" Appendix F — multi-candidate search モジュールの形式化。ただし同論文 RQ2 では高コスト低リターンだったため、適用条件を厳格化する。
+
+同一プロンプトの N 並列（上記の基本モード）に加え、**仮説多様性**を導入して候補の質を上げる。
+
+### Diversity（候補生成時）
+
+各 worktree に同一プロンプトを渡すのではなく、以下の軸を変える:
+- **仮説**: 問題の解釈・分解方法を変える
+- **ツールルート**: 使う API やライブラリを変える
+- **リスク選好**: 保守的アプローチ vs 大胆なリファクタリング
+
+```bash
+# 多様性モード（プロンプトバリエーションを自動生成）
+best-of-n-runner.sh -n 3 -p "Fix bug X" --diverse
+```
+
+### Pruning（候補選定時）
+
+N 個の結果から最良を選ぶ際:
+1. **重複除去**: diff が実質同一の候補を除外
+2. **支配解除去**: 全指標で他候補に劣る候補を除外
+3. **比較**: テスト通過率、diff サイズ、コード品質で比較
+
+### Escalation（全候補不十分時）
+
+全 N 候補が不十分な場合:
+- **拡大**: N を増やして再実行（上限 N=6）
+- **再設計**: プロンプトや分解を根本的に変えて再実行
+- **報告**: 無理に勝者を選ばず、全候補不十分と報告する
+
+### 適用条件（厳格化）
+
+> **高コスト注意**: Pan et al. (2026) RQ2 では multi-candidate search は最もコストが高いモジュールだった（トークン消費が Basic の 4 倍）。以下の条件を満たす場合のみ使用:
+
+- 成功率が低い (p < 0.3) かつ重要なタスク
+- 複数の根本的に異なるアプローチが存在する
+- 単一 attempt の self-evolution retry で解決できなかった場合
+
+**self-evolution retry (cap=3) を先に試し、それでも失敗した場合の最終手段として使う。**
+
 ## 関連ドキュメント
 
 - `subagent-delegation-guide.md` §Shared File Detection Rule — session-state 共有ファイルの一覧

@@ -33,6 +33,36 @@
 - `~/.claude/session-state/`, `~/.claude/agent-memory/`
   - Claude の checkpoint / learnings surface
 
+## Runtime Charter vs Harness Logic 分離
+
+> 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" — runtime skill (共有ポリシー) と harness skill (タスク固有ロジック) を分離し、runtime contamination を防ぐ
+
+ハーネスを2層に分離する:
+
+| 層 | 役割 | dotfiles での実体 | 変更頻度 |
+|---|------|-----------------|---------|
+| **Runtime Charter** | 全タスク共通のポリシー・制約・品質ゲート | `CLAUDE.md`, `settings.json` hooks, `references/workflow-guide.md` | 低（月次） |
+| **Harness Logic** | タスクファミリ固有の制御ロジック | `skills/*/SKILL.md`, `agents/*.md`, タスク固有の plan | 高（日次） |
+
+**Runtime Charter の責務**: オーケストレーション・委譲境界・完了ゲート・セキュリティポリシー
+**Harness Logic の責務**: ステージ構成・ロール定義・ドメイン固有の検証・失敗時回復
+
+**Runtime Contamination リスク**: 強い runtime charter がハーネスロジックの効果を吸収し、モジュール追加の効果測定を困難にする。新モジュールの効果検証時は、runtime charter の影響を意識する。
+
+## Durable State の3性質
+
+> 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" §2.4 — file-backed state モジュールの設計原則
+
+永続状態を設計する際、以下の3性質を満たすこと:
+
+| 性質 | 定義 | dotfiles での対応 |
+|------|------|-----------------|
+| **Externalized** | 状態はトランジェントなコンテキストではなくファイルに書き出す | Plan ファイル、checkpoint、Decision Log |
+| **Path-Addressable** | 後続ステージがパス指定で正確に状態を再オープンできる | `tmp/plans/{name}.md`, `docs/plans/` |
+| **Compaction-Stable** | コンテキスト圧縮・再起動・委譲後も状態が生存する | ファイルベースなので自動的に満たす。ただし状態を会話コンテキストにのみ保持するのは NG |
+
+**設計チェック**: 新しい状態を導入する際「コンテキストが圧縮された後も、この情報は復元できるか？」を問う。答えが No なら、ファイルに書き出す。
+
 ## Scaffolding vs Harness 分離
 
 OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
