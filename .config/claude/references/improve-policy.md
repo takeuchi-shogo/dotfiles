@@ -46,6 +46,7 @@
 | skills | `skills/*/SKILL.md` | skill-executions.jsonl の平均スコア (Failing→Healthy) |
 | evaluators | hooks, golden-check patterns | Evaluator TPR/TNR + Rogan-Gladen corrected rate |
 | comprehension | `rules/common/comprehension-debt.md`, review coverage | design_revision_rate, repeated_investigation_count |
+| review-comments | `skills/review/SKILL.md`, `agents/code-reviewer.md` | review-feedback.jsonl の positive/negative 比率、指摘の accept/reject 率 |
 
 ## 実行条件
 
@@ -69,7 +70,7 @@
 10. **LLM 自動生成の修正は人間レビュー必須** — SkillsBench で LLM 自己生成スキルは平均 -1.3pp。`skills/*/SKILL.md` および `agents/*.md` の変更は自動マージ条件から除外。`gate_proposal()` が `auto_accept` を返しても、これらのファイル変更は `pending_review` に格下げ
 11. **Brevity Bias 対策** — エージェント定義のドメイン知識セクション（Symptom-Cause-Fix テーブル、コードパターン、failure modes）は簡潔化の対象外。ACE 研究 [Zhang+ 2026] で反復最適化がプロンプトを汎用的に崩壊させる傾向が確認されている。行動指示（tools, permissions, format）のみ簡潔化対象
 12. **Knowledge Embedding 比率維持** — エージェント定義の内容比率は「ドメイン知識 ≥ 50%、行動指示 ≤ 50%」を目安とする。`/improve` サイクルでこの比率を下回る変更は discard
-13. **フィードバック履歴 H の注入制限** — Proposer への H 注入は直近 20 件 + 対象スキルフィルタに制限。60 日以上前のエントリはサマリー化。`build_proposer_context()` のデフォルト引数に従う
+13. **フィードバック履歴 H の注入制限** — Proposer への H 注入は直近 20 件 + 対象スキルフィルタに制限。60 日以上前のエントリはサマリー化**せず** FS 上に保持する。Proposer がタスク関連キーワードで `~/.claude/agent-memory/traces/` を grep し、関連エントリのみ読む（Meta-Harness: 要約注入は性能を下げる 50.0→34.9）。`build_proposer_context()` のデフォルト引数に従う
 14. **rejected-patterns の /improve 注入** — `/improve` 実行時に `learnings/rejected-patterns.jsonl` を Phase 4 (Feedback Loop) の入力として注入する。直近 30 日の reject エントリのみ注入（古いものは自動アーカイブ）。同一 category の reject が 3件以上 → そのカテゴリの提案を suppress。承認率が 50% 未満の場合、Governance Level を 1段階引き上げ
 15. **Proposer Anti-Patterns 遵守** — `autoevolve-core.md` の AP-1〜4 に従う。violation する提案は却下
 16. **--evolve コスト上限** — デフォルト iterations=3、最大=5。1 イテレーション=1 スキル。2 イテレーション連続 auto_reject で早期終了。コスト上限: 30 LLM 呼び出し/実行
@@ -88,6 +89,7 @@
 29. **Acceleration Guard** — 直近3サイクルの accept_rate が前3サイクル比で +30pp 以上上昇した場合、警告を発行し人間レビューを要求する。Hyperagents 論文 (arXiv:2603.19461) の「加速的改善カーブ」は真の改善を示す場合もあるが、評価基準の緩み（Rule 21 Goodhart 警告に類似）やテスト難易度低下の可能性もある。`compute_cqs()` の verdict 分布と合わせて判断する
 30. **Self-referential Script/Prompt Improvement (Hyperagents Pattern)** — AutoEvolve は自身のスクリプト・エージェント定義も改善対象に含めることができる。ただし以下の制約に従う: 対象: `scripts/learner/*.py`, `agents/meta-analyzer.md`, `agents/autoevolve-core.md`。除外: `experiment_tracker.py`, `lib/*.py`（データ整合性保護）。制約: (1) 必ず worktree で隔離して実行、(2) A/B テスト必須、(3) 通常改善サイクル 5 回に 1 回まで。根拠: Hyperagents (arXiv:2603.19461) のメタ認知的自己修正パターン
 31. **Archive-Based Exploration (Hyperagents Pattern)** — `compute_improvement_trend()` のトレンドが `saturating` の場合、線形改善から分岐探索に切り替える。`archive_snapshot()` で高パフォーマンスバリアントを保存し、`select_parent_variant()` で分岐元を確率的に選択する。分岐探索で改善が見つかったら最良バリアントにマージ。デフォルトは線形改善（最新版を改善）。根拠: Hyperagents (arXiv:2603.19461) のアーカイブベースオープンエンド探索
+32. **Cross-Model 検証 (Meta-Harness Transfer)** — スキル改善の A/B delta が +3pp 以上の場合、異なるモデル（Haiku or Codex）での smoke test を推奨する。cross-model delta が -5pp 以上低下する変更は model-specific 過学習の疑いがあり、revert を検討する。根拠: Meta-Harness (Lee+ 2026) の単一ハーネスが5モデルに転移して +4.7pt
 
 ### メモリ品質ゲート（ノイズ判定基準）
 

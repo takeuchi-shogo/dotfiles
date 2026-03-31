@@ -61,6 +61,8 @@ Analyze from three perspectives:
 2. **Contradictions**: Do any requirements conflict with each other?
 3. **Ambiguity**: Are acceptance criteria measurable and testable?
 4. **Scope**: Is the scope appropriate — too broad or too narrow?
+5. **Behavioral specification**: Does the spec describe user-facing behavior ("when X, then Y")? If Product Spec section exists, is it concrete enough?
+6. **Decision rationale**: Are rejected alternatives documented in Tech Spec? Are key architectural choices justified?
 
 ### B. Plan Critique
 1. **Task granularity**: Are tasks too coarse or too fine-grained?
@@ -82,6 +84,15 @@ For each finding, provide:
 - **Category**: Spec / Plan / Risk
 - **Finding**: What's wrong or missing
 - **Recommendation**: How to fix it (specific, actionable)
+
+### D. Human Decision Points
+Identify parts of the spec/plan where human judgment is most valuable:
+1. Business/product tradeoffs that require domain context
+2. Architectural choices with long-term implications the agent can't fully evaluate
+3. User experience decisions that require product intuition
+4. Areas where the spec is intentionally vague and needs human clarification
+
+For each, explain WHY a human should review this specific point.
 
 If everything looks solid, say so — don't invent problems. Only report genuine concerns.
 Output "NO SIGNIFICANT ISSUES" if the spec and plan are sound.
@@ -105,9 +116,13 @@ PROMPT
 ### Risk Analysis
 - [SEVERITY] [Risk] — Trigger: [condition] → Mitigation: [action]
 
+### Human Decision Points
+- [ポイント]: [なぜ人間の判断が必要か]
+
 ### Summary
 - Total findings: N (Spec: x, Plan: y, Risk: z)
 - Critical/High: N
+- Human Decision Points: N
 - Recommendation: PROCEED / REVISE
 ```
 
