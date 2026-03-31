@@ -22,7 +22,7 @@
 - Harness contract: `docs/agent-harness-contract.md`。Hook が formatter/policy/completion gate/session を自動実行する
 - IMPORTANT: `.eslintrc*`, `biome.json`, `.prettierrc*` 等の lint config は保護対象。設定ではなくコードを直す
 - IMPORTANT: `git commit --no-verify` は絶対に禁止。違反すると hook 体系が無効化される
-- コード変更は並列レビュー（codex-reviewer + code-reviewer）を受ける。初回から高品質なコードを書くこと
+- コード変更は Codex Review Gate（codex-reviewer + code-reviewer 並列）を受ける。初回から高品質なコードを書くこと
 </important>
 
 <important if="you are starting a non-trivial task or planning implementation">
@@ -80,14 +80,14 @@
 
 | 規模  | 例                       | 必須段階                                                   |
 | ----- | ------------------------ | ---------------------------------------------------------- |
-| **S** | typo修正、1行変更        | Implement → Verify                                                        |
-| **M** | 関数追加、バグ修正       | Plan → Risk Analysis → Implement → Test → Verify                          |
-| **L** | 新機能、リファクタリング | Plan → Risk Analysis → Implement → Test → Review → Verify → Security Check |
+| **S** | typo修正、1行変更        | Implement → Codex Review Gate → Verify                                                    |
+| **M** | 関数追加、バグ修正       | Plan → Codex Spec/Plan Gate → Implement → Test → Codex Review Gate → Verify               |
+| **L** | 新機能、リファクタリング | Plan → Codex Spec/Plan Gate → Implement → Test → Codex Review Gate → Verify → Security Check |
 
 ```
-Plan -> Risk Analysis -> Implement -> Test -> Review -> Verify -> Security Check -> Commit
+Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify -> Security Check -> Commit
 失敗時:
-- リスク分析で CRITICAL → Plan 修正
+- Spec/Plan Gate で指摘 → Claude が修正 or ユーザー判断 → 修正箇所のみ再レビュー
 - テスト/検証/セキュリティ指摘 → Implement に戻る
 - Review NEEDS_FIX → 修正 → 修正差分のみ再 Review（最大3回、PASS まで繰り返す）
 - Review BLOCK → 修正 → フル再 Review（最大3回）
