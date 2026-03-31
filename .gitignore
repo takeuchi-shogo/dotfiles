@@ -52,3 +52,11 @@ reports/
 tools/claude-hooks/target/
 
 .env
+
+# Sample codex cc repos
+everything-cc
+sample-cc-best-practice
+codex-best-practice
+
+# Temporary files
+tmp/
