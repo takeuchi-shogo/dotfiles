@@ -18,7 +18,7 @@ CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
 MODEL=""
 TASK=""
 WORKTREE=""
-DONE_SIGNAL="===DISPATCH_DONE==="
+DONE_SIGNAL="${DISPATCH_DONE_SIGNAL}"
 
 # --- 引数パース ---
 while [[ $# -gt 0 ]]; do
@@ -55,9 +55,11 @@ WORK_DIR="$(pwd)"
 if [[ "$MODEL" == "claude" && -n "$WORKTREE" ]]; then
   WORK_DIR="/tmp/cmux-worktrees/${WORKER_ID}"
   git worktree add "$WORK_DIR" -b "cmux/${WORKTREE}" 2>/dev/null || \
-    git worktree add "$WORK_DIR" "cmux/${WORKTREE}" 2>/dev/null || \
-    git worktree add "$WORK_DIR" HEAD
-  "$CMUX_CLI" send --workspace "$WS" --surface surface:1 "cd ${WORK_DIR}\n"
+    git worktree add "$WORK_DIR" "cmux/${WORKTREE}" || {
+      echo "[launch-worker] Failed to create worktree for branch: cmux/${WORKTREE}" >&2
+      exit 1
+    }
+  "$CMUX_CLI" send --workspace "$WS" --surface surface:1 "cd '${WORK_DIR}'\n"
   sleep 1
 fi
 
@@ -84,6 +86,11 @@ esac
 # --- プロンプト構築 ---
 RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
 
+# タスク内容をファイルに書き出す（コマンドインジェクション防止）
+TASK_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.task"
+printf '%s' "$TASK" > "$TASK_FILE"
+chmod 600 "$TASK_FILE"
+
 PROMPT="以下のタスクを実行してください。
 
 ## タスク
@@ -100,12 +107,13 @@ case "$MODEL" in
     "$CMUX_CLI" send-key --workspace "$WS" --surface surface:1 return
     ;;
   codex)
+    # タスクはファイル経由で渡す（cmux send のシェル再解釈によるインジェクション防止）
     "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
-      "codex exec --skip-git-repo-check -q \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo \"${DONE_SIGNAL}\"\n"
+      "codex exec --skip-git-repo-check -q \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
     ;;
   gemini)
     "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
-      "gemini -p \"${TASK}\" > ${RESULT_FILE} 2>&1 && echo \"${DONE_SIGNAL}\"\n"
+      "gemini -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
     ;;
 esac
 

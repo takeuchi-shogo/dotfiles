@@ -18,7 +18,7 @@ WORKSPACE=""
 WORKER_ID=""
 TIMEOUT=1800
 INTERVAL=10
-DONE_SIGNAL="===DISPATCH_DONE==="
+DONE_SIGNAL="${DISPATCH_DONE_SIGNAL}"
 MAX_RETRY=2
 
 # --- 引数パース ---
@@ -94,7 +94,8 @@ while [[ $ELAPSED -lt $TIMEOUT ]]; do
   fi
 
   # プログレス更新
-  PROGRESS=$(echo "scale=2; $ELAPSED / $TIMEOUT" | bc)
+  PROGRESS=$(( ELAPSED * 100 / TIMEOUT ))
+  PROGRESS="0.${PROGRESS}"
   "$CMUX_CLI" set-progress --workspace "$WORKSPACE" --value "$PROGRESS" 2>/dev/null || true
 
   sleep "$INTERVAL"

@@ -41,9 +41,9 @@ case "$SUBCOMMAND" in
       exit 1
     fi
     echo "=== Session: $(basename "$LOG_FILE" .jsonl) ===" >&2
-    /usr/bin/python3 -c "
+    /usr/bin/python3 - "$LOG_FILE" <<'PYEOF'
 import json, sys
-for line in open('$LOG_FILE'):
+for line in open(sys.argv[1]):
     e = json.loads(line.strip())
     ts = e.get('ts', '?')[:19]
     fr = e.get('from', '?')
@@ -51,20 +51,20 @@ for line in open('$LOG_FILE'):
     tp = e.get('type', '?')
     detail = ''
     if tp == 'dispatch':
-        detail = f\"[{e.get('model','')}] {e.get('task','')}\"
+        detail = f"[{e.get('model','')}] {e.get('task','')}"
     elif tp == 'result':
         detail = e.get('status', '')
     elif tp == 'retry':
-        detail = f\"attempt {e.get('attempt','')}\"
+        detail = f"attempt {e.get('attempt','')}"
     elif tp == 'state_change':
-        detail = f\"{e.get('old_state','')} → {e.get('new_state','')}\"
+        detail = f"{e.get('old_state','')} → {e.get('new_state','')}"
     elif tp == 'escalate':
         detail = e.get('reason', '')
     elif tp == 'prompt':
         body = e.get('body', '')
         detail = body[:80] + '...' if len(body) > 80 else body
     print(f'{ts}  {fr:>10} → {to:<10}  [{tp:^14}]  {detail}')
-"
+PYEOF
     ;;
 
   filter)
@@ -77,7 +77,7 @@ for line in open('$LOG_FILE'):
       echo "[dispatch-log] No log files found" >&2
       exit 1
     fi
-    grep "\"${WORKER_FILTER}\"" "$LOG_FILE" | /usr/bin/python3 -c "
+    grep -F "\"${WORKER_FILTER}\"" "$LOG_FILE" | /usr/bin/python3 -c "
 import json, sys
 for line in sys.stdin:
     e = json.loads(line.strip())
@@ -96,7 +96,7 @@ for line in sys.stdin:
       exit 1
     fi
     echo "=== Dispatch Summary ===" >&2
-    /usr/bin/python3 -c "
+    /usr/bin/python3 - "$LOG_FILE" <<'PYEOF'
 import json, sys
 from collections import Counter
 
@@ -104,7 +104,7 @@ dispatches = []
 results = []
 models = Counter()
 
-for line in open('$LOG_FILE'):
+for line in open(sys.argv[1]):
     e = json.loads(line.strip())
     tp = e.get('type')
     if tp == 'dispatch':
@@ -121,7 +121,7 @@ print(f'Results: {completed} completed, {failed} failed')
 if dispatches:
     print(f'Success rate: {completed/len(dispatches)*100:.0f}%')
 print(f'Models used: {dict(models)}')
-"
+PYEOF
     ;;
 
   *)
