@@ -44,7 +44,7 @@
 | Agent | Model | 外部 CLI | 備考 |
 |---|---|---|---|
 | codex-debugger | haiku | Codex CLI | エラー分析・デバッグ |
-| codex-risk-reviewer | haiku | Codex CLI | 実装前リスク分析 |
+| codex-plan-reviewer | haiku | Codex CLI | Spec/Plan 批評 + リスク分析 |
 | codex-reviewer | haiku | Codex CLI | 深い推論レビュー |
 | gemini-explore | haiku | Gemini CLI | 1M コンテキスト分析 |
 

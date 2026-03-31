@@ -51,7 +51,7 @@ flowchart LR
 
     subgraph external ["External Model Delegation"]
         CDXD
-        CDXR["codex-risk-reviewer<br/>Risk Analysis"]
+        CDXR["codex-plan-reviewer<br/>Spec/Plan Gate"]
         GEM
     end
 ```

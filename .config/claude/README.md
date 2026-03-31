@@ -439,7 +439,7 @@ Agents は**専門実行コンテキスト**。Skills が知識を提供し、Ag
 | `build-fixer` | ビルドエラー最小修正 |
 | `debugger` | 体系的根本原因分析 |
 | `codex-debugger` | Codex 深いデバッグ |
-| `codex-risk-reviewer` | 実装前リスク分析 |
+| `codex-plan-reviewer` | Spec/Plan 批評 + リスク分析 |
 | `frontend-developer` | React/レスポンシブ |
 | `golang-pro` | Go goroutine/channel |
 | `typescript-pro` | 高度な型システム |
