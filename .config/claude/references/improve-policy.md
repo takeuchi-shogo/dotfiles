@@ -104,6 +104,15 @@ Garden フェーズで既存メモリ・learnings を棚卸しする際、以下
 - Tier 2 は 2+ セッションで確認されたものだけ L2 以上に昇格
 - Tier 3 は `lessons-learned.md` への 1行追記も検討する
 
+### Critic-Refiner 分離原則
+
+AutoEvolve の Analyze → Propose フェーズでは、エラー集約（Critic）と改善提案（Refiner）を明示的に分離する。
+根拠: AutoHarness (Lou+ 2026, arXiv:2603.03329) で Critic の品質が Refiner の出力品質に直結することを示唆。
+
+- **Critic フェーズ**: 何が問題か。エラーを分類・集約し、パターンを特定する。改善案は出さない
+- **Refiner フェーズ**: どう直すか。Critic の集約結果を入力として改善コードを提案する
+- Critic が不十分なまま Refiner に進むと "garbage in, garbage out" になる。Critic の出力を検証してから Refiner に渡す
+
 ### 品質基準
 
 - 変更はシンプルで、意図が明確であること
