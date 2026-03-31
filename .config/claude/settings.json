@@ -1,495 +1,506 @@
 {
-	"$schema": "https://json.schemastore.org/claude-code-settings.json",
-	"env": {
-		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-		"CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
-		"CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
-	},
-	"attribution": {
-		"commit": "",
-		"pr": ""
-	},
-	"includeCoAuthoredBy": false,
-	"permissions": {
-		"disableBypassPermissionsMode": "disable",
-		"allow": [
-			"Bash(npm run *)",
-			"Bash(npx prettier *)",
-			"Bash(npx eslint *)",
-			"Bash(pnpm *)",
-			"Bash(bun *)",
-			"Bash(go build *)",
-			"Bash(go test *)",
-			"Bash(go run *)",
-			"Bash(go mod *)",
-			"Bash(git status *)",
-			"Bash(git log *)",
-			"Bash(git diff *)",
-			"Bash(git branch *)",
-			"Bash(git add *)",
-			"Bash(git commit *)",
-			"Bash(git worktree list)",
-			"Bash(git worktree list *)",
-			"Bash(ls *)",
-			"Bash(which *)",
-			"Bash(node --version)",
-			"Bash(python3 --version)",
-			"Bash(go version)",
-			"Bash(git --version)",
-			"Bash(npm --version)",
-			"Bash(bun --version)",
-			"Bash(pnpm --version)",
-			"Bash(brew --version)",
-			"Bash(rustc --version)",
-			"Bash(cargo --version)",
-			"Bash(pwd)",
-			"Bash(brew list *)",
-			"Bash(brew info *)",
-			"Bash(codex exec *)",
-			"Bash(gemini *)",
-			"Bash(ruff *)",
-			"Bash(npx oxlint *)",
-			"Bash(npx @biomejs/biome *)",
-			"WebFetch(*)",
-			"WebSearch",
-			"Bash(*gh-unresolved-threads*)",
-			"Bash(gh pr view *)",
-			"Bash(gh pr checks *)",
-			"Bash(gh pr diff *)",
-			"Bash(gh pr list *)",
-			"Bash(npx ecc-agentshield *)"
-		],
-		"deny": [
-			"Bash(rm -rf *)",
-			"Bash(rm -r *)",
-			"Bash(git push --force *)",
-			"Bash(git reset --hard *)",
-			"Bash(git clean -f *)",
-			"Bash(git checkout -- *)",
-			"Bash(chmod 777 *)",
-			"Bash(git commit --no-verify *)",
-			"Bash(curl *)",
-			"Bash(wget *)",
-			"Bash(sudo *)",
-			"Bash(su *)",
-			"Bash(ssh *)",
-			"Bash(scp *)",
-			"Bash(nc *)",
-			"Bash(ncat *)",
-			"Bash(netcat *)",
-			"Bash(osascript *)",
-			"Bash(security *)",
-			"Bash(pbcopy *)",
-			"Bash(pbpaste *)",
-			"Bash(open *)",
-			"Bash(printenv *)",
-			"Bash(printenv)",
-			"Bash(env)",
-			"Bash(* .env*)",
-			"Bash(* ~/.ssh/*)",
-			"Bash(* ~/.aws/*)",
-			"Bash(* ~/.config/gh/*)",
-			"Bash(* ~/.git-credentials)",
-			"Bash(* ~/.netrc)",
-			"Bash(* ~/.npmrc)",
-			"Read(.env*)",
-			"Read(**/.env*)",
-			"Read(**/*.pem)",
-			"Read(**/*credentials*)",
-			"Read(**/token*.json)",
-			"Read(**/*secret*)",
-			"Read(**/*.key)",
-			"Read(~/.ssh/**)",
-			"Read(~/.aws/**)",
-			"Read(~/.config/gh/**)",
-			"Read(~/.git-credentials)",
-			"Read(~/.netrc)",
-			"Read(~/.npmrc)",
-			"Write(~/.ssh/**)",
-			"Write(~/.aws/**)",
-			"Edit(~/.zshrc)",
-			"Write(~/.zshrc)",
-			"Edit(~/.bashrc)",
-			"Write(~/.bashrc)",
-			"Edit(~/.zprofile)",
-			"Write(~/.zprofile)",
-			"Edit(~/.bash_profile)",
-			"Write(~/.bash_profile)"
-		]
-	},
-	"model": "opus[1m]",
-	"enableAllProjectMcpServers": false,
-	"enabledMcpjsonServers": [
-		"context7",
-		"alphaxiv",
-		"code-review-graph"
-	],
-	"hooks": {
-		"SessionStart": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-load.js",
-						"timeout": 15
-					}
-				]
-			},
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true",
-						"timeout": 10
-					}
-				]
-			},
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "date +%s > /tmp/claude-session-start.txt",
-						"timeout": 5
-					}
-				]
-			}
-		],
-		"Stop": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/completion-gate.py",
-						"timeout": 60,
-						"statusMessage": "Completion gate..."
-					},
-					{
-						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/session-save.js",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "bash $HOME/.claude/scripts/lifecycle/session-stats.sh",
-						"timeout": 10
-					},
-					{
-						"type": "command",
-						"command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi'",
-						"timeout": 15
-					},
-					{
-						"type": "command",
-						"command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null || true",
-						"timeout": 5
-					}
-				]
-			}
-		],
-		"UserPromptSubmit": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks user-prompt",
-						"timeout": 5,
-						"statusMessage": "Agent routing..."
-					}
-				]
-			},
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/user-input-guard.py",
-						"timeout": 5,
-						"statusMessage": "Input guard..."
-					}
-				]
-			}
-		],
-		"PreToolUse": [
-			{
-				"matcher": "Bash",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-bash",
-						"timeout": 5
-					}
-				]
-			},
-			{
-				"matcher": "Bash(git commit *)",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-commit",
-						"timeout": 15,
-						"statusMessage": "Commit check..."
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-edit",
-						"timeout": 10,
-						"statusMessage": "Pre-edit check..."
-					}
-				]
-			},
-			{
-				"matcher": "Bash",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/prompt-injection-detector.py",
-						"timeout": 5,
-						"statusMessage": "Injection check..."
-					}
-				]
-			},
-			{
-				"matcher": "Grep|Glob|Read",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-search",
-						"timeout": 5
-					}
-				]
-			},
-			{
-				"matcher": "WebSearch",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-websearch",
-						"timeout": 10
-					}
-				]
-			},
-			{
-				"matcher": "mcp__.*",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/mcp-audit.py",
-						"timeout": 5,
-						"statusMessage": "MCP audit..."
-					}
-				]
-			},
-			{
-				"matcher": "Bash(*docker*)",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/docker-safety.py",
-						"timeout": 5
-					}
-				]
-			}
-		],
-		"PostToolUse": [
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-edit",
-						"timeout": 30,
-						"statusMessage": "Format + check..."
-					}
-				]
-			},
-			{
-				"matcher": "Bash",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-bash",
-						"timeout": 30,
-						"statusMessage": "Analysis..."
-					}
-				]
-			},
-			{
-				"matcher": "Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/file-proliferation-guard.py",
-						"timeout": 5,
-						"statusMessage": "File proliferation check..."
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/lifecycle/doc-garden-check.py",
-						"timeout": 5,
-						"statusMessage": "Doc garden check..."
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "jq -r '.tool_input.file_path // .tool_response.filePath' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; today=$(date +%Y-%m-%d); grep -q \"^updated_at:\" \"$f\" && sed -i '' \"s/^updated_at: .*/updated_at: $today/\" \"$f\" && echo '{\"suppressOutput\":true}' ;; esac; }",
-						"timeout": 5
-					}
-				]
-			},
-			{
-				"matcher": "Edit|Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "jq -r '.tool_input.file_path // empty' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; export OBSIDIAN_VAULT_PATH=\"$HOME/Documents/Obsidian Vault\"; $HOME/.config/claude/scripts/runtime/sync-memory-to-vault.sh >> /tmp/obsidian-sync.log 2>&1 & ;; esac; }",
-						"timeout": 5
-					}
-				]
-			},
-			{
-				"matcher": "mcp__.*",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/mcp-response-inspector.py",
-						"timeout": 5,
-						"statusMessage": "MCP response check..."
-					}
-				]
-			},
-			{
-				"matcher": "Agent",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/rationalization-scanner.py",
-						"timeout": 5,
-						"statusMessage": "Rationalization check..."
-					}
-				]
-			},
-			{
-				"matcher": "Bash|Write|Edit",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/derivation-honesty-hook.py",
-						"timeout": 5,
-						"statusMessage": "Derivation honesty check..."
-					}
-				]
-			},
-			{
-				"matcher": "Skill",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/policy/skill-tracker.py",
-						"timeout": 5
-					}
-				]
-			},
-			{
-				"matcher": "Skill",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "bash $HOME/.claude/scripts/runtime/save-briefing-to-vault.sh",
-						"timeout": 10,
-						"statusMessage": "Saving briefing to Vault..."
-					}
-				]
-			},
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-any",
-						"timeout": 5,
-						"statusMessage": "Observing..."
-					}
-				]
-			}
-		],
-		"PreCompact": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js && bash $HOME/dotfiles/tools/half-clone/half-clone.sh",
-						"timeout": 15
-					}
-				]
-			}
-		],
-		"PostCompact": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "echo \"[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] PostCompact: context compacted\" >> /tmp/claude-compact.log",
-						"timeout": 5
-					}
-				]
-			}
-		],
-		"SubagentStop": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "python3 $HOME/.claude/scripts/runtime/subagent-monitor.py",
-						"timeout": 5
-					}
-				]
-			}
-		],
-		"Notification": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'Claude Code が入力を待っています' glass"
-					}
-				]
-			}
-		]
-	},
-	"statusLine": {
-		"type": "command",
-		"command": "~/.claude/statusline.sh",
-		"padding": 0
-	},
-	"enabledPlugins": {
-		"gopls-lsp@claude-plugins-official": true,
-		"superpowers@claude-plugins-official": true,
-		"frontend-design@claude-code-plugins": true,
-		"code-simplifier@claude-plugins-official": true,
-		"playground@claude-plugins-official": true,
-		"pr-review-toolkit@claude-code-plugins": true,
-		"datadog@kw-marketplace": true,
-		"claude-md-management@claude-plugins-official": true,
-		"rust-analyzer-lsp@claude-plugins-official": true
-	},
-	"language": "japanese",
-	"effortLevel": "high",
-	"plansDirectory": "./tmp/plans"
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "ENABLE_LSP_TOOL": "1"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(pnpm *)",
+      "Bash(bun *)",
+      "Bash(go build *)",
+      "Bash(go test *)",
+      "Bash(go run *)",
+      "Bash(go mod *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git worktree list)",
+      "Bash(git worktree list *)",
+      "Bash(ls *)",
+      "Bash(which *)",
+      "Bash(node --version)",
+      "Bash(python3 --version)",
+      "Bash(go version)",
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(bun --version)",
+      "Bash(pnpm --version)",
+      "Bash(brew --version)",
+      "Bash(rustc --version)",
+      "Bash(cargo --version)",
+      "Bash(pwd)",
+      "Bash(brew list *)",
+      "Bash(brew info *)",
+      "Bash(codex exec *)",
+      "Bash(gemini *)",
+      "Bash(ruff *)",
+      "Bash(npx oxlint *)",
+      "Bash(npx @biomejs/biome *)",
+      "WebFetch(*)",
+      "WebSearch",
+      "Bash(*gh-unresolved-threads*)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(npx ecc-agentshield *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)",
+      "Bash(git checkout -- *)",
+      "Bash(chmod 777 *)",
+      "Bash(git commit --no-verify *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(sudo *)",
+      "Bash(su *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(nc *)",
+      "Bash(ncat *)",
+      "Bash(netcat *)",
+      "Bash(osascript *)",
+      "Bash(security *)",
+      "Bash(pbcopy *)",
+      "Bash(pbpaste *)",
+      "Bash(open *)",
+      "Bash(printenv *)",
+      "Bash(printenv)",
+      "Bash(env)",
+      "Bash(* .env*)",
+      "Bash(* ~/.ssh/*)",
+      "Bash(* ~/.aws/*)",
+      "Bash(* ~/.config/gh/*)",
+      "Bash(* ~/.git-credentials)",
+      "Bash(* ~/.netrc)",
+      "Bash(* ~/.npmrc)",
+      "Read(.env*)",
+      "Read(**/.env*)",
+      "Read(**/*.pem)",
+      "Read(**/*credentials*)",
+      "Read(**/token*.json)",
+      "Read(**/*secret*)",
+      "Read(**/*.key)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.git-credentials)",
+      "Read(~/.netrc)",
+      "Read(~/.npmrc)",
+      "Write(~/.ssh/**)",
+      "Write(~/.aws/**)",
+      "Edit(~/.zshrc)",
+      "Write(~/.zshrc)",
+      "Edit(~/.bashrc)",
+      "Write(~/.bashrc)",
+      "Edit(~/.zprofile)",
+      "Write(~/.zprofile)",
+      "Edit(~/.bash_profile)",
+      "Write(~/.bash_profile)"
+    ],
+    "disableBypassPermissionsMode": "disable"
+  },
+  "model": "opus[1m]",
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": [
+    "context7",
+    "alphaxiv",
+    "code-review-graph"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/runtime/session-load.js",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/checkpoint_recover.py 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date +%s > /tmp/claude-session-start.txt",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/completion-gate.py",
+            "timeout": 60,
+            "statusMessage": "Completion gate..."
+          },
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/runtime/session-save.js",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/lifecycle/session-stats.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi'",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks user-prompt",
+            "timeout": 5,
+            "statusMessage": "Agent routing..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/user-input-guard.py",
+            "timeout": 5,
+            "statusMessage": "Input guard..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-bash",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git commit *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-commit",
+            "timeout": 15,
+            "statusMessage": "Commit check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-edit",
+            "timeout": 10,
+            "statusMessage": "Pre-edit check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/prompt-injection-detector.py",
+            "timeout": 5,
+            "statusMessage": "Injection check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Glob|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-search",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks pre-websearch",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/mcp-audit.py",
+            "timeout": 5,
+            "statusMessage": "MCP audit..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(*docker*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/docker-safety.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-edit",
+            "timeout": 30,
+            "statusMessage": "Format + check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-bash",
+            "timeout": 30,
+            "statusMessage": "Analysis..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/file-proliferation-guard.py",
+            "timeout": 5,
+            "statusMessage": "File proliferation check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/lifecycle/doc-garden-check.py",
+            "timeout": 5,
+            "statusMessage": "Doc garden check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; today=$(date +%Y-%m-%d); grep -q \"^updated_at:\" \"$f\" && sed -i '' \"s/^updated_at: .*/updated_at: $today/\" \"$f\" && echo '{\"suppressOutput\":true}' ;; esac; }",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; export OBSIDIAN_VAULT_PATH=\"$HOME/Documents/Obsidian Vault\"; $HOME/.config/claude/scripts/runtime/sync-memory-to-vault.sh >> /tmp/obsidian-sync.log 2>&1 & ;; esac; }",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/mcp-response-inspector.py",
+            "timeout": 5,
+            "statusMessage": "MCP response check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/rationalization-scanner.py",
+            "timeout": 5,
+            "statusMessage": "Rationalization check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/derivation-honesty-hook.py",
+            "timeout": 5,
+            "statusMessage": "Derivation honesty check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/skill-tracker.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/runtime/save-briefing-to-vault.sh",
+            "timeout": 10,
+            "statusMessage": "Saving briefing to Vault..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-any",
+            "timeout": 5,
+            "statusMessage": "Observing..."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js && bash $HOME/dotfiles/tools/half-clone/half-clone.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] PostCompact: context compacted\" >> /tmp/claude-compact.log",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/subagent-monitor.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'Claude Code が入力を待っています' glass"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "frontend-design@claude-code-plugins": true,
+    "code-simplifier@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
+    "pr-review-toolkit@claude-code-plugins": true,
+    "datadog@kw-marketplace": true,
+    "claude-md-management@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "codex@openai-codex": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "language": "japanese",
+  "effortLevel": "high",
+  "plansDirectory": "./tmp/plans"
 }
