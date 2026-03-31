@@ -20,6 +20,21 @@ Ref: Harness Engineering Best Practices 2026 (逆瀬川)
 
 ---
 
+## Meta-Harness 6x 性能差
+
+> 「同一モデル (Opus 4.6) でハーネスの違いにより 6 倍の性能差が生じる」
+> — Lee et al. 2026, "Meta-Harness: End-to-End Optimization of Model Harnesses"
+
+**実験結果**: TerminalBench-2 でハーネスなし vs 最適化ハーネスで 6x の差。
+IMO レベル数学推論では単一ハーネスが 5 モデルに転移して +4.7pt。
+
+**Morph 22:1 との比較**: 複数の独立した研究がハーネスの重要性を裏付ける:
+- Morph: 22:1（ハーネス 22pt vs モデル 1pt）
+- Meta-Harness: 6x（同一モデルでの性能差）
+- AutoHarness (Lou+ 2026): Harness-as-Policy (0.870) > GPT-5.2-High (0.844)
+
+---
+
 ## Factory.ai カスタムリンター 4 分類
 
 > **DEPRECATED**: 本セクションは [`lint-category-map.md`](lint-category-map.md) の7カテゴリフレームワークに移行しました。

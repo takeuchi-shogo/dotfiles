@@ -129,6 +129,38 @@ N 個の結果から最良を選ぶ際:
 
 **self-evolution retry (cap=3) を先に試し、それでも失敗した場合の最終手段として使う。**
 
+## Multi-Objective Pareto Frontier
+
+> 出典: Lee et al. 2026 "Meta-Harness" — 精度・コンテキスト消費の tradeoff curve 上の複数候補を維持。単一目的最適化では発見できない設計を見つける。
+
+単一メトリクス（テスト通過率）の最大化ではなく、複数の目的を同時に最適化する。
+
+### 評価軸
+
+| 軸 | 説明 | 測定方法 |
+|---|---|---|
+| **精度** | テスト通過率 + 終了コード | 上記「評価基準」と同じ |
+| **コンテキスト効率** | 消費トークン数 / タスク複雑度 | セッション統計から推定 |
+| **diff サイズ** | 変更行数の少なさ | git diff --stat |
+
+### Pareto 支配の判定
+
+候補 A が候補 B を **Pareto 支配** する条件:
+- A が全軸で B 以上、かつ少なくとも1軸で B を上回る
+
+**Pareto frontier**: どの候補にも支配されない候補の集合。
+
+### 実用ルール
+
+- コンテキスト消費が 2x 以下で精度が同等（±2pp）なら frontier に含める
+- frontier 上の候補が 3 個以上ある場合、コンテキスト効率が最も高いものをデフォルト選択
+- `/improve` の `--evolve` でスキル候補を生成する際、frontier 上の候補を全て保持し、最終選択をユーザーに委ねる
+
+### Best-of-N との統合（将来実装）
+
+Pareto モードでは勝者を1つ選ばず、frontier 上の全候補を比較テーブルで表示する。
+`best-of-n-runner.sh` に `--pareto` オプションを追加予定。現時点では手動で Pruning セクションの支配解除去ルールを適用する。
+
 ## 関連ドキュメント
 
 - `subagent-delegation-guide.md` §Shared File Detection Rule — session-state 共有ファイルの一覧

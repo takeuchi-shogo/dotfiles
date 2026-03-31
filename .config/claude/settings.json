@@ -153,6 +153,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/env-bootstrap.py",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "Stop": [
@@ -172,6 +181,11 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/learner/session-trace-store.py",
             "timeout": 15
           },
           {

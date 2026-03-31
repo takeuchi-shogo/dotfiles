@@ -159,6 +159,23 @@ CQS が Stagnant (0.0-2.0) かつ前回 improve が neutral の場合、tourname
 
 Phase 2 開始時に `experiment_tracker.py proposer-context --skill {target}` を実行し、過去の提案履歴を取得。このコンテキストを踏まえて提案を行う。
 
+### セッショントレースの FS 選択的アクセス
+
+> Meta-Harness (Lee+ 2026): 要約注入は性能を下げる (50.0→34.9)。生トレースへの選択的アクセスが鍵。
+
+`~/.claude/agent-memory/traces/` に JSONL 形式のセッショントレースが蓄積されている。
+Proposer は対象スキルや問題のキーワードで grep し、関連トレースのみ読む:
+
+```bash
+# 関連トレースを検索（キーワード: スキル名、エラーパターン等）
+grep -l "{keyword}" ~/.claude/agent-memory/traces/*.jsonl | head -5
+# 該当ファイルから関連行を抽出
+grep "{keyword}" ~/.claude/agent-memory/traces/{file}.jsonl
+```
+
+- サマリー化せず raw データを直接読む
+- 注入件数上限（20件）は維持。grep 結果から最も関連性の高いエントリを選択する
+
 ### 修正後の自動検証（Improve→Audit 接続）
 
 スキル SKILL.md を修正したブランチを作成した後、以下を自動実行する:
