@@ -3,7 +3,7 @@ name: test-analyzer
 description: テストカバレッジの質と網羅性を分析するレビューエージェント。新機能のテスト漏れ、エッジケースの欠落、テスト設計の問題を検出。
 tools: Read, Bash, Glob, Grep
 model: sonnet
-maxTurns: 12
+maxTurns: 15
 ---
 
 # Test Analyzer

@@ -3,7 +3,7 @@ name: silent-failure-hunter
 description: サイレント障害・不適切なエラーハンドリング・危険なフォールバックを検出するレビューエージェント。catch ブロック、fallback ロジック、エラー握り潰しを重点的にチェック。
 tools: Read, Bash, Glob, Grep
 model: sonnet
-maxTurns: 10
+maxTurns: 15
 ---
 
 # Silent Failure Hunter

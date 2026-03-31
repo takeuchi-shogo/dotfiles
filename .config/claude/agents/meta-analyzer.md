@@ -8,7 +8,6 @@ tools:
   - Bash
   - Glob
   - Grep
-permissionMode: plan
 maxTurns: 20
 ---
 

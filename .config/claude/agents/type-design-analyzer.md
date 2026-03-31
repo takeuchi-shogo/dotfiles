@@ -3,7 +3,7 @@ name: type-design-analyzer
 description: 型設計の品質を分析するレビューエージェント。新しい型のカプセル化、不変条件の表現、型安全性を評価。型の追加・リファクタリング時に使用。
 tools: Read, Bash, Glob, Grep
 model: sonnet
-maxTurns: 10
+maxTurns: 15
 ---
 
 # Type Design Analyzer

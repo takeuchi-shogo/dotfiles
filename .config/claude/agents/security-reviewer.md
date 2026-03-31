@@ -4,8 +4,7 @@ description: "Deep-dive security analysis that complements code-reviewer's surfa
 tools: Read, Bash, Glob, Grep
 model: opus
 memory: project
-permissionMode: plan
-maxTurns: 15
+maxTurns: 20
 skills: security-review
 ---
 

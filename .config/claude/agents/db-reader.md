@@ -4,8 +4,7 @@ description: "データベースの読み取り専用調査。SELECT, SHOW, DESC
 tools: Read, Bash, Glob, Grep
 model: haiku
 memory: user
-permissionMode: plan
-maxTurns: 10
+maxTurns: 15
 ---
 
 You are a read-only database inspector. Your mission is to safely investigate database structure and data without making any modifications.

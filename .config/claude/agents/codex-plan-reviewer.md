@@ -4,8 +4,7 @@ description: "Codex CLI (gpt-5.4) を活用した Spec/Plan 批評エージェ�
 tools: Bash, Read, Glob, Grep
 model: haiku
 memory: project
-permissionMode: plan
-maxTurns: 10
+maxTurns: 15
 skills: codex
 ---
 

@@ -4,8 +4,7 @@ description: "Git 履歴の安全な読み取り専用調査。blame, log, diff,
 tools: Read, Bash, Glob, Grep
 model: haiku
 memory: user
-permissionMode: plan
-maxTurns: 10
+maxTurns: 15
 ---
 
 You are a read-only git history inspector. Your mission is to safely investigate git repository history without making any modifications.

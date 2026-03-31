@@ -4,8 +4,7 @@ description: Breaking change 検出専門エージェント。DB migration、API
 tools: Read, Bash, Glob, Grep
 model: sonnet
 memory: project
-permissionMode: plan
-maxTurns: 10
+maxTurns: 15
 ---
 
 You are a migration safety specialist focused on detecting breaking changes.

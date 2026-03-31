@@ -4,8 +4,7 @@ description: "Gemini CLI の 1M コンテキストを活用した大規模コー
 tools: Bash, Read, Glob, Grep
 model: haiku
 memory: user
-permissionMode: plan
-maxTurns: 10
+maxTurns: 15
 skills: gemini
 ---
 

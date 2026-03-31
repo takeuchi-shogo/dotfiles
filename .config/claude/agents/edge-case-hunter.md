@@ -4,7 +4,7 @@ description: 境界値・異常系・nil パス・空コレクション・ゼロ
 tools: Read, Bash, Glob, Grep
 model: sonnet
 memory: user
-maxTurns: 10
+maxTurns: 15
 ---
 
 # Edge Case Hunter
