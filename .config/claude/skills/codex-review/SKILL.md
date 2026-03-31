@@ -4,7 +4,7 @@ description: >
   Codex AI を使った read-only コードレビューと CHANGELOG 自動生成。手動レビュー(/codex-review)や
   自動レビューフロー(general-purpose Agent経由)で使用。--post-to-pr <PR番号> で GitHub PR にレビュー
   結果をコメント投稿可能。実装・編集には codex スキルを使うこと。
-  Do NOT use for standard code reviews under 100 lines — use /review skill instead.
+  S規模以上の全変更で Review Gate として使用可能。/review スキルからの自動起動にも対応。
   Do NOT use for posting comments without user confirmation — always preview before posting.
 allowed-tools: "Read, Bash, Grep, Glob, Agent, AskUserQuestion"
 metadata:
@@ -33,6 +33,7 @@ Review the recent git changes. Check these 6 items in order:
 4. **Naming & Readability**: Misleading names, overly complex code, missing docs
 5. **Performance**: Unnecessary allocations, N+1 queries, missing indexes
 6. **Tests**: Missing edge cases, flaky patterns, inadequate coverage
+7. **Plan Alignment**: Does the implementation match the plan's intent? Any scope drift, missing tasks, or unplanned additions? (Skip if no plan exists)
 
 Output format — one line per finding:
 [MUST/CONSIDER/NIT] file:line - description
@@ -198,7 +199,8 @@ gh pr review <N> --approve --body "LGTM -- Codex review passed. No issues detect
 - 大規模リファクタリング後のセカンドオピニオン
 - リリース前の最終レビュー
 - CHANGELOG.md の更新が必要なとき
-- 200行超の変更で code-reviewer + 言語専門レビューアーに追加して使用
+- S 規模以上の全変更で Review Gate として起動（reasoning_effort: xhigh）
+- M/L 規模では code-reviewer + 言語専門レビューアーと並列起動
 - **セキュリティ特化**: 認証・暗号・API エンドポイント・依存関係の変更時
 - **PR コメント投稿**: `--post-to-pr <N>` でレビュー結果を GitHub PR に直接投稿したいとき
 
@@ -219,7 +221,6 @@ gh pr review <N> --approve --body "LGTM -- Codex review passed. No issues detect
 
 | NG | 理由 |
 |----|------|
-| 100行未満の変更に使う | 小規模レビューは /review で十分。Codex はオーバーヘッドが大きい |
 | Codex の指摘を無批判に適用する | Codex も誤判定する。指摘は検証してから適用する |
 | codex-review でコードを編集する | read-only スキル。編集が必要なら /codex を使う |
 | 確認なしに PR にコメント投稿する | 誤った指摘を投稿すると PR が荒れる。必ず AskUserQuestion でプレビュー+承認を得る |
