@@ -235,6 +235,64 @@ IF compliance passed:
 
 **Key techniques:** Domain expertise embedded in logic, compliance before action, comprehensive documentation.
 
+### Pattern 6: Orchestration Skill (Skill Chaining)
+
+**Use when:** A higher-order workflow composes multiple skills in sequence.
+
+An orchestration skill doesn't implement logic itself — it defines the conditional sequence of other skills to achieve a complex goal. This is the "skill that teaches the agent how to sequence other skills."
+
+```markdown
+## Workflow: Feature Development (orchestration)
+
+### Step 1: Planning (fork: interactive)
+
+Run the `plan` skill.
+User interaction required: scope confirmation, approach selection.
+
+### Step 2: Implementation (thread: autonomous)
+
+Run the `implement` skill with the plan output.
+No user interaction needed.
+
+### Step 3: Review (thread: autonomous)
+
+Run the `review` skill on the changes.
+If NEEDS_FIX → return to Step 2.
+
+### Step 4: Verification (fork: interactive)
+
+Run the `verify` skill.
+User interaction required: final approval.
+```
+
+**Key techniques:**
+- Each step references a skill by name, not by reimplementing its logic
+- Mark each step as `fork` (interactive, blocks) or `thread` (autonomous, parallel)
+- Define transition conditions between steps (success, failure, retry)
+- The orchestration skill is the only place that knows the full sequence
+
+**Existing examples in this project:** `/epd` (Spec→Spike→Validate→Build→Review), `/dev-cycle` (Issue→Implement→PR→CI), `/autonomous` (DAG decomposition→worktree parallel execution)
+
+### Chaining Section Standard Format
+
+Every skill should include a `## Chaining` section with the following structure:
+
+```markdown
+## Chaining
+
+- **前段**: /plan — このスキルの前に推奨されるスキル（前提条件）
+- **後段**: /review, /verify — 完了後に推奨されるスキル（次のアクション）
+- **合成**: /epd — このスキルを部品として使う上位スキル（orchestrator）
+```
+
+| フィールド | 意味 | 例 |
+|-----------|------|-----|
+| **前段** | このスキルの前に実行すべきスキル | `/check-health`, `/spec` |
+| **後段** | このスキル完了後に推奨されるスキル | `/review`, `/commit` |
+| **合成** | このスキルを部品として使う上位スキル | `/epd`, `/dev-cycle` |
+
+前段・後段・合成のいずれも該当がなければ省略可。少なくとも1つは記載する。
+
 ---
 
 ## Success Criteria
