@@ -2,8 +2,10 @@
 name: comment-analyzer
 description: コメント・ドキュメントの正確性・完全性・長期保守性を分析するレビューエージェント。大量のドキュメント追加、PR前のコメント検証、コメント腐敗の検出に使用。
 tools: Read, Bash, Glob, Grep
+disallowedTools: Edit, Write, NotebookEdit
 model: sonnet
 maxTurns: 15
+omitClaudeMd: true
 ---
 
 # Comment Analyzer

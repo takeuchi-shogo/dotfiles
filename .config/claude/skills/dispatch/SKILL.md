@@ -33,6 +33,22 @@ user_invocable: true
 
 ## 実行手順
 
+### Worker プロンプト品質ルール（全方式共通）
+
+Worker は親の会話を見れない。プロンプトは必ず**自己完結**させる:
+
+- リサーチ結果を自分で合成してから具体スペック（ファイルパス+行番号+型情報）を渡す
+- 「Based on your findings」「Based on the research」は禁止 — 理解の丸投げ
+- 「done」の定義を明示する（例: 「テスト実行+コミット+ハッシュ報告」）
+- リサーチ指示なら「ファイルを変更するな」を明示
+
+```
+BAD:  "Based on the research, fix the auth bug"
+GOOD: "Fix the null pointer in src/auth/validate.ts:42.
+       Session.user is undefined when expired. Add nil check
+       before user.id — if nil, return 401. Commit and report hash."
+```
+
 ### サブエージェントに振り分ける場合
 
 通常の Agent tool で実行する。特別な手順なし。

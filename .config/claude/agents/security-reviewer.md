@@ -5,6 +5,7 @@ tools: Read, Bash, Glob, Grep
 model: opus
 memory: project
 maxTurns: 20
+effort: high
 skills: security-review
 ---
 

@@ -2,9 +2,11 @@
 name: edge-case-hunter
 description: 境界値・異常系・nil パス・空コレクション・ゼロ値など「正常系では通らないパス」の検出に特化したレビューエージェント。エッジケースの見逃しを防ぐ。
 tools: Read, Bash, Glob, Grep
+disallowedTools: Edit, Write, NotebookEdit
 model: sonnet
 memory: user
 maxTurns: 15
+omitClaudeMd: true
 ---
 
 # Edge Case Hunter

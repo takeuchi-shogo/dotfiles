@@ -5,6 +5,7 @@ tools: Bash, Read, Glob, Grep
 model: haiku
 memory: project
 maxTurns: 15
+effort: high
 skills: codex
 ---
 

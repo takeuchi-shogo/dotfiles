@@ -6,6 +6,7 @@ model: sonnet
 memory: project
 permissionMode: plan
 maxTurns: 15
+effort: medium
 ---
 
 You are an expert build error resolution specialist. Your mission is to get builds passing with minimal changes.

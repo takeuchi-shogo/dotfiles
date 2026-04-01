@@ -55,6 +55,13 @@ Read `instructions/capture-and-write.md` for the full procedure:
 - **Pattern Selection**: Choose from pipeline, inversion, reviewer, generator, tool-wrapper
 - **Interview and Research**: Edge cases, formats, dependencies
 - **Write the SKILL.md**: Frontmatter, pattern-aware scaffolding, critical rules
+- **Workflow Spec Checklist** (skillify パターン — 各スキルに以下の6要素が揃っているか確認):
+  1. **Goal** — trigger / when_to_use が明確か
+  2. **Inputs** — 引数と前提条件が定義されているか
+  3. **Ordered Steps** — 手順が順序立てて記述されているか
+  4. **Success Criteria** — 各ステップの完了条件が明示されているか（最重要）
+  5. **Human Checkpoint** — ユーザー判断が必要なポイントが特定されているか
+  6. **Hard Rules** — NG パターン / Anti-Patterns が記述されているか
 - **5D Quality Check**: Safety / Completeness / Executability / Maintainability / Cost-awareness
 - **Anti-Patterns**: Recommend including an Anti-Patterns section
 - **Security Scan**: Run `skill-security-scan.py` before testing
