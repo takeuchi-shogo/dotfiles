@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""MEMORY.md archive — 500行超過時に古いセクションをアーカイブに退避する。
+"""MEMORY.md archive — 180行超過時に古いセクションをアーカイブに退避する。
+
+Claude Code のハード上限は 200行/25KB。180行で proactive にアーカイブを発動し、
+サイレント切り捨てを防ぐ。
 
 手動実行: python3 ~/.claude/scripts/lifecycle/memory-archive.py
 /improve や /memory-status から呼び出し可能。
@@ -11,8 +14,11 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-MEMORY_THRESHOLD = 500
-ARCHIVE_KEEP_LINES = 200  # アーカイブ後に残す最大行数
+# Claude Code ハード上限: 200行 / 25,000 bytes
+# 180行で発動し、上限到達前にアーカイブする
+MEMORY_THRESHOLD = 180
+MEMORY_BYTES_THRESHOLD = 23_000  # 25KB の 92%
+ARCHIVE_KEEP_LINES = 150  # アーカイブ後に残す目標行数
 
 
 def find_memory_files() -> list[Path]:
@@ -31,7 +37,8 @@ def archive_memory(memory_path: Path) -> str | None:
     content = memory_path.read_text(encoding="utf-8")
     lines = content.splitlines()
 
-    if len(lines) <= MEMORY_THRESHOLD:
+    byte_size = len(content.encode("utf-8"))
+    if len(lines) <= MEMORY_THRESHOLD and byte_size <= MEMORY_BYTES_THRESHOLD:
         return None
 
     # セクション境界を検出 (## で始まる行)
