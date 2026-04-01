@@ -10,10 +10,10 @@ import (
 
 // SessionFile represents a discovered JSONL session file.
 type SessionFile struct {
-	Path      string
-	Project   string
-	SessionID string
-	ModTime   time.Time
+	Path      string    `json:"path"`
+	Project   string    `json:"project"`
+	SessionID string    `json:"session_id"`
+	ModTime   time.Time `json:"mod_time"`
 }
 
 // claudeProjectsDir returns ~/.claude/projects/.

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -40,7 +41,13 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if len(sessions) == 0 {
-		return fmt.Errorf("no sessions found")
+		return fmt.Errorf("no sessions found\nHint: run 'osa list' to check available sessions")
+	}
+
+	if jsonOutput {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sessions)
 	}
 
 	if len(sessions) == 1 {

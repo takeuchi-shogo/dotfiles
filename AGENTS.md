@@ -37,6 +37,38 @@
   - Karabiner: `.config/karabiner/README.md`
   - zsh: `.config/zsh/README.md`
 
+## CLI Tools
+
+このリポジトリに含まれる CLI ツール一覧。`--json` フラグでエージェント向け構造化出力に対応。
+
+### osa (OpenTelemetry Session Analyzer)
+
+Claude Code のセッションログを解析し、ツール呼び出し統計・トークン使用量・ボトルネックを表示する。
+
+```shell
+# セッション一覧を表示
+osa list
+osa list --project dotfiles
+osa list --json                  # JSON output for agents
+
+# 直近セッションの統計を表示
+osa analyze
+osa analyze --last 5 --json      # JSON output for agents
+
+# OTLP エンドポイントにエクスポート
+osa export <session-file> --otlp http://localhost:4318
+```
+
+### validate_*.sh (.bin/)
+
+dotfiles の検証スクリプト。`task validate` から一括実行可能。
+
+```shell
+task validate-configs       # config/script の構文チェック
+task validate-symlinks      # managed symlink の検証
+task validate-readmes       # README のローカルリンク検証
+```
+
 ## Codex Skills
 - project-local skills は `.agents/skills/` に置く。
 - selected skill は compatibility のため `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する。

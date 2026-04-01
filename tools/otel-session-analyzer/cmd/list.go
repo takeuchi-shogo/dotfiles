@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -28,8 +30,18 @@ func runList(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if len(files) == 0 {
+		if jsonOutput {
+			fmt.Println("[]")
+			return nil
+		}
 		fmt.Println("No sessions found.")
 		return nil
+	}
+
+	if jsonOutput {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(files)
 	}
 
 	dim := color.New(color.Faint).SprintFunc()
