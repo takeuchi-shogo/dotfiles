@@ -1,5 +1,16 @@
 # Data Collection (Step 0-3)
 
+## Step -0.5: 自動対比分析（Contrastive Trace Analysis）
+
+Glean "Trace Learning" に基づく自動前処理。成功/失敗トレースの対比から戦略候補を抽出する。
+
+```bash
+python3 "$HOME/.claude/scripts/learner/contrastive-trace-analyzer.py"
+```
+
+- 出力を `contrastive_findings` として保持し、Step 0 でユーザーに提示する
+- 「分析対象なし」の場合はスキップして Step 0 に進む
+
 ## Step 0: トレースレビュー（Open Coding）
 
 人間がトレースを直接読む儀式。"Error Analysis: The Highest-ROI Activity in AI Engineering" に基づく。
@@ -22,9 +33,10 @@ if unclassified[:5]:
 
 **ユーザーに以下を提示**:
 
-1. 上記スクリプトの出力テーブルを表示
-2. 「以下のトレースを確認してください。気になるパターン・驚き・想定外の動作はありますか？」と質問
-3. ユーザーの回答を `open_coding_notes` として保持し、Step 4 の autoevolve-core プロンプトに渡す
+1. Step -0.5 の `contrastive_findings` がある場合、まずそれを表示
+2. 上記スクリプトの出力テーブルを表示
+3. 「以下のトレースを確認してください。気になるパターン・驚き・想定外の動作はありますか？」と質問
+4. ユーザーの回答を `open_coding_notes` として保持し、Step 4 の autoevolve-core プロンプトに渡す
 
 **データがない場合またはユーザーがスキップを希望した場合**: 「自動分析のみ実行します」と報告し Step 1 に進む。
 

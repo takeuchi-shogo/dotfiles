@@ -18,6 +18,8 @@
 ### 優先的に改善して良いもの
 
 - `references/error-fix-guides.md` — エラーパターン→修正マップの追加
+- `references/situation-strategy-map.md` — 状況→戦略マップの追加（最大 50 エントリ）
+- `references/tool-sequence-patterns.md` — ツールシーケンスパターンの追加（5 回以上出現のみ）
 - `rules/common/*.md` — 品質ルールの追加・改善
 - `references/golden-principles.md` — 自動検証パターンの追加
 - `agents/*.md` — エージェント定義のプロンプト改善
@@ -90,6 +92,10 @@
 30. **Self-referential Script/Prompt Improvement (Hyperagents Pattern)** — AutoEvolve は自身のスクリプト・エージェント定義も改善対象に含めることができる。ただし以下の制約に従う: 対象: `scripts/learner/*.py`, `agents/meta-analyzer.md`, `agents/autoevolve-core.md`。除外: `experiment_tracker.py`, `lib/*.py`（データ整合性保護）。制約: (1) 必ず worktree で隔離して実行、(2) A/B テスト必須、(3) 通常改善サイクル 5 回に 1 回まで。根拠: Hyperagents (arXiv:2603.19461) のメタ認知的自己修正パターン
 31. **Archive-Based Exploration (Hyperagents Pattern)** — `compute_improvement_trend()` のトレンドが `saturating` の場合、線形改善から分岐探索に切り替える。`archive_snapshot()` で高パフォーマンスバリアントを保存し、`select_parent_variant()` で分岐元を確率的に選択する。分岐探索で改善が見つかったら最良バリアントにマージ。デフォルトは線形改善（最新版を改善）。根拠: Hyperagents (arXiv:2603.19461) のアーカイブベースオープンエンド探索
 32. **Cross-Model 検証 (Meta-Harness Transfer)** — スキル改善の A/B delta が +3pp 以上の場合、異なるモデル（Haiku or Codex）での smoke test を推奨する。cross-model delta が -5pp 以上低下する変更は model-specific 過学習の疑いがあり、revert を検討する。根拠: Meta-Harness (Lee+ 2026) の単一ハーネスが5モデルに転移して +4.7pt
+33. **Contrastive Trace Analysis (Glean Trace Learning)** — `/improve` の Step 0 前に `contrastive-trace-analyzer.py` を自動実行する。結果は `situation-strategy-map.md` への追加候補としてユーザーに提示する。候補の自動マージは行わない
+34. **Situation-Strategy Map 更新ポリシー** — `/improve` が候補を提案し、人間が承認して追記する。最大 50 エントリ。古いエントリは `/improve` の Garden フェーズで prune を提案する
+35. **Tool Sequence Patterns 記録閾値** — `tool-sequence-patterns.md` には 5 回以上出現したパターンのみ記録する。`/analyze-tacit-knowledge` の Stage 3 で抽出し、Stage 5 で更新候補として提案する
+36. **合意検証の閾値 (Multi-trace Consensus)** — 同一 `task_type` のトレースが 3 件以上あり、かつ戦略が一致する場合のみ学習する。2 件以下は skip（Glean: 不一致解消不能時は学習しない）
 
 ### メモリ品質ゲート（ノイズ判定基準）
 

@@ -89,7 +89,12 @@ Stage 1: Ingest   → Stage 2: Detect   → Stage 3: Extract
 
 1. detection_points をプロンプトに埋め込み、LLM に暗黙知の抽出を依頼
 2. 同一セッション内の重複パターンをグルーピング
-3. 各暗黙知に id, domain, confidence, model_attribution を付与
+3. **ツール戦略抽出**: セッションログからツール呼び出しシーケンスを抽出し、頻出パターンを特定する
+   - ログ内の tool_name（Read, Grep, Edit, Bash, Agent 等）の出現順序を抽出
+   - 連続するツール呼び出しをシーケンスとしてクラスタリング
+   - 5 回以上出現するパターンに名前を付与（例: "search-then-edit", "parallel-search"）
+   - 抽出結果を `references/tool-sequence-patterns.md` の更新候補として Stage 5 に渡す
+4. 各暗黙知に id, domain, confidence, model_attribution を付与
    - `model_attribution`: どのモデルが発見した知見か（`claude` / `codex` / `gemini` / `unknown`）
    - セッションログの委譲元（Agent ツール呼び出し、`codex exec`、`gemini-explore` 等）から判定
    - 判定できない場合は `unknown` を設定

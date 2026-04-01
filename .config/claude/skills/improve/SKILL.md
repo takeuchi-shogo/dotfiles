@@ -16,6 +16,7 @@ metadata:
 
 ## オプション
 
+- `--deep`: Teacher-Student 比較を実行。Codex で同一タスクを高推論予算で再実行し、divergence を分析。週 1 回推奨（コスト制約）
 - `--evolve`: イテレーティブ進化ループを実行（デフォルト: 通常の 1 パス分析）
 - `--iterations N`: ループ回数（デフォルト: 3、最大: 5）
 - `--skills skill1,skill2`: 対象スキルを手動指定（デフォルト: degraded/failing スキル）

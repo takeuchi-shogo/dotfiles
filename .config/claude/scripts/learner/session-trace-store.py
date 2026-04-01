@@ -53,20 +53,40 @@ def _store_trace(data: str) -> None:
     if not payload:
         return
 
-    # Build trace entry
+    # Build trace entry with tool_strategy / context separation (Glean Trace Learning)
+    cwd = os.getcwd()
+
+    # Extract tool_strategy from payload if tool_calls present
+    tool_calls = payload.get("tool_calls", []) if isinstance(payload, dict) else []
+    tools_used = []
+    if isinstance(tool_calls, list):
+        tools_used = [tc.get("tool", "") for tc in tool_calls if isinstance(tc, dict)]
+
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "session_id": session_id,
-        "cwd": os.getcwd(),
-        "project": Path(os.getcwd()).name,
+        "tool_strategy": {
+            "tools_used": tools_used,
+            "sequence_pattern": "",  # populated by contrastive-trace-analyzer
+            "parallel_tools": [],
+        },
+        "context": {
+            "cwd": cwd,
+            "project": Path(cwd).name,
+            "task_type": payload.get("task_type", "")
+            if isinstance(payload, dict)
+            else "",
+        },
+        "outcome": payload.get("outcome", "unknown")
+        if isinstance(payload, dict)
+        else "unknown",
     }
 
-    # Extract tool calls, errors, task results if present
+    # Extract known fields, fallback to storing entire payload
     if isinstance(payload, dict):
         for key in ("tool_calls", "errors", "tasks", "messages", "summary"):
             if key in payload:
                 entry[key] = payload[key]
-        # If none of the expected keys, store entire payload
         if not any(
             k in payload
             for k in ("tool_calls", "errors", "tasks", "messages", "summary")
