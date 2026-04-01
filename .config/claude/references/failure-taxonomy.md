@@ -240,10 +240,70 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **autoFixable**: false
 - **suggestedFix**: "ステップ分割粒度の見直し"
 
+### FM-021: Output Parse Failure
+
+- **定義**: サブエージェントや外部ツールの出力がパース不能で後続処理が失敗する
+- **検出パターン**: `JSON.parse.*error`, `SyntaxError.*JSON`, `yaml.*error`, `unexpected token`, サブエージェント出力が期待フォーマット（JSON/YAML/markdown 構造）に一致しない
+- **関連 GP**: —
+- **判定**: サブエージェント/ツール出力に対してパースエラーハンドリング（カスケードリトライまたはフォールバック）があるか (pass/fail)
+- **不変条件**: サブエージェント/ツール出力のパースにはカスケード戦略（複数パース手法の順次試行）を適用する
+- **レビューアー**: `code-reviewer`, `cross-file-reviewer`
+- **着想**: Mulian+ 2026 "AgentFixer" — パース関連障害が全障害の 38% を占める。15 診断ツールのうち入力/出力スキーマ準拠検出器が最も高頻度で発火。カスケードパース戦略（`references/cascade-parse-strategy.md`）で対処
+- **severity**: Critical
+- **autoFixable**: true
+- **suggestedFix**: "カスケードパース戦略の適用（references/cascade-parse-strategy.md 参照）"
+
 ### autoFixable 分類基準
 
 - **true**: lint/フォーマット/型注釈/import 解決など、ツールが機械的に修正可能
 - **false**: セキュリティ/アーキテクチャ/ビジネスロジック/設計判断/行動パターンなど、人間の判断が必要
+
+---
+
+## Severity 分類
+
+> 着想元: Mulian+ 2026 "AgentFixer" — Criticality-level classification
+
+各 FM の発火を3段階で分類する。レビューアーが指摘に severity を付与する際の基準。
+
+| Severity | 定義 | アクション |
+|---|---|---|
+| **Critical** | タスク失敗・データ損失・セキュリティ侵害を直接引き起こす | 即時修正必須（MUST） |
+| **Moderate** | 機能は動作するが信頼性・保守性が劣化する | 修正推奨（CONSIDER） |
+| **Minor** | 単体では無害だが累積すると体系的に信頼性を劣化させる | 単発は NIT、3件以上のパターン化は CONSIDER に昇格 |
+
+### FM 別デフォルト severity
+
+| Severity | FM |
+|---|---|
+| Critical | FM-001, FM-002, FM-005, FM-010, FM-012, FM-015, FM-016, FM-021 |
+| Moderate | FM-003, FM-004, FM-006, FM-008, FM-011, FM-013, FM-014, FM-017, FM-018, FM-019 |
+| Minor | FM-007, FM-009, FM-020 |
+
+デフォルトはコンテキストで変わりうる（例: FM-009 がプロダクション環境なら Critical）。
+
+---
+
+## Trace 対比分析
+
+> 着想元: Mulian+ 2026 "AgentFixer" — Trace Comparison Tool が 46.2% のケースで根本原因特定に優位
+
+成功トレースと失敗トレースを対比し、失敗の根本原因を特定する手法。
+
+### 手順
+
+1. `session-trace-store.py` に保存された raw トレースから、同一タスク種別の成功/失敗ペアを抽出
+2. 差分を以下の3軸で比較:
+   - **ツール呼び出し列**: どのツールが呼ばれた/呼ばれなかったか
+   - **判断分岐点**: 成功と失敗で異なる判断をした箇所
+   - **出力品質**: 同一ステップの出力の質的差異
+3. 差分から FM を特定し、Graph vs Prompt 修正診断に接続
+
+### 適用タイミング
+
+- `/improve` の分析フェーズで、同一 FM が繰り返し発生する場合
+- デバッグ時に根本原因が不明な場合（`debugger` エージェントが参照）
+- 手動: 失敗セッションの JSONL を読み、直前の成功セッションと対比
 
 ---
 
@@ -281,6 +341,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 | FM-013 Tool Output Misinterpretation | hybrid | drift(コンテキスト汚染) + residual(誤読) |
 | FM-014 Intent Misalignment | hybrid | drift(目標ドリフト) + residual(解釈誤り) |
 | FM-015 Premature Action | hybrid | drift(判断劣化) + residual(確認不足) |
+| FM-021 Output Parse Failure | residual | 個別ノードのパース処理品質 |
 
 ---
 
