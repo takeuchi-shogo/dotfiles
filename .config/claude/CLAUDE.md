@@ -119,7 +119,7 @@ Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify
 - **ドキュメント＝インフラ**: エージェントが依存する仕様書は耐荷重構造物。コード変更時に同期更新を怠ると silent failure を招く。「2回説明したら書き下ろせ」— 同じドメイン知識を繰り返しセッション横断で説明している場合は spec/reference に codify する
 - **探索は広く、理解は深く**: ファイル探索時は precision（見たものの正確な理解）に偏りやすい。意識的に recall（見るべきファイルの網羅）を上げる。config/registry → エントリポイント → 個別モジュールの順で探索する
 - **Build to Delete**: ハーネス要素（hook, script, agent）は次世代モデルで不要になりうる過渡的技術。軽量・モジュラーに保ち、削除コストを最小化する。設計時に「何が改善されればこれは不要になるか？」を問う
-- **Scaffolding > Model**: ハーネス（hooks, skills, agents, memory）の設計がモデル選択より重要。同じモデルでも足場の質で出力品質は大きく変わる。Build to Delete と対 — ハーネスは過渡的だが、良いハーネスは良い出力を生む。示唆: Harness-as-Policy(0.870) > GPT-5.2-High(0.844) (Lou+ 2026, AutoHarness)
+- **Scaffolding > Model**: ハーネス（hooks, skills, agents, memory）の設計がモデル選択より重要。同じモデルでも足場の質で出力品質は大きく変わる。Build to Delete と対 — ハーネスは過渡的だが、良いハーネスは良い出力を生む。示唆: Harness-as-Policy(0.870) > GPT-5.2-High(0.844) (Lou+ 2026, AutoHarness)。協調プロトコル選択が品質差異の44%を説明し、モデル選択は~14% (Dochkina 2026, 25K tasks)
 
 </core_principles>
 
