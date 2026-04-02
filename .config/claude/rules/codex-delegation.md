@@ -89,6 +89,27 @@ Codex に実装を委譲した場合、以下のルールで回復する:
 
 **根拠**: 記事調査により、Codex は実行ごとに結果が変わりうるため、1回の再試行は有効。ただし2回連続失敗は構造的な問題を示唆するため、Claude の会話型軌道修正能力で回復する方が効率的。
 
+## Codex の Instruction Fragment 設計哲学
+
+> 出典: wquguru/harness-books Book 2 Ch2 — Codex のソースコード分析に基づく
+
+Codex は instruction を「自然語テキストの連結」ではなく「型・境界・包裹規則を持つ構造化片段」として扱う。
+
+| 概念 | Codex の実装 | Claude Code との違い |
+|------|-------------|---------------------|
+| **Fragment** | `fragment.rs` で instruction に型・起止境界・包裹規則を定義 | CC は動態拼装（条件注入で組み立て） |
+| **AGENTS.md** | 作用域と優先度の継承関係を明示。`child_agents_md` で階層的 | CC の `CLAUDE.md` は「現場公告板」的 |
+| **User Instructions** | `user_instructions.rs` で目録と境界標記付きメッセージに序列化 | CC は system prompt に自然語として注入 |
+| **ExecPolicy** | `execpolicy/src/lib.rs` で宣言的ツール実行ポリシー | CC は `bashPermissions.ts` で現場判定 |
+
+### Codex に委譲する際の含意
+
+- Codex は **明確な境界を持つ指示** に最適化されている。曖昧な自然語指示より、構造化された要件が精度を上げる
+- `AGENTS.md` の階層的規則システムは、Codex がプロジェクト固有の制約を理解する主要な入口
+- instruction が「識別可能な一等オブジェクト」であるため、何がプロンプトに入っているかの可調試性が高い
+
+---
+
 ## 委譲しないケース
 
 - 単純なコード編集、git操作、ファイル作成
