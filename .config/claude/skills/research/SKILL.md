@@ -52,6 +52,7 @@ metadata:
 |----------------|--------|------|
 | 外部エコシステム、代替案比較、ライブラリ調査、コミュニティ動向、セキュリティ脆弱性の動向 | **Gemini** | Google Search grounding + 1M コンテキスト |
 | 設計判断、トレードオフ分析、リスク評価、アーキテクチャ比較 | **Codex** | 深い推論 (reasoning_effort=high) |
+| 学術文献調査、引用分析、論文の信頼性評価、研究ギャップ発見 | **Scite MCP** | Smart Citations + 250M+ 論文検索 |
 | コードベース分析、一般的な調査、ドキュメント読解 | **claude -p** | デフォルト |
 
 **ルール**:
@@ -72,7 +73,8 @@ metadata:
 
 ### ツール（各モデル共通）
 
-- **MCP ツール**: brave-search, context7（インストール済みの場合）
+- **MCP ツール**: brave-search, context7, scite（インストール済みの場合）
+- **Scite MCP**: 学術文献検索・Smart Citations・引用グラフ分析。学術トピックのサブタスクで積極的に使用
 - **WebFetch/WebSearch**: 標準ツール
 
 ### マルチモデル並列実行
@@ -131,7 +133,7 @@ docs/research/             # 最終レポートの保存先（git 管理）
 
 チャプター毎に精査:
 
-1. ソースの信頼性を検証
+1. ソースの信頼性を検証（Scite MCP 利用時は Smart Citations のサポート率/矛盾率を活用）
 2. 矛盾する情報を特定・注記
 3. 不足情報のギャップを明示
 
