@@ -23,6 +23,21 @@ TRACES_DIR = Path.home() / ".claude" / "agent-memory" / "traces"
 MAX_AGE_DAYS = 90
 MAX_TOTAL_BYTES = 500 * 1024 * 1024  # 500 MB
 
+# Risk classification by tool name (AutoHarness 9-category mapping)
+# Used for post-hoc risk trend analysis via /improve
+_TOOL_RISK: dict[str, str] = {
+    "Bash": "medium",
+    "Write": "medium",
+    "Edit": "low",
+    "Read": "low",
+    "Glob": "low",
+    "Grep": "low",
+    "Agent": "low",
+    "WebFetch": "medium",
+    "WebSearch": "low",
+    "NotebookEdit": "medium",
+}
+
 
 def _get_session_id() -> str:
     """Generate a short session identifier."""
@@ -62,6 +77,11 @@ def _store_trace(data: str) -> None:
     if isinstance(tool_calls, list):
         tools_used = [tc.get("tool", "") for tc in tool_calls if isinstance(tc, dict)]
 
+    # Compute per-tool risk levels and session risk score
+    risk_levels = [_TOOL_RISK.get(t, "low") for t in tools_used]
+    _RISK_WEIGHT = {"low": 1, "medium": 3, "high": 10, "critical": 50}
+    risk_score = sum(_RISK_WEIGHT.get(r, 1) for r in risk_levels)
+
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "session_id": session_id,
@@ -69,6 +89,8 @@ def _store_trace(data: str) -> None:
             "tools_used": tools_used,
             "sequence_pattern": "",  # populated by contrastive-trace-analyzer
             "parallel_tools": [],
+            "risk_levels": risk_levels,
+            "risk_score": risk_score,
         },
         "context": {
             "cwd": cwd,
