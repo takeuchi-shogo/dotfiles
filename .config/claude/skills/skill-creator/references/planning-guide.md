@@ -295,6 +295,38 @@ Every skill should include a `## Chaining` section with the following structure:
 
 ---
 
+## Reference Budget
+
+スキルの `references/` ディレクトリはコンテキストウィンドウを消費する。選択的ロードの原則を守ること。
+
+### 原則
+
+1. **必要なときだけロード** — SKILL.md に全知識を詰め込まない。参照頻度の低い情報は `references/` に分離し、必要なステップで初めて Read する
+2. **1ファイル = 1関心事** — `references/everything.md` ではなく `references/api-patterns.md`, `references/error-codes.md` のように分割する。スキルの各ステップが必要なファイルだけを読める
+3. **サイズ上限の目安** — 1 reference ファイルは 200 行以下を推奨。超える場合はさらに分割を検討する
+4. **スキル全体の references/ 予算** — 1スキルあたり references/ の合計は 5 ファイル・1000 行以下を目安とする。超える場合はドメインの分割（別スキル化）を検討する
+
+### アンチパターン
+
+| NG | 理由 |
+|----|------|
+| SKILL.md 冒頭で全 references/ を一括 Read | コンテキスト浪費。必要なステップで必要なファイルだけ読む |
+| 1つの巨大 reference に全情報を集約 | 部分アクセスできず、常に全量ロードされる |
+| references/ に頻繁に変わる情報を置く | スキルの references/ は安定した知識向け。動的情報は MCP やスクリプトで取得する |
+
+### 判断フロー
+
+```
+この情報はスキルの全ステップで必要？
+  → Yes → SKILL.md に直接記載
+  → No → references/ に分離
+    この reference は 200 行以下？
+      → Yes → そのまま
+      → No → 関心事で分割
+```
+
+---
+
 ## Success Criteria
 
 Define these before writing the skill. They guide testing and iteration.

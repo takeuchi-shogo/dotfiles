@@ -181,6 +181,55 @@ For Batch 2 skills, perform additional conflict detection after the standard ben
 
 Include conflict analysis results in the audit report under "Description Conflicts Detected".
 
+## Full Trigger Conflict Scan
+
+全スキルの Triggers フレーズを一括スキャンし、重複・曖昧性を検出する軽量モード。
+A/B ベンチマーク不要で、description の静的解析のみで実行できる。
+
+### 起動
+
+`/skill-audit conflict-scan` または audit ワークフロー中に「衝突スキャンも実行」と指示。
+
+### 手順
+
+1. **全スキル description 収集** — `~/.claude/skills/*/SKILL.md` の frontmatter から `description` を全件抽出
+2. **Trigger フレーズ抽出** — 各 description から `Triggers:` と `Do NOT use for:` のフレーズリストを分離
+3. **重複検出** — 以下の3種の衝突を検出:
+   - **完全一致**: 同一の Trigger フレーズが複数スキルに存在
+   - **部分包含**: あるスキルの Trigger が別スキルの Trigger の部分文字列（例: "レビュー" vs "コードレビュー"）
+   - **Do NOT use for 欠落**: Trigger が重複するペアで、片方に対応する `Do NOT use for` 排他が未定義
+4. **テリトリーマップ生成** — スキル×ドメインのマトリクスを出力し、テリトリー境界を可視化
+5. **レポート出力** — audit レポートの "Trigger Conflict Scan" セクションに結果を記載
+
+### 出力テーブル
+
+```markdown
+## Trigger Conflict Scan
+
+### 検出された衝突
+
+| # | Type | Skill A | Skill B | 重複フレーズ | 推奨アクション |
+|---|------|---------|---------|-------------|---------------|
+| 1 | 完全一致 | review | simplify | "コードレビュー" | Do NOT use for を追記 |
+| 2 | 部分包含 | spec | interview | "仕様" ⊂ "仕様書" | Trigger を具体化 |
+| 3 | 排他欠落 | frontend-design | ui-ux-pro-max | "UI" | 双方に Do NOT use for を追記 |
+
+### テリトリーマップ
+
+| ドメイン | Primary Skill | Secondary | 境界明確？ |
+|---------|--------------|-----------|-----------|
+| コードレビュー | review | simplify | Yes |
+| フロントエンド | frontend-design | ui-ux-pro-max | No → 要修正 |
+```
+
+### 判定基準
+
+| 衝突タイプ | 深刻度 | アクション |
+|-----------|--------|-----------|
+| 完全一致 + 排他なし | **High** | 即座に description 修正が必要 |
+| 部分包含 + 排他あり | **Low** | 監視のみ |
+| 部分包含 + 排他なし | **Medium** | Do NOT use for 追記を推奨 |
+
 ## Audit Report Format
 
 Generate the report at `docs/benchmarks/YYYY-MM-DD-audit.md` using this template:
