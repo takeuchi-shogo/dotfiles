@@ -128,6 +128,32 @@ security-reviewer エージェントおよび `/security-review` コマンドか
 
 ---
 
+## 7. Agent Traps（情報環境攻撃）
+
+> Franklin et al. (Google DeepMind, 2026) — 自律型エージェントの情報環境を攻撃面とする脅威体系。
+
+### 概要
+
+| カテゴリ | ターゲット | 代表的攻撃 | 当セットアップへの関連性 |
+|----------|-----------|-----------|----------------------|
+| **Content Injection** | Perception | CSS隠蔽、aria-label偽装、Markdown masking | MCP応答・WebFetch経由で混入 → mcp-response-inspector.py で検出 |
+| **Semantic Manipulation** | Reasoning | 権威的フレーミング、Critic Evasion（「教育目的」偽装） | レビューアーの判断を歪める → Critic Evasion 耐性注記で対策 |
+| **Cognitive State** | Memory/Learning | メモリポイズニング（0.1%汚染で80%成功率）、ICL汚染 | メモリファイル改ざん → memory-integrity-check.py で検知 |
+| **Behavioural Control** | Action | Data Exfiltration（80%成功率）、Sub-agent Spawning（58-90%成功率） | Depth-1 ルール + 外部コンテンツ隔離で緩和 |
+| **Systemic** | Multi-Agent | Compositional Fragment Traps、Sybil Attacks | 単一ユーザー環境では低リスク。断片分散型は注意 |
+| **Human-in-the-Loop** | Human Overseer | Approval Fatigue、Automation Bias | agency-safety-framework.md で認識・緩和策を記載 |
+
+### Compositional Fragment Traps（A5: 特記）
+
+複数の無害なフラグメントが異なるソース（MCP応答、メモリ、スキル定義等）に分散し、
+エージェントのコンテキストウィンドウで結合された時に初めて攻撃ペイロードとして機能する。
+
+- **検出困難**: 個々のフラグメントは無害に見えるため、単一ソースの検査では検出不可
+- **緩和策**: mcp-response-inspector.py のパターン検出 + security-reviewer による cross-source 分析
+
+---
+
 ## 更新履歴
 
+- 2026-04-02: Agent Traps セクション追加（Franklin et al., Google DeepMind）
 - 2026-03-11: 初版作成（claude-code-ultimate-guide の脅威DB を基に構築）

@@ -28,6 +28,7 @@ from hook_utils import (
 )
 
 MAX_RESPONSE_SIZE = 10 * 1024  # 10KB truncation limit
+LARGE_CONTENT_THRESHOLD = 5 * 1024  # 5KB — contextual learning bias advisory
 
 # ---------------------------------------------------------------------------
 # Injection directive patterns (natural-language social engineering)
@@ -58,6 +59,48 @@ ZERO_WIDTH_RE = re.compile("[\u200b\u200c\u200d\ufeff]")
 ANSI_ESCAPE_RE = re.compile(re.escape("\x1b") + r"\[")
 NULL_BYTE_RE = re.compile(chr(0))
 
+# ---------------------------------------------------------------------------
+# Content Injection patterns (CSS/HTML obfuscation) — Franklin et al. (2026)
+# WASP benchmark: up to 86% partial control via these techniques
+# ---------------------------------------------------------------------------
+CONTENT_INJECTION_PATTERNS = [
+    (re.compile(r"display\s*:\s*none", re.IGNORECASE), "css-display-none"),
+    (re.compile(r"visibility\s*:\s*hidden", re.IGNORECASE), "css-visibility-hidden"),
+    (
+        re.compile(r"position\s*:\s*absolute[^>]*-\d{3,}px", re.IGNORECASE),
+        "css-offscreen",
+    ),
+    (
+        re.compile(
+            r"aria-label\s*=\s*[\"'][^\"']*"
+            r"(?:ignore|system|instructions?|exfiltrate)"
+            r"[^\"']*[\"']",
+            re.IGNORECASE,
+        ),
+        "aria-label-injection",
+    ),
+]
+
+# ---------------------------------------------------------------------------
+# Syntactic Masking patterns (Markdown/HTML comment obfuscation)
+# ---------------------------------------------------------------------------
+SYNTACTIC_MASKING_PATTERNS = [
+    (
+        re.compile(
+            r"\[(?:[^\]]*(?:system|ignore|exfiltrate|override)[^\]]*)\]\([^\)]+\)",
+            re.IGNORECASE,
+        ),
+        "markdown-link-injection",
+    ),
+    (
+        re.compile(
+            r"<!--[^>]*(?:ignore|system|instructions|override)[^>]*-->",
+            re.IGNORECASE,
+        ),
+        "html-comment-injection",
+    ),
+]
+
 
 def _inspect(text: str) -> tuple[str, str] | None:
     """Inspect text for injection patterns.
@@ -79,6 +122,16 @@ def _inspect(text: str) -> tuple[str, str] | None:
 
     if NULL_BYTE_RE.search(text):
         return "null-byte", "Null byte in MCP response"
+
+    for pattern, name in CONTENT_INJECTION_PATTERNS:
+        m = pattern.search(text)
+        if m:
+            return name, m.group()[:80]
+
+    for pattern, name in SYNTACTIC_MASKING_PATTERNS:
+        m = pattern.search(text)
+        if m:
+            return name, m.group()[:80]
 
     return None
 
@@ -111,6 +164,15 @@ def _main() -> None:
     # Truncate large responses
     if len(tool_output) > MAX_RESPONSE_SIZE:
         tool_output = tool_output[:MAX_RESPONSE_SIZE]
+
+    # T9: Large content advisory (contextual learning bias)
+    if len(tool_output) > LARGE_CONTENT_THRESHOLD and not _inspect(tool_output):
+        msg = (
+            f"[MCP Response Inspector] {tool_name} のレスポンスが "
+            f"{len(tool_output)}B ({len(tool_output) / 1024:.1f}KB) — "
+            f"外部コンテンツによる in-context learning バイアスに注意"
+        )
+        print(msg, file=sys.stderr)
 
     result = _inspect(tool_output)
 

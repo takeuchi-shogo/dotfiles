@@ -184,6 +184,15 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/memory-integrity-check.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
