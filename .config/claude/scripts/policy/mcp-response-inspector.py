@@ -67,7 +67,11 @@ CONTENT_INJECTION_PATTERNS = [
     (re.compile(r"display\s*:\s*none", re.IGNORECASE), "css-display-none"),
     (re.compile(r"visibility\s*:\s*hidden", re.IGNORECASE), "css-visibility-hidden"),
     (
-        re.compile(r"position\s*:\s*absolute[^>]*-\d{3,}px", re.IGNORECASE),
+        re.compile(
+            r"position\s*:\s*absolute[^;\"']*"
+            r"(?:left|top|right|bottom)\s*:\s*-\d{4,}px",
+            re.IGNORECASE,
+        ),
         "css-offscreen",
     ),
     (
@@ -165,16 +169,16 @@ def _main() -> None:
     if len(tool_output) > MAX_RESPONSE_SIZE:
         tool_output = tool_output[:MAX_RESPONSE_SIZE]
 
+    result = _inspect(tool_output)
+
     # T9: Large content advisory (contextual learning bias)
-    if len(tool_output) > LARGE_CONTENT_THRESHOLD and not _inspect(tool_output):
+    if len(tool_output) > LARGE_CONTENT_THRESHOLD and not result:
         msg = (
             f"[MCP Response Inspector] {tool_name} のレスポンスが "
             f"{len(tool_output)}B ({len(tool_output) / 1024:.1f}KB) — "
             f"外部コンテンツによる in-context learning バイアスに注意"
         )
         print(msg, file=sys.stderr)
-
-    result = _inspect(tool_output)
 
     if result:
         pattern_name, detail = result
