@@ -73,6 +73,33 @@
 | RateLimit | `rate limit`, `429` | 別タスク切り替え |
 | Timeout | `timeout`, `ETIMEDOUT` | コマンド分割 / background |
 
+## False Claims Rate と反復劣化
+
+> 出典: Claude Code v2.1.88 内部コメント (Capybara v4→v8)、"The Harness Wars Begin" (2026-04)
+
+| バージョン | False Claims Rate | 備考 |
+|-----------|------------------|------|
+| Capybara v4 | 16.7% | ベースライン |
+| Capybara v8 | 29-30% | 反復改善で悪化。構造的限界の可能性 |
+
+**設計含意:**
+- 長タスク（8+ ツール呼び出し）では false claims が累積する。verification 頻度を上げる
+- completion-gate の MAX_RETRIES=2 はこの劣化を前提とした設計
+- 「モデルが賢くなれば解決する」は危険な仮定。ハーネス側の検証を緩めない
+
+## Compaction 後の Re-grounding チェックポイント
+
+> 出典: Claude Code 内部アーキテクチャ分析 (2026-04-01)、"The Harness Wars Begin"
+
+Auto-compaction は ~167K トークン（200K モデル）で発火し、20K トークンの summary に圧縮される。
+**圧縮で失われるもの**: 中間推論チェーン、ツール出力の詳細、ファイル内容、意思決定の根拠。
+
+**Re-grounding ルール:**
+1. compaction 後に重要な判断をする前に、関連ファイルを **再読み込み** する（summary を信じない）
+2. compaction 後に Plan がある場合、Plan ファイルを **再読み込み** して現在位置を確認する
+3. 3回目の compaction で **新セッション推奨**（既存: Compaction Counter Warning = 3）
+4. compaction 直後のレビュー verdict は信頼度を 1段階下げて扱う
+
 ## 1M コンテキスト利用時の調整
 
 2026年3月時点で Claude Opus 4.6 / Sonnet 4.6 が 1M トークンコンテキストに対応。Opus 4.6 は MRCR v2 で 78.3%（長文検索タスクでフロンティアモデル最高スコア）を達成しており、長文コンテキストでの性能劣化が大幅に緩和されている。
