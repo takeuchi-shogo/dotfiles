@@ -47,7 +47,17 @@ worktree を使用してメインブランチから隔離する:
 
 ## Step 4: Implement
 
-実装のルール:
+### ベースライン選定原則 (Meta-Harness Tip)
+
+意図的に「苦戦するベースライン」から始める:
+
+- **シンプルに始める**: few-shot プロンプティング等の最小構成をベースラインにする
+- **discriminative な評価セット**: 改善のシグナルが検出できる程度に小さく、かつ差が出る問題を選ぶ
+- **ベースラインが完璧なら spike 不要**: ベースラインが acceptance criteria を満たすなら、そのまま `/rpi` に進む
+
+> 根拠: Meta-Harness (Lee+ 2026) — "Start with a baseline that struggles. Keep the search set small enough for roughly ~50 full evaluations per run"
+
+### 実装ルール
 
 - **動くことが最優先**: コード品質は二の次
 - **テスト不要**: spike のコードは捨てる前提

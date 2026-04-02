@@ -76,6 +76,19 @@ Read `instructions/skill-writing-guide.md` for guidance on:
 - Domain organization, Principle of Lack of Surprise
 - Writing patterns and style
 
+### 2.5. Skill Refinement Debug Runs (Meta-Harness Tip)
+
+本番テスト前に、3-5回の短いデバッグランで Skill テキスト自体を精錬する:
+
+1. **2-3個のシンプルなテストケース** で Skill を実行する（本番テストセットではない）
+2. **出力を観察**: Skill の指示がどう解釈されたか、意図と乖離がないか確認
+3. **Skill テキストを修正**: 曖昧な表現、不足している制約、過剰な指示を調整
+4. **3-5回繰り返す**: Skill テキストが安定するまで（出力の質が一貫するまで）
+
+これは Step 3 の本番テストとは別のフェーズ。ここでは Skill テキストの品質を上げることが目的で、出力の品質評価は Step 3 以降で行う。
+
+> 根拠: Meta-Harness (Lee+ 2026) 実装 Tips — "Run a few short debug runs (3-5 iterations) specifically to refine the skill before committing to a full run"
+
 ### 3. Testing and Evaluation
 
 Read `instructions/testing-evaluation.md` for the full test/eval pipeline:

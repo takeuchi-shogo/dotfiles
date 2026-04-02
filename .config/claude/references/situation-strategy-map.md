@@ -16,3 +16,26 @@
 | M/L 規模タスクの開始 | EnterPlanMode でプラン策定してから実装 | 手戻り防止。Plan → Implement の分離 | workflow-guide |
 | CI/テスト失敗時の修正 | 根本原因を特定してから修正。`--no-verify` は絶対に使わない | hook 体系の無効化防止 | lessons-learned |
 | 反復的な仮説検証・改善ループ | 1仮説1パッチ1実行 + Promotion ゲート + Wave 並列。`references/experiment-discipline.md` に従う | 複数変更の同時投入は因果帰属不能。worktree 隔離で並列実行 | autoresearch-lab |
+| 新プロジェクトでの改善サイクル立ち上げ | Warm-starts: 他リポ/他プロジェクトの成功パターンを situation-strategy-map フォーマットで取り込む。`/init-project` 後に既存マップをシードとして注入 | ゼロからの探索は非効率。過去の経験を構造化して転用する | meta-harness |
+
+## Warm-starts（外部経験の構造化取り込み）
+
+新プロジェクトや新ドメインで改善サイクルを立ち上げる際、既存の経験を取り込むことで探索を高速化する。
+
+### 取り込みフォーマット
+
+外部コーパス（他リポのマップ、成功ハーネスのパターン）は以下の形式に変換してから追加する:
+
+```
+| 状況 | 推奨戦略 | 根拠 | 学習元 |
+|------|----------|------|--------|
+| {コンテキスト} | {アクション} | {なぜ有効か} | {出典: リポ名/記事/論文} |
+```
+
+### 取り込みルール
+
+- 取り込み前に現プロジェクトとの **前提条件の一致** を確認する（言語、フレームワーク、チーム規模）
+- 前提が異なるエントリには `[要検証]` タグを付与し、実際に有効かを確認してからタグを外す
+- 最大 50 エントリの制約は warm-starts 分も含む
+
+> 根拠: Meta-Harness (Lee+ 2026) 実装 Tips — "If offline experience exists, convert it into the same directory structure to warm-start exploration"

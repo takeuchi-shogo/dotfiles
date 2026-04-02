@@ -49,6 +49,7 @@
 | evaluators | hooks, golden-check patterns | Evaluator TPR/TNR + Rogan-Gladen corrected rate |
 | comprehension | `rules/common/comprehension-debt.md`, review coverage | design_revision_rate, repeated_investigation_count |
 | review-comments | `skills/review/SKILL.md`, `agents/code-reviewer.md` | review-feedback.jsonl の positive/negative 比率、指摘の accept/reject 率 |
+| output-diff | `skills/*/SKILL.md`, `rules/` | 同種の人間編集が N 回蓄積 → ルール候補を自動生成 |
 
 ## 実行条件
 
@@ -96,6 +97,10 @@
 34. **Situation-Strategy Map 更新ポリシー** — `/improve` が候補を提案し、人間が承認して追記する。最大 50 エントリ。古いエントリは `/improve` の Garden フェーズで prune を提案する
 35. **Tool Sequence Patterns 記録閾値** — `tool-sequence-patterns.md` には 5 回以上出現したパターンのみ記録する。`/analyze-tacit-knowledge` の Stage 3 で抽出し、Stage 5 で更新候補として提案する
 36. **合意検証の閾値 (Multi-trace Consensus)** — 同一 `task_type` のトレースが 3 件以上あり、かつ戦略が一致する場合のみ学習する。2 件以下は skip（Glean: 不一致解消不能時は学習しない）
+37. **Diff-Distill-Writeback (Output Diff Loop)** — AI 出力と人間の最終編集の diff を蓄積し、同種の編集が 10 回以上蓄積した場合にルール候補を自動生成してスキルファイルに書き戻す。手順: (1) session-trace-store が出力と最終版の diff を記録、(2) `/improve` の Analyze フェーズで diff を分類・集約、(3) 同一分類が 10+ 件で Proposer がルール候補を生成、(4) 人間レビュー後にスキルの ban list / preference / convention に追記。出典: "Skill Loop Wiring" 記事 — 6ヶ月運用で v1.0→v1.3 の自律進化を達成
+
+38. **CLI-over-Logs 原則 (Meta-Harness Navigable Logs)** — `/improve` の Analyze フェーズでトレース履歴を探索する際、生ログを逐次読むのではなく、構造化クエリで必要な情報にアクセスする。session-trace-store が提供すべきクエリ: (1) Pareto frontier 一覧（精度 vs コスト）、(2) top-k 候補の一覧、(3) 候補間の diff。ログは JSON 等の machine-readable 形式で階層的に構造化する。根拠: Meta-Harness (Lee+ 2026) 実装 Tips — "Build a small CLI over the logs" + "Log everything in a navigable format"
+39. **評価の Proposer 外部化 (Critic-Refiner 分離強化)** — `/improve` の評価（スコアリング）は Proposer（改善提案者）の外で自動実行する。Proposer が自分の提案を自分で評価すると、確証バイアスで過大評価する。具体的には: (1) `--evolve` ループの A/B テスト実行は Proposer コンテキストの外で行う、(2) スコアリングスクリプトは Proposer が変更不可（Rule 22 の延長）、(3) 結果は FS に書き込み、Proposer は読み取りのみ。根拠: Meta-Harness (Lee+ 2026) — "Automate evaluation outside the proposer" + AutoHarness Critic-Refiner 分離原則
 
 ### Dreaming 4フェーズ対応（/improve → CC Dreaming 補完）
 
