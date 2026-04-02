@@ -97,6 +97,27 @@
 35. **Tool Sequence Patterns 記録閾値** — `tool-sequence-patterns.md` には 5 回以上出現したパターンのみ記録する。`/analyze-tacit-knowledge` の Stage 3 で抽出し、Stage 5 で更新候補として提案する
 36. **合意検証の閾値 (Multi-trace Consensus)** — 同一 `task_type` のトレースが 3 件以上あり、かつ戦略が一致する場合のみ学習する。2 件以下は skip（Glean: 不一致解消不能時は学習しない）
 
+### Dreaming 4フェーズ対応（/improve → CC Dreaming 補完）
+
+CC の Dreaming (Layer 6) は4フェーズでクロスセッション統合を行う。
+`/improve` はこの4フェーズに対応し、Dreaming が到達しない深い改善を担う。
+
+| CC Dreaming フェーズ | /improve の対応 | 補完内容 |
+|---------------------|---------------|---------|
+| **Orient** — memory/ の現状把握 | Step 0: ダッシュボード | CQS・インフラメトリクス・session metrics を追加表示 |
+| **Gather Signal** — トレース検索 | Step 1: Analyze (Critic) | contrastive-trace-analyzer + error 集約 |
+| **Consolidate** — メモリ更新 | Step 2-3: Propose + Implement (Refiner) | rules/agents/skills の構造的改善 |
+| **Prune/Index** — MEMORY.md 整理 | Step 4: Garden | verification sweep + 容量管理 + 陳腐化検出 |
+
+### ナロースキャン原則
+
+> 出典: CC Dreaming の設計指針 "Don't exhaustively read transcripts. Look only for things you already suspect matter."
+
+`/improve` の Analyze フェーズでは:
+- トレース全体を読まない。仮説を立ててからキーワード grep する
+- `session-trace-store.py` の検索は `grep -rn "<narrow term>" --include="*.jsonl" | tail -50` 相当に絞る
+- 仮説のない網羅的スキャンはコストに見合わない。既存の FM 分類と learnings から仮説を導出する
+
 ### メモリ品質ゲート（ノイズ判定基準）
 
 Garden フェーズで既存メモリ・learnings を棚卸しする際、以下の3層で保存価値を判定する。

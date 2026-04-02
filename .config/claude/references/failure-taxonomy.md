@@ -366,6 +366,75 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 
 ---
 
+## Circuit Breaker パターン
+
+> 出典: CC 内部設計 — autocompact が 3回連続失敗で停止、250K API calls/day の浪費を防止
+
+繰り返し失敗する操作を早期に停止し、リソース浪費とカスケード障害を防ぐ。
+
+### 汎用パターン
+
+```
+State: CLOSED (正常) → OPEN (停止) → HALF-OPEN (試行)
+
+CLOSED: 操作を通常実行。失敗カウンタをインクリメント
+  → 連続失敗が閾値に到達 → OPEN へ遷移
+OPEN: 操作をスキップ。フォールバックを実行
+  → クールダウン経過 → HALF-OPEN へ遷移
+HALF-OPEN: 1回だけ試行
+  → 成功 → CLOSED（カウンタリセット）
+  → 失敗 → OPEN（クールダウン再開）
+```
+
+### CC 内の適用例
+
+| コンポーネント | 閾値 | フォールバック |
+|--------------|------|-------------|
+| autocompact | 3 consecutive failures | セッション中停止（overflow エラーに委ねる） |
+| Dreaming scan | 10分スロットル | 次セッションで再試行 |
+| Dreaming lock | PID + 60分 stale | dead PID → 次プロセスが reclaim |
+| Session Memory | sequential() wrapper | 同時抽出を防止（失敗ではなく排他制御） |
+
+### ハーネスでの適用箇所
+
+| コンポーネント | 現状 | Circuit Breaker 適用案 |
+|--------------|------|----------------------|
+| `stagnation-detector.py` | doom-loop 検出後に警告 | OPEN 状態で同一警告を cooldown (300s) — **実装済み** |
+| `completion-gate.py` | MAX_RETRIES=2 | 2回失敗で停止 — **実装済み** |
+| hook 全般 | 個別にエラーハンドリング | **未実装**: 同一 hook が 3回連続エラー → そのセッション中は無効化 |
+| `/improve` 提案 | reject 3回で停止 (Rule 18) | **実装済み**: ドリフトガード |
+
+## Graceful Degradation（Hook フォールバックチェーン）
+
+CC の設計原則: **各層が静かに失敗 → 次の層がキャッチ。**
+ハーネスの hook も同じ原則に従う。
+
+### フォールバック階層
+
+```
+Layer 1: PreToolUse hooks (policy enforcement)
+  失敗時 → 警告を stderr に出力。ツール実行は続行
+  理由: hook 失敗でユーザーの作業を止めてはならない
+
+Layer 2: PostToolUse hooks (detection & feedback)
+  失敗時 → learnings に記録。次のターンに影響なし
+  理由: 検出の失敗は即座に有害ではない
+
+Layer 3: PreCompact hooks (state preservation)
+  失敗時 → compaction は続行。状態保存なしで進む
+  理由: 圧縮の遅延は overflow リスクより危険
+
+Layer 4: SessionStart hooks (context injection)
+  失敗時 → 最低限の context で開始。CLAUDE.md は CC が直接注入
+  理由: enrichment 失敗でセッション開始を妨げない
+```
+
+### 設計ルール
+
+1. **hook はタスクを止めない** — エラーは警告のみ。exit code 非ゼロでも CC は続行
+2. **hook 間は独立** — hook A の失敗が hook B の入力を壊さない設計にする
+3. **重要な状態は複数箇所に** — checkpoint は git + memory/ + plan ファイルの3箇所に分散
+
 ## 運用
 
 - **hooks**: `session_events.py` が `IMPORTANCE_RULES` のパターンマッチ時に `failure_mode` を付与

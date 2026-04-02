@@ -73,6 +73,31 @@
 | RateLimit | `rate limit`, `429` | 別タスク切り替え |
 | Timeout | `timeout`, `ETIMEDOUT` | コマンド分割 / background |
 
+## CC 内部メモリ閾値（リファレンス）
+
+> 出典: "How Anthropic Built 7 Layers of Memory" (2026-04)。CC 内部定数のため変更不可。ハーネス閾値との整合性確認用。
+
+| 定数 | 値 | 層 | 備考 |
+|------|----|----|------|
+| autocompact threshold | context window - 20K - 13K | L4 | 200K → 167K、1M → 967K で発火 |
+| compaction output reserve | 20K tokens | L4 | summary 生成に必要な余裕 |
+| compaction circuit breaker | 3 consecutive failures | L4 | 3回連続失敗でセッション中停止 |
+| Session Memory minTokens | 10,000 | L3 | compaction 時の最低保持トークン |
+| Session Memory maxTokens | 40,000 | L3 | compaction 時の最大保持トークン |
+| Session Memory minTextBlockMessages | 5 | L3 | 最低保持メッセージ数 |
+| Dreaming throttle | 10 min | L6 | 連続実行防止 |
+| Dreaming stale lock | 60 min + PID dead | L6 | ロック自動回収 |
+| Microcompact idle gap | 60 min | L2 | プロンプトキャッシュ TTL に合わせる |
+| Microcompact keepRecent | 5 results | L2 | 最低保持ツール結果数 |
+| Token estimation (text) | 4 bytes/token | 全層 | 粗い推定。JSON は 2 bytes/token |
+| MEMORY.md hard limit | 200 lines / 25KB | L5-L6 | 超過分は truncate |
+| Prompt cache TTL | ~1 hour | API | サーバー側。TTL 超過で全再計算 |
+
+**設計含意:**
+- ハーネスの Context Pressure Warning (80%) は autocompact (167K/200K ≈ 83.5%) より少し前に発火する設計。整合的
+- Session Memory の maxTokens=40K は compaction 後に残るコンテキストの上限。checkpoint スキルの情報量もこれを意識
+- Dreaming の 10分スロットルは /improve の実行間隔とは無関係（Dreaming は CC 内蔵、/improve はハーネス）
+
 ## False Claims Rate と反復劣化
 
 > 出典: Claude Code v2.1.88 内部コメント (Capybara v4→v8)、"The Harness Wars Begin" (2026-04)
