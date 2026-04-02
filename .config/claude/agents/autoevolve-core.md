@@ -34,28 +34,41 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 
 ---
 
-## Phase 1: Analyze（データ分析）→ meta-analyzer へ委譲
+## Phase 1: Analyze（データ分析）— Coverage Matrix + Codex Deep
 
-Phase 1 は **meta-analyzer エージェント** に委譲する。
-Hyperagents (arXiv:2603.19461) の Task/Meta Agent 分離に基づき、
-分析機能を独立エージェントとして切り出した。
+### Phase 1a: Coverage Matrix Analysis → meta-analyzer へ委譲
 
-### 委譲手順
+`skills/improve/references/coverage-matrix.md` の全必須問いに回答する分析を meta-analyzer に委譲。
 
 Agent ツールで `meta-analyzer` を起動する:
 
 ```
-セッションデータの分析を実施してください。
+skills/improve/references/coverage-matrix.md に定義された全必須問いに回答してください。
 データディレクトリ: ~/.claude/agent-memory/
-全分析タスク（エラーパターン、因果帰属、品質違反、スキル健全性、Recovery Tips、ハーネス診断 等）を実行し、
+各問いに ANSWERED / INSUFFICIENT_DATA / NOT_APPLICABLE で回答し、
+ANSWERED の場合は具体的な evidence（件数, session_id, ファイル名）を含めてください。
 insights/analysis-YYYY-MM-DD.md と改善候補リスト（evidence_chain 付き）を出力してください。
 ```
 
-### 出力の受け取り
+### Phase 1b: Codex Deep Analysis（必須）
 
-meta-analyzer の出力を Phase 2 (Improve) の入力として使用する:
-- `insights/analysis-YYYY-MM-DD.md` — 分析レポート
+Phase 1a の Coverage Matrix 結果を **Codex (gpt-5.4)** に渡し、分析を深掘りする。
+`codex exec -m xhigh` を使用。improve-policy Rule 40 に基づき、このステップのスキップは禁止。
+
+検証観点:
+1. ANSWERED 項目の深度チェック（根本原因が浅くないか）
+2. 見落としパターンの検出
+3. クロスカテゴリ構造的問題の検出
+4. 各カテゴリの分析品質を THOROUGH / ADEQUATE / SHALLOW で判定
+
+**SHALLOW 判定のカテゴリ**: Codex の指摘を踏まえて meta-analyzer に追加分析を依頼してから Phase 2 に進む。
+
+### 出力の統合
+
+Phase 1a + 1b の結果を統合して Phase 2 (Improve) の入力とする:
+- `insights/analysis-YYYY-MM-DD.md` — Coverage Matrix 結果 + Codex 補強
 - 改善候補リスト — evidence_chain (data_points, confidence, reasoning, counter_evidence) 付き
+- Codex の category_ratings — SHALLOW カテゴリは追加分析済みであること
 - confidence < 0.5 の提案は「低信頼度」として扱い、Phase 2 での優先度を下げる
 
 ---
@@ -175,6 +188,60 @@ grep "{keyword}" ~/.claude/agent-memory/traces/{file}.jsonl
 
 - サマリー化せず raw データを直接読む
 - 注入件数上限（20件）は維持。grep 結果から最も関連性の高いエントリを選択する
+
+### Principle Traceability（必須フィールド）
+
+improve-policy Rule 43 に基づき、全提案に以下の必須フィールドを含める:
+
+```yaml
+proposal:
+  id: "IMP-YYYY-MM-DD-NNN"
+  summary: "提案の1文要約"
+  serves_principles: ["どの core principle を推進するか"]
+  tension_with: ["どの principle と緊張関係にあるか"]
+  pre_mortem: "この提案が失敗する場合の最も可能性が高い原因"
+  blast_radius:
+    direct: ["変更対象ファイル"]
+    indirect: ["間接的に影響を受けるファイル/システム"]
+  evidence_chain:
+    data_points: N
+    confidence: 0.X
+    specific_refs: ["session-xxx:line42"]
+    reasoning: "根拠"
+    counter_evidence: "反証"
+  rollback_plan: "復旧手順"
+```
+
+いずれかが欠落した提案は Phase 2.5 (Adversarial Gate) に進めない。
+
+### Phase 2.5: Adversarial Gate（Codex 必須）
+
+全提案を Codex (gpt-5.4) に渡し、敵対的レビューを実行する。
+詳細手順は `skills/improve/instructions/phase4-adversarial-gate.md` を参照。
+
+5 観点で攻撃:
+1. **原則違反**: CLAUDE.md core_principles に反していないか
+2. **考慮漏れ**: blast_radius に含まれていない影響範囲はないか
+3. **証拠の弱さ**: evidence_chain は因果関係を示しているか
+4. **Pre-mortem の甘さ**: より深刻な失敗モードはないか
+5. **代替案の欠如**: よりシンプルなアプローチはないか
+
+判定: ROBUST / VULNERABLE / FATAL_FLAW
+
+### Propose-Adversarial ループ
+
+```
+Phase 2 (Propose) → Phase 2.5 (Adversarial Gate)
+    ↓                        ↓
+    └── VULNERABLE → REFINE → Phase 2.5（再実行, max 2 iterations）
+                             ↓
+                       All ROBUST / max reached → Phase 3 へ
+```
+
+- VULNERABLE: Codex の指摘を反映して修正版を生成 → 再度 Phase 2.5
+- 最大 2 イテレーション（初回 + 精錬 1 回）
+- FATAL_FLAW: 再提案しない（却下として記録）
+- 2 回後も VULNERABLE: 注意付きでレポートに含める
 
 ### 修正後の自動検証（Improve→Audit 接続）
 
