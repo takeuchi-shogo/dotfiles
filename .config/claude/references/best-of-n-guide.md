@@ -161,6 +161,25 @@ N 個の結果から最良を選ぶ際:
 Pareto モードでは勝者を1つ選ばず、frontier 上の全候補を比較テーブルで表示する。
 `best-of-n-runner.sh` に `--pareto` オプションを追加予定。現時点では手動で Pruning セクションの支配解除去ルールを適用する。
 
+## Verbalized Sampling との併用
+
+> 出典: Zhang et al. 2025 "Verbalized Sampling" (arXiv:2510.01171)。詳細: `references/verbalized-sampling-guide.md`
+
+Best-of-N の各 worktree に **Verbalized Sampling (VS)** プロンプトを組み合わせることで、候補の多様性をさらに高められる。VS は temperature/top-p とは直交する軸で多様性を生むため、サンプリングパラメータの調整だけでは得られない質的な違いを持つ候補が生成される。
+
+### 併用パターン
+
+| パターン | 方法 | 効果 |
+|---------|------|------|
+| **VS-Multi × Best-of-N** | VS-Multi の各ターン出力を別 worktree の初期方針として使う | N を増やさずに候補の質的多様性が向上 |
+| **VS-Standard × --diverse** | `--diverse` モードの仮説生成に VS-Standard を使う | 仮説の言語化により、より根本的に異なるアプローチが生成される |
+
+### N 削減の可能性
+
+VS により候補間の質的差異が大きくなるため、同じ多様性を得るのに必要な N を削減できる場合がある:
+- VS なし N=4 ≈ VS あり N=2-3（創造的タスクでの経験則）
+- ただし決定的タスクでは VS のオーバーヘッドが無駄になるため、従来通り N のみで制御する
+
 ## 関連ドキュメント
 
 - `subagent-delegation-guide.md` §Shared File Detection Rule — session-state 共有ファイルの一覧
