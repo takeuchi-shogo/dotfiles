@@ -176,6 +176,7 @@ Then focus on:
 4. **Cryptographic weaknesses**: Key management, algorithm selection, IV/nonce reuse
 5. **Race conditions**: TOCTOU, concurrent access to shared state without locking
 6. **Supply chain risks**: Dependency integrity, typosquatting, version pinning
+   - **Slopsquatting check**: AI が提案した依存パッケージが実在するか検証する。`npm info <pkg>` / `go list -m <module>@latest` / `pip index versions <pkg>` で存在確認。存在しないパッケージは CRITICAL として報告する（AI はレジストリに存在しないパッケージ名を hallucinate することがある）
 
 For each finding, provide:
 - Severity: CRITICAL/HIGH/MEDIUM/LOW

@@ -220,6 +220,21 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 - **Plan レビュー（M/L 必須）**: Plan 作成後、ユーザーに提示する**前に** `plan-document-reviewer` サブエージェントを dispatch してレビューを実施する。Issues Found なら修正して再レビュー、Approved ならユーザーへ提示する（writing-plans スキルの Plan Review Loop に従う。最大3イテレーション）
 - **L規模のみ**: チェックポイントコミットを作成してから着手する（`git add -A && git commit -m "checkpoint: before {task description}"`）
 
+### Trust Level マッピング（パーミッションモード選択ガイド）
+
+タスクのリスクに応じて Claude Code のパーミッションモードを選択する。信頼レベルが高いほど自動化が進むが、リスクも上がる。
+
+| Trust Level | パーミッションモード | 用途 | リスク |
+|-------------|-------------------|------|--------|
+| **L1: Read-only** | `plan` (`EnterPlanMode`) | コードベース調査、レビュー、プラン作成 | 最低 — 書き込み不可 |
+| **L2: Supervised** | `default` | 通常の実装作業。全ツール呼び出しをユーザーが承認 | 低 — 人間がゲートキーパー |
+| **L3: Semi-trusted** | `acceptEdits`（settings.json の `allowedTools` で制御） | 信頼済みリファクタ、テスト追加。ファイル編集は自動承認、シェルコマンドは承認必要 | 中 — 編集は自動、実行は手動 |
+| **L4: Autonomous** | `bypassPermissions`（CI/自動化専用） | CI パイプライン、`/autonomous` スキル、バックグラウンドエージェント | 高 — 人間のゲートなし |
+
+**選択の原則**: デフォルトは L2。L3 以上に上げるにはタスクが well-defined であること（仕様が明確、blast radius が限定的）。L4 は人間が直接セッションを監視しない自動化専用。
+
+> 出典: "How to Vibe Code" (Mistral AI, 2026) — Agent modes matching trust to task
+
 ### Auto-Accept 判定
 
 Plan 承認後の変更実行時は `references/auto-accept-policy.md` の判定マトリクスに従う:
@@ -332,6 +347,22 @@ Review → verdict 判定
   - 候補解の選定理由と棄却した代替案
   - 残存する不確実性
   > 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" — evidence-backed answering はプロセス品質（監査性、ハンドオフ規律、トレース品質）を改善する
+
+### 5.5. Pre-commit Security Self-check（M/L 規模）
+
+Verify と Security Check の間に、AI 自身がコミット対象コードをセキュリティ観点で自己レビューする軽量ステップ。
+専門の security-reviewer に委譲する前の一次フィルタとして機能する。
+
+**自問チェックリスト**（変更した各ファイルに対して）:
+1. ユーザー入力をサニタイズせずに使っていないか？（SQLi, XSS, コマンドインジェクション）
+2. 秘密情報（API キー、トークン、パスワード）をハードコードしていないか？
+3. 認証・認可チェックをバイパスするパスがないか？
+4. AI が提案した依存パッケージが実在するか確認したか？（slopsquatting リスク）
+5. エラーメッセージに内部情報（スタックトレース、DB スキーマ）を露出していないか？
+
+問題を検出した場合は Implement に戻って修正する。問題なしの場合のみ Security Check に進む。
+
+> 出典: "How to Vibe Code" (Mistral AI, 2026) — "After the agent generates code, prompt it to review its own output for security vulnerabilities before you do."
 
 ### 6. Security Check（セキュリティ）
 

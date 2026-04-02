@@ -62,6 +62,17 @@
 | FM-012 | Exploration Spiral | 0.5 | `post_any.rs` |
 | FM-013 | Context Pressure ≥90% | 0.8 | `post_any.rs` |
 
+## Doom-Loop Recovery Protocol
+
+Doom-Loop 検出後は即座にコード修正を再試行してはならない。以下の4ステップで根本原因を特定してから再開する:
+
+1. **STOP** — 直前のツール呼び出しを中断し、修正サイクルを停止する
+2. **READ** — 生のエラーログ・スタックトレース・テスト出力を直接読む。ユーザーの解釈や自分の記憶に頼らない
+3. **DIAGNOSE** — 根本原因を1文で言語化する。「○○が△△を返すべきところ××を返している」レベルの具体性が必要
+4. **RE-PLAN** — 代替アプローチを立案してから再開する。同じアプローチの微修正は禁止
+
+> 出典: "How to Vibe Code" (Mistral AI, 2026) — "Stop the loop. Read the code yourself. Understand the root cause."
+
 ## Error Recovery 6 分類
 
 | カテゴリ | 検出パターン | リカバリ指示 |
