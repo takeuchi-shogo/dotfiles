@@ -93,7 +93,6 @@ CURSOR_SYMLINK_DIRECTORIES=(
 # Codex スキル: 共有可能な skill を ~/.codex/skills/ に個別共有
 # ~/.codex/skills/.system/ を壊さないよう個別にシンボリックリンク
 CODEX_SHARED_CLAUDE_SKILLS=(
-  "senior-architect"
   "senior-backend"
   "senior-frontend"
   "react-best-practices"
