@@ -102,6 +102,85 @@ def _store_trace(data: str) -> None:
     logger.info("session-trace-store: saved trace to %s", trace_path.name)
 
 
+def _generate_fleet_summary() -> None:
+    """Generate fleet-level summary of recent parallel agent sessions.
+
+    Scans today's traces to surface active/failed/anomalous sessions
+    and identify the best-performing session (leader).
+    Source: Multi-Agent Autoresearch Lab (Trackio fleet summary pattern).
+    """
+    logger = logging.getLogger("autoevolve")
+
+    if not TRACES_DIR.exists():
+        return
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_traces = list(TRACES_DIR.glob(f"{today}_*.jsonl"))
+
+    if len(today_traces) < 2:
+        return  # Fleet summary only useful with multiple sessions
+
+    summary: dict[str, dict] = {}
+    for trace_path in today_traces:
+        session_id = (
+            trace_path.stem.split("_", 1)[1]
+            if "_" in trace_path.stem
+            else trace_path.stem
+        )
+        entry_count = 0
+        errors = 0
+        last_outcome = "unknown"
+        tools: list[str] = []
+
+        try:
+            with open(trace_path, encoding="utf-8") as f:
+                for line in f:
+                    entry_count += 1
+                    try:
+                        entry = json.loads(line)
+                        if entry.get("outcome") == "error":
+                            errors += 1
+                        last_outcome = entry.get("outcome", last_outcome)
+                        ts = entry.get("tool_strategy", {})
+                        if isinstance(ts, dict):
+                            tools.extend(ts.get("tools_used", []))
+                    except json.JSONDecodeError:
+                        continue
+        except OSError:
+            continue
+
+        summary[session_id] = {
+            "entries": entry_count,
+            "errors": errors,
+            "last_outcome": last_outcome,
+            "tool_count": len(tools),
+        }
+
+    if not summary:
+        return
+
+    # Write fleet summary as a special entry in a summary file
+    fleet_path = TRACES_DIR / f"{today}_fleet-summary.json"
+    fleet_data = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "total_sessions": len(summary),
+        "active": sum(1 for s in summary.values() if s["last_outcome"] != "error"),
+        "failed": sum(1 for s in summary.values() if s["errors"] > 0),
+        "leader": max(summary, key=lambda k: summary[k]["entries"]),
+        "sessions": summary,
+    }
+
+    with open(fleet_path, "w", encoding="utf-8") as f:
+        json.dump(fleet_data, f, ensure_ascii=False, indent=2)
+
+    logger.info(
+        "session-trace-store: fleet summary — %d sessions, %d active, %d with errors",
+        fleet_data["total_sessions"],
+        fleet_data["active"],
+        fleet_data["failed"],
+    )
+
+
 def _cleanup_old_traces() -> None:
     """Remove traces older than MAX_AGE_DAYS and enforce size limit."""
     logger = logging.getLogger("autoevolve")
@@ -151,6 +230,7 @@ def main() -> None:
     data = sys.stdin.read()
     try:
         _store_trace(data)
+        _generate_fleet_summary()
         _cleanup_old_traces()
     except Exception as e:
         logging.getLogger("autoevolve").error("session-trace-store error: %s", e)

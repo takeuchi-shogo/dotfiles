@@ -262,6 +262,48 @@ Team Lead (Claude):
     └── Lead が全 teammate の成果物をマージ・検証
 ```
 
+### Worktree エージェントの書き込み制約
+
+> 出典: Multi-Agent Autoresearch Lab — memory-keeper のみが main checkout に書き込み、worker は worktree 内のみ code mutation
+
+worktree で隔離されたエージェント（worker）は **main checkout への Write/Edit を禁止** する。
+永続状態（memory, lessons-learned, promoted master）への書き込みは main checkout 側のエージェント（memory-keeper ロール）が担当する。
+
+| ロール | main checkout | worktree |
+|--------|:---:|:---:|
+| **memory-keeper**（親 or Lead） | Write 可 | - |
+| **worker**（worktree 内） | **Write 禁止** | Write 可 |
+
+**理由**: worker が main checkout に書き込むと、並列実行時に状態の競合が発生する。永続状態の更新は単一のゲートキーパーに集約する。
+
+### ハンドオフフォーマット
+
+エージェント間でタスクを引き継ぐ際、以下の情報を明示的に渡す:
+
+```markdown
+## Handoff Packet
+- **Goal**: 何を達成すべきか（1文）
+- **Context**: 前工程で判明した事実・制約（箇条書き）
+- **Artifacts**: 参照すべきファイルパス・diff・ログ
+- **Acceptance Criteria**: 完了の判定基準
+- **Not in Scope**: 明示的にやらないこと
+```
+
+spawn prompt や SendMessage でハンドオフする際は、このフォーマットに沿って情報を構造化する。暗黙の前提に依存しない。
+
+### ラボ型ロール定義
+
+反復改善ループ（仮説検証・パフォーマンスチューニング等）での4+1ロール。
+詳細は `references/experiment-discipline.md` を参照。
+
+| ロール | 責務 | dotfiles での対応 |
+|--------|------|------------------|
+| researcher | 文献・事例探索 | `/research`, gemini-explore |
+| planner | 実験キュー・優先順位 | Lead（EnterPlanMode） |
+| worker | 1仮説を worktree で実行 | `/spike` + worktree |
+| reporter | 結果収集・観測性 | session-trace-store, `/improve` |
+| memory-keeper | 永続状態管理 | memory システム |
+
 ### Teams の Anti-patterns
 
 | やりがち | 代わりにやるべき |

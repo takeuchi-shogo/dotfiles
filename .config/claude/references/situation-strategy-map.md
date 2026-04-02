@@ -15,3 +15,4 @@
 | 同じ修正を2回以上説明 | spec/reference に codify する | セッション横断の知識ロスを防止 | core-principles |
 | M/L 規模タスクの開始 | EnterPlanMode でプラン策定してから実装 | 手戻り防止。Plan → Implement の分離 | workflow-guide |
 | CI/テスト失敗時の修正 | 根本原因を特定してから修正。`--no-verify` は絶対に使わない | hook 体系の無効化防止 | lessons-learned |
+| 反復的な仮説検証・改善ループ | 1仮説1パッチ1実行 + Promotion ゲート + Wave 並列。`references/experiment-discipline.md` に従う | 複数変更の同時投入は因果帰属不能。worktree 隔離で並列実行 | autoresearch-lab |
