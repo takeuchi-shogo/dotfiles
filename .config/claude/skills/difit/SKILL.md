@@ -51,4 +51,5 @@ npx -y difit {args}
 ## Tips
 
 - cmux 利用時はブラウザペインに自動表示される
-- `/review` と併用すると効果的: difit で視覚確認 + /review でエージェントレビュー
+- `/review` と併用すると効果的: `/review` の Step 4.5 でレビュー指摘が `--comment` 付きで difit に自動出力される
+- 手動で `/difit` を実行した場合はコメントなしの素のビューアーが起動する

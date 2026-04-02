@@ -546,7 +546,8 @@
     "claude-md-management@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "codex@openai-codex": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {

@@ -35,6 +35,7 @@ metadata:
 2. Scaling       → 行数・内容からレビュアー構成を決定
 3. Dispatch      → Agent ツールで1メッセージに並列起動
 4. Synthesis     → 結果を統合し templates/review-output.md 形式で出力
+4.5 Visual Output → 指摘を difit --comment でインライン表示（指摘 1 件以上時）
 ```
 
 ## Step 1: Pre-analysis
@@ -290,6 +291,59 @@ comprehension_confidence: ?/5
 - 3: 主要な変更は理解、周辺の影響は未確認
 - 2: 部分的にしか理解できていない
 - 1: 変更の意図が不明確
+
+## Step 4.5: Visual Output (difit)
+
+Step 4 の合成レポート出力後、指摘が 1 件以上ある場合に difit を起動してレビュー結果をインラインコメントとして可視化する。
+
+### 変換ルール
+
+Step 4 の各 finding を以下の形式に変換する:
+
+```
+finding: { reviewer, file, line, confidence, finding }
+  ↓
+--comment '<json>'
+```
+
+JSON の構造:
+```json
+{
+  "type": "thread",
+  "filePath": "<file>",
+  "position": { "side": "new", "line": <line> },
+  "body": "[<reviewer>] <finding>"
+}
+```
+
+- `position.side`: 追加行は `"new"`、削除行への指摘は `"old"` を使う
+- `line` が範囲の場合: `"line": {"start": <start>, "end": <end>}`
+- `confidence` が 80 未満の finding は body に `(confidence: N)` を付記
+- **JSON 生成は `python3 -c` や `jq` を使い、シェルで手書きエスケープしない**（ダブルクォート、バックスラッシュ、改行等のエスケープ漏れを防ぐ）
+- **秘密情報（トークン、パスワード、API キー等）は `--comment` body に絶対に含めない**
+- **コメント数の上限**: Critical/Important 指摘を優先し、最大 20 件まで。超過時は Watch を省略する（ARG_MAX 制限対策）
+
+### 起動コマンド
+
+```bash
+# Step 6 (Findings Persistence) の後に起動する（difit はサーバーとして動作し Ctrl+C まで返らないため）
+npx -y difit <target> \
+  --comment '<json1>' \
+  --comment '<json2>' \
+  ... &
+```
+
+- `<target>` は Step 1 で使用した diff 対象と同じにする（`.`, `staged`, `@ main` 等）
+- difit のブランチ比較は `difit @ main` 形式（`main..HEAD` は不可）
+- Critical/Important 指摘が 0 件の場合は difit を起動せず、テキストレポートのみ出力する
+- `&` でバックグラウンド起動し、Step 5 以降のフロー（Fix Cycle → Findings Persistence）を阻害しない
+- difit 起動後、ユーザーにブラウザで確認可能な旨を伝える
+
+### 既存出力との関係
+
+- テキストレポート（`templates/review-output.md` 形式）は**従来通り出力する**
+- `review-findings.jsonl` への保存（Step 6）も**従来通り実行する**
+- difit は追加の可視化レイヤーであり、既存の出力を置き換えない
 
 ## Step 5: Review-Fix Cycle
 
