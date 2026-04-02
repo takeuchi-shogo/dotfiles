@@ -30,6 +30,7 @@ CC の Full Compaction は2フェーズで summary を生成する:
 | セッション途中で CLAUDE.md を編集 | **破壊** | セッション区切りで変更 |
 | セッション途中で settings.json を変更 | **破壊** | セッション区切りで変更 |
 | Agent 定義の動的変更 | **破壊** | 変更しない。新セッションで反映 |
+| ツールの動的追加/削除 | **破壊** | ToolSearch (deferred tools) で遅延ロード。セッション中のツール構成変更を避ける |
 | memory/ への書き込み | **安全** | CC が ContentReplacementState で安定化 |
 | tool 結果の大量出力 | **安全** | CC が Layer 1-2 で自動管理 |
 

@@ -27,10 +27,15 @@
 
 ## Fallback トリガー
 
+> **モデル別 compaction 品質** (Anthropic "Harnessing Claude's Intelligence", 2026-04-02):
+> Opus 4.6 = 84%, Sonnet 4.5 = 43%。Opus 4.6 では compaction 品質が大幅に向上しており、
+> 過度な不信（Context Anxiety）自体が dead weight になりうる。閾値は定期的に見直すこと。
+> 参照: `references/dead-weight-scan-protocol.md`
+
 | 条件 | アクション |
 |------|----------|
 | Plan ステップが Compaction 後に欠落 | `[COMPACTION WARNING]` + session handoff 推奨 |
-| 3 回以上の compaction で判断の一貫性低下 | `/checkpoint` + 新セッション推奨 |
+| 4 回以上の compaction で判断の一貫性低下 | `/checkpoint` + 新セッション推奨（Opus 4.6: 旧閾値 3→4 に緩和） |
 | Dead Ends の記録が消失 | HANDOFF.md の Dead Ends セクションを再確認 |
 | DoD が参照不能 | Plan ファイルから DoD を再読み込み |
 

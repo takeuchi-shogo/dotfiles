@@ -111,6 +111,8 @@ python3 $HOME/.claude/scripts/experiment_tracker.py proposer-context --skill {ta
 
 1. 重複排除: learnings/*.jsonl 内の重複エントリを検出・整理
 2. 陳腐化チェック: 古い insights/learnings の棚卸し
+   + Dead Weight Scan: `references/dead-weight-scan-protocol.md` に従い、
+     CLAUDE.md / references / hooks / agents の「まだ必要か？」を問う
 3. クロスカテゴリ相関分析: Step 4 で生成された各カテゴリの分析結果を横断的に見て、
    カテゴリ間の関連性（例: 特定エラーと品質違反の相関）を特定
 4. 昇格候補の特定: MEMORY.md やスキル/ルールへの昇格候補をリストアップ
