@@ -10,6 +10,12 @@
 <agent_delegation>
 タスクが並列実行可能、独立したコンテキストが必要、または専門知識が必要な場合にサブエージェントに委譲する。
 単純なタスク、逐次操作、単一ファイル編集では直接作業する。
+
+cmux 内（CMUX_WORKSPACE_ID 設定済み）では `/dispatch` 経由で cmux Worker を積極的に使う:
+- **Codex**: 気軽に使う。設計相談、コード方針の壁打ち、実装前のセカンドオピニオン、レビュー、リスク分析など。迷ったら Codex に聞く。レート制限は余裕がある
+- **Gemini**: 1M コンテキストが必要な場合（コードベース全体分析、外部リサーチ、マルチモーダル）
+- **Claude Code Worker**: 30分超の長時間タスク、人間介入の可能性がある場合
+サブエージェント（Agent tool）は 5分以内の軽量タスクのみ。
 </agent_delegation>
 
 <review_policy>
@@ -124,6 +130,19 @@ Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify
 </core_principles>
 
 ---
+
+<important if="you are using cmux to control panes, orchestrate agents, or run CLI tools in other surfaces">
+
+## cmux CLI 操作
+
+- CLI パス: `/Applications/cmux.app/Contents/Resources/bin/cmux`（PATH 上の `cmux` メインバイナリは Bash tool からハングするので使わない）
+- コマンドはハイフン区切り（`send-key`, `read-screen`, `close-surface`）
+- 環境変数 `CMUX_WORKSPACE_ID`, `CMUX_SURFACE_ID` がセットされていればデフォルトで現在のワークスペース/サーフェスを対象にする
+- 基本フロー: `new-split` → `send` + `send-key enter` → `read-screen --scrollback` → `close-surface`
+- 完了検出: `read-screen` をポーリングし、入力プロンプト再出現を検知
+- 詳細: `references/cmux-ecosystem.md`
+
+</important>
 
 <important if="you are working with file paths, symlinks, or directory structure">
 

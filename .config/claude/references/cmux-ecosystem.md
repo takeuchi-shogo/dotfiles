@@ -2,6 +2,30 @@
 
 cmux を活用したマルチエージェント開発の設計パターンと運用ガイド。
 
+## CLI 基本情報
+
+- **CLI パス**: `/Applications/cmux.app/Contents/Resources/bin/cmux`
+  - PATH 上の `/Applications/cmux.app/Contents/MacOS/cmux` はメインバイナリ。Bash tool からはソケット通信がハングするので使わない
+- **コマンド名**: ハイフン区切り（`send-key`, `read-screen`, `close-surface`）
+  - アンダースコア（`send_key`, `read_screen`）は**動かない**
+- **対象指定**: `--workspace <id|ref>`, `--surface <id|ref>` で対象を指定
+  - 環境変数 `CMUX_WORKSPACE_ID`, `CMUX_SURFACE_ID` がセットされていればデフォルトで使われる
+  - ref 形式: `workspace:1`, `surface:43`, `pane:22` など
+
+## よく使うコマンド
+
+| コマンド | 用途 | 例 |
+|---------|------|-----|
+| `list-workspaces` | ワークスペース一覧 | |
+| `list-panels` | 現ワークスペースのサーフェス一覧 | |
+| `list-panes` | ペイン一覧 | |
+| `new-split <direction>` | 分割してサーフェス作成 | `new-split right` → `OK surface:43 workspace:1` |
+| `new-workspace` | ワークスペース作成 | `new-workspace --command "codex"` |
+| `send --surface <ref> <text>` | テキスト入力 | `send --surface surface:43 "ls -la"` |
+| `send-key --surface <ref> <key>` | キー送信 | `send-key --surface surface:43 enter` |
+| `read-screen --surface <ref>` | 画面読み取り | `read-screen --surface surface:43 --scrollback --lines 200` |
+| `close-surface --surface <ref>` | サーフェス閉じ | `close-surface --surface surface:43` |
+
 ## リソース階層
 
 ```
@@ -12,6 +36,61 @@ window          ← OS ウィンドウ
 ```
 
 pane（レイアウト）と surface（中身）は分離されている。
+
+## サブエージェント起動パターン
+
+### 基本フロー: 起動 → 監視 → 結果回収
+
+```bash
+CMUX=/Applications/cmux.app/Contents/Resources/bin/cmux
+
+# 1. スプリット作成（右に新ペイン）
+SURFACE=$($CMUX new-split right | awk '{print $2}')
+# => surface:43
+
+# 2. CLI ツール起動（例: codex）
+$CMUX send --surface "$SURFACE" "codex"
+$CMUX send-key --surface "$SURFACE" enter
+
+# 3. 起動待ち
+sleep 5
+$CMUX read-screen --surface "$SURFACE" --lines 20
+
+# 4. プロンプト送信
+$CMUX send --surface "$SURFACE" "質問テキスト"
+$CMUX send-key --surface "$SURFACE" enter
+
+# 5. 完了検出 + 結果回収（ポーリング）
+sleep 30
+$CMUX read-screen --surface "$SURFACE" --scrollback --lines 200
+
+# 6. クリーンアップ
+$CMUX send --surface "$SURFACE" "/exit"
+$CMUX send-key --surface "$SURFACE" enter
+sleep 2
+$CMUX close-surface --surface "$SURFACE"
+```
+
+### 完了検出のコツ
+
+- `read-screen --scrollback --lines N` でバッファの最新 N 行をキャプチャ
+- ポーリング間隔: 軽い質問は 10秒、重い推論は 30-60秒
+- 完了判定: 入力プロンプト再出現（Codex なら `›`、Claude なら `>`）
+- `--scrollback` なしだと表示中の画面のみ、`--scrollback` で履歴バッファ込み
+
+### ワークスペース分離（大規模時）
+
+別ワークスペースに配置する場合:
+
+```bash
+# ワークスペース作成
+$CMUX new-workspace --command "codex"
+
+# ワークスペース一覧で確認
+$CMUX list-workspaces
+```
+
+**理由**: 同一 workspace に詰め込むとペインが極端に狭くなり、`read-screen` の出力が破損する。
 
 ## cmux-team 4層アーキテクチャ
 
@@ -31,48 +110,6 @@ Master（ユーザー対話、task 作成）
 
 **設計ポイント**: push ではなく **pull 型通信** により、Manager が自律的にタスクを検出・分配する。
 
-## ワークスペース分離原則
-
-4層アーキテクチャの物理配置。Conductor（操作側）と Worker（実行側）は **別ワークスペース** に配置する。
-
-```
-workspace:1  → Conductor（親 Claude Code、広いペイン）
-workspace:2  → Researcher x3（3分割）
-workspace:3  → Implementer x2 + Reviewer
-workspace:4  → Tester + DocKeeper
-```
-
-**理由**: 同一 workspace に詰め込むとペインが極端に狭くなり、`cmux send`/`cmux read-screen` が破損する。
-
-## サブエージェント起動パターン
-
-### 基本フロー: 起動 → 監視 → 結果回収
-
-```bash
-# 1. ワークスペース作成
-WS=$(cmux new-workspace "task-name")
-
-# 2. Claude Code 起動
-cmux send --workspace "$WS" --surface surface:1 \
-  "claude --dangerously-skip-permissions\n"
-
-# 3. Trust 確認待ち（プロンプト出現を検出）
-sleep 3  # or cmux wait-for
-
-# 4. プロンプト送信
-cmux send --workspace "$WS" --surface surface:1 "${PROMPT}"
-cmux send-key --workspace "$WS" --surface surface:1 return
-
-# 5. 完了検出 + 結果回収
-cmux read-screen --workspace "$WS" --surface surface:1 --scrollback 500
-```
-
-### 監視のコツ
-
-- `--scrollback 500` でバッファの最新500行をキャプチャ
-- 5〜10秒ごとの `read-screen` ポーリングで進捗監視
-- 完了判定: 特定キーワード出現 / エラーメッセージ / プロンプト再出現
-
 ## 会話フォーク（cfork）
 
 ```bash
@@ -83,8 +120,10 @@ cmux read-screen --workspace "$WS" --surface surface:1 --scrollback 500
 LLM を経由しないシェル直実行のため即座に完了。内部実装:
 
 ```bash
-S=$(cmux new-split "${DIRECTION:-right}")
-cmux send --surface "$S" "claude --continue --fork-session\n"
+CMUX=/Applications/cmux.app/Contents/Resources/bin/cmux
+S=$($CMUX new-split "${DIRECTION:-right}" | awk '{print $2}')
+$CMUX send --surface "$S" "claude --continue --fork-session"
+$CMUX send-key --surface "$S" enter
 ```
 
 ### 活用シーン
