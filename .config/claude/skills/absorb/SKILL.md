@@ -26,6 +26,7 @@ metadata:
   Phase 3: Triage     → ユーザーと「何を取り込むか」を選別
   Phase 4: Plan       → 統合プラン生成
   Phase 5: Handoff    → 実行（同一セッション or 新セッション）
+  Phase 5.5: Wiki Update → wiki INDEX 更新（任意、docs/wiki/ 存在時のみ）
 ```
 
 ## Phase 1: Extract（要点抽出）
@@ -194,6 +195,13 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 | M | ユーザーに確認後、同一セッションで実行 |
 | L | プラン保存 → 新セッションで `/rpi` or 手動実行 |
 
+## Phase 5.5: Wiki Update（任意）
+
+分析レポートが**現セッション内で保存された**場合、かつ `docs/wiki/` が存在する場合:
+1. 「wiki を更新しますか？」とユーザーに確認
+2. 承認された場合のみ `/compile-wiki update` を実行（INDEX 更新 + 関連概念の追加/更新）
+3. 拒否された場合はスキップ（副作用なし）
+
 ## Usage
 
 ```
@@ -219,6 +227,7 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 - **分析レポートから実装**: `/rpi docs/research/YYYY-MM-DD-{slug}-analysis.md`
 - **大規模統合**: `/epd` の Phase 1 (Spec) に分析レポートを入力
 - **深掘り調査**: 記事が不十分なら `/research` で補完調査
+- **wiki 更新**: `/compile-wiki update` で差分レポートを wiki に反映
 
 ## Skill Assets
 
