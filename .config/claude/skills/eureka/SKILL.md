@@ -90,6 +90,12 @@ message: "eureka: {title}"
 importance: 0.8+ (Impact に応じて)
 ```
 
+### Step 5: Wiki リンク（任意）
+
+`docs/wiki/` が存在する場合:
+- 発見記録に関連する概念記事を `docs/wiki/concepts/` から検索
+- 見つかった場合、概念記事の「主要な知見」セクションへの追記を提案
+
 ## Anti-Patterns
 
 - 長文を書こうとして鮮度を失う（簡潔に、後で refinement）

@@ -140,6 +140,12 @@ docs/research/             # 最終レポートの保存先（git 管理）
 最終レポートを `docs/research/YYYY-MM-DD-{name}.md` に保存。
 `.research/{name}/` の中間ファイルはそのまま残す（.gitignore 対象）。
 
+### Step 6: Wiki フィードバック（任意）
+
+レポートが `docs/research/` に保存され、`docs/wiki/` が存在する場合:
+- 「wiki を更新しますか？」とユーザーに確認
+- 承認された場合のみ `/compile-wiki update` を実行
+
 ## Scale-Aware Execution
 
 | サブタスク数 | 実行方法                                |

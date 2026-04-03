@@ -202,6 +202,51 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 2. 承認された場合のみ `/compile-wiki update` を実行（INDEX 更新 + 関連概念の追加/更新）
 3. 拒否された場合はスキップ（副作用なし）
 
+## Phase 5.6: Obsidian Bridge（任意）
+
+Phase 5.5 の後、ユーザーに確認する:
+
+「Obsidian Vault にも Literature Note として保存しますか？」
+
+### Yes の場合
+
+分析レポートを `/digest` 互換の Literature Note 形式に変換し、`mcp__obsidian__write_note` で Vault に保存する。
+
+**frontmatter:**
+
+```yaml
+---
+created: "{YYYY-MM-DD}"
+tags:
+  - type/literature
+  - "topic/{分析から抽出したトピック1}"
+  - "topic/{分析から抽出したトピック2}"
+source:
+  title: "{記事タイトル}"
+  author: "{著者名（不明なら空欄）}"
+  url: "{元 URL（テキスト入力なら空欄）}"
+  type: article
+---
+```
+
+**セクション構成:**
+
+| セクション | 内容 |
+|-----------|------|
+| **Key Takeaways** | Phase 1 の主張・手法から抽出した要点（箇条書き 3-5 個） |
+| **Summary** | Phase 1 の構造化抽出を散文でまとめたもの |
+| **My Thoughts** | Phase 3 の統合判断（何を取り込む/取り込まない、その理由） |
+| **Action Items** | Phase 4 のタスクリスト（`- [ ]` 形式）。プランなしなら省略 |
+| **Related Notes** | 既存分析レポートへのリンク（`[[]]` 形式）。なければ省略 |
+
+**保存先:** `05-Literature/lit-{author}-{title-slug}.md`
+- `author`: 著者名（不明なら `unknown`）
+- `title-slug`: タイトルをケバブケースに変換（日本語はそのまま短縮）
+
+### No の場合
+
+スキップ（副作用なし）
+
 ## Usage
 
 ```
@@ -228,6 +273,7 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 - **大規模統合**: `/epd` の Phase 1 (Spec) に分析レポートを入力
 - **深掘り調査**: 記事が不十分なら `/research` で補完調査
 - **wiki 更新**: `/compile-wiki update` で差分レポートを wiki に反映
+- **Obsidian保存**: Vault の `05-Literature/` に Literature Note として保存
 
 ## Skill Assets
 
