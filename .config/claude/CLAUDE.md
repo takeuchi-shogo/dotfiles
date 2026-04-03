@@ -125,21 +125,16 @@ Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify
 - **ドキュメント＝インフラ**: エージェントが依存する仕様書は耐荷重構造物。コード変更時に同期更新を怠ると silent failure を招く。「2回説明したら書き下ろせ」— 同じドメイン知識を繰り返しセッション横断で説明している場合は spec/reference に codify する
 - **探索は広く、理解は深く**: ファイル探索時は precision（見たものの正確な理解）に偏りやすい。意識的に recall（見るべきファイルの網羅）を上げる。config/registry → エントリポイント → 個別モジュールの順で探索する
 - **Build to Delete**: ハーネス要素（hook, script, agent）は次世代モデルで不要になりうる過渡的技術。軽量・モジュラーに保ち、削除コストを最小化する。設計時に「何が改善されればこれは不要になるか？」を問う
-- **Scaffolding > Model**: ハーネス（hooks, skills, agents, memory）の設計がモデル選択より重要。同じモデルでも足場の質で出力品質は大きく変わる。Build to Delete と対 — ハーネスは過渡的だが、良いハーネスは良い出力を生む。示唆: Harness-as-Policy(0.870) > GPT-5.2-High(0.844) (Lou+ 2026, AutoHarness)。協調プロトコル選択が品質差異の44%を説明し、モデル選択は~14% (Dochkina 2026, 25K tasks)
+- **Scaffolding > Model**: ハーネス設計がモデル選択より重要。Harness-as-Policy(0.870) > GPT-5.2-High(0.844)。協調プロトコル選択が品質差異の44%を説明、モデル選択は~14%
 
 </core_principles>
 
----
+<important if="you are using cmux to control panes or orchestrate agents">
 
-<important if="you are using cmux to control panes, orchestrate agents, or run CLI tools in other surfaces">
+## cmux CLI
 
-## cmux CLI 操作
-
-- CLI パス: `/Applications/cmux.app/Contents/Resources/bin/cmux`（PATH 上の `cmux` メインバイナリは Bash tool からハングするので使わない）
-- コマンドはハイフン区切り（`send-key`, `read-screen`, `close-surface`）
-- 環境変数 `CMUX_WORKSPACE_ID`, `CMUX_SURFACE_ID` がセットされていればデフォルトで現在のワークスペース/サーフェスを対象にする
-- 基本フロー: `new-split` → `send` + `send-key enter` → `read-screen --scrollback` → `close-surface`
-- 完了検出: `read-screen` をポーリングし、入力プロンプト再出現を検知
+- CLI: `/Applications/cmux.app/Contents/Resources/bin/cmux`（PATH 上の `cmux` は Bash tool からハング）
+- コマンドはハイフン区切り。フロー: `new-split` → `send` + `send-key enter` → `read-screen --scrollback` → `close-surface`
 - 詳細: `references/cmux-ecosystem.md`
 
 </important>
