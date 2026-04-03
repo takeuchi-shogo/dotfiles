@@ -18,11 +18,11 @@ Propose → Adversarial ループで提案を精錬してから報告する。**
 ## パイプライン全体像
 
 ```
-Phase 1: COLLECT
+Phase 1: COLLECT (+ backlog/winning-direction 読み込み)
     ↓
 Phase 2: ANALYZE (Sonnet meta-analyzer + Codex Deep)
     ↓
-Phase 3: PROPOSE (Sonnet autoevolve-core)
+Phase 3: PROPOSE (Ideation-Debate → Codex ROI 判定 → 勝者で提案生成)
     ↓
 Phase 4: ADVERSARIAL GATE (Codex 必須) ←─┐
     ↓                                      │
@@ -30,7 +30,7 @@ Phase 4: ADVERSARIAL GATE (Codex 必須) ←─┐
     ├── VULNERABLE → REFINE ───────────────┘ (max 2 iterations)
     └── FATAL_FLAW → Phase 5 (却下記載)
     ↓
-Phase 5: REPORT
+Phase 5: REPORT (+ per-run artifacts + backlog 更新)
 ```
 
 ## オプション
@@ -52,6 +52,8 @@ Phase 5: REPORT
 3. **Open Coding（任意）** — ユーザーに「気になるパターンは？」を聞く。スキップ可
 
 前回 /improve の Issue 棚卸し（`gh issue list --label autoevolve`）もここで実行。
+
+4. **前回ラン状態の読み込み** — `~/.claude/agent-memory/improvement-backlog.md` と最新の `runs/*/winning-direction.md` を Read。存在しない場合はスキップ（初回実行時）。Phase 3 の autoevolve-core プロンプトに注入する。
 
 ## Phase 2: ANALYZE — Coverage Matrix + Codex Deep
 
@@ -112,6 +114,10 @@ JSON で以下を返してください:
 **詳細: `instructions/proposals-report.md` を Read**（Phase 3 セクション）
 
 Phase 2a + 2b の統合結果を入力として、autoevolve-core (Sonnet) が改善提案を生成。
+
+autoevolve-core 起動時のプロンプトに以下を含める:
+- 「Phase 2.0 Ideation-Debate を実行し、3候補から Codex で ROI 最大を選定してから提案生成せよ」
+- Phase 1 で読み込んだ `improvement-backlog.md` と `winning-direction.md` の内容（存在する場合）
 
 **全提案に以下の必須フィールド** を含めること（欠落した提案は Phase 4 に進めない）:
 
@@ -216,7 +222,26 @@ Phase 3 → Phase 4 → VULNERABLE? → REFINE → Phase 4（再実行）
 - {Codex の missing_proposals}
 - {INSUFFICIENT_DATA の解消に必要なデータ}
 - {VULNERABLE のまま残った提案の追加検証事項}
+- → 詳細は `~/.claude/agent-memory/improvement-backlog.md` を参照
 ```
+
+### Per-run アーティファクト出力
+
+Phase 5 完了時に `~/.claude/agent-memory/runs/YYYY-MM-DD/` に書き出す:
+
+| ファイル | 内容 |
+|---------|------|
+| `candidates.md` | Ideation-Debate の3候補 |
+| `debate-log.md` | Codex ROI 判定理由 |
+| `winning-direction.md` | 選ばれた方向性と根拠 |
+| `run-summary.json` | メトリクス（提案数, ROBUST/VULNERABLE/FATAL_FLAW 数, backlog 更新有無） |
+
+### improvement-backlog.md の更新
+
+`~/.claude/agent-memory/improvement-backlog.md` を更新する:
+- **次ラン優先テーマ**: ROBUST だが未実施の提案、VULNERABLE のまま残った提案
+- **却下された方向性**: FATAL_FLAW + Ideation-Debate 敗退候補（理由付き）
+- **データ不足で保留中**: INSUFFICIENT_DATA カテゴリの追跡項目
 
 ## --evolve モード
 

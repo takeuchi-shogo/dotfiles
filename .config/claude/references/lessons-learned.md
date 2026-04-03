@@ -39,7 +39,7 @@
 
 ## Agent & Model
 
-- Claude は失敗が蓄積すると萎縮し、期待を感じると追従(Sycophancy)する -- 結果捏造・検証虚偽申告に注意
+- Claude は失敗が蓄積すると萎縮（保守化）または desperation（reward hacking）に分岐し、期待を感じると追従(Sycophancy)する -- 萎縮: 消極的提案、desperation: テスト迂回・検証スキップ、Sycophancy: 結果捏造・検証虚偽申告に注意 (Anthropic "Emotion Concepts", 2026)
   verify: manual（認知バイアス警告）
 - Gemini は過度に楽観的な見積もりを出す -- 楽観バイアスを割り引く
   verify: manual（認知バイアス警告）

@@ -36,6 +36,22 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 
 ## Phase 1: Analyze（データ分析）— Coverage Matrix + Codex Deep
 
+### Phase 1.0: ラン初期化と前回状態の注入
+
+**ランディレクトリ作成**:
+```bash
+RUN_DIR=~/.claude/agent-memory/runs/$(date +%Y-%m-%d)
+[ -d "$RUN_DIR" ] && RUN_DIR="${RUN_DIR}-$(date +%H%M)"
+mkdir -p "$RUN_DIR"
+```
+
+**前回ラン状態の読み込み**:
+1. `~/.claude/agent-memory/improvement-backlog.md` を Read（存在しない場合はスキップ）
+2. `~/.claude/agent-memory/runs/` から最新の `winning-direction.md` を Read（`ls -td runs/*/winning-direction.md | head -1`）
+3. Phase 2 (Improve) の入力コンテキストに注入:
+   - backlog の「次ラン優先テーマ」→ Phase 2 の優先度判定に反映
+   - 前回の winning direction → 「継続 or 方向転換」の判断材料に
+
 ### Phase 1a: Coverage Matrix Analysis → meta-analyzer へ委譲
 
 `skills/improve/references/coverage-matrix.md` の全必須問いに回答する分析を meta-analyzer に委譲。
@@ -84,6 +100,36 @@ Phase 1a + 1b の結果を統合して Phase 2 (Improve) の入力とする:
    - `skill-credit.jsonl` の per-step credit を確認
    - `session-metrics.jsonl` の `is_weight` で過去データの信頼度を確認
    - K-variant テスト結果がある場合は RLOO/GRPO advantage を参照
+
+### Phase 2.0: Ideation-Debate（改善方向性の選定）
+
+Phase 1 の分析結果から **3つの改善方向性** を候補生成する:
+- 各候補は 1 文の要約 + 期待効果 + 対象ファイル + リスク
+- 候補は異なるアプローチを取る（例: エラー削減 vs スキル改善 vs ハーネス最適化）
+- Phase 1.0 で読み込んだ backlog・前回 winning direction があれば、継続 or 方向転換を判断材料にする
+
+Codex (gpt-5.4) に「ROI が最大はどれか」を判定させる:
+
+```bash
+codex exec -m xhigh "
+以下の3つの改善方向性から、ROI が最大のものを1つ選んでください。
+
+## 判定基準
+1. 実装コスト（変更ファイル数、blast_radius）
+2. 期待される改善幅（エラー削減率、スキルスコア向上幅）
+3. データの裏付けの強さ（evidence_chain の confidence）
+
+## 候補
+{candidates}
+
+## 出力
+JSON: {\"winner\": N, \"reasoning\": \"...\", \"runner_up\": N, \"risks\": [\"...\"]}
+"
+```
+
+- 勝者 → Phase 2 の残りのステップ（優先度判定、提案生成等）の入力
+- 敗者 → `runs/YYYY-MM-DD/candidates.md` に記録（将来の backlog 参照用）
+- 判定理由 → `runs/YYYY-MM-DD/debate-log.md` に記録
 
 ### 分布マッチング検証
 
@@ -242,6 +288,38 @@ Phase 2 (Propose) → Phase 2.5 (Adversarial Gate)
 - 最大 2 イテレーション（初回 + 精錬 1 回）
 - FATAL_FLAW: 再提案しない（却下として記録）
 - 2 回後も VULNERABLE: 注意付きでレポートに含める
+
+### improvement-backlog.md の更新
+
+Phase 2.5 完了後に `~/.claude/agent-memory/improvement-backlog.md` を更新する:
+
+```markdown
+# Improvement Backlog — YYYY-MM-DD
+
+## 次ラン優先テーマ
+- {ROBUST だが今回未実施の提案}
+- {VULNERABLE のまま残った提案 + 追加検証事項}
+
+## 却下された方向性
+- {FATAL_FLAW 提案: 要約 + 却下理由}
+- {Ideation-Debate 敗退候補: 要約 + 敗因}
+
+## データ不足で保留中
+- {INSUFFICIENT_DATA カテゴリ: 必要なデータと収集方法}
+```
+
+`rejected-patterns.jsonl` との違い: backlog は前向き（次に何をすべきか）、rejected-patterns は後ろ向き（何を繰り返すべきでないか）。
+
+### Per-run アーティファクト出力
+
+Phase 2.5 完了後に `runs/YYYY-MM-DD/` へ書き出す:
+
+| ファイル | 内容 | 生成タイミング |
+|---------|------|-------------|
+| `candidates.md` | 3候補の改善方向性 | Phase 2.0 |
+| `debate-log.md` | Codex の ROI 判定理由 | Phase 2.0 |
+| `winning-direction.md` | 選ばれた方向性と根拠 | Phase 2.0 |
+| `run-summary.json` | メトリクス（提案数, 判定分布, backlog 更新有無） | Phase 2.5 後 |
 
 ### 修正後の自動検証（Improve→Audit 接続）
 
