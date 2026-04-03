@@ -95,3 +95,43 @@ find . -maxdepth 3 -type d \( \
 (3) S に下げる（CLAUDE.md + .claudeignore のみ）
 (4) --dry-run で生成物を確認
 ```
+
+---
+
+## フレームワーク検出シグナル
+
+言語検出後に適用する。検出したフレームワークに応じて `level-templates.md` のフレームワーク別テンプレートを適用する。
+
+### 検出テーブル
+
+| フレームワーク | 検出条件 | 対象言語 | 推奨 rules |
+|---|---|---|---|
+| Next.js | `next.config.*` 存在 or package.json に `"next"` | TypeScript/JS | App Router 規約、Server Components |
+| Remix | package.json に `"@remix-run/react"` | TypeScript/JS | loader/action パターン |
+| Prisma | `prisma/schema.prisma` 存在 | TypeScript/Python | migration 安全性、スキーマ変更手順 |
+| Echo | go.mod に `github.com/labstack/echo` | Go | ミドルウェアチェーン、エラーハンドリング |
+| Gin | go.mod に `github.com/gin-gonic/gin` | Go | ハンドラ設計、バリデーション |
+| FastAPI | requirements/pyproject に `fastapi` | Python | Pydantic model、依存性注入 |
+| Django | requirements/pyproject に `django` | Python | ORM 規約、migration |
+| React Native | package.json に `"react-native"` | TypeScript/JS | ネイティブモジュール、プラットフォーム分岐 |
+| Tauri | `src-tauri/` 存在 or Cargo.toml に `tauri` | Rust/TS | IPC 設計、セキュリティモデル |
+| Actix-web | Cargo.toml に `actix-web` | Rust | ハンドラ設計、ミドルウェア |
+
+### 検出手順
+
+```bash
+# Node.js フレームワーク
+jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' package.json 2>/dev/null
+
+# Go フレームワーク
+grep -E '^\s+(github\.com/(labstack|gin-gonic|gofiber))' go.mod 2>/dev/null
+
+# Python フレームワーク
+grep -iE '^(fastapi|django|flask)' requirements*.txt 2>/dev/null
+pip-compile --dry-run 2>/dev/null | grep -iE '(fastapi|django|flask)' || true
+
+# Rust フレームワーク
+grep -E '(actix-web|axum|tauri)' Cargo.toml 2>/dev/null
+```
+
+フレームワーク検出結果は Phase 1.4 の分析結果表示に `{frameworks}` として列挙する。

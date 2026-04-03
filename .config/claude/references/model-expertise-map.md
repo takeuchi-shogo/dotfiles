@@ -60,3 +60,35 @@
 
 `/debate` の Step 4 Synthesize で参照する。
 `codex-delegation.md` / `gemini-delegation.md` からも参照される。
+
+---
+
+## Race Mode
+
+同一タスクを複数モデルに独立実装させ、最初の完了を採用する（AlphaLab Multi-Model Search）。
+
+### Race 結果のフィードバック
+
+race 結果は `~/.claude/agent-memory/learnings/race-outcomes.jsonl` に記録:
+
+```json
+{
+  "timestamp": "ISO8601",
+  "task_type": "implementation|refactor|test",
+  "models": ["claude", "codex"],
+  "winner": "codex",
+  "completion_time_s": 180,
+  "quality_score": null
+}
+```
+
+蓄積データは `/improve` サイクルで分析し、ドメイン×モデルのスコアテーブルを更新する。
+
+### Race 向きタスク判定
+
+| タスク性質 | 推奨モデル組み合わせ | 理由 |
+|-----------|-------------------|------|
+| API実装 | Claude + Codex | 実装スタイルの多様性が高い |
+| アルゴリズム最適化 | Claude + Codex | 異なるアプローチが出やすい |
+| テスト生成 | Claude + Gemini | カバレッジ戦略が異なる |
+| ドキュメント生成 | 非推奨（単一で十分） | 品質差が小さい |

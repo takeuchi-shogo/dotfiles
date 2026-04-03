@@ -53,6 +53,21 @@ Phase 5: REPORT (+ per-run artifacts + backlog 更新)
 
 前回 /improve の Issue 棚卸し（`gh issue list --label autoevolve`）もここで実行。
 
+5. **Negative Knowledge 参照** — `references/negative-knowledge.md` を Read し、直近の failure パターンを分析候補に追加する。テーブルが空ならスキップ。Phase 3 の提案生成時にこれらのパターンに該当する提案を回避する。
+
+### Convergence Check（自動）
+
+`~/.claude/agent-memory/metrics/improve-history.jsonl` の直近5件を確認:
+
+```bash
+tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl 2>/dev/null | jq -r '.adoption_rate'
+```
+
+- 5件の平均 adoption_rate ≤ 0.30: **CONVERGENCE DETECTED** — プラトー警告を表示:
+  「改善余地が縮小しています。`/audit`, `/refactor-session`, `/improve --deep` を検討してください」
+- 5件未満: スキップ（データ蓄積中）
+- 5件の平均 > 0.30: 通常通り Phase 2 へ進む
+
 4. **前回ラン状態の読み込み** — `~/.claude/agent-memory/improvement-backlog.md` と最新の `runs/*/winning-direction.md` を Read。存在しない場合はスキップ（初回実行時）。Phase 3 の autoevolve-core プロンプトに注入する。
 
 ## Phase 2: ANALYZE — Coverage Matrix + Codex Deep

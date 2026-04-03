@@ -68,6 +68,28 @@ ls -d docs/ 2>/dev/null
 ls CLAUDE.md .claude/ .claudeignore 2>/dev/null
 ```
 
+### Phase 1.1b — フレームワーク検出
+
+Phase 1.1 で検出した言語に基づき、`detection-rules.md` のフレームワーク検出テーブルを参照して
+使用フレームワークを特定する。
+
+```bash
+# Node.js プロジェクトの場合
+jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' package.json 2>/dev/null | sort
+
+# Go プロジェクトの場合
+grep -oP '(?<=\t)github\.com/[^\s]+' go.mod 2>/dev/null | head -20
+
+# Python プロジェクトの場合
+grep -iE '^[a-z]' requirements*.txt 2>/dev/null | head -20
+
+# Rust プロジェクトの場合
+grep -A1 '\[dependencies\]' Cargo.toml 2>/dev/null | tail -n +2
+```
+
+検出結果を Phase 1.4 の分析結果に `フレームワーク: {frameworks}` として列挙する。
+M/L レベルでは Phase 2 で `level-templates.md` のフレームワーク別テンプレートを適用する。
+
 ### 1.2 リスキーモジュール検出
 
 以下のパターンにマッチするディレクトリを探す:

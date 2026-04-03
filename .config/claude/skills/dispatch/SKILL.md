@@ -17,6 +17,12 @@ user_invocable: true
    - 実装前リスク分析、セキュリティ深掘り、設計判断、トレードオフ分析
    - 複雑デバッグ、コードレビュー（100行以上）、Plan 批評
    - 参照: `rules/codex-delegation.md`
+2.5. **race モード** → 複数モデル並列実装で最速を採用
+   - 条件: プロンプトに "race" / "競争" / "複数モデルで" が含まれる、またはユーザーが明示的に race を要求
+   - 対象: M規模以上の実装タスク（S規模はコスト見合わず単一モデル）
+   - 実行: `scripts/runtime/race-runner.sh --task "..." --models claude,codex`
+   - 結果: 最初に完了した Worker の実装を採用。残りは自動クリーンアップ
+   - cmux 外の場合: 単一モデルにフォールバック（race 不可の旨を通知）
 3. **Gemini 向きタスク** → cmux Gemini Worker
    - コードベース全体分析（200K超）、外部リサーチ（Google Search grounding）
    - マルチモーダル処理（PDF/動画/音声）、ドキュメント全体分析

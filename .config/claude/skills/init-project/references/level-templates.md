@@ -213,3 +213,99 @@ formatter_command は検出言語に応じて:
 - Python: `ruff format $CLAUDE_FILE_PATH`
 - Go: `gofmt -w $CLAUDE_FILE_PATH`
 - Rust: `rustfmt $CLAUDE_FILE_PATH`
+
+---
+
+## フレームワーク別追記テンプレート
+
+フレームワーク検出時に追加適用するテンプレート。M/L レベルのみ。
+各テンプレートは CLAUDE.md 追記候補（3点）と rules/ ファイルのひな型を含む。
+
+### Next.js
+
+**CLAUDE.md 追記**:
+```
+- App Router 使用。`app/` ディレクトリのファイル規約（page.tsx, layout.tsx, loading.tsx）に従う
+- Server Components がデフォルト。`'use client'` は必要な場合のみ
+- データ取得は Server Components 内で直接 async/await。クライアントへの不要なデータ漏洩に注意
+```
+
+**rules/nextjs.md**:
+```yaml
+---
+paths:
+  - "app/**/*.tsx"
+  - "app/**/*.ts"
+  - "next.config.*"
+---
+# Next.js Rules
+- Server Components ではブラウザ API（window, document）を使わない
+- `'use client'` 境界は可能な限り葉に近づける（バンドルサイズ最小化）
+- Image コンポーネントは next/image を使用（自動最適化）
+```
+
+### Echo (Go)
+
+**CLAUDE.md 追記**:
+```
+- Echo フレームワーク使用。ハンドラは `echo.HandlerFunc` 型に従う
+- ミドルウェアチェーンで認証・ログ・CORS を処理。ハンドラにビジネスロジックを集中
+- エラーは `echo.NewHTTPError()` で返す。グローバルエラーハンドラで統一処理
+```
+
+**rules/echo.md**:
+```yaml
+---
+paths:
+  - "**/*.go"
+---
+# Echo Rules
+- ルート定義は `routes.go` または `router.go` に集約
+- ミドルウェアの順序: Logger → Recover → CORS → Auth → Rate Limit
+- レスポンスは `c.JSON()` で統一。直接 `http.ResponseWriter` を使わない
+```
+
+### FastAPI
+
+**CLAUDE.md 追記**:
+```
+- FastAPI 使用。エンドポイントは Pydantic モデルで型付け
+- 依存性注入（Depends）でDB接続・認証を管理。グローバル状態を避ける
+- 非同期エンドポイント（async def）をデフォルトとし、ブロッキング I/O は run_in_executor
+```
+
+**rules/fastapi.md**:
+```yaml
+---
+paths:
+  - "**/*.py"
+---
+# FastAPI Rules
+- リクエスト/レスポンスモデルは Pydantic BaseModel で定義
+- DB セッションは Depends() で注入。with ブロックで管理
+- バリデーションエラーは FastAPI のデフォルトハンドラに任せる（422 自動返却）
+```
+
+### Prisma
+
+**CLAUDE.md 追記**:
+```
+- Prisma ORM 使用。スキーマは `prisma/schema.prisma` で管理
+- マイグレーション: `prisma migrate dev` で開発、`prisma migrate deploy` で本番
+- スキーマ変更は必ずマイグレーションファイルを生成してからコミット
+```
+
+### Gin (Go)
+
+**CLAUDE.md 追記**:
+```
+- Gin フレームワーク使用。ルーティングは `gin.Engine` のグループ機能で整理
+- ミドルウェアは `gin.HandlerFunc` チェーンで実装
+- バリデーションは `binding` タグで Gin の自動バインディングを活用
+```
+
+### 共通注意事項
+
+- 検出されたフレームワークが複数ある場合は全て適用する
+- 既存の rules/ ファイルと競合する場合は既存を優先し、追記のみ行う
+- テンプレートはひな型であり、プロジェクトの実態に合わせて document-factory が調整する
