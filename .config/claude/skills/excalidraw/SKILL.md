@@ -9,6 +9,7 @@ description: >
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 user-invocable: true
 argument-hint: [description] | --type flowchart|architecture|mindmap|decision-tree
+disable-model-invocation: true
 metadata:
   pattern: generator
   category: generation

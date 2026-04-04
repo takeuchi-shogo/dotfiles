@@ -8,6 +8,7 @@ description: >
   Triggers: 'background agent', 'バックグラウンドエージェント', 'CI/CD agent', 'GitHub Actions agent', 'self-driving codebase', '自動化エージェント'.
   Do NOT use for: プロジェクト初期化全般（use /init-project）、既存 CI の修正（直接編集で十分）、スケジュール実行（use /schedule）。
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+disable-model-invocation: true
 metadata:
   pattern: generator
 ---

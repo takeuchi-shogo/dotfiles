@@ -8,6 +8,7 @@ description: >
   Do NOT use for: エージェントによるコードレビュー (use /review).
 allowed-tools: Bash
 user-invocable: true
+disable-model-invocation: true
 metadata:
   pattern: single-shot
 ---

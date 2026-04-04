@@ -6,6 +6,7 @@ description: >
   Do NOT use for: 画像生成（use /nano-banana）、スクリーンショット取得のみ（use Playwright MCP directly）。
 allowed-tools: Bash, Read, Write, Edit
 user-invocable: true
+disable-model-invocation: true
 metadata:
   pattern: tool-wrapper
 ---

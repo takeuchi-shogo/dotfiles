@@ -11,6 +11,7 @@ allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 metadata:
   pattern: decomposition
   origin: mattpocock/skills/prd-to-issues + takeuchi adaptation
+disable-model-invocation: true
 ---
 
 # /prd-to-issues — PRD → 垂直スライス Issue 分解

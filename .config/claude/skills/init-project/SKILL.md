@@ -11,6 +11,7 @@ description: >
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline+inversion
+disable-model-invocation: true
 ---
 
 # Init Project

@@ -7,6 +7,7 @@ description: >
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 metadata:
   pattern: executor
+disable-model-invocation: true
 hooks:
   PreToolUse:
     - matcher: "Write"

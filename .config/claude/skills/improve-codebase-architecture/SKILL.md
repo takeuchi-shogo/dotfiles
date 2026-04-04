@@ -12,6 +12,7 @@ allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 metadata:
   pattern: diagnosis
   origin: mattpocock/skills/improve-codebase-architecture + agent-native-code-design.md
+disable-model-invocation: true
 ---
 
 # /improve-codebase-architecture — コードベース構造の改善診断

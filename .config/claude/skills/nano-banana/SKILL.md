@@ -6,6 +6,7 @@ description: >
   Do NOT use for: スクリーンショット取得（use Playwright MCP）、PR への画像埋め込み（use /upload-image-to-pr）、UI デザイン（use /frontend-design）。
 allowed-tools: Bash, Read, Write, Glob
 user-invocable: true
+disable-model-invocation: true
 metadata:
   pattern: tool-wrapper
 ---

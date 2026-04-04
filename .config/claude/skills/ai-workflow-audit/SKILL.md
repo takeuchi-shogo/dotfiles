@@ -9,6 +9,7 @@ description: >
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:
   pattern: reviewer
+disable-model-invocation: true
 ---
 
 # AI Workflow Audit

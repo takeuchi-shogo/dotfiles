@@ -7,6 +7,7 @@ description: >
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline
+disable-model-invocation: true
 ---
 
 # AutoEvolve v2 — Codex-Backed Adversarial Quality Pipeline

@@ -8,6 +8,7 @@ description: >
   Do NOT use for: コードレビュー (use /codex-review), Issue の明確化インタビュー (use /interviewing-issues),
   PR レビュー (use /review).
 allowed-tools: "Read, Bash, Grep, Glob, AskUserQuestion"
+disable-model-invocation: true
 metadata:
   pattern: reviewer
   category: tooling

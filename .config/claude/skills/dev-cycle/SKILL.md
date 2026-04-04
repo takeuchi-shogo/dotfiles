@@ -6,6 +6,7 @@ metadata:
   pattern: orchestrator
   version: 1.0.0
   category: workflow
+disable-model-invocation: true
 ---
 
 # /dev-cycle -- Claude Code + Codex 協調開発サイクル

@@ -8,6 +8,7 @@ description: >
   Do NOT use for: spec 策定インタビュー（use /interview）、実装済みコードの防御的質問（use /challenge grill）、
   思考の壁打ち（use /think）。
 allowed-tools: Read, Glob, Grep, AskUserQuestion
+disable-model-invocation: true
 metadata:
   pattern: inversion
   origin: mattpocock/skills/grill-me

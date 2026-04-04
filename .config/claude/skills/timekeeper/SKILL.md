@@ -7,6 +7,7 @@ description: >
   Triggers: '/timekeeper', '振り返り', '計画を立てたい', 'plan my day', 'daily reflection'.
   Do NOT use for: 朝の開発タスク提案（use /morning）、日報作成（use /daily-report）、週次棚卸し（use /weekly-review）。
 argument-hint: plan | review
+disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob
 metadata:
   pattern: inversion+generator

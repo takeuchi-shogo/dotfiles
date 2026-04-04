@@ -5,6 +5,7 @@ description: >
   Triggers: arxiv URL, 論文 ID (2401.12345), alphaxiv URL, '論文を読んで', 'paper lookup'.
   Do NOT use for non-arxiv content — use WebFetch or /research instead.
 allowed-tools: WebFetch, Bash, Read
+disable-model-invocation: true
 metadata:
   pattern: lookup
 ---

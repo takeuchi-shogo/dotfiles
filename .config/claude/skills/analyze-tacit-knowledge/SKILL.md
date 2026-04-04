@@ -9,6 +9,7 @@ description: >
   スキルの新規作成（skill-creator を使用）。
 metadata:
   pattern: analyzer
+disable-model-invocation: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent"
 argument-hint: "[latest] | [period:Nd] | [session:ID] | [status]"
 ---

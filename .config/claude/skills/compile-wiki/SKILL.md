@@ -10,6 +10,7 @@ allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(wc:*), Bash(git diff:*), Glob
 argument-hint: compile | update | index | lint | query
 metadata:
   pattern: pipeline
+disable-model-invocation: true
 ---
 
 # /compile-wiki — Research Wiki Compiler

@@ -3,6 +3,7 @@ name: autocover
 description: "テスト自動生成パイプライン。カバレッジ分析 → ギャップ特定 → テスト生成 → 実行 → 結果報告。Triggers: '/autocover', 'テスト生成', 'カバレッジ改善', 'uncovered functions'. Do NOT use for: 手動テスト設計（use test-engineer agent）、既存テストの修正（use debugger）。"
 metadata:
   pattern: pipeline
+disable-model-invocation: true
 ---
 
 # Autocover - Test Auto-Generation Pipeline
