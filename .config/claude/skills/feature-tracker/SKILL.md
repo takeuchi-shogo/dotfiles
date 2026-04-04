@@ -90,8 +90,15 @@ test ! -f feature_list.json
 2. 指定 ID の機能を検索
 3. **テスト実行を確認**: 該当機能に関連するテストが通過しているか確認を促す
 4. `passes: true`、`session_completed: new Date().toISOString()` に更新
-5. `feature_list.json` を書き戻す
-6. 次の未完了機能があれば表示
+5. **学習抽出**: 完了した機能から知見を抽出し、AutoEvolve に連携する
+   1. 実装中に得た知見を 1-3 行で要約（例: 「〇〇パターンが有効だった」「△△は想定より複雑で見積もりが甘かった」）
+   2. `~/.claude/agent-memory/learnings/` に以下の形式で追記:
+      ```jsonl
+      {"type": "feature_completion", "feature_id": "F-001", "description": "...", "learnings": ["..."], "date": "2026-04-05", "session_id": "..."}
+      ```
+   3. この learning エントリは `/improve` Phase 2 で分析ソースとして参照される
+6. `feature_list.json` を書き戻す
+7. 次の未完了機能があれば表示
 
 ### `/feature-tracker status`
 

@@ -46,11 +46,12 @@ Phase 5: REPORT (+ per-run artifacts + backlog 更新)
 
 **詳細: `instructions/data-collection.md` を Read**
 
-データ収集を 3 ステップに統合:
+データ収集を 4 ステップに統合:
 
 1. **データ可用性チェック** — `learnings/*.jsonl`, `metrics/`, `traces/` の存在と件数確認
 2. **Git Context 収集** — `git log --oneline -30` で直近の変更傾向を把握。learnings が少なくてもここから仮説を立てる
-3. **Open Coding（任意）** — ユーザーに「気になるパターンは？」を聞く。スキップ可
+3. **タスク成果追跡** — `learnings/` から `type: "feature_completion"` エントリを抽出し、成功/失敗パターンを集計する。`feature_list.json` が存在する場合はカテゴリ別の完了率・所要セッション数も参照。「推奨→実行→結果」の因果チェーンを構築し、Phase 2 の分析入力とする
+4. **Open Coding（任意）** — ユーザーに「気になるパターンは？」を聞く。スキップ可
 
 前回 /improve の Issue 棚卸し（`gh issue list --label autoevolve`）もここで実行。
 
@@ -266,12 +267,42 @@ Phase 5 完了後にイテレーティブ進化ループを実行する。
 
 evolve モードでも Adversarial Gate は各イテレーションで適用される。
 
+## Outcome Validation（複利ループ）
+
+ROBUST 提案が実施された後、次回 `/improve` 実行時に効果を検証する。
+「推奨→実行→結果」の因果チェーンを閉じ、改善の複利効果を生む。
+
+### 検証タイミング
+
+- Phase 1 Step 3（タスク成果追跡）で自動的に前回提案の実施状況を確認
+- Phase 5 レポートの「前回 /improve からの変化」セクションに結果を記載
+
+### 検証方法
+
+各実施済み提案について以下を記録（`templates/experiment-log.md` を使用）:
+
+| 項目 | 内容 |
+|------|------|
+| **提案 ID** | IMP-YYYY-MM-DD-NNN |
+| **実施日** | YYYY-MM-DD |
+| **Before 指標** | 提案時の evidence_chain.data_points |
+| **After 指標** | 実施後に同じ指標を再計測 |
+| **効果判定** | POSITIVE / NEUTRAL / NEGATIVE |
+| **学習** | 何が効いた/効かなかったか（1文） |
+
+### 蓄積と活用
+
+- 結果は `~/.claude/agent-memory/metrics/improve-history.jsonl` に追記
+- POSITIVE な提案パターンは次回の Phase 3 Ideation-Debate で優先候補に
+- NEGATIVE な提案パターンは `references/negative-knowledge.md` に追加し、同種の提案を回避
+- 3サイクル以上の蓄積で「効果が出やすい改善カテゴリ」が可視化される
+
 ## Skill Assets
 
 - Coverage Matrix: `references/coverage-matrix.md`
 - Adversarial Gate 手順: `instructions/phase4-adversarial-gate.md`
 - 分析カテゴリ判断基準: `references/analysis-categories.md`
-- 改善レポートテンプレート: `templates/improvement-report.md`
+- 改善レポートテン��レート: `templates/improvement-report.md`
 - 実験ログテンプレート: `templates/experiment-log.md`
 
 ## Anti-Patterns

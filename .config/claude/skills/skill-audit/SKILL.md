@@ -307,6 +307,43 @@ GRPO は z-score なので ±1.0 が1標準偏差。
 | Audit report               | `docs/benchmarks/YYYY-MM-DD-audit.md`                     |
 | AutoEvolve learnings       | `~/.claude/agent-memory/learnings/skill-benchmarks.jsonl` |
 
+## Agent Consolidation Scan
+
+エージェント数の肥大化を防ぎ、統合候補を検出する。`/skill-audit consolidation` で単独実行、または通常の audit ワークフロー末尾で自動実行。
+
+### 背景
+
+モデル能力の向上に伴い、1エージェントが複数専門をカバーできるようになる。30+エージェントの管理オーバーヘッドを定期的に評価し、skill modes 化（1エージェント+複数モード）への統合判断材料を提供する。
+
+### 手順
+
+1. **エージェント一覧収集** — `~/.claude/agents/*.md` の frontmatter から name, description, tools を全件抽出
+2. **ドメイン重複検出** — description のキーワードが重複するエージェントペアを抽出（閾値: 3語以上の共通キーワード）
+3. **使用頻度推定** — `git log --oneline -100` でエージェント名の出現頻度を計測。直近100コミットで起動ゼロのエージェントをフラグ
+4. **統合候補判定** — 以下のいずれかに該当するペアを統合候補として提示:
+   - 同一 tools セットを持ち、ドメインが隣接
+   - 片方の機能が他方の機能の部分集合
+   - 両方とも使用頻度が低い（直近100コミットで各5回未満）
+
+### 出力テーブル
+
+```markdown
+## Agent Consolidation Scan
+
+| # | Agent A | Agent B | 重複理由 | 推奨アクション |
+|---|---------|---------|---------|---------------|
+| 1 | code-reviewer | golang-reviewer | Go レビューが code-reviewer の skill mode で可能 | 統合検討 |
+| 2 | silent-failure-hunter | — | 直近100コミットで起動0回 | 退役 or 統合検討 |
+```
+
+### 判定基準
+
+| パターン | アクション |
+|---------|-----------|
+| ドメイン重複 + 同一 tools | 統合を強く推奨 |
+| 使用頻度ゼロ（100コミット） | 退役候補としてフラグ（即削除しない） |
+| 部分集合関係 | 親エージェントの skill mode 化を提案 |
+
 ## Gotchas
 
 - **統計的検出力不足**: 2-3回の eval では有意差を検出できない。最低5回、理想は10回以上

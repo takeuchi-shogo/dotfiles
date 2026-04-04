@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-05] ingest | Dorsey "World Intelligence" 実装体験記
+
+- ソース: How to practically deploy Jack Dorsey's 'world intelligence' today (Single Grain)
+- 判定: Gap 1個, Partial 3個, Already 5個 (うち強化可能2個), N/A 1個
+- 取り込み: エージェント統合棚卸し(skill-audit), 競合解決パターン(references), DRI学習抽出(feature-tracker), 成果追跡ループ+実験バリデーション(improve)
+
 ## [2026-04-05] ingest | rohitg00/agentmemory Repo Analysis
 
 - ソース: https://github.com/rohitg00/agentmemory
