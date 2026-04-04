@@ -1,7 +1,7 @@
 ---
 title: マルチエージェントアーキテクチャ
 topics: [agent]
-sources: [2026-03-12-subagent-patterns-analysis.md, 2026-03-23-multi-agent-scaling-analysis.md, 2026-03-26-hierarchical-mas-theory-analysis.md, 2026-04-02-self-organizing-llm-agents-analysis.md]
+sources: [2026-03-12-subagent-patterns-analysis.md, 2026-03-23-multi-agent-scaling-analysis.md, 2026-03-26-hierarchical-mas-theory-analysis.md, 2026-04-02-self-organizing-llm-agents-analysis.md, 2026-04-04-12-claude-features-top-operators-analysis.md]
 updated: 2026-04-04
 ---
 

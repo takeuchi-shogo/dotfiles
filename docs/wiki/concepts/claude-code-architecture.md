@@ -1,7 +1,7 @@
 ---
 title: Claude Codeアーキテクチャ
 topics: [claude-code]
-sources: [2026-04-01-claude-code-internal-architecture-analysis.md, 2026-03-31-instructkr-claude-code-src-analysis.md, 2026-04-02-harness-wars-begin-analysis.md]
+sources: [2026-04-01-claude-code-internal-architecture-analysis.md, 2026-03-31-instructkr-claude-code-src-analysis.md, 2026-04-02-harness-wars-begin-analysis.md, 2026-04-04-12-claude-features-top-operators-analysis.md]
 updated: 2026-04-04
 ---
 
