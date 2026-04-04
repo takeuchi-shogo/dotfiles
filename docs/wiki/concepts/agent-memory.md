@@ -23,6 +23,21 @@ updated: 2026-04-04
 - **3 層品質ティア**: Operational(LOW) / Behavioral(MEDIUM) / Cognitive(HIGH)。HIGH ティアのみが意思決定に直接影響する
 - **Prompt Cache Preservation**: byte-identical prefix の維持がキャッシュヒット（$0.003）とミス（$0.60）の 200 倍コスト差を生む。メモリ変更はキャッシュ破壊コストを意識する
 
+## Memory-as-Harness 設計思想
+
+Letta AI の研究は「メモリはハーネスのプラグインではなく、ハーネスのコアそのものである」という重要な転換を提唱している。
+
+従来の設計:
+- メモリ = 外部プラグイン（Vector DBなど）としてエージェント外に置く
+- コンテキスト管理はモデル任せ
+
+Memory-as-Harness の設計:
+- **メモリ管理 = ハーネスの中核責任**。何をロードするか・何が圧縮を生き残るか・何を永続化するかは不可視の意思決定であり、ハーネス側が制御する
+- **4分類による保存先決定**: Working（その場で捨てる）/ Procedural（スキル・手順 → 永続化）/ Episodic（失敗記録・判断ログ → 永続化）/ Semantic（知識ベース → 永続化）の区分を compaction survival priorities として明示する
+- **Background memory subagents**: セッション中にリアルタイムでメモリを管理する専用サブエージェントをハーネス内に組み込む。メイン LLM とは独立してメモリ整理・退避・gardening を実行する
+
+この設計思想は既存の「7層防衛（Cheapest Layer First）」原則と一致しており、安価な層がメモリ問題を upstream で解決することでコストを抑えるという思想の基盤を補強する。
+
 ## 実践的な適用
 
 dotfiles のメモリシステムは Short-term を `context-compaction-policy.md` と `/check-context`、Episodic を `lessons-learned.md` + `decision-journal.md` + `/eureka`、Semantic を `MEMORY.md` + `references/` + Knowledge Pyramid（Tier 0〜3）、Procedural をスキル体系 + AutoEvolve + `improve-policy.md` で実装している。MEMORY.md はサマリ＋パス参照のみに保ち、26K トークン上限を意識した軽量構造を採っている。`memory-archive.py` が 500 行超でアーカイブする仕組みは内部ハードキャップ（200 行）の発覚により 180 行閾値への修正が実施済み。`staleness-detector.py` が 30 日未更新メモリファイルを検出し、鮮度管理を自動化している。
@@ -40,3 +55,4 @@ dotfiles のメモリシステムは Short-term を `context-compaction-policy.m
 - [Claude Code Memory Internals Analysis](../../research/2026-04-02-claude-code-memory-internals-analysis.md) — 22 ソースファイル分析。200 行キャップ・PID ロック・サイレント失敗等の構造的限界
 - [Agent Memory Quality Guide Analysis](../../research/2026-03-30-agent-memory-quality-guide-analysis.md) — 84% ノイズ率・Research Packets・5 段階 Promotion Ladder・Doctrine Synthesis
 - [AI Agent Memory Types Analysis](../../research/2026-03-30-ai-agent-memory-types-analysis.md) — Short-term/Episodic/Semantic/Procedural の 4 層モデルと dotfiles 対応表
+- [Letta: Memory-as-Harness](../../research/2026-04-04-letta-memory-as-harness-analysis.md) — Memory-as-Harness 設計思想・4分類による compaction survival priorities・Background memory subagents パターン

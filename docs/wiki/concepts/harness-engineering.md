@@ -29,6 +29,19 @@ updated: 2026-04-04
 - **Build to Delete 設計**: ハーネス要素（hook, script, agent）は次世代モデルで不要になりうる過渡的技術。軽量・モジュラーに保ち削除コストを最小化する
 - **1セッション1機能ルール**: セッション境界でのコンテキスト喪失を防ぐ実践的制約。セッション終了時に main マージ可能なクリーン状態を維持する
 
+## Context Constitution と harness 10原則の統合
+
+Letta AI の "Memory-as-Harness" 研究が提唱する **Context Constitution**（7原則）は、既存の harness 10原則（harness-books）と補完的に統合される。
+
+10原則にコンテキスト・メモリ管理の視点を加えると:
+- **「モデルは不安定部品」** → メモリ管理もモデル任せにしない。保存先決定・compaction 戦略・survival priorities はハーネスが明示的に制御する
+- **「Query Loop が心拍」** → Query Loop に PreCompact flush と PostCompact verification を組み込み、コンパクション前後の状態保全をハーネスが担保する
+- **「エラーパスは主パス」** → コンテキスト消失（サイレント失敗）は最も深刻なエラー。Proactive 管理（消失前退避）でエラーパスを最小化する
+
+これにより harness 10原則は「コンテキスト管理を含む包括的な実行環境設計原則」として拡張される。`references/context-constitution.md` が Context Constitution の実装ドキュメントとして機能し、`harness-10-principles-checklist.md` と対で参照する。
+
+また、**Memory-as-Harness** 設計思想はハーネスの5つの構成柱（ツールオーケストレーション・ガードレール・フィードバックループ・観測可能性・Human-in-the-Loop）の観測可能性に直結する。何をロードするか・何が圧縮を生き残るか・何を永続化するかという不可視の意思決定を visible にすることが harness 設計の責務として明確化された。
+
 ## 実践的な適用
 
 このリポジトリはハーネスエンジニアリングの参照実装として機能している。
@@ -52,6 +65,8 @@ updated: 2026-04-04
 - [multi-agent-architecture](multi-agent-architecture.md) — ハーネスが制御するマルチエージェント協調の設計
 - [self-improving-agents](self-improving-agents.md) — Self-evolution モジュールによるハーネス自体の改善
 - [autoharness](autoharness.md) — LLMがコードハーネスを自動生成するAutoHarness手法の詳細
+- [context-management](context-management.md) — Context Constitution と Proactive コンテキスト管理。ハーネスのメモリ制御責務の実装
+- [agent-memory](agent-memory.md) — Memory-as-Harness 設計思想とメモリ4分類の位置づけ
 
 ## ソース
 
@@ -60,3 +75,4 @@ updated: 2026-04-04
 - [AutoHarness 分析](../../research/2026-03-31-autoharness-code-harness-synthesis-analysis.md) — Google DeepMindによるコードハーネス自動合成。小モデル+ハーネスが大モデル単体を上回ることを実証
 - [NLAH 分析](../../research/2026-03-31-nlah-natural-language-agent-harnesses-analysis.md) — 自然言語ハーネスの形式化（6要素）と共有ランタイム（IHR）の設計論
 - [Harness Books 分析](../../research/2026-04-02-harness-books-analysis.md) — Claude CodeとCodexのソースコードを行番号レベルで分析した10原則と政体比較フレームワーク
+- [Letta: Memory-as-Harness](../../research/2026-04-04-letta-memory-as-harness-analysis.md) — Context Constitution が harness 10原則を補完する視点・Memory-as-Harness によるコンテキスト可視化責務の明確化

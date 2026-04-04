@@ -24,9 +24,32 @@ updated: 2026-04-04
 - **hasMemoryWritesSince()**: メイン/バックグラウンドの相互排他で重複記憶書き込みを防止する
 - **AutoDream 4フェーズ**: Read→Gather→Merge→Pruneの24h+5セッションサイクルで記憶を自動整理する
 
+## Context Constitution（原則体系）
+
+Letta AI の "Memory-as-Harness" 研究では、コンテキスト管理の原則を **Context Constitution**（7原則）として明文化することを提唱している。単発のポリシーファイルに散逸させるのではなく、統合的な憲法として一箇所に集約することで、エージェントが自分の動作制約を明示的に参照できるようにする。
+
+7原則の骨子:
+1. **Cheapest Layer First** — 安い層（Working memory）が高価な層（Full Compaction）の発動を防ぐ
+2. **Proactive > Reactive** — 消失を検知してから対処するのではなく、消失前に重要情報を退避する
+3. **4分類保存先決定** — Working/Procedural/Episodic/Semantic の区分に従って保存先を決める
+4. **PreCompact flush** — 圧縮前に key decisions をメモリにフラッシュする
+5. **PostCompact verification** — 圧縮後に Plan re-grounding と状態検証を実施する
+6. **Compaction survival priorities の明示** — どの情報が圧縮を生き残るべきかを事前定義する
+7. **Memory gardening** — セッション中に定期的にメモリを整理してノイズを除去する
+
+このリポジトリでは `.config/claude/references/context-constitution.md` として7原則を実装済み。
+
+## Proactive vs Reactive コンテキスト管理
+
+従来のReactive管理（コンテキスト超過→アラート→対処）に対し、Proactiveアプローチはコンテキストが逼迫する前に先手を打つ。具体的には:
+
+- **PreCompact flush**: `pre-compact-save.js` がコンパクション前に key decisions をメモリへフラッシュ（圧縮2回目以降で発動するリマインダーを追加済み）
+- **PostCompact verification**: `post-compact-verify.js` がコンパクション後に Plan re-grounding + memory gardening + session health チェックを実行
+- **Background memory subagents**: セッション中にリアルタイムでメモリ管理を担う専用サブエージェントパターン（将来的な拡張候補）
+
 ## 実践的な適用
 
-このリポジトリでは`pre-compact-save.js`がコンテキスト圧縮時の3段階ガイダンスと圧縮回数追跡を担い、Brevity Principleセクションで~1,000トークン目標を明示している。`output-offload.py`が大きな出力をファイルに退避してコンテキスト消費を抑制する。MEMORY.mdは現在157行で上限余裕があるが、description品質がSonnetフィルタの精度に直結するため全ファイルのdescription品質監査が重要。`context-compaction-policy.md`と`resource-bounds.md`に閾値とカウンター定数が定義されている。
+このリポジトリでは`pre-compact-save.js`がコンテキスト圧縮時の3段階ガイダンスと圧縮回数追跡を担い、Brevity Principleセクションで~1,000トークン目標を明示している。`output-offload.py`が大きな出力をファイルに退避してコンテキスト消費を抑制する。MEMORY.mdは現在157行で上限余裕があるが、description品質がSonnetフィルタの精度に直結するため全ファイルのdescription品質監査が重要。`context-compaction-policy.md`と`resource-bounds.md`に閾値とカウンター定数が定義されている。`context-constitution.md`に7原則をまとめた統合ドキュメントを整備し、ProactiveなPreCompact/PostCompactフックが稼働している。
 
 ## 関連概念
 
@@ -39,3 +62,4 @@ updated: 2026-04-04
 - [Cursor Self-Summarization](../../research/2026-03-18-cursor-self-summarization-analysis.md) — RLベースの自己要約で~1,000トークン要約が50%エラー削減を実証
 - [Agent Engineering Practices](../../research/2026-03-20-agent-engineering-practices-analysis.md) — コンテキスト4層分離・3種圧縮戦略・記憶4分類の体系的整理
 - [Claude Code Memory System Explained](../../research/2026-04-02-claude-code-memory-system-explained-analysis.md) — Claude Code内部の5層メモリアーキテクチャをソースマップ逆コンパイルから解析
+- [Letta: Memory-as-Harness](../../research/2026-04-04-letta-memory-as-harness-analysis.md) — Context Constitution（7原則）・PreCompact flush・PostCompact verification・Proactive管理パターン
