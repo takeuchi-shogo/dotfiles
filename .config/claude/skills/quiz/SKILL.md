@@ -1,3 +1,15 @@
+---
+name: quiz
+description: >
+  Claude Code セットアップの自己評価クイズを実行する。beginner/intermediate/advanced の3レベル対応。
+  Triggers: 'quiz', 'クイズ', 'セットアップ確認', 'self-assessment', '理解度チェック'.
+  Do NOT use for: 記事の理解度チェック（use /deep-read）、スキル品質監査（use /skill-audit）。
+allowed-tools: Bash, Read
+argument-hint: "[beginner | intermediate | advanced]"
+metadata:
+  pattern: inversion
+---
+
 Claude Code セットアップの自己評価クイズを実行してください。
 
 引数: $ARGUMENTS (beginner / intermediate / advanced、デフォルト: intermediate)

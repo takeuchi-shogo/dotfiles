@@ -1,6 +1,11 @@
 ---
 name: skill-creator
-description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+description: >
+  Create new skills, modify and improve existing skills, and measure skill performance.
+  Use when users want to create a skill from scratch, edit, or optimize an existing skill,
+  run evals to test a skill, or benchmark skill performance.
+  Triggers: 'skill-creator', 'スキル作成', 'create skill', 'スキル改善', 'skill eval', 'スキルのテスト'.
+  Do NOT use for: スキル一括監査（use /skill-audit）、AI ワークフロー監査（use /ai-workflow-audit）。
 metadata:
   pattern: pipeline+inversion
 ---

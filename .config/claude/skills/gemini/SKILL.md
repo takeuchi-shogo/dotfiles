@@ -3,6 +3,7 @@ name: gemini
 description: >
   Gemini CLI (1Mコンテキスト) を使った大規模分析・リサーチ・マルチモーダル処理。コードベース全体分析、
   外部リサーチ、PDF/動画/音声の読み取りに使用。設計/推論には codex スキルを使うこと。
+  Triggers: 'gemini', 'Gemini で', '1M コンテキスト', '大規模分析', 'PDF読んで', '動画分析', 'Google検索'.
   Do NOT use for tasks that fit within Claude's 200K context or simple web searches.
 metadata:
   pattern: tool-wrapper

@@ -3,6 +3,7 @@ name: verification-before-completion
 description: >
   Mandatory verification before claiming work is complete. Run actual commands to
   confirm success — never claim completion based on assumptions. Evidence before assertions.
+  Triggers: 'verification-before-completion', '完了前確認', '本当に完了？', 'verify before done', 'evidence check'.
   Do NOT use for: テスト実行のみ（use test-engineer agent）、コードレビュー（use /review）、仕様検証（use /validate）。
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:

@@ -4,17 +4,16 @@ description: >
   Review UI code for Web Interface Guidelines compliance.
   Triggers: 'UI レビュー', 'review my UI', 'check accessibility', 'audit design', 'review UX', 'ベストプラクティス確認', 'Web Interface Guidelines'.
   Do NOT use for: UI実装・コード生成（use /frontend-design）、UI/UXデザインシステム構築（use /ui-ux-pro-max）、アニメーション実装のみ（use /userinterface-wiki）。
+argument-hint: "[file-or-pattern]"
+metadata:
+  author: vercel
+  version: "1.0.0"
+  pattern: reviewer
 ---
 
 ## Skill Assets
 
 - `references/checklist-by-category.md` — Category checklist covering Animation, Typography, Color, Layout, Accessibility, Performance, Icons
-metadata:
-  author: vercel
-  version: "1.0.0"
-  argument-hint: <file-or-pattern>
-  pattern: reviewer
----
 
 # Web Interface Guidelines
 

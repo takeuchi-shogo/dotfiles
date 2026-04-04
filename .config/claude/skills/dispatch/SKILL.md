@@ -1,6 +1,9 @@
 ---
 name: dispatch
-description: cmux Worker Router — タスクをサブエージェントまたは cmux Worker（Claude Code / Codex / Gemini）に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。
+description: >
+  cmux Worker Router — タスクをサブエージェントまたは cmux Worker（Claude Code / Codex / Gemini）に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。
+  Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて'.
+  Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）。
 user_invocable: true
 ---
 
@@ -35,6 +38,32 @@ user_invocable: true
 
 ```
 /dispatch タスク内容をここに記述
+```
+
+### 並列タスクリスト形式
+
+番号付きリストで複数タスクを渡すと、各タスクを独立した Worker で並列実行する:
+
+```
+/dispatch
+1. brands ページにエクスポートボタンを追加
+2. deals ページのページネーションバグを修正
+3. CampaignController のテストを追加
+```
+
+**自動処理**:
+- 各タスクに worktree を自動作成（`feature/{task-slug}`）
+- 各 Worker に Awareness Summary を自動注入（`references/subagent-delegation-guide.md` 参照）
+- 全 Worker 完了後にコンフリクト検出を実行
+
+**Awareness Summary 自動注入例**:
+```
+## Awareness Summary
+他のエージェントが並行して以下の作業をしています:
+- Worker 2: deals ページのページネーションバグ修正（src/pages/deals/）
+- Worker 3: CampaignController のテスト追加（tests/controllers/）
+
+あなたの担当外のファイルには触れないでください。
 ```
 
 ## 実行手順

@@ -1,7 +1,11 @@
 ---
+name: challenge
 allowed-tools: Bash(git diff *), Bash(git log *), Bash(git status *), Bash(gh repo view *)
 argument-hint: "[mode: elegant|grill|prove]"
-description: 直前の変更を分析し、エレガント版の再設計・厳しいレビュー・差分実証を行う
+description: >
+  直前の変更を分析し、エレガント版の再設計・厳しいレビュー・差分実証を行う。
+  Triggers: 'challenge', 'もっと良い方法', 'エレガントに', 'prove it', '本当にこれでいい？', '別のアプローチ'.
+  Do NOT use for: 通常のコードレビュー（use /review）、プランのストレステスト（use /grill-interview）、思考の深掘り（use /think）。
 ---
 
 # Challenge Mode

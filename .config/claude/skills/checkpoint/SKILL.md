@@ -1,3 +1,15 @@
+---
+name: checkpoint
+description: >
+  現在の作業状態を手動で checkpoint として保存し、HANDOFF.md を生成する。
+  長時間タスクの中断前やセッション切り替え時に使用。
+  Triggers: 'checkpoint', '作業保存', 'セーブ', 'save state', '中断前に', 'handoff'.
+  Do NOT use for: git commit（use /commit）、日報作成（use /daily-report）、自動チェックポイント（hook が処理）。
+allowed-tools: Bash, Read, Write, Edit, Glob
+metadata:
+  pattern: executor
+---
+
 現在の作業状態を手動で checkpoint として保存してください。
 
 以下の手順で実行:

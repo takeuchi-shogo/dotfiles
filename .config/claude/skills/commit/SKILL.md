@@ -1,7 +1,11 @@
 ---
+name: commit
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Bash(git log:*)
 argument-hint: [message] | --amend | --no-verify
-description: Create well-formatted commits with conventional commit format and emoji
+description: >
+  conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。
+  Triggers: 'commit', 'コミット', 'コミットして', 'save changes', 'git commit'.
+  Do NOT use for: PR 作成（use /pull-request）、チェックポイント保存（use /checkpoint）。
 ---
 
 # Smart Git Commit

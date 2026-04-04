@@ -86,6 +86,7 @@ git worktree add .autonomous/{task-name}/worktrees/task-{n} -b autonomous/{task-
 - 各 worktree は独立したブランチで作業
 - 完了後にメインブランチへマージ → worktree を削除
 - コンフリクト発生時は停止して報告
+- **マージ前コンフリクト検出**: 全 worktree 完了後、マージ前に変更ファイルの重複を検出する（Step 4.3 参照）
 
 **隔離が不要なケース**:
 - 逐次実行（1タスクずつ順番に実行）
@@ -176,6 +177,35 @@ cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 | 片方 PASS + 片方 NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
 | 両モデル NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
 | UI 変更あり | Playwright MCP でスクリーンショット取得 → Opus Evaluator に視覚評価を追加 |
+
+## Step 4.3: Pre-Merge Conflict Detection（並列実行時のみ）
+
+全 worktree の実行が完了した後、マージ前に変更ファイルの重複を検出する。
+
+**手順**:
+
+```bash
+# 各 worktree の変更ファイルを収集
+for wt in .autonomous/{task-name}/worktrees/task-*; do
+  branch=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+  echo "=== $branch ==="
+  git -C "$wt" diff --name-only main..HEAD
+done
+```
+
+**判定**:
+
+| 状態 | アクション |
+|------|-----------|
+| 重複なし | そのままマージへ進む |
+| 重複あり | `⚠️ Merge warning: {branch-A} and {branch-B} both modified {file}` を出力 |
+
+**重複発見時のフロー**:
+1. 重複ファイルと対応ブランチを一覧で報告
+2. マージ順序を推奨（変更行数が少ないブランチを先にマージ）
+3. **自動マージしない** — ユーザーに判断を委ねる
+
+> 出典: Mex Emini "Parallel Agent Orchestrator" — "Detection occurs before merge conflicts manifest, allowing developers to plan merge order."
 
 ## Step 5: Deliver (Stripe Minions Pattern)
 

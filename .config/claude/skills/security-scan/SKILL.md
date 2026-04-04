@@ -1,6 +1,10 @@
 ---
+name: security-scan
 allowed-tools: Bash(python3 *agentshield-filter.py*), Bash(npx ecc-agentshield *)
-description: AgentShield でエージェント設定のセキュリティ監査を実行
+description: >
+  AgentShield でエージェント設定のセキュリティ監査を実行する。CLAUDE.md、hooks、skills の安全性を検証。
+  Triggers: 'security-scan', 'AgentShield', 'エージェント監査', 'agent security', '設定の安全性'.
+  Do NOT use for: コードのセキュリティレビュー（use /security-review）、コード品質監査（use /audit）。
 ---
 
 # Security Scan (AgentShield)

@@ -1,6 +1,10 @@
 ---
+name: memory-status
 allowed-tools: Bash(wc *), Bash(ls *), Bash(cat *)
-description: Show memory system status and usage summary
+description: >
+  Show memory system status and usage summary. メモリファイル数、サイズ、MEMORY.md の行数を表示。
+  Triggers: 'memory-status', 'メモリ状態', 'memory usage', 'メモリ確認', 'how much memory'.
+  Do NOT use for: コンテキスト使用量（use /check-context）、メモリ内容の検索（直接 Read で十分）。
 ---
 
 # Memory Status

@@ -1,7 +1,11 @@
 ---
+name: fix-issue
 allowed-tools: Bash(gh issue *), Bash(gh pr *), Bash(gh repo view *), Bash(git *), Bash(npm test *), Bash(go test *), Bash(pnpm test *), Bash(bun test *)
 argument-hint: <issue-number> [--repo owner/repo]
-description: GitHub Issue を起点にした自動修正ワークフロー
+description: >
+  GitHub Issue を起点にした自動修正ワークフロー。Issue の内容を読み取り、修正を実装してテストする。
+  Triggers: 'fix-issue', 'Issue 修正', 'fix #', 'Issue を直して', 'bug fix from issue'.
+  Do NOT use for: Issue 作成（use /create-issue）、Issue の明確化（use /interviewing-issues）、手動実装（use /rpi）。
 ---
 
 # Fix GitHub Issue

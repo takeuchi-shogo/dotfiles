@@ -8,6 +8,25 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-05] ingest | rohitg00/agentmemory Repo Analysis
+
+- ソース: https://github.com/rohitg00/agentmemory
+- 判定: Gap 1, Partial 2, Already 3, N/A 3
+- 取り込み: Ebbinghaus decay メモリ拡張、cascading staleness 伝播、importance-based eviction、矛盾自動スキャン
+
+## [2026-04-05] update | Parallel Agent Worktrees Orchestration → wiki
+
+- 対象: 1 レポート（2026-04-05-parallel-agent-worktrees-orchestration-analysis.md）
+- 結果: 新規概念記事 1 件（parallel-agent-orchestration.md）、既存記事更新 2 件（multi-agent-architecture.md, context-management.md）、INDEX.md 更新
+- 新規概念: Awareness Summary、Pre-Merge Conflict Detection、Worktree as Runtime Environment、Narrow Context Principle
+
+## [2026-04-05] ingest | Parallel Agent Worktrees Orchestration
+
+- ソース: https://dev.to/mexiter/claude-code-parallel-agent-driven-worktrees-orchestration-5bf0
+- 判定: Gap 2, Partial 2, Already 2, N/A 0
+- 取り込み: Awareness Summary プロトコル、Pre-Merge Conflict Detection、並列タスクリスト UX、Worktree=ランタイム環境原則、fork_context 最小入力セット
+- 結論: agentmemory 自体は導入しない（16K LOC の外部依存、Build to Delete 原則に反する）。アルゴリズムのみ軽量に移植
+
 ## [2026-04-05] ingest | Karpathy "LLM Wiki" Gist
 
 - ソース: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
