@@ -1,8 +1,8 @@
 ---
 title: Obsidian統合
 topics: [tooling, memory]
-sources: [2026-03-22-obsidian-agent-persistent-memory-analysis.md, 2026-03-23-claude-obsidian-ai-employee-analysis.md, 2026-03-16-notebooklm-obsidian-claude-integration.md]
-updated: 2026-04-04
+sources: [2026-03-22-obsidian-agent-persistent-memory-analysis.md, 2026-03-23-claude-obsidian-ai-employee-analysis.md, 2026-03-16-notebooklm-obsidian-claude-integration.md, 2026-04-05-claude-code-3-memory-systems-analysis.md]
+updated: 2026-04-05
 ---
 
 # Obsidian統合
@@ -29,8 +29,10 @@ dotfilesでの現状と計画：
 | 機能 | 現状 | 方針 |
 |------|------|------|
 | 単一コンテキストファイル | CLAUDE.md + MEMORY.md（Already） | 強化不要 |
-| メモリ→Vault同期 | 片方向のみ（Partial） | 双方向同期を計画 |
-| Obsidian MCPサーバー | settings.jsonに未設定（Partial） | `obsidian-mcp`追加を計画 |
+| メモリ→Vault同期 | `sync-memory-to-vault.sh` → `08-Agent-Memory/`（Already） | Dataview テーブルビューで可視化済み |
+| Obsidian MCPサーバー | settings.jsonに設定済み（Already） | MCP 経由で読み書き可能 |
+| 領域別ダッシュボード | `02-Areas/` に4領域（Development/Learning/Content/Health）（Already） | Dataview クエリで動的更新 |
+| メモリテーブルビュー | `08-Agent-Memory/Agent Memory Overview.md`（Already） | type/description/synced_at でテーブル表示 |
 | 自動ブリーフィング | `/morning`手動のみ（Partial） | 自動配信を計画 |
 | 知識グラフ | `/obsidian-knowledge`で手動生成 | バックグラウンド自動化は将来 |
 | 24/7アーキテクチャ | ローカルセッションのみ（Gap） | 常時稼働マシン不要のため保留 |

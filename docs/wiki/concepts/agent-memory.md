@@ -1,8 +1,8 @@
 ---
 title: エージェントメモリ
 topics: [memory]
-sources: [2026-04-02-cc-7-layer-memory-architecture-analysis.md, 2026-04-02-claude-code-memory-internals-analysis.md, 2026-03-30-agent-memory-quality-guide-analysis.md, 2026-03-30-ai-agent-memory-types-analysis.md]
-updated: 2026-04-04
+sources: [2026-04-02-cc-7-layer-memory-architecture-analysis.md, 2026-04-02-claude-code-memory-internals-analysis.md, 2026-03-30-agent-memory-quality-guide-analysis.md, 2026-03-30-ai-agent-memory-types-analysis.md, 2026-04-05-claude-code-3-memory-systems-analysis.md]
+updated: 2026-04-05
 ---
 
 # エージェントメモリ
@@ -37,6 +37,16 @@ Memory-as-Harness の設計:
 - **Background memory subagents**: セッション中にリアルタイムでメモリを管理する専用サブエージェントをハーネス内に組み込む。メイン LLM とは独立してメモリ整理・退避・gardening を実行する
 
 この設計思想は既存の「7層防衛（Cheapest Layer First）」原則と一致しており、安価な層がメモリ問題を upstream で解決することでコストを抑えるという思想の基盤を補強する。
+
+## 3層メモリシステム（ユーザー視点）
+
+内部の7層アーキテクチャとは別に、ユーザーが操作・管理する3層のメモリシステムが存在する:
+
+1. **CLAUDE.md**（手動管理）— ペルソナ・ルール・プリファレンス。変更頻度は低い
+2. **Auto-memory**（自動蓄積）— MEMORY.md インデックス + 個別メモリファイル（user/feedback/project/reference）。Claude が会話中に自動管理
+3. **Auto-dream**（自動統合）— 24時間ごとのバックグラウンドプロセス。Orient→Gather→Consolidate→Prune の4フェーズでメモリを統合・剪定
+
+この3層は内部の7層防衛の上位レイヤー（Auto Memory Extraction, Dreaming）に対応する。Auto-dream は `/improve`（AutoEvolve）と補完関係にあり、前者がメモリの剪定・統合、後者が設定・スキルの改善を担当する。
 
 ## 実践的な適用
 
