@@ -167,6 +167,56 @@ def get_session_metrics(cost_data):
     return f" \033[90m|\033[0m {' '.join(metrics)}" if metrics else ""
 
 
+def get_limit_color(pct):
+    """Get ANSI color based on rate limit usage percentage."""
+    if pct >= 80:
+        return "\033[31m"  # Red
+    elif pct >= 50:
+        return "\033[33m"  # Yellow
+    return "\033[36m"  # Cyan
+
+
+def make_progress_bar(pct, width=10):
+    """Generate a progress bar string."""
+    filled = int(pct * width / 100)
+    return "█" * filled + "░" * (width - filled)
+
+
+def get_rate_limits_display(data):
+    """Generate rate limits display from v2.1.80+ rate_limits field."""
+    rate_limits = data.get("rate_limits")
+    if not rate_limits:
+        return ""
+
+    import time as _time
+
+    parts = []
+
+    five_hour = rate_limits.get("five_hour")
+    if five_hour:
+        pct = float(five_hour.get("used_percentage", 0))
+        color = get_limit_color(pct)
+        bar = make_progress_bar(pct)
+        time_left = ""
+        resets_at = five_hour.get("resets_at")
+        if resets_at:
+            diff = int(resets_at - _time.time())
+            if diff > 0:
+                time_left = (
+                    f" \033[90m({diff // 3600}h{(diff % 3600) // 60:02d}m)\033[0m"
+                )
+        parts.append(f"⏱️  5h {color}{bar}\033[0m {color}{pct:.0f}%\033[0m{time_left}")
+
+    seven_day = rate_limits.get("seven_day")
+    if seven_day:
+        pct = float(seven_day.get("used_percentage", 0))
+        color = get_limit_color(pct)
+        bar = make_progress_bar(pct)
+        parts.append(f"📅 7d {color}{bar}\033[0m {color}{pct:.0f}%\033[0m")
+
+    return " ".join(parts)
+
+
 def main():
     try:
         # Read JSON input from Claude Code
@@ -226,18 +276,29 @@ def main():
             f" \033[35m🌿{truncate(git_branch, 25)}\033[0m" if git_branch else ""
         )
 
-        # Line 1: Model, branch, directory (truncate long dir names)
-        line1 = f"{model_display}{branch_display} \033[93m📁 {truncate(directory, 25)}\033[0m"
+        # Rate limits (v2.1.80+)
+        rate_limits_display = get_rate_limits_display(data)
+
+        # Line 1: Model, branch, directory
+        dir_str = f"\033[93m📁 {truncate(directory, 25)}\033[0m"
+        line1 = f"{model_display}{branch_display} {dir_str}"
         # Line 2: Context usage and session metrics
         line2 = f"🧠 {context_display}{session_metrics}"
 
         print(line1)
         print(line2)
+        # Line 3: Rate limits (only after first API response in session)
+        if rate_limits_display:
+            print(rate_limits_display)
 
     except Exception as e:
         # Fallback display on any error
+        cwd = os.path.basename(os.getcwd())
+        err = str(e)[:20]
         print(
-            f"\033[94m[Claude]\033[0m \033[93m📁{os.path.basename(os.getcwd())}\033[0m 🧠 \033[31m[Error: {str(e)[:20]}]\033[0m"
+            f"\033[94m[Claude]\033[0m"
+            f" \033[93m📁{cwd}\033[0m"
+            f" 🧠 \033[31m[Error: {err}]\033[0m"
         )
 
 
