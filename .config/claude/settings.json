@@ -216,6 +216,11 @@
           },
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/learner/failure-clusterer.py",
+            "timeout": 15
+          },
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/learner/session-trace-store.py",
             "timeout": 15
           },

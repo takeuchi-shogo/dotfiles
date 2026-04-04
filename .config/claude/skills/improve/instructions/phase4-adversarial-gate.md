@@ -156,3 +156,35 @@ adversarial_results:
   overall_blind_spots: [...]
   missing_proposals: [...]
 ```
+
+---
+
+## Regression Gate (NeoSigma-inspired)
+
+Adversarial Gate の前に、定量的な回帰チェックを実行する。
+
+### 手順
+
+1. `scripts/eval/regression-gate.py` を実行
+2. 結果の `status` を確認:
+   - **PASS**: 回帰なし。Adversarial Gate に進む
+   - **WARN**: 軽微な回帰の可能性。Adversarial Gate に進むが、レビュー観点に「回帰リスク」を追加
+   - **FAIL**: 回帰あり。提案を却下し、`details` の内容をフィードバックとして Propose に戻す
+
+### 根拠
+
+NeoSigma auto-harness の知見: 「Regression Gate が gains を compound させる」。
+修正済み失敗を eval ケースとして蓄積し、バックスライドを構造的に防止する。
+これにより /improve の各イテレーションで品質が単調増加する。
+
+### フロー（更新後）
+
+```
+Phase 3: PROPOSE
+    ↓
+Regression Gate (定量チェック)
+    ↓ PASS/WARN
+Phase 4: ADVERSARIAL GATE (Codex 敵対レビュー)
+    ↓
+Phase 5: REPORT
+```
