@@ -47,13 +47,48 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr list --state open --json number,labels \
+          gh pr list --state open --json number,labels,updatedAt \
             --jq '.[] | select(
               (.labels | map(.name) | any(startswith("agent"))) and
               (now - (.updatedAt | fromdateiso8601) > 86400)
             ) | .number' | head -3 | while read -r pr_num; do
             gh pr comment "$pr_num" \
               --body "⚠️ このPRは24時間以上停滞しています。状態を確認してください。"
+          done
+
+  # Job 1.5: ブロッカー解消時の後続タスク自動起動
+  # Ref: Aicon auto-label-on-unblock パターン
+  unblock-relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check recently closed blocker issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 直近4時間以内にクローズされた Issue を取得
+          SINCE=$(date -u -d '4 hours ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
+            || date -u -v-4H '+%Y-%m-%dT%H:%M:%SZ')
+
+          gh issue list --state closed --json number,closedAt,title \
+            --jq ".[] | select(.closedAt > \"$SINCE\") | .number" \
+            | while read -r closed_num; do
+
+            # この Issue をブロッカーとして参照している Issue を検索
+            gh api "repos/${{ github.repository }}/issues/$closed_num/timeline" \
+              --jq '.[] | select(.event == "cross-referenced") | .source.issue.number' \
+              2>/dev/null | sort -u | while read -r dep_num; do
+
+              # 依存先 Issue がまだ open で、他にブロッカーが残っていないか確認
+              STATE=$(gh issue view "$dep_num" --json state -q '.state' 2>/dev/null)
+              if [ "$STATE" = "OPEN" ]; then
+                echo "✅ Issue #$closed_num closed → unblocking #$dep_num"
+                gh issue comment "$dep_num" \
+                  --body "🔓 ブロッカー #$closed_num が解消されました。作業を再開できます。"
+              fi
+            done
           done
 
   # Job 2: CI 失敗 PR の自動修正試行

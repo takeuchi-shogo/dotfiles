@@ -28,6 +28,47 @@ jobs:
       - name: Setup Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
+      - name: Collect quantitative metrics
+        id: metrics
+        run: |
+          TARGET="${{ inputs.target || 'src/' }}"
+          echo "## Workflow Health Metrics" > /tmp/metrics.md
+
+          # Complexity: LOC + branch points + external calls
+          LOC=$(find "$TARGET" -type f \( -name '*.go' -o -name '*.ts' -o -name '*.py' \) -exec cat {} + 2>/dev/null | wc -l)
+          BRANCHES=$(grep -rn 'if \|switch \|case \|select {' "$TARGET" --include='*.go' --include='*.ts' --include='*.py' 2>/dev/null | wc -l)
+          EXT_CALLS=$(grep -rn 'http\.\|fetch(\|axios\.\|grpc\.' "$TARGET" --include='*.go' --include='*.ts' --include='*.py' 2>/dev/null | wc -l)
+
+          LOC_SCORE=$(python3 -c "print(min($LOC, 50000) / 50000 * 15)")
+          BRANCH_SCORE=$(python3 -c "print(min($BRANCHES, 2500) / 2500 * 20)")
+          EXT_SCORE=$(python3 -c "print(min($EXT_CALLS, 400) / 400 * 20)")
+          COMPLEXITY=$(python3 -c "print(round($LOC_SCORE + $BRANCH_SCORE + $EXT_SCORE, 1))")
+
+          # Stability: CI success rate from recent runs
+          TOTAL_RUNS=$(gh run list --limit 20 --json conclusion -q 'length')
+          SUCCESS_RUNS=$(gh run list --limit 20 --json conclusion -q '[.[] | select(.conclusion == "success")] | length')
+          SUCCESS_RATE=$(python3 -c "print(round($SUCCESS_RUNS / max($TOTAL_RUNS, 1) * 100, 1))")
+          STABILITY=$(python3 -c "print(round($SUCCESS_RATE * 0.45 + 50 * 0.55, 1))")
+
+          # Priority: complexity * (100 - stability) / 100
+          PRIORITY=$(python3 -c "print(round($COMPLEXITY * (100 - $STABILITY) / 100, 1))")
+
+          echo "complexity=$COMPLEXITY" >> "$GITHUB_OUTPUT"
+          echo "stability=$STABILITY" >> "$GITHUB_OUTPUT"
+          echo "priority=$PRIORITY" >> "$GITHUB_OUTPUT"
+
+          cat >> /tmp/metrics.md <<EOF
+          | Metric | Value |
+          |--------|-------|
+          | LOC | $LOC |
+          | Branch points | $BRANCHES |
+          | External calls | $EXT_CALLS |
+          | Complexity score | $COMPLEXITY / 55 |
+          | CI success rate | $SUCCESS_RATE% |
+          | Stability score | $STABILITY / 100 |
+          | **Priority score** | **$PRIORITY** |
+          EOF
+
       - name: Run 6-aspect scoring
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
