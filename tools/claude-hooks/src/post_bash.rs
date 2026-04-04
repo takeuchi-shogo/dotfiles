@@ -175,7 +175,12 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
 
     let patterns = error_patterns();
     let error_match = patterns.iter().find_map(|p| {
-        p.find(output).map(|m| m.as_str().to_string())
+        p.find(output).map(|m| {
+            let start = output[..m.start()].rfind('\n').map(|i| i + 1).unwrap_or(0);
+            let end = output[m.end()..].find('\n').map(|i| m.end() + i).unwrap_or(output.len());
+            let line = &output[start..end];
+            if line.len() > 200 { line[..200].to_string() } else { line.to_string() }
+        })
     })?;
 
     // Emit event

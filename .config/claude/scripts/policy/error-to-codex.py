@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 """Error-to-Codex hook — suggests codex-debugger when Bash errors are detected.
+
 Also injects fix guidance from error-fix-guides.md when available.
 
 Triggered by: hooks.PostToolUse (Bash)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
+
+from __future__ import annotations
+
 import re
 import sys
 from pathlib import Path
@@ -14,8 +17,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import (
-    load_hook_input, output_passthrough, output_context,
-    check_tool, run_hook, get_emitter, resolve_reference,
+    load_hook_input,
+    output_passthrough,
+    output_context,
+    check_tool,
+    run_hook,
+    get_emitter,
+    resolve_reference,
 )
 
 emit = get_emitter()
@@ -41,12 +49,23 @@ ERROR_PATTERNS = [
 
 # Commands that are just info-gathering — don't suggest debugging
 IGNORE_COMMANDS = [
-    "git status", "git log", "git diff", "git branch",
-    "ls", "cat", "head", "tail", "pwd", "which", "echo",
-    "codex", "gemini",  # Prevent infinite loops
+    "git status",
+    "git log",
+    "git diff",
+    "git branch",
+    "ls",
+    "cat",
+    "head",
+    "tail",
+    "pwd",
+    "which",
+    "echo",
+    "codex",
+    "gemini",  # Prevent infinite loops
 ]
 
 GUIDES_PATH = resolve_reference("error-fix-guides.md")
+
 
 def load_fix_guides() -> dict[str, tuple[str, str]]:
     """Parse error-fix-guides.md into {header_keyword: (cause, fix)} dict.
@@ -108,7 +127,11 @@ def has_error(output: str) -> str | None:
     for pattern in ERROR_PATTERNS:
         match = pattern.search(output)
         if match:
-            return match.group(0)
+            line_start = output.rfind("\n", 0, match.start()) + 1
+            line_end = output.find("\n", match.end())
+            if line_end == -1:
+                line_end = len(output)
+            return output[line_start:line_end][:200]
     return None
 
 
@@ -136,10 +159,13 @@ def main() -> None:
 
     error_match = has_error(output)
     if error_match:
-        emit("error", {
-            "message": error_match,
-            "command": command[:200],
-        })
+        emit(
+            "error",
+            {
+                "message": error_match,
+                "command": command[:200],
+            },
+        )
         # Build context message
         context_parts = [
             f"[Error-to-Codex] エラーが検出されました: {error_match}",
