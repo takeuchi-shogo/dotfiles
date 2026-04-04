@@ -1,7 +1,7 @@
 ---
 title: エージェントセキュリティ
 topics: [security]
-sources: [2026-03-25-3-layer-prompt-injection-defense-analysis.md, 2026-03-23-verigrey-greybox-agent-validation-analysis.md, 2026-04-02-ai-agent-traps-analysis.md, 2026-03-18-scientist-ai-bengio-analysis.md]
+sources: [2026-03-25-3-layer-prompt-injection-defense-analysis.md, 2026-03-23-verigrey-greybox-agent-validation-analysis.md, 2026-04-02-ai-agent-traps-analysis.md, 2026-03-18-scientist-ai-bengio-analysis.md, 2026-04-04-agentwatcher-rule-based-injection-monitor-analysis.md]
 updated: 2026-04-04
 ---
 
@@ -23,6 +23,9 @@ updated: 2026-04-04
 - **3 段階デプロイ**: audit（ログのみ）→ warn（警告）→ block（ブロック）の段階的投入で運用リスクを最小化する
 - **Task-scoped Tool Filter**: タスク文脈に応じた動的ホワイトリストが最も ITSR（侵入タスク成功率）を下げつつ UTSR（通常タスク成功率）への影響が最小の防御策
 - **Specification gaming 検出**: エージェントがメトリクスをハックする問題（Goodhart's Law 増幅）は、Gaming Detector と多目的バリデーションゲートで対処する
+- **ルールベース検出 (AgentWatcher)**: 10 種攻撃ルール（R1-R10: 命令ハイジャック〜システムスプーフィング）+ 4 種ベナインルール（B1-B4: 偽陽性抑制）の体系的分類により、検出の説明可能性と保守性が向上する。ルール分類: `references/injection-rule-taxonomy.md`
+- **Context Attribution の原則**: 検出対象を因果的に重要なコンテキスト断片に絞ることで、長文でも精度を維持できる。API 環境では「直近コンテキスト優先」「ツール出力境界重点チェック」「長文時の分割スキャン」で代替する
+- **ベナインルールの重要性**: 「何が攻撃か」だけでなく「何が正常か」を明示的に定義することで、ツール使用エージェント環境での偽陽性を抑制する
 
 ## 実践的な適用
 
@@ -40,3 +43,4 @@ dotfiles では `prompt-injection-detector.py`（PreToolUse）が技術的パタ
 - [VeriGrey: Greybox Agent Validation](../../research/2026-03-23-verigrey-greybox-agent-validation-analysis.md) — ツール呼び出しシーケンスをカバレッジ指標としたグレーボックスファジングによる間接インジェクション脆弱性発見
 - [AI Agent Traps](../../research/2026-04-02-ai-agent-traps-analysis.md) — Web 環境の攻撃面を 6 カテゴリ・22 ベクトルで体系化した DeepMind 論文
 - [Scientist AI](../../research/2026-03-18-scientist-ai-bengio-analysis.md) — 知能と行為主体性の分離・Specification gaming 検出・Agency 3 本柱モデルのセキュリティ原則
+- [AgentWatcher](../../research/2026-04-04-agentwatcher-rule-based-injection-monitor-analysis.md) — Context Attribution + 10 種ルール分類によるスケーラブルで説明可能なインジェクション検出

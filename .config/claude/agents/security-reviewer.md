@@ -30,6 +30,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 8. **Security Best Practices** — セキュアコーディングパターンの適用
 9. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `references/claude-code-threats.md`）
 10. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `references/review-checklists/security-baseline.md`）
+11. **Injection Rule Taxonomy** — AgentWatcher 10 種攻撃ルール + 4 種ベナインルールに基づくインジェクション検出チェック（詳細: `references/review-checklists/injection-rules.md`、分類定義: `references/injection-rule-taxonomy.md`）
 
 ## Confirmation Bias Mitigation
 

@@ -3,8 +3,13 @@
 
 VeriGrey (arXiv:2603.17639) Gap #5: MCP サーバーのレスポンスに
 埋め込まれたインジェクションパターンを検査する。
+AgentWatcher (arXiv:2604.01194) の 10 種ルール分類に基づくルール ID 付きログ。
 
-強度: Soft warning (advisory) — 検出時は stderr + ログ記録、ブロックしない。
+強度:
+  - デフォルト: Soft warning (advisory) — 検出時は stderr + ログ記録、ブロックしない。
+  - MCP_INSPECTOR_MODE=block: 高信頼度パターン (R2/R3/R4) はブロック。
+
+ルール分類: references/injection-rule-taxonomy.md
 """
 
 from __future__ import annotations
@@ -29,6 +34,28 @@ from hook_utils import (
 
 MAX_RESPONSE_SIZE = 10 * 1024  # 10KB truncation limit
 LARGE_CONTENT_THRESHOLD = 5 * 1024  # 5KB — contextual learning bias advisory
+
+# Block mode: MCP_INSPECTOR_MODE=block enables blocking for HIGH-confidence rules
+BLOCK_MODE = os.environ.get("MCP_INSPECTOR_MODE", "warn") == "block"
+
+# ---------------------------------------------------------------------------
+# AgentWatcher Rule ID mapping (arXiv:2604.01194)
+# See references/injection-rule-taxonomy.md for full taxonomy
+# ---------------------------------------------------------------------------
+# Confidence: HIGH = block-eligible, MEDIUM = warn, LOW = log-only
+RULE_MAP: dict[str, tuple[str, str]] = {
+    "injection-directive": ("R1/R2", "HIGH"),  # Hijacking or System Override
+    "url-secret-cooccurrence": ("R4", "HIGH"),  # Resource Exfiltration
+    "zero-width-char": ("R10", "MEDIUM"),  # System Spoofing (obfuscation)
+    "ansi-escape": ("R10", "MEDIUM"),  # System Spoofing (obfuscation)
+    "null-byte": ("R10", "MEDIUM"),  # System Spoofing (obfuscation)
+    "css-display-none": ("R6", "LOW"),  # Attention Diversion
+    "css-visibility-hidden": ("R6", "LOW"),  # Attention Diversion
+    "css-offscreen": ("R6", "LOW"),  # Attention Diversion
+    "aria-label-injection": ("R1", "MEDIUM"),  # Instruction Hijacking
+    "markdown-link-injection": ("R9", "MEDIUM"),  # External Redirection
+    "html-comment-injection": ("R1", "MEDIUM"),  # Instruction Hijacking
+}
 
 # ---------------------------------------------------------------------------
 # Injection directive patterns (natural-language social engineering)
@@ -141,10 +168,13 @@ def _inspect(text: str) -> tuple[str, str] | None:
 
 
 def _log_finding(data: dict, pattern_name: str, detail: str, log_path: str) -> None:
+    rule_id, confidence = RULE_MAP.get(pattern_name, ("R?", "LOW"))
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "tool": data.get("tool_name", ""),
         "pattern": pattern_name,
+        "rule_id": rule_id,
+        "confidence": confidence,
         "detail": detail[:200],
         "session_id": data.get("session_id", "unknown"),
     }
@@ -189,6 +219,9 @@ def _main() -> None:
         log_path = os.path.join(log_dir, "mcp-response-inspection.jsonl")
         _log_finding(data, pattern_name, detail, log_path)
 
+        # Resolve rule ID and confidence
+        rule_id, confidence = RULE_MAP.get(pattern_name, ("R?", "LOW"))
+
         # Emit event
         emit = get_emitter()
         emit(
@@ -196,6 +229,8 @@ def _main() -> None:
             {
                 "type": "mcp_response_injection",
                 "pattern": pattern_name,
+                "rule_id": rule_id,
+                "confidence": confidence,
                 "tool": tool_name,
             },
         )
@@ -209,6 +244,8 @@ def _main() -> None:
         flag_entry = {
             "tool": tool_name,
             "pattern": pattern_name,
+            "rule_id": rule_id,
+            "confidence": confidence,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         try:
@@ -221,10 +258,20 @@ def _main() -> None:
         except OSError as exc:
             print(f"[MCP Response Inspector] flag write error: {exc}", file=sys.stderr)
 
+        # Block HIGH-confidence patterns when block mode is enabled
+        if BLOCK_MODE and confidence == "HIGH":
+            msg = (
+                f"[MCP Response Inspector] BLOCKED: {tool_name} — "
+                f"rule {rule_id} ({pattern_name}): {detail}"
+            )
+            print(msg, file=sys.stderr)
+            print(json.dumps({"error": msg}))
+            return
+
         # Soft warning (advisory, do not block)
         msg = (
             f"[MCP Response Inspector] {tool_name} のレスポンスに"
-            f"疑わしいパターンを検出: {pattern_name} — {detail}"
+            f"疑わしいパターンを検出: [{rule_id}] {pattern_name} — {detail}"
         )
         print(msg, file=sys.stderr)
         output_context("PostToolUse", msg)
