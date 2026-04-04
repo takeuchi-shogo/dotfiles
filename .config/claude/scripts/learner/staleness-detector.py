@@ -10,6 +10,7 @@ Anthropic の核心原則:
 
 Usage:
     python staleness-detector.py [--days 30]
+    python staleness-detector.py --memory [--days 30]
 
 出力: 陳腐化レポート (stdout)
 """
@@ -266,6 +267,257 @@ def rotate_telemetry(days: int = 30) -> int:
     return removed
 
 
+# メモリファイルの重要度ウェイト（type フィールドに対応）
+IMPORTANCE_WEIGHTS: dict[str, float] = {
+    "feedback": 1.0,
+    "user": 0.8,
+    "project": 0.6,
+    "reference": 0.5,
+}
+DEFAULT_IMPORTANCE = 0.5
+
+
+def parse_memory_index(memory_md_path: Path) -> dict[str, list[str]]:
+    """MEMORY.md を読み込み、各行のリンク構造を解析する.
+
+    MEMORY.md 内の `[Title](file.md)` 形式リンクを行単位で抽出し、
+    各メモリファイルが参照しているファイル名のリストを返す。
+
+    Returns:
+        {"file.md": ["referenced_file1.md", ...]} の形式。
+        キーは行内で最初に出現したリンク先ファイル名（その行の「主体」）、
+        値はその行内で他に参照されているファイル名のリスト。
+    """
+    import re
+
+    if not memory_md_path.exists():
+        return {}
+
+    link_pattern = re.compile(r"\[.*?\]\((.*?\.md)\)")
+    index: dict[str, list[str]] = {}
+
+    for line in memory_md_path.read_text(encoding="utf-8").splitlines():
+        matches = link_pattern.findall(line)
+        if not matches:
+            continue
+        # 行内の先頭リンクを「主体」、残りをその参照先とみなす
+        subject = matches[0]
+        refs = matches[1:]
+        if refs:
+            index.setdefault(subject, []).extend(refs)
+
+    return index
+
+
+def analyze_memory_staleness(memory_dir: Path, days: int = 30) -> list[dict]:
+    """memory_dir 内の全 .md ファイルの鮮度を分析する.
+
+    MEMORY.md を除いた各ファイルについて:
+    - git 最終更新日を取得（失敗時は days_old=999）
+    - freshness_score = exp(-0.1 * days_since_update) を計算
+    - frontmatter の type フィールドから importance_weight を決定
+    - effective_score = freshness_score * importance_weight
+
+    Returns:
+        各ファイルの分析結果 dict のリスト。
+    """
+    import math
+    import subprocess
+
+    results = []
+    now = datetime.now(timezone.utc)
+
+    for md_file in sorted(memory_dir.glob("*.md")):
+        # MEMORY.md 自体はスキップ
+        if md_file.name == "MEMORY.md":
+            continue
+
+        # git で最終コミット日時を取得
+        try:
+            proc = subprocess.run(
+                ["git", "log", "-1", "--format=%aI", "--", str(md_file)],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            git_date_str = proc.stdout.strip()
+            if git_date_str:
+                git_date = datetime.fromisoformat(git_date_str)
+                # タイムゾーン情報がない場合は UTC とみなす
+                if git_date.tzinfo is None:
+                    git_date = git_date.replace(tzinfo=timezone.utc)
+                days_old = (now - git_date).days
+            else:
+                # git 履歴になければファイル更新日時をフォールバックに使う
+                mtime = md_file.stat().st_mtime
+                days_old = int((now.timestamp() - mtime) / 86400)
+        except Exception:
+            days_old = 999
+
+        # freshness スコアを指数減衰で計算
+        freshness_score = math.exp(-0.1 * days_old)
+
+        # frontmatter から type フィールドを簡易抽出（PyYAML 不使用）
+        file_type = _extract_frontmatter_type(md_file)
+        importance_weight = IMPORTANCE_WEIGHTS.get(file_type, DEFAULT_IMPORTANCE)
+
+        # 実効スコア
+        effective_score = freshness_score * importance_weight
+
+        # ステータス判定
+        if effective_score >= 0.50:
+            status = "fresh"
+        elif effective_score >= 0.05:
+            status = "aging"
+        else:
+            status = "stale"
+
+        results.append(
+            {
+                "file": md_file.name,
+                "days_old": days_old,
+                "freshness": round(freshness_score, 4),
+                "importance": importance_weight,
+                "effective_score": round(effective_score, 4),
+                "type": file_type,
+                "status": status,
+            }
+        )
+
+    return results
+
+
+def _extract_frontmatter_type(md_file: Path) -> str:
+    """markdown ファイルの frontmatter から type フィールドを抽出する.
+
+    `---` で囲まれた YAML ブロック内の `type: value` を正規表現で読み取る。
+    frontmatter がない場合や type フィールドがない場合は空文字を返す。
+    """
+    import re
+
+    type_pattern = re.compile(r"^type:\s*(.+)$", re.MULTILINE)
+    try:
+        content = md_file.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+    # frontmatter ブロック（先頭 --- から次の --- まで）を抽出
+    if not content.startswith("---"):
+        return ""
+
+    end_idx = content.find("---", 3)
+    if end_idx == -1:
+        return ""
+
+    frontmatter = content[3:end_idx]
+    match = type_pattern.search(frontmatter)
+    return match.group(1).strip() if match else ""
+
+
+def propagate_staleness(file_scores: list[dict], memory_md_path: Path) -> list[dict]:
+    """stale なファイルを参照するファイルにカスケード警告を付与する.
+
+    parse_memory_index() で MEMORY.md のリンク構造を取得し、
+    stale なファイルを参照しているファイルに cascading_warning=True と
+    stale_refs リストを追加する。
+
+    Returns:
+        cascading_warning / stale_refs フィールドを追加した file_scores のコピー。
+    """
+    index = parse_memory_index(memory_md_path)
+
+    # stale なファイル名のセットを作成
+    stale_files: set[str] = {
+        entry["file"] for entry in file_scores if entry["status"] == "stale"
+    }
+
+    # file_scores を dict に変換して更新しやすくする
+    scores_by_name: dict[str, dict] = {
+        entry["file"]: dict(entry) for entry in file_scores
+    }
+
+    for subject, refs in index.items():
+        # MEMORY.md のリンク構造に存在するファイルのみ対象
+        if subject not in scores_by_name:
+            continue
+        stale_ref_list = [r for r in refs if r in stale_files]
+        if stale_ref_list:
+            scores_by_name[subject]["cascading_warning"] = True
+            existing = scores_by_name[subject].get("stale_refs", [])
+            scores_by_name[subject]["stale_refs"] = list(
+                dict.fromkeys(existing + stale_ref_list)
+            )
+
+    return list(scores_by_name.values())
+
+
+def generate_memory_report(results: list[dict], days: int) -> str:
+    """メモリファイルの鮮度レポートを生成する.
+
+    セクション: Stale Memories, Cascading Warnings, Aging Memories, Fresh Memories。
+    形式は既存の generate_report() に合わせ
+    [MEMORY_STALENESS_REPORT] プレフィックスを使用。
+    """
+    stale = [r for r in results if r["status"] == "stale"]
+    aging = [r for r in results if r["status"] == "aging"]
+    fresh = [r for r in results if r["status"] == "fresh"]
+    cascading = [r for r in results if r.get("cascading_warning")]
+
+    lines = [
+        f"[MEMORY_STALENESS_REPORT] Analysis period: {days} days",
+        f"  Total files: {len(results)}, "
+        f"Fresh: {len(fresh)}, "
+        f"Aging: {len(aging)}, "
+        f"Stale: {len(stale)}, "
+        f"Cascading warnings: {len(cascading)}",
+        "",
+    ]
+
+    if stale:
+        lines.append("## Stale Memories (更新候補)")
+        for r in sorted(stale, key=lambda x: -x["days_old"]):
+            lines.append(
+                f"  - [STALE] {r['file']}: "
+                f"{r['days_old']} 日更新なし "
+                f"(effective={r['effective_score']:.4f}, type={r['type'] or 'unknown'})"
+            )
+        lines.append("")
+
+    if cascading:
+        lines.append("## Cascading Warnings (stale 参照あり)")
+        for r in cascading:
+            stale_refs = ", ".join(r.get("stale_refs", []))
+            lines.append(f"  - [CASCADE] {r['file']}: stale な参照先 -> {stale_refs}")
+        lines.append("")
+
+    if aging:
+        lines.append("## Aging Memories (経過観察)")
+        for r in sorted(aging, key=lambda x: -x["days_old"]):
+            lines.append(
+                f"  - {r['file']}: "
+                f"{r['days_old']} 日更新なし "
+                f"(effective={r['effective_score']:.4f}, type={r['type'] or 'unknown'})"
+            )
+        lines.append("")
+
+    if fresh:
+        lines.append("## Fresh Memories")
+        for r in sorted(fresh, key=lambda x: x["days_old"]):
+            lines.append(
+                f"  - {r['file']}: "
+                f"{r['days_old']} 日前更新 "
+                f"(effective={r['effective_score']:.4f})"
+            )
+        lines.append("")
+
+    if not results:
+        lines.append("## No memory files found")
+        lines.append("  分析対象の .md ファイルが見つかりませんでした。")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="R-13: Staleness detector")
     parser.add_argument(
@@ -279,11 +531,32 @@ def main() -> None:
         action="store_true",
         help="Rotate old telemetry entries",
     )
+    parser.add_argument(
+        "--memory",
+        action="store_true",
+        help="Analyze memory file staleness",
+    )
     args = parser.parse_args()
 
     if args.rotate:
         removed = rotate_telemetry(args.days)
         print(f"[STALENESS] Rotated {removed} entries older than {args.days} days.")
+        return
+
+    if args.memory:
+        # ~/.claude/projects/*/memory/MEMORY.md を全て検索して分析
+        projects_dir = Path.home() / ".claude" / "projects"
+        memory_dirs = [p.parent for p in projects_dir.glob("*/memory/MEMORY.md")]
+        if not memory_dirs:
+            print("[MEMORY_STALENESS] No memory directories found.")
+            return
+        for memory_dir in sorted(memory_dirs):
+            memory_md = memory_dir / "MEMORY.md"
+            file_scores = analyze_memory_staleness(memory_dir, args.days)
+            file_scores = propagate_staleness(file_scores, memory_md)
+            report = generate_memory_report(file_scores, args.days)
+            print(f"# {memory_dir}")
+            print(report)
         return
 
     telemetry = load_telemetry(args.days)

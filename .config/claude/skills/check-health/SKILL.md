@@ -111,6 +111,19 @@ else:
 " 2>/dev/null || true
 ```
 
+### Step 3.6: メモリ矛盾スキャン
+
+メモリファイル間の矛盾候補を自動検出する。
+
+```bash
+python3 $HOME/.claude/scripts/learner/contradiction-scanner.py 2>/dev/null || true
+```
+
+矛盾候補が検出された場合:
+- `[CONTRADICTION_CANDIDATE]` タグの内容をユーザーに報告
+- `/improve` での解消を提案
+- `references/contradiction-mapping.md` の解決フローに従う
+
 ### Step 3.7: MCP サーバートークンコストチェック
 
 接続中の MCP サーバーが不要なコンテキストを消費していないか確認する。

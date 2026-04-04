@@ -38,7 +38,44 @@ freshness_score = exp(-0.1 * 10) = exp(-1.0) = 0.368 → Aging
 1. **`/check-health` スキル**: メモリファイルの鮮度チェックに使用。Stale なファイルを警告として報告する
 2. **エージェントのコンテキスト収集**: 複数ソースからコンテキストを集める際の重み付け。freshness_score が低いソースは信頼度を下げる
 
+## 重要度加重 (Importance Weighting)
+
+メモリの重要度に応じて鮮度スコアを調整する:
+
+```
+effective_score = freshness_score * importance_weight
+```
+
+### 重要度テーブル
+
+| メモリ type  | importance_weight | 理由                           |
+| ------------ | ----------------- | ------------------------------ |
+| feedback     | 1.0               | ユーザー修正は最重要           |
+| user         | 0.8               | プロファイルは中長期安定       |
+| project      | 0.6               | プロジェクト状況は変動大       |
+| reference    | 0.5               | 外部リソースは検証コスト高     |
+
+### 適用例
+
+feedback メモリ (5日前更新):
+
+```
+effective_score = exp(-0.1 * 5) * 1.0 = 0.607 → Fresh
+```
+
+reference メモリ (5日前更新):
+
+```
+effective_score = exp(-0.1 * 5) * 0.5 = 0.303 → Aging（確認推奨）
+```
+
+### 消費先
+
+1. `scripts/learner/memory-eviction.py` — メモリ淘汰候補のスコアリングに使用
+2. `scripts/learner/staleness-detector.py --memory` — メモリ鮮度レポートの重み付けに使用
+
 ## 注意事項
 
 - このポリシーは自動化スクリプトではなく、エージェントが判断する際の **ガイドライン** である
 - 頻繁に更新されないが普遍的な内容（設計原則等）は、スコアが低くても有効な場合がある。機械的に適用せず文脈を考慮すること
+- feedback タイプは重要度最高のため、eviction 対象外として保護される
