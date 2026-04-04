@@ -50,6 +50,7 @@
 - 非自明な変更では root の `PLANS.md` に従う。
 - Claude Code の `plansDirectory` は `tmp/plans/` だが、長時間タスク、handoff、または将来参照したい plan は `docs/plans/` に昇格する。
 - harness 変更、複数ディレクトリ変更、30 分以上の作業見込みでは plan を必須とする。
+- M/L 規模の Plan 策定時は `references/reversible-decisions.md` のチェックリストを参照する（撤退条件・反証は必須）。
 
 </important>
 
