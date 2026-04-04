@@ -61,6 +61,15 @@ status: integrated
 論文の calm steering 知見を CLAUDE.md の言語トーンで予防的に実装。
 Bootoshi 版の過剰ポジティブ（sycophancy リスク）を回避したバランス版。
 
+### Wave 3 追記: Overconfidence Circuits との関係
+
+> Zhao et al. "Wired for Overconfidence" (arXiv:2604.01457, 2026-04):
+> 過剰自信の回路 (CMC) は desperation とは**独立した failure mode**。
+> calm な状態でも信頼度は構造的に膨張する。desperation は CMC の膨張を増幅するが、CMC 自体は常に存在する。
+
+- Emotion Concepts の desperation 対策（Wave 1）は過剰自信を**部分的に**緩和するが、完全には解消しない
+- CMC への対策は `evaluator-calibration-guide.md` の Verbalized Confidence Discount 原則として別途実装
+
 ## Plan (実行済み)
 
 ### Wave 1: 反応的対策

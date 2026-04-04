@@ -247,6 +247,18 @@ source:
 
 スキップ（副作用なし）
 
+## Phase 5.7: Wiki Log（自動）
+
+分析レポートが保存された場合、`docs/wiki/log.md` に ingest エントリを追記する（確認不要）。
+
+```markdown
+## [YYYY-MM-DD] ingest | {記事タイトル}
+
+- ソース: {URL or タイトル}
+- 判定: {Gap N個, Partial N個, Already N個, N/A N個}
+- 取り込み: {選択された項目の概要}
+```
+
 ## Usage
 
 ```

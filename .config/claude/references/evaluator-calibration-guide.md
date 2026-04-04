@@ -102,3 +102,18 @@ ci = bootstrap_ci(human_labels, eval_labels, p_obs=0.80)
 - dev セットの性能を最終精度として報告する（test セットが公平な推定）
 - Rogan-Gladen 補正なしで集約 pass rate を報告する
 - 信頼区間なしの点推定のみ報告する
+- レビューアーの verbalized confidence を校正済み指標として扱う（下記 Discount 原則を参照）
+
+## Verbalized Confidence Discount 原則
+
+> Zhao et al. "Wired for Overconfidence" (arXiv:2604.01457, 2026-04):
+> LLM の信頼度言語化回路 (CMC) は事実性回路と構造的に分離しており、
+> 言語化された信頼度は**体系的に膨張**する。モデル固有の構造的特性であり、
+> プロンプト調整だけでは完全に解消できない。
+
+### ルール
+
+1. **高信頼度への懐疑**: confidence >= 90% を額面通り受け取らない。判定（PASS/FAIL）は信頼するが、confidence スコアの精度は低い
+2. **低信頼度の方が正確**: 「自信がない」は膨張バイアスがないため、高信頼度より信頼性が高い
+3. **集団校正を優先**: 個々の confidence 値より TPR/TNR（Rogan-Gladen 補正）が信頼できる
+4. **全員高信頼度は警告信号**: `review-consensus-policy.md` の Confidence Inflation Alert を参照
