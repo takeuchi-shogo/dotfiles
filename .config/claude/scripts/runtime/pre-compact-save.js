@@ -166,13 +166,32 @@ const guidance = [
 	"- 探索的な検索結果（必要なら再検索可能）",
 ];
 
+// Memory flush reminder (P3: Proactive > Reactive)
+if (compactionCounter.count >= 2) {
+	guidance.push("");
+	guidance.push(
+		`### 🧠 Memory Flush Reminder (Compaction #${compactionCounter.count})`,
+	);
+	guidance.push(
+		"- このセッションで下した重要な意思決定・発見した知見がまだ memory/ に保存されていない場合、**今が保存の好機**です",
+	);
+	guidance.push(
+		"- compaction 後にコンテキストから消失するリスクがあります。永続化が必要な情報は memory/ に Write してください",
+	);
+	guidance.push(
+		"- 対象例: アーキテクチャ決定、スコープ変更、試して失敗したアプローチ、ユーザーのフィードバック",
+	);
+}
+
 // Compaction count warning
-if (compactionCounter.count >= 3) {
+if (compactionCounter.count >= 4) {
 	guidance.push("");
 	guidance.push(
 		`### ⚠ Session Health Warning: ${compactionCounter.count} 回目の圧縮です`,
 	);
-	guidance.push("- 3回以上の圧縮はコンテキスト品質の劣化リスクが高い");
+	guidance.push(
+		"- Opus 4.6 compaction 品質は 84% だが、4回以上の圧縮はコンテキスト品質の劣化リスクが高い",
+	);
 	guidance.push(
 		"- /checkpoint で状態を保存し、新しいセッションへの移行を強く推奨",
 	);

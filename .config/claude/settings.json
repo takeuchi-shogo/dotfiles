@@ -513,8 +513,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] PostCompact: context compacted\" >> /tmp/claude-compact.log",
-            "timeout": 5
+            "command": "node $HOME/.claude/scripts/runtime/post-compact-verify.js",
+            "timeout": 10
           }
         ]
       }
