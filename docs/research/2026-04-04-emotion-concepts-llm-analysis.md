@@ -53,9 +53,17 @@ status: integrated
 
 ## Integration Decisions
 
+### Wave 1（反応的対策 — 完了）
 全7項目を統合（ユーザー選択: 全部）。
 
+### Wave 2（予防的ベースライン — 完了）
+画像参考: Bootoshi の CLAUDE.md アプローチ（Trust-based framing）。
+論文の calm steering 知見を CLAUDE.md の言語トーンで予防的に実装。
+Bootoshi 版の過剰ポジティブ（sycophancy リスク）を回避したバランス版。
+
 ## Plan (実行済み)
+
+### Wave 1: 反応的対策
 
 | # | タスク | 対象ファイル | 状態 |
 |---|--------|-------------|------|
@@ -64,3 +72,10 @@ status: integrated
 | T3 | Sycophancy 因果メカニズム + 感情伝播 + 透明性原則 | `references/agency-safety-framework.md` | Done |
 | T4 | lessons-learned エントリ更新 | `references/lessons-learned.md` | Done |
 | T5 | 分析レポート保存 | `docs/research/` | Done |
+
+### Wave 2: 予防的ベースライン
+
+| # | タスク | 対象ファイル | 状態 |
+|---|--------|-------------|------|
+| T6 | Foundation セクション追加（信頼ベース・恐怖駆動否定・平静トーン） | `CLAUDE.md` | Done |
+| T7 | core_principles に「ミスは許される、不正直は許されない」+ desperation 因果注記 | `CLAUDE.md` | Done |
