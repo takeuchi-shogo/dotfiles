@@ -30,13 +30,13 @@ DEFAULT_DAYS = 30
 STALE_HOOK_FIRE_COUNT = 0  # 期間内に 0 回発火で陳腐化候補
 LOW_ADOPTION_RATE = 0.10  # advisory 採用率 10% 未満で警告
 
-# hook-telemetry.jsonl のパス
-TELEMETRY_FILENAME = "hook-telemetry.jsonl"
+# telemetry canonical stream (session-learner が flush する先)
+TELEMETRY_FILENAME = "telemetry.jsonl"
 
 
 def get_telemetry_path() -> Path:
-    """hook-telemetry.jsonl のパスを返す."""
-    return get_data_dir() / "logs" / TELEMETRY_FILENAME
+    """learnings/telemetry.jsonl のパスを返す."""
+    return get_data_dir() / "learnings" / TELEMETRY_FILENAME
 
 
 def load_telemetry(days: int) -> list[dict]:
@@ -202,8 +202,10 @@ def generate_report(
 
     if not hook_analysis:
         lines.append("## No telemetry data found")
-        lines.append("  hook-telemetry.jsonl が未作成または空です。")
-        lines.append("  hooks が emit_telemetry() を呼ぶと データが蓄積されます。")
+        lines.append("  learnings/telemetry.jsonl が未作成または空です。")
+        lines.append(
+            "  session-learner がセッション終了時に telemetry を flush します。"
+        )
         lines.append("")
 
     if ref_usage:
@@ -212,59 +214,6 @@ def generate_report(
             lines.append(f"  - {r['reference']}: {r['access_count']} accesses")
 
     return "\n".join(lines)
-
-
-def emit_telemetry_entry(
-    hook_name: str,
-    fired: bool = True,
-    action_taken: bool = False,
-    entry_type: str = "hook_fire",
-    extra: dict | None = None,
-) -> None:
-    """hook テレメトリエントリを hook-telemetry.jsonl に追記.
-
-    他の hook スクリプトからインポートして使う共有関数。
-    """
-    import json
-    from datetime import datetime, timezone
-
-    path = get_telemetry_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    entry = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "type": entry_type,
-        "hook_name": hook_name,
-        "fired": fired,
-        "action_taken": action_taken,
-        **(extra or {}),
-    }
-
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-
-
-def rotate_telemetry(days: int = 30) -> int:
-    """指定日数より古いエントリを除去. 除去件数を返す."""
-    path = get_telemetry_path()
-    if not path.exists():
-        return 0
-
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-    cutoff_str = cutoff.isoformat()
-
-    entries = read_jsonl(path)
-    kept = [e for e in entries if e.get("timestamp", "") >= cutoff_str]
-    removed = len(entries) - len(kept)
-
-    if removed > 0:
-        import json
-
-        with open(path, "w", encoding="utf-8") as f:
-            for entry in kept:
-                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-
-    return removed
 
 
 # メモリファイルの重要度ウェイト（type フィールドに対応）
@@ -527,21 +476,11 @@ def main() -> None:
         help="Analysis period in days",
     )
     parser.add_argument(
-        "--rotate",
-        action="store_true",
-        help="Rotate old telemetry entries",
-    )
-    parser.add_argument(
         "--memory",
         action="store_true",
         help="Analyze memory file staleness",
     )
     args = parser.parse_args()
-
-    if args.rotate:
-        removed = rotate_telemetry(args.days)
-        print(f"[STALENESS] Rotated {removed} entries older than {args.days} days.")
-        return
 
     if args.memory:
         # ~/.claude/projects/*/memory/MEMORY.md を全て検索して分析

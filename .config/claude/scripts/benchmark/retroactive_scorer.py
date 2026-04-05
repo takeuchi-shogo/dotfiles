@@ -53,13 +53,17 @@ def classify_signal(score: float, config: dict) -> str:
 
 
 def load_usage_data(data_dir: Path, skill_filter: str | None) -> list[dict]:
-    """skill-usage.jsonl から対象スキルの実行記録を取得。"""
-    usage_file = data_dir / "metrics" / "skill-usage.jsonl"
-    if not usage_file.exists():
+    """skill-executions.jsonl から未スコアリングの実行記録を取得。"""
+    exec_file = data_dir / "learnings" / "skill-executions.jsonl"
+    if not exec_file.exists():
         return []
-    entries = read_jsonl(usage_file)
+    entries = [e for e in read_jsonl(exec_file) if e.get("scored_by") != "retroactive"]
     if skill_filter:
-        entries = [e for e in entries if e.get("skill") == skill_filter]
+        entries = [
+            e
+            for e in entries
+            if e.get("skill") == skill_filter or e.get("skill_name") == skill_filter
+        ]
     return entries
 
 

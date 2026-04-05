@@ -118,6 +118,23 @@ def main() -> None:
                 "pattern": matched_texts,
             },
         )
+
+        # telemetry stream にも emit（staleness-detector / qa-tuning-analyzer が参照）
+        try:
+            from session_events import emit_event
+
+            emit_event(
+                "telemetry",
+                {
+                    "type": "rationalization_detected",
+                    "hook_name": "rationalization-scanner",
+                    "action_taken": True,
+                    "pattern": matched_texts,
+                },
+            )
+        except Exception as exc:
+            emit("error", {"message": f"telemetry emit failed: {exc}"})
+
         output_context("PostToolUse", warning)
         return
 
