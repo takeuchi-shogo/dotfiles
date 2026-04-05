@@ -136,11 +136,6 @@
     }
   },
   "lsp": {
-    "gopls": {
-      "binary": {
-        "path": "/Users/takeuchishougo/go/bin/gopls"
-      }
-    },
     "solargraph": {
       "initialization_options": {
         "diagnostics": true,
