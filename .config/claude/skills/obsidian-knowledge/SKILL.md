@@ -1,6 +1,6 @@
 ---
 name: obsidian-knowledge
-description: "Use when searching, organizing, or linking knowledge in your Obsidian Vault — note search, bulk tag changes, link discovery, permanent note generation from literature notes, or MOC auto-generation. Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート'. Do NOT use for: コンテンツ生成 (use obsidian-content), Vault 初期セットアップ (use obsidian-vault-setup)."
+description: "Use when searching, organizing, or linking knowledge in your Obsidian Vault — note search, bulk tag changes, link discovery, permanent note generation from literature notes, or MOC auto-generation. Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート'. Do NOT use for: コンテンツ生成 (use obsidian-content), Vault 初期セットアップ (use obsidian-vault-setup). Markdown syntax/properties/callouts → defer to obsidian plugin skills. CLI commands → defer to obsidian:obsidian-cli."
 metadata:
   pattern: tool-wrapper
 ---
