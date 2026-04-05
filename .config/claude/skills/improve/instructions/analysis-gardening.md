@@ -11,6 +11,7 @@
 | **agents**     | `metrics/session-metrics.jsonl` のエージェント効率分析               |
 | **skills**     | `learnings/skill-executions.jsonl` + `learnings/skill-benchmarks.jsonl` からスキル健全性分析（トレンド/閾値判定/失敗パターン/クロスデータ相関） |
 | **environment** | エラー・品質データを環境設計の観点から横断分析（4つの診断質問）      |
+| **friction**    | `learnings/friction-events.jsonl` の摩擦パターン分析。top friction class と action surface を特定し、environment 分析の優先順位付けに使う |
 
 各エージェントへのプロンプトには以下を含める:
 
@@ -47,6 +48,7 @@
 
 以下の各質問に対して、~/.claude/agent-memory/ のデータを横断的に分析し、
 具体的な証拠（ファイル名、エラーメッセージ、発生回数）とともに回答してください。
+特に `learnings/friction-events.jsonl` は Q2（フィードバックループ）と Q4（機械的制約）の主要証拠源です。
 
 ### Q1: アクセス不能な情報
 エージェントが必要としているが、現在アクセスできない情報は何か？

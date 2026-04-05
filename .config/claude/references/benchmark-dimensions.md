@@ -25,6 +25,14 @@
 | Improvement Velocity | `experiments/experiment-registry.jsonl` (CQS) |
 | Review Acceptance | `learnings/review-feedback.jsonl` |
 
+### Supporting Indicators（6D overall に含まない補助指標）
+
+| Indicator | Source |
+|-----------|--------|
+| Telemetry Completeness | `learnings/telemetry.jsonl` — 必須 type の観測率 |
+| Friction Visibility | `learnings/friction-events.jsonl` — 摩擦パターン検出数 |
+| Tier Alignment | `metrics/skill-tier-shadow.jsonl` — 宣言 tier と使用実態の一致率 |
+
 ## スコアリング
 
 全次元は 0.0-1.0 に正規化される。Overall は6次元の平均値。

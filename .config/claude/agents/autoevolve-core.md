@@ -61,6 +61,7 @@ Agent ツールで `meta-analyzer` を起動する:
 ```
 skills/improve/references/coverage-matrix.md に定義された全必須問いに回答してください。
 データディレクトリ: ~/.claude/agent-memory/
+追加データソース: learnings/friction-events.jsonl（摩擦イベント — environment 分析の routing signal として使用）
 各問いに ANSWERED / INSUFFICIENT_DATA / NOT_APPLICABLE で回答し、
 ANSWERED の場合は具体的な evidence（件数, session_id, ファイル名）を含めてください。
 insights/analysis-YYYY-MM-DD.md と改善候補リスト（evidence_chain 付き）を出力してください。

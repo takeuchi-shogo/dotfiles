@@ -20,7 +20,7 @@ for f in errors.jsonl quality.jsonl patterns.jsonl; do
   fi
 done
 
-for f in skill-executions.jsonl skill-benchmarks.jsonl; do
+for f in skill-executions.jsonl skill-benchmarks.jsonl friction-events.jsonl; do
   path="$HOME/.claude/agent-memory/learnings/$f"
   if [ -f "$path" ]; then
     count=$(wc -l < "$path" | tr -d ' ')
