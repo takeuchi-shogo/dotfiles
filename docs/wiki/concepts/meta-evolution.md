@@ -1,8 +1,8 @@
 ---
 title: メタ進化
 topics: [ml-rl]
-sources: [2026-03-18-evox-meta-evolution-analysis.md, 2026-03-26-hyperagents-analysis.md, 2026-03-29-hyperagents-dgmh-analysis.md]
-updated: 2026-04-04
+sources: [2026-03-18-evox-meta-evolution-analysis.md, 2026-03-26-hyperagents-analysis.md, 2026-03-29-hyperagents-dgmh-analysis.md, 2026-04-06-asi-evolve-analysis.md]
+updated: 2026-04-06
 ---
 
 # メタ進化
@@ -23,10 +23,12 @@ updated: 2026-04-04
 - **複利的自己改善**: 論文レビュー+ロボティクスで学んだ改善戦略が数学採点でも有効（0.0→0.710への向上）
 - **バリデーション閾値**: デプロイ前に新戦略を検証し、閾値超の修正のみを採用する安全機構
 - **reward tampering対策**: 改善目標の動的自己調整は意図的に禁止し、改善速度の急加速を警告する
+- **認知基盤 + 専門分析器**: ASI-Evolveは先行知識のembedding索引化（認知基盤）と生ログからの意思決定レポート蒸留（分析器）を組み合わせ、認知基盤除去でコールドスタート遅延、分析器除去で長期プラトーを実証。両コンポーネントの相補性を示す
+- **UCB1サンプリングによる探索/活用バランス**: 過去の成功パターンDB（上位50ノード）からUCB1でサンプリングし、未探索領域にも適切にリソースを配分。MAP-Elitesとの比較で17 vs 79ステップの効率差
 
 ## 実践的な適用
 
-このリポジトリのAutoEvolve 4層ループ（Session→Daily→BG→/improve）がメタ進化の実装に最も近い。`stagnation-detector.py`がEvoXの停滞検知を実装し、`scripts/policy/`内のerror-to-codex.pyがエラー反応型の戦略切替を担う。`learnings/*.jsonl`が戦略有効性の記録（what-happenedレベル）を保持し、`improve-policy.md`の26ルールがバリデーション閾値と改善速度の安全制約を定義する。`experiment_tracker`にtransfer_domainフィールドを追加することで転移効率の定量追跡が可能になる。
+このリポジトリのAutoEvolve 4層ループ（Session→Daily→BG→/improve）がメタ進化の実装に最も近い。`stagnation-detector.py`がEvoXの停滞検知を実装し、`scripts/policy/`内のerror-to-codex.pyがエラー反応型の戦略切替を担う。`learnings/*.jsonl`が戦略有効性の記録（what-happenedレベル）を保持し、`improve-policy.md`の26ルールがバリデーション閾値と改善速度の安全制約を定義する。`experiment_tracker`にtransfer_domainフィールドを追加することで転移効率の定量追跡が可能になる。ASI-Evolveの認知基盤パターン（先行知識のtopic-taggedインデックス化→各ラウンドでの自動注入）は`knowledge-index.yaml`+wiki概念注入として統合予定（`docs/plans/2026-04-06-asi-evolve-integration.md`）。UCB1サンプリングはIdeation-Debateの探索/活用バランス改善として適用予定。
 
 ## 関連概念
 
@@ -39,3 +41,4 @@ updated: 2026-04-04
 - [EvoX Meta-Evolution](../../research/2026-03-18-evox-meta-evolution-analysis.md) — 解と探索戦略の二重ループ共進化で~200タスクの数学・アルゴリズム最適化を上回る性能を実証
 - [Hyperagents Analysis](../../research/2026-03-26-hyperagents-analysis.md) — Task Agent + Meta Agentの統合とメタ認知的自己修正によるドメイン横断転移の実証
 - [Hyperagents DGM-H Analysis](../../research/2026-03-29-hyperagents-dgmh-analysis.md) — DGM-Hのアーカイブベース探索・永続メモリ・複利的自己改善の詳細分析
+- [ASI-Evolve Analysis](../../research/2026-04-06-asi-evolve-analysis.md) — 認知基盤（先行知識embedding索引）+ 専門分析器（生ログ→意思決定レポート蒸留）+ UCB1サンプリングでAIスタック全体の自律的改善を実証

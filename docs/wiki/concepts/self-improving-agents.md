@@ -1,8 +1,8 @@
 ---
 title: 自己改善エージェント
 topics: [agent, ml-rl]
-sources: [2026-03-18-autocontext-recursive-improvement-analysis.md, 2026-03-19-compounding-agent-analysis.md, 2026-03-30-self-evolving-claude-code-analysis.md, 2026-03-26-hyperagents-analysis.md]
-updated: 2026-04-04
+sources: [2026-03-18-autocontext-recursive-improvement-analysis.md, 2026-03-19-compounding-agent-analysis.md, 2026-03-30-self-evolving-claude-code-analysis.md, 2026-03-26-hyperagents-analysis.md, 2026-04-06-asi-evolve-analysis.md]
+updated: 2026-04-06
 ---
 
 # 自己改善エージェント
@@ -22,10 +22,12 @@ updated: 2026-04-04
 - **4 層自己進化スタック**: Cognitive core（CLAUDE.md）→ Specialized agents → Path-scoped rules → Evolution engine（corrections.jsonl → learned-rules.md → 自動昇格）
 - **改善速度の急加速警告**: Hyperagents が示す加速的改善カーブは reward tampering リスクを伴う。improve-policy に速度監視ルールが必要
 - **多次元ルブリック評価**: 単一メトリクスは搾取される。複数次元（accuracy / clarity / actionability）で独立評価し、最弱次元を狙い撃ち改善する
+- **認知基盤による初期加速**: ASI-Evolveは先行知識をembedding索引化して各ラウンドに注入。認知基盤除去でコールドスタートが遅延し不安定化するが、最終的には生産的探索に到達（外部知識なしでもコア機構は機能）。初期加速と長期自律性の両立を示す
+- **構造化フィードバック蓄積**: 分析器が生ログ→意思決定レポートを蒸留。分析器除去で長期プラトー — 構造化分析は継続的進化に不可欠。AutoEvolveのmeta-analyzerに相当するが、per-experiment粒度での即時蒸留が鍵
 
 ## 実践的な適用
 
-dotfiles では AutoEvolve 4 層ループ（セッション→日次→BG→`/improve`）が自己改善の主幹機構として実装済みである。`session-learner.py` が playbook を `playbooks/{project}.md` に蓄積し、`autoevolve-core` が Phase 1（発見）→ Phase 2（検証・A/B）→ Phase 3（統合）を回す。`improve-policy.md` の 26 ルールがゲーティング条件を定義し、gaming-detector が Goodhart の法則（メトリクス操作）を検出する。verify: 行付きルールは現在 Gap として認識されており、`lessons-learned.md` への verify フィールド追加が次のアクションである。Hyperagents の Task/Meta 分離は `autoevolve-core` が両役割を統合している現状から明示的分離への移行として課題登録済み。
+dotfiles では AutoEvolve 4 層ループ（セッション→日次→BG→`/improve`）が自己改善の主幹機構として実装済みである。`session-learner.py` が playbook を `playbooks/{project}.md` に蓄積し、`autoevolve-core` が Phase 1（発見）→ Phase 2（検証・A/B）→ Phase 3（統合）を回す。`improve-policy.md` の 26 ルールがゲーティング条件を定義し、gaming-detector が Goodhart の法則（メトリクス操作）を検出する。verify: 行付きルールは現在 Gap として認識されており、`lessons-learned.md` への verify フィールド追加が次のアクションである。Hyperagents の Task/Meta 分離は `autoevolve-core` が両役割を統合している現状から明示的分離への移行として課題登録済み。ASI-Evolve の認知基盤パターン（知識の topic-tagged インデックス化→各ラウンドでの自動注入）と UCB1 探索/活用バランスは `docs/plans/2026-04-06-asi-evolve-integration.md` で統合予定。
 
 ## 関連概念
 
@@ -39,3 +41,4 @@ dotfiles では AutoEvolve 4 層ループ（セッション→日次→BG→`/im
 - [Compounding Agent Analysis](../../research/2026-03-19-compounding-agent-analysis.md) — 4 層スタック（Skills/Orchestration/Scoring/Optimizer）とスキルコントラクトによる自己改善設計
 - [Self-Evolving Claude Code Analysis](../../research/2026-03-30-self-evolving-claude-code-analysis.md) — verify: 行付きルール・core-invariants・corrections.jsonl による 4 層自己進化実装ガイド
 - [Hyperagents Analysis](../../research/2026-03-26-hyperagents-analysis.md) — DGM-H による Task/Meta Agent 分離とメタレベル改善の 60〜80% ドメイン間転移
+- [ASI-Evolve Analysis](../../research/2026-04-06-asi-evolve-analysis.md) — 認知基盤+専門分析器+UCB1サンプリングでAIスタック全体（アーキテクチャ・データ・アルゴリズム）の自律的改善を実証
