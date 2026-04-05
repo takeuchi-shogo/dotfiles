@@ -162,6 +162,69 @@ def compute_review_acceptance() -> dict:
     }
 
 
+def _cutoff_iso(days: int) -> str:
+    from datetime import datetime, timedelta, timezone
+
+    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+
+def compute_telemetry_completeness() -> dict:
+    """必須 telemetry type のうち直近 7 日に観測された種類の割合。
+
+    6D 本体ではない補助指標。telemetry パイプラインの健���性を示す。
+    """
+    data_dir = _get_data_dir()
+    telemetry = _read_jsonl(data_dir / "learnings" / "telemetry.jsonl")
+    recent = [e for e in telemetry if e.get("timestamp", "") >= _cutoff_iso(7)]
+    expected_types = {
+        "mcp_tool_usage",
+        "subagent_complete",
+        "rationalization_detected",
+        "friction_event",
+    }
+    observed = {e.get("type", "") for e in recent} & expected_types
+    completeness = len(observed) / len(expected_types) if expected_types else 0.0
+    return {
+        "score": round(completeness, 2),
+        "observed": sorted(observed),
+        "expected": sorted(expected_types),
+        "missing": sorted(expected_types - observed),
+    }
+
+
+def compute_friction_visibility() -> dict:
+    """直近 30 日�� friction event 検出数。0 なら検出��盤が未稼働。"""
+    data_dir = _get_data_dir()
+    friction = _read_jsonl(data_dir / "learnings" / "friction-events.jsonl")
+    recent = [e for e in friction if e.get("timestamp", "") >= _cutoff_iso(30)]
+    from collections import Counter
+
+    class_counts = Counter(e.get("friction_class", "") for e in recent)
+    total = len(recent)
+    score = min(1.0, total / 10.0)  # 10+ events = 1.0
+    return {
+        "score": round(score, 2),
+        "total_events": total,
+        "by_class": dict(class_counts.most_common(5)),
+    }
+
+
+def compute_tier_alignment() -> dict:
+    """skill-tier-shadow の aligned 率。"""
+    data_dir = _get_data_dir()
+    shadow = _read_jsonl(data_dir / "metrics" / "skill-tier-shadow.jsonl")
+    if not shadow:
+        return {"score": 0.0, "status": "no_data"}
+    aligned = sum(1 for s in shadow if s.get("shadow_status") == "aligned")
+    total = len(shadow)
+    score = aligned / total if total else 0.0
+    return {
+        "score": round(score, 2),
+        "aligned": aligned,
+        "total": total,
+    }
+
+
 def compute_all() -> dict:
     """全6次元のベンチマークを計算する。"""
     dimensions = {
@@ -174,9 +237,17 @@ def compute_all() -> dict:
     }
     scores = [d["score"] for d in dimensions.values()]
     overall = sum(scores) / len(scores) if scores else 0.0
+    # 補助指標 — 6D overall には含めない (dashboard 表示用)
+    supporting = {
+        "telemetry_completeness": compute_telemetry_completeness(),
+        "friction_visibility": compute_friction_visibility(),
+        "tier_alignment": compute_tier_alignment(),
+    }
+
     return {
         "overall": round(overall, 2),
         "dimensions": dimensions,
+        "supporting_indicators": supporting,
     }
 
 
