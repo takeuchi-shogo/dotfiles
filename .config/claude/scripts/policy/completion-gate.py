@@ -719,7 +719,7 @@ def _check_session_focus() -> str | None:
 
 _FRONTEND_EXTENSIONS = {".tsx", ".jsx", ".vue", ".svelte", ".css", ".scss", ".less"}
 
-# UI verification marker — set by webapp-testing / Playwright hooks
+# UI verification marker — set by webapp-testing / agent-browser hooks
 _UI_VERIFIED_MARKER = os.path.join(
     os.environ.get(
         "CLAUDE_SESSION_STATE_DIR",
@@ -732,7 +732,7 @@ _UI_VERIFIED_MARKER = os.path.join(
 def _check_ui_verification() -> str | None:
     """Check if frontend changes were verified via browser (advisory).
 
-    Detects frontend file changes and checks if agent-browser or Playwright
+    Detects frontend file changes and checks if agent-browser
     was used during the session. If not, suggests UI self-verification.
     Ref: Neil Kakkar — "a change isn't done until the agent has verified the UI"
     """
@@ -772,7 +772,7 @@ def _check_ui_verification() -> str | None:
     extra = f" 他{len(frontend_changes) - 3}件" if len(frontend_changes) > 3 else ""
     return (
         f"[UI Verification] フロントエンド変更を検出: {files_str}{extra}。"
-        "`/webapp-testing` または Playwright MCP でUI検証を推奨します。"
+        "`/webapp-testing` (agent-browser CLI) でUI検証を推奨します。"
     )
 
 

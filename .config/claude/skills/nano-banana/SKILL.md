@@ -3,7 +3,7 @@ name: nano-banana
 description: >
   nano-banana CLI で AI 画像生成。インフォグラフィック、PR画像、バナー、透過アセット作成に使用。Gemini 3.1 Flash ベース。
   Triggers: '画像生成', 'nano-banana', 'インフォグラフィック', 'バナー作成', 'PR画像', 'AI image', '透過アセット'.
-  Do NOT use for: スクリーンショット取得（use Playwright MCP）、PR への画像埋め込み（use /upload-image-to-pr）、UI デザイン（use /frontend-design）。
+  Do NOT use for: スクリーンショット取得（use agent-browser CLI）、PR への画像埋め込み（use /upload-image-to-pr）、UI デザイン（use /frontend-design）。
 allowed-tools: Bash, Read, Write, Glob
 user-invocable: true
 disable-model-invocation: true

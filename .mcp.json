@@ -4,11 +4,7 @@
 			"command": "npx",
 			"args": ["-y", "@upstash/context7-mcp@2.1.4"]
 		},
-		"playwright": {
-			"command": "npx",
-			"args": ["-y", "@playwright/mcp@0.0.68"]
-		},
-		"alphaxiv": {
+"alphaxiv": {
 			"type": "sse",
 			"url": "https://api.alphaxiv.org/mcp/v1"
 		},

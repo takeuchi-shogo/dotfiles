@@ -1,9 +1,9 @@
 ---
 name: upload-image-to-pr
 description: >
-  画像を GitHub PR に埋め込む。Playwright MCP または gh CLI でコメント経由アップロードし、永続 URL を PR 本文に挿入。
+  画像を GitHub PR に埋め込む。agent-browser CLI または gh CLI でコメント経由アップロードし、永続 URL を PR 本文に挿入。
   Triggers: 'PR に画像', '画像アップロード', 'スクショを PR に', 'embed image in PR', 'PR image'.
-  Do NOT use for: 画像生成（use /nano-banana）、スクリーンショット取得のみ（use Playwright MCP directly）。
+  Do NOT use for: 画像生成（use /nano-banana）、スクリーンショット取得のみ（use agent-browser CLI）。
 allowed-tools: Bash, Read, Write, Edit
 user-invocable: true
 disable-model-invocation: true
@@ -40,23 +40,18 @@ gh pr comment $PR_NUM --body "![screenshot]($(cat image.png | base64))"
 # コメント本文に画像をドラッグ&ドロップした際の動作を再現
 ```
 
-### 代替: Playwright MCP 経由
+### 代替: agent-browser CLI 経由
 
-Playwright MCP が利用可能な場合、ブラウザ操作で画像をアップロードできる:
+agent-browser CLI でブラウザ操作して画像をアップロードできる:
 
-1. `browser_navigate` で PR ページを開く
-2. コメント欄のファイルアップロードエリアを特定
-3. `browser_file_upload` で画像をアップロード
-4. GitHub が発行する `https://github.com/user-attachments/assets/...` URL を取得
-5. コメントを投稿せずに URL だけ使用
-
-```
-# Playwright MCP 使用例
-1. browser_navigate → https://github.com/{owner}/{repo}/pull/{num}
-2. browser_click → コメント入力欄
-3. browser_file_upload → 画像ファイルを選択
-4. Wait for URL → user-attachments URL を抽出
-5. browser_snapshot → アップロード結果確認
+```bash
+agent-browser open https://github.com/{owner}/{repo}/pull/{num}
+agent-browser snapshot -i -c
+agent-browser click @comment-input-ref
+agent-browser file-upload @upload-area /path/to/image.png
+# GitHub が発行する user-attachments URL を取得
+agent-browser snapshot -c
+agent-browser close
 ```
 
 ## Method 2: PR 本文への挿入
@@ -104,5 +99,5 @@ gh pr edit $PR_NUM --body "$NEW_BODY"
 ## Limitations
 
 - GitHub の画像アップロードはブラウザ経由の仕組みに依存
-- Playwright MCP がない場合、手動で画像 URL を取得する必要がある場合あり
+- agent-browser CLI がない場合、手動で画像 URL を取得する必要がある場合あり
 - 大きな画像（10MB超）はアップロードに失敗する可能性

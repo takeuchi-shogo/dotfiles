@@ -15,11 +15,12 @@
 - **トークンコスト**: 低（クエリ単位）
 - **利用シーン**: 外部ライブラリの API 確認、バージョン固有の仕様調査
 
-### Browser: playwright
+### Browser: agent-browser CLI（MCP 不要）
 
-- **用途**: ブラウザ操作、UI テスト、スクリーンショット取得
-- **トークンコスト**: 中〜高（DOM スナップショットが大きい）
-- **利用シーン**: E2E テスト、UI バグ再現、ビジュアルリグレッション
+- **用途**: ブラウザ操作、UI テスト、スクリーンショット取得、ネットワーク分析
+- **トークンコスト**: 低（`snapshot -i -c` で ~28K tokens、MCP Tax なし）
+- **利用シーン**: E2E テスト、UI バグ再現、Diff による状態変化検出、ネットワーク監視
+- **備考**: Bash 経由で CLI 実行。MCP サーバー枠を消費しない
 
 ### Search: brave-search
 
@@ -43,7 +44,7 @@
 
 | プロジェクト種別 | 推奨サーバー | 理由 |
 |-----------------|-------------|------|
-| Web App | context7, playwright, brave-search | ドキュメント参照 + UI テスト + 調査 |
+| Web App | context7, brave-search + agent-browser CLI | ドキュメント参照 + 調査 + UI テスト（CLI、MCP 枠不要） |
 | CLI Tool | context7, brave-search | ドキュメント参照 + 調査 |
 | Library | context7, brave-search | API 互換性確認 + 類似ライブラリ調査 |
 | Mobile | context7, figma | ドキュメント参照 + デザイン連携 |

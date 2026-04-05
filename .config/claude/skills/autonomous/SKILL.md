@@ -177,7 +177,7 @@ cat .autonomous/{task-name}/sessions/session-*.md | tail -50
 | 両モデル PASS | Deliver フェーズへ進行 |
 | 片方 PASS + 片方 NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
 | 両モデル NEEDS_FIX (3R後) | Graduated Completion (Partial) + handback report |
-| UI 変更あり | Playwright MCP でスクリーンショット取得 → Opus Evaluator に視覚評価を追加 |
+| UI 変更あり | agent-browser CLI でスクリーンショット取得 → Opus Evaluator に視覚評価を追加 |
 
 ## Step 4.3: Pre-Merge Conflict Detection（並列実行時のみ）
 

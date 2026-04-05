@@ -1,52 +1,56 @@
 # E2E テストツール選定ガイド
 
-Ref: Harness Engineering Best Practices 2026 (逆瀬川)
+## 推奨ツール: agent-browser CLI
+
+Rust ネイティブ実装。アクセシビリティツリー経由の ref 方式で堅牢なセレクタを提供。
+
+```bash
+npx agent-browser             # コールドスタートなし
+```
 
 ## トークン効率比較
 
-| ツール | 同一タスクのトークン消費 | 効率倍率 |
-|--------|------------------------|----------|
-| Playwright MCP | ~114,000 tokens | 1x (基準) |
-| Playwright CLI | ~27,000 tokens | **4x** |
-| agent-browser | ~5,500 chars | **5.7x** |
+| ツール | 同一タスクのトークン消費 | 備考 |
+|--------|------------------------|------|
+| Playwright MCP | ~114,000 tokens | MCP Tax が大きい（廃止） |
+| Playwright CLI | ~26,300 tokens | 基準 |
+| agent-browser `-i` | ~33,500 tokens | interactive のみ |
+| agent-browser `-i -c` | ~28,000 tokens | **推奨。Playwright CLI 比 +6%** |
+
+`-c`（compact）オプションで空の構造要素を除去し、トークン消費を大幅に削減。
 
 ## 用途別推奨
 
 | 用途 | 推奨ツール | 理由 |
 |------|-----------|------|
-| セルフテストループ | Playwright CLI or agent-browser | トークン効率が決定的に重要 |
-| テストスイート生成 | Playwright MCP (サブエージェント) | Planner/Generator/Healer 構成 |
-| 探索的テスト | agent-browser | ref 方式でセレクタの壊れにくさ |
-| 長時間セッション | Playwright CLI | MCP Tax の累積を回避 |
+| UI テスト・バグ再現 | agent-browser | snapshot-first + ref 方式で堅牢 |
+| 状態変化検出 | agent-browser | `diff snapshot` で変更を可視化 |
+| ネットワーク分析 | agent-browser | `network requests --filter` でパターンマッチ |
+| モバイル検証 | agent-browser | `-p ios` で iOS シミュレータ対応 |
+| テストスイート生成 | agent-browser + test-engineer | snapshot から テストケースを生成 |
+| CI 実行 | 生成済みテストファイル | MCP/CLI 不要 |
 
-## Playwright CLI の使い方
+## 主要機能
 
-MCP ツールではなく Bash 経由で Playwright を直接操作:
-```bash
-npx playwright test           # テスト実行
-npx playwright codegen <url>  # テストコード生成
-npx playwright show-trace     # トレース表示
-```
-
-## agent-browser (Vercel Labs)
-
-```bash
-npx agent-browser             # Rust CLI、コールドスタートなし
-```
-- ref 方式でセレクタを参照（CSS/XPath より堅牢）
-- 2026年1月リリース、まだ荒い部分あり
+| 機能 | コマンド例 |
+|------|-----------|
+| スナップショット | `agent-browser snapshot -i -c` |
+| Diff | `agent-browser diff snapshot --baseline /tmp/before.txt` |
+| ネットワーク監視 | `agent-browser network requests --filter <pattern>` |
+| HAR エクスポート | `agent-browser network har /tmp/trace.har` |
+| iOS シミュレータ | `agent-browser open <url> -p ios` |
+| スクリーンショット | `agent-browser screenshot /tmp/shot.png --full` |
 
 ## 判断基準
 
-- **MCP Tool Search でオンデマンドロード**している場合は MCP Tax 緩和済み
-- **長時間セッション**（コンパクション2回以上）なら CLI 推奨
-- **テスト生成**目的なら MCP の Planner/Generator が有利
-- **CI 実行**には生成済みテストファイルを直接実行（MCP 不要）
+- **長時間セッション**（コンパクション 2 回以上）→ CLI 推奨（MCP Tax 回避）
+- **CI 実行** → 生成済みテストファイルを直接実行
+- **複雑なバッチ自動化** → agent-browser の `--session` で並列セッション
 
 ## アクセシビリティツリー = ユニバーサルインターフェース
 
-全てのE2Eツールの共通原則: アクセシビリティツリー経由でUI操作。
-- Web: Playwright / agent-browser
+全ての E2E ツールの共通原則: アクセシビリティツリー経由で UI 操作。
+- Web: agent-browser
 - Mobile: mobile-mcp / XcodeBuild MCP
 - Desktop: Terminator (Windows) / macos-ui-automation-mcp (macOS)
 - CLI: stdout/stderr (bats-core / pexpect)

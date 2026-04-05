@@ -162,7 +162,7 @@ symlink 管理まで変えた場合は `task symlink` も実行する。
 ### MCP デフォルト
 
 - global default は保守的にし、常時有効は `context7` を基本とする
-- `playwright` や `deepwiki` は trusted repo や task 固有の必要があるときに有効化する
+- `deepwiki` は trusted repo や task 固有の必要があるときに有効化する
 - global で全 project MCP を自動有効化しない
 
 ---
@@ -450,7 +450,7 @@ Agents は**専門実行コンテキスト**。Skills が知識を提供し、Ag
 |-------------|------|
 | `doc-gardener` | ドキュメント鮮度 |
 | `golden-cleanup` | GP 違反スキャン |
-| `ui-observer` | Playwright UI 観察 |
+| `ui-observer` | agent-browser UI 観察 |
 
 ### Product & Design Review (2)
 
@@ -731,7 +731,7 @@ flowchart TB
 |---------|------|
 | `context7` | ライブラリの最新ドキュメント・コード例の取得 |
 | `brave-search` | Brave Web/Local 検索 |
-| `playwright` | Web アプリのブラウザ操作・スクリーンショット・テスト |
+| `agent-browser` | Web アプリのブラウザ操作・スクリーンショット・テスト（CLI、MCP 枠不要） |
 
 ---
 

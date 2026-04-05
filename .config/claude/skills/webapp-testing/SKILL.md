@@ -4,7 +4,7 @@ description: >
   Toolkit for interacting with and testing local web applications using agent-browser CLI.
   Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
   Triggers: 'ブラウザテスト', 'UIテスト', 'webapp test', 'browser test', 'スクリーンショット確認', 'UI動作確認'.
-  Do NOT use for: ユニットテスト（use test-engineer agent）、E2Eテストフレームワーク設定（use Playwright MCP directly）、API テスト（use Bash with curl）。
+  Do NOT use for: ユニットテスト（use test-engineer agent）、API テスト（use Bash with curl/Hurl）。
 license: Complete terms in LICENSE.txt
 metadata:
   pattern: tool-wrapper
@@ -167,21 +167,20 @@ agent-browser --session test2 close
 - **file:// プロトコル制限**: file:// URL では CORS やいくつかの Web API が動作しない。localStorage 等のテストは http:// で
 - **タイムアウト**: agent-browser のデフォルトタイムアウトは短い。SPA の初期ロードが遅い場合は明示的に wait を入れる
 
-## Fallback: Python Playwright
+## Advanced: Network Analysis
 
-For complex batch automation or CI scenarios where agent-browser is insufficient, fall back to Python Playwright scripts:
+```bash
+# ネットワークリクエストの監視
+agent-browser network requests --filter "api/"
 
-```python
-from playwright.sync_api import sync_playwright
-
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto('http://localhost:3000')
-    page.wait_for_load_state('networkidle')
-    # ... automation logic
-    browser.close()
+# HAR ファイルでトレース保存
+agent-browser network har /tmp/trace.har
 ```
 
-**Helper scripts** (for server lifecycle management):
-- `scripts/with_server.py --help` — manages server startup/shutdown around automation scripts
+## Advanced: Mobile Simulation
+
+```bash
+# iOS シミュレータでテスト
+agent-browser open http://localhost:3000 -p ios
+agent-browser snapshot -i -c
+```

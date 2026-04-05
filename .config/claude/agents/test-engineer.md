@@ -65,7 +65,7 @@ When invoked:
 
 ### E2E Tests
 - Test critical user workflows end-to-end
-- Use `webapp-testing` skill with Playwright for web apps
+- Use `webapp-testing` skill with agent-browser CLI for web apps
 - Keep E2E tests minimal and focused on high-value scenarios
 
 ## Quality Checklist
