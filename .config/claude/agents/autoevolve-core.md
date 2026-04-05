@@ -51,6 +51,8 @@ mkdir -p "$RUN_DIR"
 3. Phase 2 (Improve) の入力コンテキストに注入:
    - backlog の「次ラン優先テーマ」→ Phase 2 の優先度判定に反映
    - 前回の winning direction → 「継続 or 方向転換」の判断材料に
+4. `~/.claude/agent-memory/proposal-pool.jsonl` を Read（存在しない場合はスキップ）
+   - Phase 2.0 の入力コンテキストとして注入（詳細は Phase 2.0 参照）
 
 ### Phase 1a: Coverage Matrix Analysis → meta-analyzer へ委譲
 
@@ -108,6 +110,17 @@ Phase 1 の分析結果から **3つの改善方向性** を候補生成する:
 - 各候補は 1 文の要約 + 期待効果 + 対象ファイル + リスク
 - 候補は異なるアプローチを取る（例: エラー削減 vs スキル改善 vs ハーネス最適化）
 - Phase 1.0 で読み込んだ backlog・前回 winning direction があれば、継続 or 方向転換を判断材料にする
+
+**成功パターンの注入（proposal-pool サンプリング）**:
+
+`proposal-pool.jsonl` が存在する場合、以下の手順で過去の成功パターンを候補生成のコンテキストに注入する:
+1. Phase 1a の改善対象カテゴリに一致するエントリを抽出
+2. カテゴリ一致がない場合は tags の重複で関連度を計算
+3. 上位3件を「過去の成功事例」として候補生成プロンプトに注入
+4. 注入形式: `{id}, {motivation}, {change_summary}, {outcome_delta}`
+
+これにより候補生成が過去の成功パターンに informed される（ASI-Evolve のデータベース D に相当）。
+ただし、過去パターンの単純な再提案ではなく、新しい文脈での応用を優先する。
 
 Codex (gpt-5.4) に「ROI が最大はどれか」を判定させる:
 
@@ -320,7 +333,31 @@ Phase 2.5 完了後に `runs/YYYY-MM-DD/` へ書き出す:
 | `candidates.md` | 3候補の改善方向性 | Phase 2.0 |
 | `debate-log.md` | Codex の ROI 判定理由 | Phase 2.0 |
 | `winning-direction.md` | 選ばれた方向性と根拠 | Phase 2.0 |
+| `proposals.jsonl` | 提案の構造化記録（1行1提案） | Phase 2.5 後 |
 | `run-summary.json` | メトリクス（提案数, 判定分布, backlog 更新有無） | Phase 2.5 後 |
+
+#### proposals.jsonl スキーマ
+
+Phase 2.5 完了後、各提案を以下の形式で記録する:
+
+```jsonc
+{
+  "id": "IMP-YYYY-MM-DD-NNN",        // Principle Traceability の id と同一
+  "motivation": "なぜこの改善を提案したか",
+  "category": "errors|quality|agents|skills|evaluators|comprehension|review-comments|output-diff",
+  "change_summary": "何を変えたか（1文）",
+  "outcome": "pending",               // 初期値。merge/revert 後に更新（Layer 2 Task 2.1）
+  "outcome_delta": null,              // 初期値。効果測定後に更新（Layer 2 Task 2.1）
+  "analysis_snippet": null,           // 初期値。効果測定後に更新
+  "tags": ["keyword1", "keyword2"],   // motivation + change_summary からキーワード抽出
+  "gate_verdict": "ROBUST|VULNERABLE|FATAL_FLAW",  // Phase 2.5 の判定結果
+  "created_at": "YYYY-MM-DDTHH:MM:SS"
+}
+```
+
+- `outcome` の値: `pending` → `merged` / `reverted` / `declined`
+- `outcome_delta`: 効果測定値（例: `"+2.3pp"`, `"neutral"`, `"-1.1pp"`）。Layer 2 で自動更新
+- FATAL_FLAW 提案も記録する（再提案防止の検索対象として有用）
 
 ### 修正後の自動検証（Improve→Audit 接続）
 
