@@ -39,3 +39,10 @@
 - 判定: Gap 1, Partial 2, Already 6, N/A 0
 - 取り込み: log.md 導入、query サブコマンド追加、Q&A フィードバック強化、概念間矛盾検出確認
 - 変更ファイル: docs/wiki/log.md (new), compile-wiki/SKILL.md, absorb/SKILL.md, knowledge-pipeline.md, analysis report
+
+## [2026-04-05] ingest | Apple SSD — Self-Distillation for Code Generation
+
+- ソース: https://arxiv.org/abs/2604.01193 + https://github.com/apple/ml-ssd
+- 判定: Gap 0, Partial 1, Already 3 (うち強化可能3個), N/A 2
+- 取り込み: 未検証トレース学習指針、VS 不採用候補記録、best-of-n 敗者パターン活用、難易度→探索度軸
+- 変更ファイル: trajectory-learning.md, verbalized-sampling-guide.md, best-of-n-guide.md, analysis report
