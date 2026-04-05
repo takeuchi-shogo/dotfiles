@@ -416,6 +416,46 @@ def _detect_repeated_topics(summary: dict, logger: logging.Logger) -> None:
             )
 
 
+def _extract_friction_events(
+    summary: dict, logger: logging.Logger
+) -> tuple[int, str | None]:
+    """Friction event を friction-events.jsonl に flush する。
+
+    Returns:
+        (friction_event_count, top_friction_class)
+    """
+    friction_events = [
+        e for e in summary.get("_patterns", []) if e.get("type") == "friction_event"
+    ]
+    if not friction_events:
+        return 0, None
+
+    for event in friction_events:
+        append_to_learnings(
+            "friction-events",
+            {
+                "friction_class": event.get("friction_class", "unknown"),
+                "action_surface": event.get("action_surface", "unknown"),
+                "severity": event.get("severity", "info"),
+                "command_family": event.get("command_family", ""),
+                "target_hint": event.get("target_hint", ""),
+                "evidence": event.get("evidence", {}),
+            },
+        )
+
+    from collections import Counter
+
+    class_counts = Counter(e.get("friction_class") for e in friction_events)
+    top_class = class_counts.most_common(1)[0][0] if class_counts else None
+
+    logger.info(
+        "session-learner: flushed %d friction events, top: %s",
+        len(friction_events),
+        top_class,
+    )
+    return len(friction_events), top_class
+
+
 def _compute_skill_version(skill_name: str) -> str:
     """SKILL.md の内容ハッシュ先頭8文字を返す。見つからなければ空文字。"""
     skills_dir = Path.home() / ".claude" / "skills"
@@ -734,6 +774,9 @@ def process_session(cwd: str | None = None) -> None:
                 {k: v for k, v in p.items() if k != "category"},
             )
 
+    # Friction events flush (metrics に含めるため先に実行)
+    friction_count, top_friction = _extract_friction_events(summary, logger)
+
     metrics = {
         "project": summary["project"],
         "cwd": summary["cwd"],
@@ -747,6 +790,8 @@ def process_session(cwd: str | None = None) -> None:
         "avg_importance": summary["avg_importance"],
         "config_version": config_version,
         "is_weight": is_weight,
+        "friction_event_count": friction_count,
+        "top_friction_class": top_friction,
         **proposal_metrics,
         **cfs_data,
     }
@@ -792,17 +837,20 @@ def process_session(cwd: str | None = None) -> None:
         summary["outcome"],
     )
 
-    # Stagnation state cleanup (EvoX Task A)
-    stagnation_state = (
-        Path.home() / ".claude" / "agent-memory" / "stagnation-state.json"
-    )
-    stagnation_state.unlink(missing_ok=True)
+    # Stagnation / friction state cleanup
+    for state_dir in [
+        Path.home() / ".claude" / "agent-memory",
+        Path.home() / ".claude" / "session-state",
+    ]:
+        for state_name in ["stagnation-state.json"]:
+            (state_dir / state_name).unlink(missing_ok=True)
 
     logger.info(
-        "session-learner: flushed %d errors, %d quality, %d patterns",
+        "session-learner: flushed %d errors, %d quality, %d patterns, %d friction",
         summary["errors_count"],
         summary["quality_issues"],
         summary["patterns_found"],
+        friction_count,
     )
 
 

@@ -74,6 +74,46 @@ IGNORE_COMMANDS = [
     "gemini",
 ]
 
+# --- Friction Detection Constants ---
+
+COMMAND_FAMILIES: dict[str, list[str]] = {
+    "validation": [
+        "pytest",
+        "npm test",
+        "cargo test",
+        "go test",
+        "task validate",
+        "npm run lint",
+        "eslint",
+        "biome",
+        "ruff",
+        "mypy",
+        "tsc",
+    ],
+    "build": ["npm run build", "cargo build", "go build", "make", "task build"],
+    "install": ["npm install", "pip install", "cargo add", "go get", "brew install"],
+}
+
+ENVIRONMENT_ERROR_CLASSES: dict[str, re.Pattern] = {
+    "permission_denied": re.compile(
+        r"permission denied|EACCES|Operation not permitted", re.IGNORECASE
+    ),
+    "file_not_found": re.compile(
+        r"No such file or directory|ENOENT|FileNotFoundError", re.IGNORECASE
+    ),
+    "timeout": re.compile(r"timed? ?out|ETIMEDOUT|deadline exceeded", re.IGNORECASE),
+    "rate_limit": re.compile(r"rate limit|429|too many requests", re.IGNORECASE),
+    "port_in_use": re.compile(r"EADDRINUSE|address already in use", re.IGNORECASE),
+}
+
+FRICTION_ACTION_SURFACES = {
+    "validation_ping_pong": "narrow_validation",
+    "environment_blocker": "fix_environment",
+}
+
+VALIDATION_PING_PONG_THRESHOLD = 3
+ENVIRONMENT_BLOCKER_THRESHOLD = 2
+
 
 # --- State Management ---
 
@@ -128,6 +168,23 @@ def _has_error(output: str) -> str | None:
 def _is_info_command(command: str) -> bool:
     cmd_lower = command.strip().lower()
     return any(cmd_lower.startswith(ic) for ic in IGNORE_COMMANDS)
+
+
+def _classify_command_family(command: str) -> str | None:
+    """コマンドをファミリに分類する。"""
+    cmd_lower = command.strip().lower()
+    for family, prefixes in COMMAND_FAMILIES.items():
+        if any(cmd_lower.startswith(p) for p in prefixes):
+            return family
+    return None
+
+
+def _classify_error_class(output: str) -> str | None:
+    """出力から環境エラークラスを分類する。"""
+    for cls, pattern in ENVIRONMENT_ERROR_CLASSES.items():
+        if pattern.search(output):
+            return cls
+    return None
 
 
 def _extract_file_target(command: str) -> str | None:
@@ -190,6 +247,66 @@ def detect_stagnation(state: dict) -> tuple[str, str] | None:
     return None
 
 
+# --- Friction Detection ---
+
+
+def detect_friction(state: dict) -> dict | None:
+    """Friction パターンを検出する。検出時は friction event dict を返す。"""
+    history = state.get("bash_history", [])
+    if len(history) < 2:
+        return None
+
+    # Cooldown: stagnation と共有
+    if time.time() - state.get("last_suggestion_time", 0.0) < 30:
+        return None
+
+    recent = history[-8:]
+
+    # Pattern: validation_ping_pong
+    validation_failures = [
+        h
+        for h in recent
+        if h.get("command_family") == "validation"
+        and h["exit_code_inferred"] == "error"
+    ]
+    if len(validation_failures) >= VALIDATION_PING_PONG_THRESHOLD:
+        commands = [h["command"] for h in validation_failures]
+        return {
+            "friction_class": "validation_ping_pong",
+            "action_surface": "narrow_validation",
+            "severity": "warning",
+            "command_family": "validation",
+            "target_hint": commands[-1][:200],
+            "evidence": {
+                "commands": commands[-5:],
+                "failure_count": len(validation_failures),
+            },
+        }
+
+    # Pattern: environment_blocker
+    recent_env_errors: dict[str, list[str]] = {}
+    for h in recent:
+        ec = h.get("error_class")
+        if ec:
+            recent_env_errors.setdefault(ec, []).append(h["command"])
+    for error_class, cmds in recent_env_errors.items():
+        if len(cmds) >= ENVIRONMENT_BLOCKER_THRESHOLD:
+            return {
+                "friction_class": "environment_blocker",
+                "action_surface": "fix_environment",
+                "severity": "warning",
+                "command_family": "environment",
+                "target_hint": error_class,
+                "evidence": {
+                    "error_class": error_class,
+                    "commands": cmds[-5:],
+                    "failure_count": len(cmds),
+                },
+            }
+
+    return None
+
+
 # --- Main ---
 
 
@@ -212,13 +329,16 @@ def main() -> None:
 
     # State 更新
     state = load_state()
-    is_error = _has_error(output) is not None
+    error_match = _has_error(output)
+    is_error = error_match is not None
 
     entry = {
         "command": command[:200],
         "exit_code_inferred": "error" if is_error else "success",
         "timestamp": _now_iso(),
         "file_target": _extract_file_target(command),
+        "command_family": _classify_command_family(command),
+        "error_class": _classify_error_class(output) if is_error else None,
     }
 
     state["bash_history"].append(entry)
@@ -236,7 +356,38 @@ def main() -> None:
         edits[file_target] = edits.get(file_target, 0) + 1
         state["same_file_edits"] = edits
 
-    # 停滞検知
+    # Friction 検出（stagnation より先 — より具体的な action surface を提供）
+    friction = detect_friction(state)
+    if friction:
+        state["last_suggestion_time"] = time.time()
+
+        try:
+            from session_events import emit_event
+
+            emit_event("pattern", {"type": "friction_event", **friction})
+        except Exception as exc:
+            emit("error", {"message": f"friction event emit failed: {exc}"})
+
+        action = FRICTION_ACTION_SURFACES.get(friction["friction_class"], "replan")
+        emit(
+            "pattern",
+            {
+                "type": "friction_detected",
+                "friction_class": friction["friction_class"],
+                "action_surface": action,
+                "message": f"Friction: {friction['friction_class']}",
+            },
+        )
+
+        save_state(state)
+        output_context(
+            "PostToolUse",
+            f"[Friction: {friction['friction_class']}] "
+            f"推奨: {action}。同じアプローチの繰り返しではなく戦略変更を検討。",
+        )
+        return
+
+    # 停滞検知（friction に該当しない汎用パターン）
     result = detect_stagnation(state)
     if result:
         stagnation_type, suggestion = result

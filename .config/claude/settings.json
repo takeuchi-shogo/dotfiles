@@ -378,6 +378,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/stagnation-detector.py",
+            "timeout": 5,
+            "statusMessage": "Friction check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/runtime/error-rate-monitor.py",
             "timeout": 5,
             "statusMessage": "Error rate check..."
