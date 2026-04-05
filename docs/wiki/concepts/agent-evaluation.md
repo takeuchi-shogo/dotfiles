@@ -40,3 +40,4 @@ updated: 2026-04-04
 - [Evals Skills Analysis](../../research/2026-03-19-evals-skills-analysis.md) — TPR/TNR分離計測・Rogan-Gladen補正・ボトムアップ帰納のベストプラクティス
 - [SWE-CI Deep Survey](../../research/2026-03-17-swe-ci-deep-survey.md) — evolution-based評価でzero-regression rateを初めて体系的に測定
 - [SlopCodeBench](../../research/2026-03-30-slopcodebench-iterative-degradation-analysis.md) — Slope vs Intercept分離・Structural Erosion定量化・テストスイート限界の実証
+- [MTI Temperament Profiling](../../research/2026-04-06-mti-temperament-profiling-analysis.md) — 能力とは直交する行動的気質4軸（Reactivity, Compliance, Sociality, Resilience）の独立測定。Compliance-Resilience パラドックス

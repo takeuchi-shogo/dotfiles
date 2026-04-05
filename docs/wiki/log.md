@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-06] ingest | MTI: Model Temperament Profiling for AI Agents
+
+- ソース: https://arxiv.org/abs/2604.02145
+- 判定: Gap 2個, Partial 1個, Already 3個 (うち強化可能2個), N/A 2個
+- 取り込み: C-R パラドックス+RLHF軸別影響+Core-Shell変動(cross-model-insights), 能力≠気質注記(model-expertise-map), Sycophancy 2ファセット(agency-safety-framework)
+
 ## [2026-04-05] ingest | Dorsey "World Intelligence" 実装体験記
 
 - ソース: How to practically deploy Jack Dorsey's 'world intelligence' today (Single Grain)

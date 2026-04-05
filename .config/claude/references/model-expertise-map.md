@@ -48,6 +48,21 @@
 
 ---
 
+## Temperament ≠ Capability（参照注記）
+
+> MTI (arXiv:2604.02145): モデルの行動的気質（Reactivity, Compliance, Sociality, Resilience）は
+> 能力スコアと直交する独立次元。モデル規模 (1.7B-9B) と気質に系統的関係なし。
+
+上記 Score Table は **能力**（何ができるか）を測定する。**気質**（どう振る舞うか）は別次元:
+- 能力が高くても Compliance が高すぎると意見追従しやすい
+- Resilience が低いと adversarial な入力で性能が崩壊する
+- 詳細: `cross-model-insights.md` の「MTI Temperament Insights」セクション
+
+現時点ではフロンティアモデル向け気質測定は未確立（MTI の Future Work）。
+能力ベースのルーティングを主軸としつつ、気質的特性は定性的に考慮する。
+
+---
+
 ## Update Policy
 
 - `reviewer-capability-scores.md` と同様に `/improve` サイクルで段階的に更新
