@@ -49,3 +49,17 @@ status: integrated
 1. trajectory-learning.md に未検証トレース学習の指針 + 難易度→探索度軸の追加
 2. verbalized-sampling-guide.md に不採用候補の活用セクション追加
 3. best-of-n-guide.md に敗者パターン活用ステップ追加
+
+## 差分統合（2026-04-06, alphaxiv overview からの追加知見）
+
+alphaxiv の構造化レポートで得られた詳細データを基に追加統合を実施。
+
+### 追加取り込み
+
+| # | 対象 | 変更内容 |
+|---|------|---------|
+| 4 | situation-strategy-map.md | 難易度→探索度軸エントリ追加（前回プラン残件） |
+| 5 | situation-strategy-map.md | Lock/Fork ステップ分類エントリ追加（Precision-Exploration Conflict のハーネス翻訳） |
+| 6 | CLAUDE.md core_principles | Scaffolding > Model に SSD 定量データ追加（+11.8pp vs +2.2pp） |
+| A | trajectory-learning.md | "Bad Data, Good Results" に基づく品質フィルタ緩和ガイドライン追加 |
+| B | best-of-n-guide.md | Pass@5 > Pass@1 の多様性保持定量根拠追加 |

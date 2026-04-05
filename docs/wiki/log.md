@@ -8,6 +8,18 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-06] ingest | ASI-Evolve: AI Accelerates AI
+
+- ソース: https://arxiv.org/abs/2603.29640
+- 判定: Gap 3個, Partial 2個, Already 4個 (うち強化可能4個), N/A 3個
+- 取り込み: Embedding索引付き認知基盤, UCB1バンディット探索, 候補プール管理, 多段階スケールアップ基準, 適応的計算予算配分, runs/構造化拡充, per-experimentマイクロ分析, 提案事前類似性フィルタ, 昇格知識インデックス
+
+## [2026-04-06] ingest | SSD Self-Distillation 差分統合（alphaxiv overview）
+
+- ソース: https://arxiv.org/abs/2604.01193 (alphaxiv 構造化レポート)
+- 判定: Gap 2個, Partial 1個, Already 2個 (うち強化可能2個) — 前回統合 (2026-04-05) の差分
+- 取り込み: 難易度→探索度軸+Lock/Fork分類(situation-strategy-map), Scaffolding>Model定量根拠(CLAUDE.md), 品質フィルタ緩和ガイドライン(trajectory-learning), 多様性保持定量根拠(best-of-n-guide)
+
 ## [2026-04-06] ingest | MTI: Model Temperament Profiling for AI Agents
 
 - ソース: https://arxiv.org/abs/2604.02145
