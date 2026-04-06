@@ -94,6 +94,19 @@ MEMORY.md に追記（索引として1-2行）
 - 関連パターンがあれば事前に適用
 - パターンが古くなっていたら更新・削除
 
+### 6. Trace-Based Rule Extraction (meta-agent Pattern)
+
+`/improve` のトレース分析と連携し、失敗トレースから行動ルールを自動抽出する:
+
+1. **入力**: `~/.claude/agent-memory/traces/` の失敗トレース（session-learner が `outcome: failure` を付与したもの）
+2. **抽出**: 失敗の根本原因を「エージェントの行動ルール」として言語化する
+   - NG: 「セッション X で refund を誤適用した」（特定トレースへの過学習）
+   - OK: 「返金処理前にキャンセルポリシーを必ず確認する」（一般化された行動規範）
+3. **検証**: 同一パターンの失敗が 2 件以上あるもののみ候補とする（Rule 36 Multi-trace Consensus）
+4. **出力**: `situation-strategy-map.md` への追加候補として提示（自動マージは行わない）
+
+根拠: meta-agent (Anthropic 2026) — LLM judge が自然言語批評を付与し、proposer がそこから行動ルールを抽出するパイプライン。corrections 主体の学習に加え、失敗トレースからの帰納的ルール抽出が改善ループを加速する。
+
 ## Anti-Patterns
 
 - 1回しか起きていない事象を一般化して記録しない

@@ -1,7 +1,7 @@
 ---
 source: https://tech.layerx.co.jp/entry/2026/04/01/150000
 date: 2026-04-07
-status: analyzed
+status: integrated
 ---
 
 # AIエージェントのHuman-in-the-Loop評価を深化させる — 分析レポート

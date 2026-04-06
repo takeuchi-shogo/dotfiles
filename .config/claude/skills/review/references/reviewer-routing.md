@@ -131,6 +131,39 @@
 
 - **重要度**: CRITICAL（暗黙の不変条件が壊れる）, HIGH（将来の regression リスク）, MEDIUM（文書化の欠落）
 
+## リスクカテゴリ別ルーティング
+
+変更対象のリスクカテゴリ（workflow-guide.md「非対称損失の原則」参照）に応じて
+レビューアー構成と Verdict 判定基準を調整する。
+
+### リスクカテゴリ自動判定
+
+diff の変更ファイルパスと内容から最高リスクカテゴリを判定する:
+
+| カテゴリ | ファイルパスシグナル | 内容シグナル |
+|---------|--------------------|-----------  |
+| **High** | `**/migration/**`, `**/auth/**`, `**/security/**`, `**/.env*`, `**/secrets/**`, `**/deploy/**` | `DROP`, `ALTER TABLE`, `password`, `secret`, `token`, `credential`, `chmod`, `sudo` |
+| **Medium** | `**/api/**`, `**/handler/**`, `**/controller/**`, `**/hooks/**`, `**/agents/**`, `**/scripts/**` | `endpoint`, `route`, `middleware`, `PreToolUse`, `PostToolUse` |
+| **Low** | `**/*.md`, `**/test*/**`, `**/*_test.*`, `**/*.test.*`, `**/docs/**` | （デフォルト） |
+
+判定ルール: **最高リスクが採用される**（1ファイルでも High ならセット全体が High）。
+
+### レビューアー構成オーバーライド
+
+| カテゴリ | コアレビューアー | 追加スペシャリスト | 備考 |
+|---------|----------------|-------------------|------|
+| **High** | code-reviewer + codex-reviewer + edge-case-hunter | **security-reviewer 必須** + silent-failure-hunter | 全レビューアーの信頼度閾値を 60→50 に引き下げ |
+| **Medium** | code-reviewer + codex-reviewer + edge-case-hunter | コンテンツベースで自動選択（既存ロジック） | 標準構成 |
+| **Low** | code-reviewer のみ | なし | codex-reviewer, edge-case-hunter は省略可 |
+
+### Verdict 判定オーバーライド
+
+| カテゴリ | NEEDS_FIX 閾値 | BLOCK 閾値 | 特記 |
+|---------|----------------|-----------|------|
+| **High** | CONSIDER ≥ 1 件（通常は 3 件） | MUST ≥ 1 件（変更なし） | Watch 層の指摘もユーザーに表示 |
+| **Medium** | CONSIDER ≥ 3 件（変更なし） | MUST ≥ 1 件（変更なし） | 標準 |
+| **Low** | CONSIDER ≥ 5 件 | MUST ≥ 1 件（変更なし） | 軽微な指摘は PASS 扱い可 |
+
 ## Agent プロンプトテンプレート
 
 各レビューアーへ渡すプロンプトの基本構造:

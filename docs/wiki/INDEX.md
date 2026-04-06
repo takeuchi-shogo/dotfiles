@@ -62,6 +62,7 @@
 ### evaluation — 評価・観測
 
 - [エージェント評価](concepts/agent-evaluation.md) — Evals フレームワークとベンチマーク体系
+- [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — 見逃し/過検出の非対称損失とリスクカテゴリ別レビュー方針
 
 ### tooling — ツール・エコシステム
 

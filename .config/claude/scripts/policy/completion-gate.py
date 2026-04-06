@@ -133,7 +133,7 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
             text=True,
             timeout=120,
             cwd=os.getcwd(),
-            env={**os.environ, "NO_COLOR": "1", "CI": "1"},
+            env={**os.environ, "NO_COLOR": "1", "CI": "1", "ENV": "local"},
         )
         output = (result.stdout + result.stderr).strip()
         # Limit output to last 30 lines
