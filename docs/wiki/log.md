@@ -107,3 +107,10 @@
 - 判定: Gap 0, Partial 1, Already 3 (うち強化可能3個), N/A 2
 - 取り込み: 未検証トレース学習指針、VS 不採用候補記録、best-of-n 敗者パターン活用、難易度→探索度軸
 - 変更ファイル: trajectory-learning.md, verbalized-sampling-guide.md, best-of-n-guide.md, analysis report
+
+## [2026-04-07] ingest | SDLC品質分散 — コードレビュー依存からの脱却
+
+- ソース: https://mtx2s.hatenablog.com/entry/2026/04/06/061511
+- 判定: Gap 0, Partial 3, Already 17 (うち強化可能 4), N/A 6
+- 取り込み: completion-gate パターン分類、AST 構造チェッカー、review 多モデル検証、タスク分解ガイド、ライセンスチェック
+- 変更ファイル: completion-gate.py, structure-check.py, settings.json, task-decomposition-guide.md, security-reviewer.md, analysis report

@@ -152,6 +152,46 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
         return True, ""
 
 
+def _classify_test_failure(output: str) -> tuple[str, str]:
+    """Classify test failure pattern and return (category, hint).
+
+    Returns:
+        (category, hint) where category is the failure type and hint is
+        a targeted fix suggestion for the agent.
+    """
+    output_lower = output.lower()
+
+    # Type errors
+    if any(kw in output_lower for kw in ["type error", "typeerror", "cannot assign", "incompatible type", "type mismatch"]):
+        return ("type_error", "型定義を確認し、引数・戻り値の型を修正してください。import の不足も確認。")
+
+    # Nil/null pointer
+    if any(kw in output_lower for kw in ["nil pointer", "null pointer", "nullpointerexception", "cannot read properties of null", "cannot read properties of undefined", "typeerror: cannot read"]):
+        return ("nil_null", "nil/null チェックを追加してください。オプショナルチェーン(?.)やガード節を検討。")
+
+    # Assertion failures
+    if any(kw in output_lower for kw in ["assert", "expected", "to equal", "to be", "got:", "want:"]):
+        return ("assertion", "期待値と実際の出力を比較し、ロジックの誤りを修正してください。テストの期待値が古い可能性も検討。")
+
+    # Import/module errors
+    if any(kw in output_lower for kw in ["import error", "module not found", "cannot find module", "no such file", "unresolved import"]):
+        return ("import", "import パスとモジュール名を確認してください。ファイルの移動・リネームが原因の可能性。")
+
+    # Compilation errors
+    if any(kw in output_lower for kw in ["syntax error", "syntaxerror", "unexpected token", "compile error", "build failed"]):
+        return ("syntax", "構文エラーを修正してください。括弧の対応、セミコロン、インデントを確認。")
+
+    # Timeout
+    if any(kw in output_lower for kw in ["timeout", "timed out", "deadline exceeded"]):
+        return ("timeout", "テストがタイムアウトしています。無限ループ、未解決の非同期処理、外部依存のモックを確認。")
+
+    # Permission / access
+    if any(kw in output_lower for kw in ["permission denied", "eacces", "access denied"]):
+        return ("permission", "ファイルまたはリソースのアクセス権限を確認してください。")
+
+    return ("unknown", "テスト出力を注意深く読み、失敗の根本原因を特定してください。")
+
+
 SNAPSHOT_FILE = os.path.join(
     os.environ.get(
         "CLAUDE_SESSION_STATE_DIR",
@@ -958,9 +998,11 @@ def main() -> None:
             # Selective tests failed — skip full suite, report immediately
             _set_retry_count(retries + 1)
             remaining = MAX_RETRIES - retries - 1
+            _sel_category, _sel_hint = _classify_test_failure(sel_output)
             ctx_lines = [
                 f"[Completion Gate] 関連テストが失敗: `{sel_cmd}`",
                 f"リトライ残り: {remaining}回",
+                f"分類: {_sel_category} — {_sel_hint}",
                 "",
                 "```",
                 sel_output,
@@ -1018,10 +1060,12 @@ def main() -> None:
     # Tests failed — increment retry counter and report
     _set_retry_count(retries + 1)
     remaining = MAX_RETRIES - retries - 1
+    _category, _hint = _classify_test_failure(output)
 
     ctx_lines = [
         f"[Completion Gate] テストが失敗しています: `{test_cmd}`",
         f"リトライ残り: {remaining}回 (上限到達で自動停止許可)",
+        f"分類: {_category} — {_hint}",
         "",
         "```",
         output,

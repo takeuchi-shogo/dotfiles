@@ -422,6 +422,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/structure-check.py",
+            "timeout": 5,
+            "statusMessage": "Structure check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/runtime/skill-suggest.py",
             "timeout": 5,
             "statusMessage": "Skill suggest..."

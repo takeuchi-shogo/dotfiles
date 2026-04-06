@@ -59,6 +59,23 @@ npm audit --audit-level=high 2>/dev/null || true
 govulncheck ./... 2>/dev/null || true
 ```
 
+#### License Compliance Check
+
+依存パッケージのライセンスが許容範囲か確認する（プロジェクトに応じて実行）:
+
+```bash
+# Node.js
+npx license-checker --summary --failOn "GPL-3.0;AGPL-3.0;SSPL-1.0" 2>/dev/null || true
+
+# Go
+go-licenses check ./... 2>/dev/null || true
+```
+
+- **許容**: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, MPL-2.0
+- **要確認**: LGPL-2.1, LGPL-3.0（動的リンクは許容、静的リンクは要確認）
+- **禁止**: GPL-3.0, AGPL-3.0, SSPL-1.0（コピーレフト感染リスク）
+- 新規依存追加時のみチェック（既存依存の再チェックは不要）
+
 - ハードコードされたシークレットを Grep で検索
 - 高リスク領域を特定: 認証、API エンドポイント、DB クエリ、ファイルアップロード
 - scanner の findings は起点ではなく補助 evidence として扱う
