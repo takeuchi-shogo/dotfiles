@@ -26,7 +26,19 @@
 - 判定: Gap 3個, Partial 1個, Already 3個, N/A 1個
 - 取り込み: 非対称損失の原則追記、カテゴリ別リスク重み付け、HITLパターン分類、FP追跡ループ設計
 
-## [2026-04-07] ingest | The Anatomy of an Agent Harness
+## [2026-04-07] ingest | Skills can use subagents, Subagents can use skills
+
+- ソース: X post on Claude Code agent design (Skills ↔ Subagents composition patterns)
+- 判定: Gap 1個, Partial 1個, Already 1個 (強化不要)
+- 取り込み: workflow-guide.md に Skill ↔ Subagent 合成パターンの判断基準テーブルを追加
+
+## [2026-04-07] ingest | The Anatomy of an Agent Harness (Round 2 再分析)
+
+- ソース: "The Anatomy of an Agent Harness" by @akshay_pachaar
+- 判定: 新規 Gap 2個, Partial 1個, 強化 1個（Round 1 の見落とし分）
+- 取り込み: ACON compaction 優先順位テーブル、ツール数閾値+エラー複合則を resource-bounds に追加、workflow-guide ステップ追加時のコスト評価参照、Co-evolution ツール定義安定性セクション
+
+## [2026-04-07] ingest | The Anatomy of an Agent Harness (Round 1)
 
 - ソース: "The Anatomy of an Agent Harness" by @akshay_pachaar
 - 判定: Gap 2個, Partial 1個, Already 13個 (うち強化可能3個), N/A 2個

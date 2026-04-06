@@ -21,31 +21,49 @@ metadata:
 
 ```
 /absorb {URL or テキスト}
-  Phase 1: Extract    → 記事の要点を構造化抽出
-  Phase 2: Analyze    → 現状とのギャップ分析
-  Phase 3: Triage     → ユーザーと「何を取り込むか」を選別
-  Phase 4: Plan       → 統合プラン生成
-  Phase 5: Handoff    → 実行（同一セッション or 新セッション）
-  Phase 5.5: Wiki Update → wiki INDEX 更新（任意、docs/wiki/ 存在時のみ）
+  Phase 1: Extract    → 記事の要点を構造化抽出          [Haiku / Gemini]
+  Phase 2: Analyze    → 現状とのギャップ分析            [Sonnet Explore → Opus]
+  Phase 2.5: Refine   → セカンドオピニオン + 周辺知識補完 [Codex + Gemini 並列]
+  Phase 3: Triage     → ユーザーと「何を取り込むか」を選別 [Opus]
+  Phase 4: Plan       → 統合プラン生成 + レポート保存     [Opus → Sonnet]
+  Phase 5: Handoff    → 実行（同一セッション or 新セッション） [Opus]
+  Phase 5.5-5.7       → Wiki/Obsidian/Log               [Sonnet BG]
 ```
 
-## Phase 1: Extract（要点抽出）
+## Delegation Policy
 
-1. インプットの取得:
-   - URL → WebFetch で取得
-   - 貼り付けテキスト → そのまま使用
-   - リポジトリ → 主要ファイルを読む
-   - **WebFetch 失敗時のフォールバック**:
-     1. WebSearch で記事タイトル/URL を検索し、キャッシュやミラーを探す
-     2. それも失敗 → ユーザーに「URL にアクセスできません。記事の内容をテキストで貼り付けてください」と `AskUserQuestion` で依頼
-     3. 空レスポンスのまま Phase 2 に進んではならない
-2. 構造化抽出:
-   - **主張**: 記事が提唱していること（1-3文）
-   - **手法**: 具体的なテクニック・パターン（箇条書き）
-   - **根拠**: なぜそれが有効か（データ、事例）
-   - **前提条件**: どんなコンテキストで有効か
+**Opus は判断・統合・ユーザー対話に専念する。それ以外は委譲する。**
 
-出力は内部用。ユーザーには要約のみ表示する。
+| Phase | 委譲先 | Opus の役割 |
+|-------|--------|------------|
+| 1: Extract | Haiku（URL/テキスト）/ Gemini（リポジトリ） | 結果の受け取りのみ |
+| 2: Analyze Pass 1 | Sonnet (Explore) | キーワードリストの作成 |
+| 2: Analyze Pass 2 | Opus | 強化判断（委譲不可） |
+| 2.5: Refine | Codex + Gemini **並列** | 批評の統合・テーブル修正 |
+| 3: Triage | Opus | ユーザー対話（委譲不可） |
+| 4: Plan | Opus → Sonnet | プラン策定 → レポート書き出し委譲 |
+| 5+: Wiki/Obsidian/Log | Sonnet BG | 書き込み作業を並列委譲 |
+
+## Phase 1: Extract（要点抽出） [Haiku / Gemini に委譲]
+
+**委譲先の選択:**
+- URL / テキスト → `Agent(model: "haiku")` で WebFetch + 構造化抽出
+- リポジトリ全体 → Gemini（1M コンテキストが必要）
+
+**Haiku / Gemini への指示内容:**
+
+> 以下のソースから構造化抽出を行い、JSON で返してください:
+> - **主張**: 記事が提唱していること（1-3文）
+> - **手法**: 具体的なテクニック・パターン（箇条書き、各手法に検索用キーワード2-3語を付与）
+> - **根拠**: なぜそれが有効か（データ、事例）
+> - **前提条件**: どんなコンテキストで有効か
+
+**WebFetch 失敗時のフォールバック（委譲先が処理）:**
+1. WebSearch で記事タイトル/URL を検索し、キャッシュやミラーを探す
+2. それも失敗 → 「取得失敗」を返す → Opus が `AskUserQuestion` でユーザーにテキスト貼り付けを依頼
+3. 空レスポンスのまま Phase 2 に進んではならない
+
+Opus は返された構造化抽出をユーザーに要約表示する（詳細は内部用）。
 
 ## Phase 2: Analyze（ギャップ分析 + 強化分析）
 

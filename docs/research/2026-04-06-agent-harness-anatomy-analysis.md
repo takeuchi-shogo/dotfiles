@@ -1,6 +1,7 @@
 ---
 source: "The Anatomy of an Agent Harness" by @akshay_pachaar
 date: 2026-04-06
+updated: 2026-04-07
 status: integrated
 ---
 
@@ -65,6 +66,8 @@ status: integrated
 
 ## Plan
 
+### Round 1 (2026-04-06)
+
 | # | タスク | ファイル | 状態 |
 |---|--------|---------|------|
 | T1 | FM に recoveryType 追加 | references/failure-taxonomy.md | Done |
@@ -72,3 +75,12 @@ status: integrated
 | T3 | ハーネス簡素化チェックリスト | references/harness-simplification-checklist.md | Done |
 | T4 | Tool Usage Audit セクション | skills/audit/SKILL.md | Done |
 | T5 | 分析レポート保存 | docs/research/2026-04-06-agent-harness-anatomy-analysis.md | Done |
+
+### Round 2 (2026-04-07) — 再分析で発見した追加項目
+
+| # | タスク | ファイル | 状態 |
+|---|--------|---------|------|
+| T6 | ACON compaction 優先順位テーブル追加 | references/context-compaction-policy.md | Done |
+| T7 | ツール数閾値 + エラー複合則 追加 | references/resource-bounds.md | Done |
+| T8 | ステップ追加時のエラー複合コスト評価参照 | references/workflow-guide.md | Done |
+| T9 | Co-evolution ツール定義安定性セクション追加 | references/harness-simplification-checklist.md | Done |

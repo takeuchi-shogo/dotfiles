@@ -48,6 +48,20 @@
 | Session State TTL | 2 hours | 全 hook 共通 | セッション寿命の想定上限 |
 | Search-First Session TTL | 2 hours | `pre_tool.rs` | セッション TTL に合わせる |
 
+## エージェント設計系
+
+| 定数 | 値 | ソース | 根拠 |
+|---|---|---|---|
+| Tool Overlap Split Threshold | ~10 tools | Harness Anatomy 記事 | 10+ overlapping tools で性能劣化。Vercel: 80%削除で改善。Anthropic/OpenAI 共通見解 |
+| Pipeline Step Compounding | 99%^N | Harness Anatomy 記事 | 10 steps × 99%/step = 90.4% e2e。ステップ追加は信頼性コスト |
+
+> **ツール数と性能**: 単一エージェントに公開するツール数が ~10 を超え、かつスコープが重複する場合は
+> エージェント分割を検討する。分割前に lazy loading（必要なステップでのみツールを公開）を試すこと。
+
+> **エラー複合則**: パイプラインにステップを追加するたびに e2e 成功率は乗算で低下する。
+> ステップ追加の判断時は「このステップが提供する価値 > 信頼性低下コスト」を検証すること。
+> 緩和策: DAG 化による span 圧縮（workflow-guide.md §スパン圧縮の理論）。
+
 ## トークンコスト増大モデル
 
 > 出典: "I stopped hitting Claude's usage limits" (2026-04)、Aniket Parihar 実測データ
