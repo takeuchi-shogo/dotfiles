@@ -152,7 +152,7 @@ def compute_review_acceptance() -> dict:
     feedback = _read_jsonl(data_dir / "learnings" / "review-feedback.jsonl")
     if not feedback:
         return {"score": 0.0, "status": "no_data"}
-    accepted = sum(1 for f in feedback if f.get("outcome") == "accepted")
+    accepted = sum(1 for f in feedback if f.get("outcome") in ("accepted", "accept"))
     total = len(feedback)
     score = accepted / total if total > 0 else 0.0
     return {

@@ -22,6 +22,7 @@ from session_events import (
     emit_skill_step,
     flush_session,
     read_pending_findings,
+    update_finding_outcome,
 )
 
 
@@ -339,6 +340,66 @@ class TestReviewFinding:
         pending = read_pending_findings()
         assert len(pending) == 1
         assert pending[0]["id"] == "rf-b"
+
+
+class TestUpdateFindingOutcome:
+    """update_finding_outcome のテスト。"""
+
+    def test_basic_update(self, tmp_path):
+        emit_review_finding({"id": "rf-001", "reviewer": "cr", "finding": "bug"})
+        result = update_finding_outcome("rf-001", "accept", "explicit")
+        assert result is True
+
+        # findings.jsonl に outcome が書き込まれていることを確認
+        findings_path = tmp_path / "learnings" / "review-findings.jsonl"
+        entry = json.loads(findings_path.read_text().strip())
+        assert entry["outcome"] == "accept"
+        assert entry["outcome_source"] == "explicit"
+        assert "outcome_timestamp" in entry
+
+    def test_explicit_not_overwritten_by_auto_diff(self, tmp_path):
+        """R-05: explicit が記録済みなら auto_diff で上書きしない。"""
+        emit_review_finding({"id": "rf-002", "reviewer": "cr", "finding": "x"})
+        update_finding_outcome("rf-002", "accept", "explicit")
+
+        result = update_finding_outcome("rf-002", "reject", "auto_diff")
+        assert result is False
+
+        findings_path = tmp_path / "learnings" / "review-findings.jsonl"
+        entry = json.loads(findings_path.read_text().strip())
+        assert entry["outcome"] == "accept"
+        assert entry["outcome_source"] == "explicit"
+
+    def test_auto_diff_overwritten_by_explicit(self, tmp_path):
+        """auto_diff は explicit で上書きできる。"""
+        emit_review_finding({"id": "rf-003", "reviewer": "cr", "finding": "x"})
+        update_finding_outcome("rf-003", "reject", "auto_diff")
+        result = update_finding_outcome("rf-003", "accept", "explicit")
+        assert result is True
+
+        findings_path = tmp_path / "learnings" / "review-findings.jsonl"
+        entry = json.loads(findings_path.read_text().strip())
+        assert entry["outcome"] == "accept"
+        assert entry["outcome_source"] == "explicit"
+
+    def test_nonexistent_finding_returns_false(self, tmp_path):
+        result = update_finding_outcome("rf-nonexistent", "accept", "explicit")
+        assert result is False
+
+    def test_invalid_outcome_returns_false(self, tmp_path):
+        emit_review_finding({"id": "rf-004", "reviewer": "cr", "finding": "x"})
+        result = update_finding_outcome("rf-004", "invalid_value", "explicit")
+        assert result is False
+
+    def test_outcome_resolves_pending(self, tmp_path):
+        """outcome が設定された finding は pending から消える。"""
+        emit_review_finding({"id": "rf-005", "reviewer": "cr", "finding": "x"})
+        emit_review_finding({"id": "rf-006", "reviewer": "cr", "finding": "y"})
+        update_finding_outcome("rf-005", "accept", "explicit")
+
+        pending = read_pending_findings()
+        assert len(pending) == 1
+        assert pending[0]["id"] == "rf-006"
 
 
 # --- skill tracking テスト ---

@@ -76,29 +76,36 @@ class TestMatchFindingToDiff:
     def test_exact_match(self):
         finding = {"file": "api.go", "line": 42}
         changed = {"api.go": {41, 42, 43}}
-        assert tracker._match_finding_to_diff(finding, changed) == "accepted"
+        assert tracker._match_finding_to_diff(finding, changed) == "accept"
 
     def test_proximity_match(self):
         finding = {"file": "api.go", "line": 45}
         changed = {"api.go": {42}}
-        assert tracker._match_finding_to_diff(finding, changed) == "accepted"
+        assert tracker._match_finding_to_diff(finding, changed) == "accept"
 
-    def test_no_match(self):
+    def test_no_match_line_far(self):
+        """ファイルは変更されたが行が proximity 外 → partial."""
         finding = {"file": "api.go", "line": 100}
         changed = {"api.go": {42}}
-        assert tracker._match_finding_to_diff(finding, changed) == "ignored"
+        assert tracker._match_finding_to_diff(finding, changed) == "partial"
 
     def test_file_not_in_diff(self):
         finding = {"file": "other.go", "line": 42}
         changed = {"api.go": {42}}
-        assert tracker._match_finding_to_diff(finding, changed) == "ignored"
+        assert tracker._match_finding_to_diff(finding, changed) == "reject"
 
     def test_line_zero_accepts_any_change_in_file(self):
         finding = {"file": "api.go", "line": 0}
         changed = {"api.go": {100}}
-        assert tracker._match_finding_to_diff(finding, changed) == "accepted"
+        assert tracker._match_finding_to_diff(finding, changed) == "accept"
 
     def test_suffix_matching(self):
         finding = {"file": "src/api.go", "line": 42}
         changed = {"api.go": {42}}
-        assert tracker._match_finding_to_diff(finding, changed) == "accepted"
+        assert tracker._match_finding_to_diff(finding, changed) == "accept"
+
+    def test_partial_file_changed_but_line_far(self):
+        """ファイルは変更あり、指摘行は proximity(±5) の範囲外 → partial."""
+        finding = {"file": "api.go", "line": 200}
+        changed = {"api.go": {10, 11, 12}}
+        assert tracker._match_finding_to_diff(finding, changed) == "partial"

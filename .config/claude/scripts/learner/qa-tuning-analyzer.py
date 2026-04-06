@@ -68,7 +68,7 @@ def detect_miss_patterns(findings: list[dict], min_findings: int) -> list[dict]:
     for f in findings:
         reviewer = f.get("reviewer", "")
         fm = f.get("failure_mode", "")
-        verdict = f.get("human_verdict", "UNKNOWN")
+        verdict = f.get("outcome") or f.get("human_verdict", "UNKNOWN")
         if reviewer and fm and verdict != "UNKNOWN":
             groups[(reviewer, fm)].append(verdict)
 

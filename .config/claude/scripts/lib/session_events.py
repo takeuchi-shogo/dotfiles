@@ -10,6 +10,7 @@ Usage (from other hooks):
 
 import json
 import logging
+import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -382,8 +383,80 @@ def emit_review_feedback(finding_id: str, outcome: str, reason: str = "") -> Non
     )
 
 
+_VALID_OUTCOMES = {"accept", "reject", "partial", "deferred"}
+_VALID_OUTCOME_SOURCES = {"explicit", "auto_diff"}
+
+
+def update_finding_outcome(
+    finding_id: str, outcome: str, outcome_source: str
+) -> bool:
+    """review-findings.jsonl の指摘に outcome を設定する。
+
+    R-05: outcome_source が "explicit" で記録済みの場合、"auto_diff" では上書きしない。
+
+    Returns:
+        True if the finding was updated, False otherwise.
+    """
+    if outcome not in _VALID_OUTCOMES:
+        return False
+    if outcome_source not in _VALID_OUTCOME_SOURCES:
+        return False
+
+    findings_path = _get_data_dir() / "learnings" / "review-findings.jsonl"
+    if not findings_path.exists():
+        return False
+
+    entries: list[dict] = []
+    with open(findings_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    entries.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+
+    updated = False
+    for entry in entries:
+        if entry.get("id") != finding_id:
+            continue
+        # R-05: explicit が記録済みなら auto_diff で上書きしない
+        if (
+            entry.get("outcome_source") == "explicit"
+            and outcome_source == "auto_diff"
+        ):
+            return False
+        entry["outcome"] = outcome
+        entry["outcome_source"] = outcome_source
+        entry["outcome_timestamp"] = _now_iso()
+        updated = True
+        break
+
+    if not updated:
+        return False
+
+    # Atomic write: tmp → rename
+    tmp_path = findings_path.with_suffix(".jsonl.tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        for entry in entries:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    os.replace(tmp_path, findings_path)
+
+    # 後方互換: review-feedback.jsonl にも記録
+    _outcome_compat = {"accept": "accepted", "reject": "ignored"}
+    emit_review_feedback(
+        finding_id, _outcome_compat.get(outcome, outcome)
+    )
+    return True
+
+
 def read_pending_findings() -> list[dict]:
-    """未処理のレビュー指摘を読み込む。"""
+    """未処理のレビュー指摘を読み込む。
+
+    finding は以下のいずれかで resolved と判定:
+    - outcome フィールドが設定済み (新方式)
+    - review-feedback.jsonl に finding_id が存在 (後方互換)
+    """
     findings_path = _get_data_dir() / "learnings" / "review-findings.jsonl"
     feedback_path = _get_data_dir() / "learnings" / "review-feedback.jsonl"
     if not findings_path.exists():
@@ -406,8 +479,13 @@ def read_pending_findings() -> list[dict]:
             if line:
                 try:
                     entry = json.loads(line)
-                    if entry.get("id", "") not in resolved_ids:
-                        pending.append(entry)
+                    # 新方式: outcome が設定済みなら resolved
+                    if entry.get("outcome"):
+                        continue
+                    # 後方互換: feedback ファイルに記録済みなら resolved
+                    if entry.get("id", "") in resolved_ids:
+                        continue
+                    pending.append(entry)
                 except json.JSONDecodeError:
                     continue
     return pending

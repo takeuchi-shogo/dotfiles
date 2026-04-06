@@ -72,6 +72,10 @@ def count_watch_occurrences(findings: list[dict]) -> Counter[str]:
 
 def should_promote(finding: dict, watch_counts: Counter[str]) -> bool:
     """finding を L1 に昇格すべきか判定."""
+    # ユーザーが reject した指摘は FP なので昇格しない
+    outcome = finding.get("outcome")
+    if outcome == "reject":
+        return False
     severity = finding.get("severity", "watch")
     if severity in ("critical", "important"):
         return True
@@ -99,7 +103,7 @@ def finding_to_tip(finding: dict) -> dict:
         "source_finding_id": finding.get("id", finding.get("finding_id", "")),
         "l1_category": category,
         "reviewer_id": reviewer,
-        "human_verdict": finding.get("human_verdict", "UNKNOWN"),
+        "human_verdict": finding.get("outcome") or finding.get("human_verdict", "UNKNOWN"),
     }
 
 

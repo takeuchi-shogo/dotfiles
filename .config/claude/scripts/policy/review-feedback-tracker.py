@@ -20,8 +20,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 from session_events import (
-    emit_review_feedback,
     read_pending_findings,
+    update_finding_outcome,
 )
 
 
@@ -92,7 +92,10 @@ def _parse_diff_changed_lines(diff_text: str) -> dict[str, set[int]]:
 def _match_finding_to_diff(finding: dict, changed_lines: dict[str, set[int]]) -> str:
     """finding が diff の変更範囲に含まれるか判定する。
 
-    Returns: "accepted" | "ignored"
+    Returns: "accept" | "reject" | "partial"
+      - accept: 指摘行の近傍 (±5行) が変更された
+      - partial: ファイルは変更されたが指摘行の近傍は未変更
+      - reject: ファイル自体が変更されていない
     """
     file_path = finding.get("file", "")
     line = finding.get("line", 0)
@@ -100,13 +103,15 @@ def _match_finding_to_diff(finding: dict, changed_lines: dict[str, set[int]]) ->
     for diff_file, lines in changed_lines.items():
         if diff_file.endswith(file_path) or file_path.endswith(diff_file):
             if line == 0:
-                return "accepted"
+                return "accept"
             proximity = 5
             for changed_line in lines:
                 if abs(changed_line - line) <= proximity:
-                    return "accepted"
+                    return "accept"
+            # ファイルは変更されたが指摘行の近傍ではない
+            return "partial"
 
-    return "ignored"
+    return "reject"
 
 
 def main() -> None:
@@ -139,25 +144,35 @@ def main() -> None:
 
     changed_lines = _parse_diff_changed_lines(diff_text)
 
-    accepted_count = 0
-    ignored_count = 0
+    accept_count = 0
+    reject_count = 0
+    partial_count = 0
+    skipped_count = 0
 
     for finding in pending:
         finding_id = finding.get("id", "")
         if not finding_id:
             continue
         outcome = _match_finding_to_diff(finding, changed_lines)
-        emit_review_feedback(finding_id, outcome)
-        if outcome == "accepted":
-            accepted_count += 1
+        updated = update_finding_outcome(finding_id, outcome, "auto_diff")
+        if not updated:
+            skipped_count += 1
+            continue
+        if outcome == "accept":
+            accept_count += 1
+        elif outcome == "partial":
+            partial_count += 1
         else:
-            ignored_count += 1
+            reject_count += 1
 
-    if accepted_count + ignored_count > 0:
+    total = accept_count + reject_count + partial_count
+    if total > 0:
         context = (
             f"[Review Feedback] "
-            f"{accepted_count + ignored_count} 件のレビュー指摘を追跡: "
-            f"{accepted_count} accepted, {ignored_count} ignored"
+            f"{total} 件のレビュー指摘を追跡: "
+            f"{accept_count} accept, {reject_count} reject, "
+            f"{partial_count} partial"
+            + (f", {skipped_count} skipped (explicit)" if skipped_count else "")
         )
         json.dump(
             {

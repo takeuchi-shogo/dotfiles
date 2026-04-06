@@ -52,7 +52,15 @@ def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
     for finding in findings:
         finding_id = finding.get("id", "")
         key = finding.get(key_field, "")
-        if not finding_id or not key or finding_id not in feedback_map:
+        if not finding_id or not key:
+            continue
+
+        # 新方式: finding 内の outcome フィールドを優先
+        outcome = finding.get("outcome")
+        if not outcome:
+            # 後方互換: feedback ファイルから取得
+            outcome = feedback_map.get(finding_id)
+        if not outcome:
             continue
 
         if key not in groups:
@@ -64,11 +72,10 @@ def _compute_accuracy_by(key_field: str) -> dict[str, dict]:
                 "watch_noise": 0,
             }
 
-        outcome = feedback_map[finding_id]
         groups[key]["total"] += 1
-        if outcome == "accepted":
+        if outcome in ("accepted", "accept"):
             groups[key]["accepted"] += 1
-        elif outcome == "ignored":
+        elif outcome in ("ignored", "reject"):
             groups[key]["ignored"] += 1
         elif outcome == "watch_useful":
             groups[key]["watch_useful"] += 1
