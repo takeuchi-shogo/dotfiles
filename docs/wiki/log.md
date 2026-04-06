@@ -8,6 +8,22 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-07] ingest | AlphaEvolve: Gemini-powered coding agent for algorithm design
+
+- ソース: AlphaEvolve (Google DeepMind, 2025-05) — 公式ブログ + arXiv:2506.13131
+- 判定: Gap 2個 (島モデル, 差分パッチ生成), Partial 1個 (プロンプト組立エンジン), Already強化 4個 (モデルルーティング, 進化ループ, 自動評価関数, 候補DB)
+- 取り込み: 全7項目。Layer 0: 二層評価アーキテクチャ + 候補DBメタデータ拡充。Layer 1: Tournament Mode拡張 + 差分パッチ生成。Layer 2: Context Assembly体系化 + 島モデル導入。Layer 3: 探索/深化トークン予算分離
+- ドメイン適合性注記: 手法の直接移植ではなく設計パターンの翻案（決定的評価×数百世代→確率的評価×最大5世代）
+- プラン: docs/plans/2026-04-07-alphaevolve-integration.md
+
+## [2026-04-07] ingest | RACA: Research Assistant Coding Agent for Ph.D. Students
+
+- ソース: ブログ記事 "RACA: Research Assistant Coding Agent for Ph.D. Students"
+- 判定: Partial 4個 (Canary Job, Red-team自動起動, Observability, Task Archetype), Already強化 4個 (Repair Routing, Stage Transition, Conductor統合, gaming-detector), N/A 2個 (HPC, Single Workspace)
+- 取り込み: 全8項目。Wave 1: 変更面ベース自動preflight, 高リスク変更Red-team自動トリガー, Repair Routing Table。Wave 2: Backend Task Archetype Templates, Stage Transition結線, Observability信号接続。Wave 3: Conductor統合, gaming-detector拡張
+- リフレーム: "Knowledge over Code" → "Knowledge with Code", "Dataset Skills" → "Backend Task Archetype Templates", "Research Dashboard" → "Observability Dashboard"
+- プラン: docs/plans/2026-04-07-raca-integration.md
+
 ## [2026-04-07] ingest | LLM Knowledge Bases Full Guide (Karpathy method)
 
 - ソース: How to create your own LLM knowledge bases today (full course)
