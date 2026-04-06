@@ -8,6 +8,18 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-07] ingest | Self-Optimizing Multi-Agent Systems for Deep Research
+
+- ソース: https://arxiv.org/abs/2604.02988 (Câmara+ 2026, ECIR Workshop)
+- 判定: Gap 2個, Partial 2個, Already 2個 (強化可能), N/A 1個
+- 取り込み: /research Aggregate 品質基準, improve Rule 44 カテゴリ別ルーブリック, evolve --pareto モード, Phase 4 メタプロンプト自己改善
+
+## [2026-04-07] ingest | meta-agent: Continual Learning for Agents + The Great Convergence
+
+- ソース: https://github.com/canvas-org/meta-agent + The Great Convergence blog
+- 判定: Gap 3個, Partial 1個, Already 6個 (うち強化可能3個), N/A 1個
+- 取り込み: improve-policy に Rule 40-43 追加（anti-overfit, skill化優先, per-trace critique方向性, holdout gate方向性）、Rule 20 修正（single-change デフォルト化）、continuous-learning に trace-based rule extraction パス追加
+
 ## [2026-04-07] ingest | AIエージェントのHITL評価を深化させる
 
 - ソース: https://tech.layerx.co.jp/entry/2026/04/01/150000

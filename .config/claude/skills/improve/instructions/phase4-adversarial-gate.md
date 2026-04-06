@@ -159,6 +159,32 @@ adversarial_results:
 
 ---
 
+## メタプロンプト自己改善 (DR Self-Optimization Pattern)
+
+> 出典: Câmara+ 2026 — メタプロンプトのカスタマイズで GEPA デフォルト 0.685 → カスタム 0.705（+0.020）
+
+Adversarial Gate のプロンプト自体を改善サイクルの対象とする。
+
+### トリガー
+
+以下のいずれかに該当する場合、Phase 4 完了後に Gate プロンプトの改善を提案する:
+
+- Phase 4 の VULNERABLE→REFINE ループが **2回連続で同じ観点** で指摘を受けた（Gate の攻撃パターンが偏っている）
+- `/improve` の直近3サイクルで **全提案 ROBUST** が続いた（Gate が甘い可能性）
+- ユーザーが `--tune-gate` オプションを明示的に指定した
+
+### 改善対象
+
+- レビュー観点の重み付け（6観点のうち、どれをより深く攻撃するか）
+- 判定基準の厳格度（ROBUST/VULNERABLE の閾値）
+- `missing_proposals` の精度
+
+### 制約（Rule 22 との整合）
+
+- Gate プロンプトの変更は **人間の承認を必須とする**（Rule 22 の評価基準自己変更禁止の延長）
+- 変更は `phase4-adversarial-gate.md` のコメントとして提案し、自動適用しない
+- 変更履歴を `runs/*/gate-tuning-log.md` に記録
+
 ## Regression Gate (NeoSigma-inspired)
 
 Adversarial Gate の前に、定量的な回帰チェックを実行する。
