@@ -1,8 +1,8 @@
 ---
 title: 長時間自律エージェント
 topics: [harness, agent]
-sources: [2026-03-25-long-running-claude-scientific-computing-analysis.md, 2026-03-30-openforage-long-running-agents-analysis.md, 2026-03-25-harness-design-long-running-apps-analysis.md]
-updated: 2026-04-04
+sources: [2026-03-25-long-running-claude-scientific-computing-analysis.md, 2026-03-30-openforage-long-running-agents-analysis.md, 2026-03-25-harness-design-long-running-apps-analysis.md, 2026-04-06-agent-harness-anatomy-analysis.md]
+updated: 2026-04-06
 ---
 
 # 長時間自律エージェント
@@ -39,3 +39,4 @@ updated: 2026-04-04
 - [Long-Running Claude for Scientific Computing](../../research/2026-03-25-long-running-claude-scientific-computing-analysis.md) — CLAUDE.md・CHANGELOG・テストオラクル・Git・Ralph Loopの4本柱を科学計算事例で実証
 - [OpenForage: Long-Running Autonomous Agents](../../research/2026-03-30-openforage-long-running-agents-analysis.md) — 7つの失敗パターンと3つの構造的対策、独立オーケストレーション層の必要性
 - [Harness Design for Long-Running Apps](../../research/2026-03-25-harness-design-long-running-apps-analysis.md) — Generator-Evaluator分離・コンテキスト管理・主観的品質評価の12手法を3ケーススタディで実証
+- [Agent Harness Anatomy Analysis](../../research/2026-04-06-agent-harness-anatomy-analysis.md) — harness simplification audit と12コンポーネント体系化。長時間タスクのハーネス設計を構造化する7アーキテクチャ決定

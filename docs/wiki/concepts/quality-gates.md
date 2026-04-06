@@ -1,8 +1,8 @@
 ---
 title: 品質ゲート
 topics: [harness, evaluation]
-sources: [2026-03-19-autoresearch-overfitting-analysis.md, 2026-03-19-compounding-agent-analysis.md, 2026-03-25-harness-design-long-running-apps-analysis.md, 2026-04-02-ralph-loop-harness-engineering-analysis.md]
-updated: 2026-04-04
+sources: [2026-03-19-autoresearch-overfitting-analysis.md, 2026-03-19-compounding-agent-analysis.md, 2026-03-25-harness-design-long-running-apps-analysis.md, 2026-04-02-ralph-loop-harness-engineering-analysis.md, 2026-04-06-agent-harness-anatomy-analysis.md]
+updated: 2026-04-06
 ---
 
 # 品質ゲート
@@ -39,3 +39,4 @@ dotfiles では `completion-gate.py` が Ralph Loop の概念を実装し、MAX_
 - [Compounding Agent Analysis](../../research/2026-03-19-compounding-agent-analysis.md) — Self-scoring・閾値ベースルーティング・Optimizer loop による自己改善品質制御
 - [Harness Design Long Running Apps Analysis](../../research/2026-03-25-harness-design-long-running-apps-analysis.md) — Generator-Evaluator 分離・Sprint Contract・Feature Stubbing 検出の 3 ケーススタディ実証
 - [Ralph Loop Harness Engineering Analysis](../../research/2026-04-02-ralph-loop-harness-engineering-analysis.md) — Ralph Loop プラグインによる自動修正ループと 21 体エージェントパイプラインの実績（681 件/半月 PR マージ）
+- [Agent Harness Anatomy Analysis](../../research/2026-04-06-agent-harness-anatomy-analysis.md) — recovery type 4分類（retry/fallback/escalate/abort）による失敗回復戦略の体系化

@@ -50,3 +50,19 @@ PostCompact hook 発火時に以下を確認（advisory）:
 - **長時間タスク**: 30 分以上の作業では `/checkpoint` を定期的に実行
 - **L 規模タスク**: Plan を docs/plans/ に書き出し、Compaction の影響を受けないようにする
 - **Critical な意思決定**: memory system に保存し、Compaction 後も参照可能にする
+
+## 参考: Observation Masking パターン
+
+> JetBrains Junie (2026) が採用するコンテキスト最適化手法。
+> Compaction とは異なるアプローチで context rot を軽減する。
+
+**手法**: 古い tool output（ファイル内容、コマンド結果）を非表示にし、tool call 自体（何を実行したか）は残す。
+これにより「何をしたか」の履歴は保持しつつ、中間結果の大量トークンを削減する。
+
+**現状の適用**: Opus 4.6 の auto-compaction が類似の効果を提供しているため、ハーネス側での独自実装は不要。
+ただし、サブエージェント設計では同等の原則を適用している — サブエージェントは広範に探索するが、
+親に返すのは 1,000〜2,000 トークンの凝縮サマリのみ（tool output そのものは返さない）。
+
+**将来の検討**: auto-compaction の品質が不十分な場合（Sonnet 4.5: 43%）、ハーネス側で
+observation masking を実装する価値がある。その場合、tool_call メッセージは保持し、
+tool_result メッセージのみを要約置換する方式を採る。

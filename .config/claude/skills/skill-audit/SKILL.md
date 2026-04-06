@@ -73,6 +73,31 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - コア式/アルゴリズムの致命的エラー → Completeness を最大 Average（通常 Poor）
 - トリビアルなスクリプト（echo のみ等）→ Executability を最大 Average
 
+### Step 0.5: Usage Tier Classification
+
+5D スキャンと並行して、対象スキルの使用頻度を分類する。
+
+#### 手順
+
+1. `skill-executions.jsonl` を読み、過去 30 日間の各スキルの実行回数を集計する
+2. 以下の 3 段階に分類する:
+
+| Tier | 基準（過去30日） | アクション |
+|------|----------------|-----------|
+| **Weekly** | 4回以上 | 維持・優先改善対象 |
+| **Monthly** | 1〜3回 | 現状維持。改善は低優先 |
+| **Unused** | 0回 | retire 候補としてレポートに出力 |
+
+3. `skill-executions.jsonl` が存在しない、またはデータ不足の場合はこのステップをスキップし、5D スキャンのみで判定する
+4. 結果を audit report Summary テーブルの Usage 列に記録する
+5. Unused スキルは audit report の「Retire Candidates」セクションにリストする
+
+#### 判断ガイド
+
+- Unused でも 5D が全 Good → 休眠状態。削除より「使われない理由」を調査（description 改善で復活する可能性）
+- Unused かつ 5D に Poor あり → retire 最有力候補
+- Weekly かつ 5D に Poor あり → 品質改善を最優先
+
 ### Step 1: Select target skills
 
 Ask the user which batch to audit, or accept a custom skill list. Default to both batches if unspecified.

@@ -8,6 +8,25 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-07] ingest | AIエージェントのHITL評価を深化させる
+
+- ソース: https://tech.layerx.co.jp/entry/2026/04/01/150000
+- 判定: Gap 3個, Partial 1個, Already 3個, N/A 1個
+- 取り込み: 非対称損失の原則追記、カテゴリ別リスク重み付け、HITLパターン分類、FP追跡ループ設計
+
+## [2026-04-07] ingest | The Anatomy of an Agent Harness
+
+- ソース: "The Anatomy of an Agent Harness" by @akshay_pachaar
+- 判定: Gap 2個, Partial 1個, Already 13個 (うち強化可能3個), N/A 2個
+- 取り込み: FM に recoveryType 4分類追加、harness-simplification-checklist 新規作成、context-compaction-policy に Observation Masking 参照追記、/audit に Tool Usage Audit 追加
+
+## [2026-04-06] ingest | ハーネスエンジニアリング入門 — 8ヶ月の実践記録
+
+- ソース: https://zenn.dev/takuyanagai0213/articles/harness-engineering-intro-8months
+- 判定: Gap 0個, Partial 0個, Already 8個 (うち強化可能2個), N/A 1個
+- 取り込み: skill-audit に Usage Tier Classification (Weekly/Monthly/Unused 3段階) 追加、reviewer-ma/mu に署名スタイル追加
+- 変更ファイル: skill-audit/SKILL.md, agents/reviewer-ma.md, agents/reviewer-mu.md, analysis report
+
 ## [2026-04-06] ingest | ASI-Evolve: AI Accelerates AI
 
 - ソース: https://arxiv.org/abs/2603.29640

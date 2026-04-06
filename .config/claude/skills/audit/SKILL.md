@@ -124,6 +124,26 @@ Step 2 の結果を基に、カテゴリ別の専門エージェントを **1メ
 - 同一ファイル ±5行以内 + 同一カテゴリの指摘は1件に統合
 - 複数エージェントが同じ問題を指摘した場合、優先度を1段階引き上げ
 
+## Step 4.5 — Tool Usage Audit（ツール使用頻度監査）
+
+> Vercel は v0 のツールを 80% 削除して性能向上を達成。ツールは多いほど良いわけではない。
+
+コードベース監査と併せて、エージェントのツール使用効率も監査する（該当する場合のみ）。
+
+**対象**: `.config/claude/settings.json` の allowedTools、`agents/*.md`、`skills/*/SKILL.md` の allowed-tools
+
+**チェック項目**:
+1. **未使用ツール検出**: 直近30セッションのトランスクリプトで一度も呼ばれていないツール/MCP
+2. **低使用エージェント検出**: 定義はあるが直近30日で起動実績のないエージェント
+3. **重複スコープ検出**: 類似の description を持つ複数エージェント/スキルの特定
+
+**データソース**:
+- `~/.claude/projects/*/` 配下のセッションログ（存在する場合）
+- `git log --all --grep="Agent(" --since="30 days ago"` でエージェント起動履歴を推定
+- OTel セッションデータ（`tools/otel-session-analyzer/` が利用可能な場合）
+
+**出力**: QUESTIONS.md の末尾に `## Tool & Agent Hygiene` セクションとして追加。
+
 ## Step 5 — Generate QUESTIONS.md
 
 以下のテンプレートで `QUESTIONS.md` を生成する。出力先はプロジェクトルート。
