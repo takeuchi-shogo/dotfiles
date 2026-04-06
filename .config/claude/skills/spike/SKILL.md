@@ -45,6 +45,21 @@ worktree を使用してメインブランチから隔離する:
 1. EnterWorktree ツールで `spike/{feature}` ブランチを作成
 2. または Agent ツールの `isolation: "worktree"` を使用
 
+## Step 3.5: Experiment Design（破壊的・高リスク変更の場合）
+
+ハーネス変更、既存ワークフロー変更、または影響範囲が不明な変更では、実装前に実験を構造化する。
+通常の機能 spike では省略可。
+
+1. **定常状態の定義**: 変更前に「正常動作」を定量的に記述する
+   - 例: `task validate-configs` がパス、hook X が Y イベントで発火する、テスト Z がグリーン
+2. **仮説の文書化**: 「{変更} を行うと {期待結果} になる。なぜなら {根拠}」
+3. **Blast radius 計画**: 影響範囲を特定し、制御策を明示する
+   - 影響ファイル数、依存する hook/skill/agent のリスト
+   - worktree 隔離で制御可能か、ロールバック手順は何か
+4. **観察ポイント**: 実験中に何を監視するか（ログ、テスト結果、hook 発火状況）
+
+> 着想元: Chaos Engineering — "Steady state → Hypothesis → Blast radius → Experiment → Learning"
+
 ## Step 4: Implement
 
 ### ベースライン選定原則 (Meta-Harness Tip)
