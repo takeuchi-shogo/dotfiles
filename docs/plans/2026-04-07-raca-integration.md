@@ -12,9 +12,9 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 
 ## タスク一覧
 
-### Wave 1: 高優先度（既存部品の結線）
+### Wave 1: 高優先度（既存部品の結線） ✅
 
-#### T1: Canary Job — 変更面ベース自動 preflight [M]
+#### T1: Canary Job — 変更面ベース自動 preflight [M] ✅
 - **目的**: 変更対象（auth, DB, API, migration 等）に応じた軽量検証を自動実行
 - **成果物**:
   - `references/change-surface-preflight.md` — 変更面→preflight マッピング表
@@ -22,7 +22,7 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 - **既存部品**: completion-gate.py, /validate, smoke test rule (Rule 32)
 - **依存**: なし
 
-#### T2: Red-teaming 自動起動 [M]
+#### T2: Red-teaming 自動起動 [M] ✅
 - **目的**: 高リスク変更で edge-case-hunter / silent-failure-hunter を hook で自動トリガー
 - **成果物**:
   - `settings.json` — PostToolUse hook（高リスクファイルパターン検出時に自動起動）
@@ -31,7 +31,7 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 - **既存部品**: edge-case-hunter agent, silent-failure-hunter agent, /edge-case-analysis skill
 - **依存**: なし
 
-#### T3: Repair Routing Table [S]
+#### T3: Repair Routing Table [S] ✅
 - **目的**: 失敗時に references/ / rules/ / skill / hook のどこを修正すべきかの判定表
 - **成果物**:
   - `references/repair-routing.md` — 障害種別→修復先レイヤーのマッピング
@@ -40,9 +40,9 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 - **既存部品**: AutoEvolve improve-policy.md のカテゴリ、session-learner.py
 - **依存**: なし
 
-### Wave 2: 中優先度（新規リファレンス + 既存強化）
+### Wave 2: 中優先度（新規リファレンス + 既存強化） ✅
 
-#### T4: Backend Task Archetype Templates [M]
+#### T4: Backend Task Archetype Templates [M] ✅
 - **目的**: 反復性の高い SW 開発領域のリファレンスドキュメント体系化
 - **成果物**:
   - `references/task-archetypes/` — 領域別テンプレート（初期は 3-5 領域）
@@ -51,7 +51,7 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 - **既存部品**: compile-wiki taxonomy, wiki INDEX, tacit-knowledge pipeline
 - **依存**: T3（repair routing が archetype からの修復先を参照）
 
-#### T5: Stage Transition 結線 [M]
+#### T5: Stage Transition 結線 [M] ✅
 - **目的**: EPD パイプラインのステージ遷移を明文化・自動化
 - **成果物**:
   - `references/stage-transition-rules.md` — 各ステージの完了条件と次ステージへの遷移ルール
@@ -59,7 +59,7 @@ RACA 記事から抽出した知見をソフトウェア開発ハーネスに適
 - **既存部品**: EPD skill, completion-gate.py, golden-check.py, CLAUDE.md ワークフロー
 - **依存**: T1, T2（preflight と red-team が遷移ルールに組み込まれる）
 
-#### T6: Observability Dashboard [M]
+#### T6: Observability Dashboard [M] ✅
 - **目的**: agent routing / 検証失敗 / 再試行の観測信号を意思決定に接続
 - **成果物**:
   - `references/observability-signals.md` — 観測すべき信号とアクション定義
