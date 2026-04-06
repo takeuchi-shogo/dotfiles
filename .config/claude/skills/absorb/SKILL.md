@@ -65,20 +65,21 @@ metadata:
 
 Opus は返された構造化抽出をユーザーに要約表示する（詳細は内部用）。
 
-## Phase 2: Analyze（ギャップ分析 + 強化分析）
+## Phase 2: Analyze（ギャップ分析 + 強化分析） [Sonnet Explore → Opus]
 
 現在のセットアップと記事の知見を **2パス** で比較する。
 
-### Pass 1: 存在チェック（従来のギャップ分析）
+### Pass 1: 存在チェック [Sonnet (Explore) に委譲]
 
-**Read 予算: 最大 15 回の Grep/Glob/Read 操作。** 超過したら探索を打ち切り、見つかった範囲で判定する。
+Phase 1 で抽出した各手法のキーワードを `Agent(model: "sonnet", subagent_type: "Explore")` に渡す。
 
-1. 記事の手法に関連するファイルを特定:
-   - 記事の各手法からキーワード（2-3語）を抽出
-   - **一括 Grep**: プロジェクトルートから 1 回の Grep でキーワードを検索（個別ディレクトリ走査はしない）
-   - ヒットしたファイルのみ Read で確認（最大 3 ファイル/手法）
-   - CLAUDE.md, MEMORY.md は最初に 1 回だけ確認（手法ごとに再読み込みしない）
-2. 各手法について判定:
+**Sonnet への指示内容:**
+
+> 以下のキーワードリストについて、このプロジェクト内に関連する仕組みが存在するか調査してください。
+> 各キーワードについて: (1) 関連ファイルパス (2) 該当箇所の要約 (3) 存在判定（exists / partial / not_found）を返してください。
+> CLAUDE.md, MEMORY.md も確認対象に含めてください。
+
+Opus は Sonnet の調査結果を受けて、各手法について以下を判定する:
 
 | 判定 | 意味 |
 |------|------|
@@ -87,11 +88,9 @@ Opus は返された構造化抽出をユーザーに要約表示する（詳細
 | **Gap** | 未実装。取り込み価値あり |
 | **N/A** | 当セットアップには不要（理由を添える） |
 
-### Pass 2: 強化チェック（Already 項目の突き合わせ）
+### Pass 2: 強化チェック [Opus]
 
-**Read 予算: Already 項目あたり最大 2 ファイルの Read。** Pass 1 で既に読んだファイルは再読み込みしない。
-
-Already と判定した各項目について、記事の具体例（失敗事例・成功事例）と既存の仕組みを突き合わせ、強化余地があれば簡潔に併記する。
+Already と判定した各項目について、記事の具体例（失敗事例・成功事例）と既存の仕組みを突き合わせ、強化余地があれば簡潔に併記する。Pass 1 で Sonnet が返したファイル内容を活用し、不足があれば追加で Read する（Already 項目あたり最大 2 ファイル）。
 
 判定結果:
 
@@ -116,9 +115,47 @@ Already と判定した各項目について、記事の具体例（失敗事例
 
 2つのテーブルを分けることで、「新規追加」と「既存強化」を明確に区別する。
 
-3. ユーザーに分析結果をテーブルで提示
+ユーザーに分析結果をテーブルで提示する（Phase 2.5 の前に一度見せる）。
 
-## Phase 3: Triage（選別）
+## Phase 2.5: Refine（セカンドオピニオン + 周辺知識補完） [Codex + Gemini 並列]
+
+**Phase 2 の分析テーブルをユーザーに提示した後、必ず実行する。スキップ不可。**
+
+Codex と Gemini を **並列** で起動する:
+
+### Codex: 分析批評
+
+`codex-rescue` サブエージェント（または `/dispatch` 経由の cmux Worker）に以下を依頼:
+
+> 以下は外部記事のギャップ分析結果です。この分析に対して批評してください:
+> 1. **見落とし**: 記事の手法で分析から漏れているものはないか
+> 2. **過大評価**: Gap と判定したが実は既存の仕組みでカバーできるものはないか
+> 3. **過小評価**: Already (強化不要) と判定したが実は強化すべきものはないか
+> 4. **前提の誤り**: 記事の前提条件と当セットアップの文脈が合わない手法はないか
+> 5. **優先度の提案**: 取り込むなら何を最優先にすべきか
+>
+> {Phase 2 の分析テーブル全体}
+> {Phase 1 の記事要約}
+
+### Gemini: 周辺知識補完
+
+Gemini CLI（Google Search grounding 付き）に以下を依頼:
+
+> 以下の記事の主張について、周辺知識を補完してください:
+> 1. この手法を採用した他のプロジェクトの成功/失敗事例
+> 2. 記事が言及していない制約やトレードオフ
+> 3. より新しい代替手法があればその概要
+>
+> {Phase 1 の記事要約}
+
+### Opus: 統合
+
+両方の結果を受けて:
+1. 分析テーブルを修正（判定の変更があれば反映）
+2. 修正箇所をユーザーに明示（「Codex の指摘で X を Gap → Already に変更」等）
+3. 修正後テーブルを提示してから Phase 3 に進む
+
+## Phase 3: Triage（選別） [Opus]
 
 `AskUserQuestion` で取り込み対象を **2段階** で選別する。
 
@@ -151,7 +188,7 @@ Already (強化可能) 項目がある場合、Gap/Partial とは別に提示す
 - 「なし」の場合は Phase 4 をスキップし、分析レポートだけ保存
 - Gap/Partial と Already 強化は独立に選択できる（片方だけ取り込むことも可能）
 
-## Phase 4: Plan（統合プラン生成）
+## Phase 4: Plan（統合プラン生成） [Opus → Sonnet]
 
 選別された項目から統合プランを生成する。
 
@@ -167,43 +204,32 @@ Already (強化可能) 項目がある場合、Gap/Partial とは別に提示す
 | セキュリティ | policy hook 追加、deny rules 追加 |
 | ワークフロー | スキル修正、コマンド追加、settings.json 変更 |
 
-### プラン生成ルール
+### プラン生成ルール（Opus が担当）
 
 1. 各タスクは具体的なファイルパスと変更内容を含む
 2. タスク間の依存関係を明示
 3. 規模を推定: S（1ファイル）/ M（2-5ファイル）/ L（6ファイル超）
 4. L 規模の場合は `docs/plans/` にプランを保存
 
-### 分析レポートの保存
+### 分析レポートの書き出し [Sonnet に委譲]
 
-`docs/research/YYYY-MM-DD-{slug}-analysis.md` に保存:
+Opus がプラン策定を完了した後、レポートの書き出しを `Agent(model: "sonnet")` に委譲する。
 
-```markdown
----
-source: {URL or title}
-date: YYYY-MM-DD
-status: analyzed | integrated | skipped
----
+**Sonnet への指示内容:**
 
-## Source Summary
-{Phase 1 の構造化抽出}
-
-## Gap Analysis
-{Phase 2 のテーブル}
-
-## Integration Decisions
-{Phase 3 で選択/スキップした項目と理由}
-
-## Plan
-{Phase 4 のタスクリスト。なしの場合は省略}
-```
+> 以下の分析結果を `docs/research/YYYY-MM-DD-{slug}-analysis.md` に保存してください。
+> テンプレート: `templates/analysis-report.md`
+> {Phase 1 の構造化抽出}
+> {Phase 2 + 2.5 の修正済みテーブル}
+> {Phase 3 の選択/スキップ結果}
+> {Phase 4 のタスクリスト}
 
 ### MEMORY.md への記録
 
 MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析レポートに任せる。
 既存のメモリエントリと重複する場合は更新で対応し、新規追加しない。
 
-## Phase 5: Handoff（実行判断）
+## Phase 5: Handoff（実行判断） [Opus]
 
 プランの規模に応じて実行方法を提案:
 
@@ -213,61 +239,35 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 | M | ユーザーに確認後、同一セッションで実行 |
 | L | プラン保存 → 新セッションで `/rpi` or 手動実行 |
 
-## Phase 5.5: Wiki Update（任意）
+## Phase 5.5-5.7: 後処理 [Sonnet BG に委譲]
 
-分析レポートが**現セッション内で保存された**場合、かつ `docs/wiki/` が存在する場合:
-1. 「wiki を更新しますか？」とユーザーに確認
-2. 承認された場合のみ `/compile-wiki update` を実行（INDEX 更新 + 関連概念の追加/更新）
-3. 拒否された場合はスキップ（副作用なし）
+Phase 5 の実行判断後、以下の後処理を `Agent(model: "sonnet", run_in_background: true)` にまとめて委譲する。
+ユーザーへの確認が必要な項目（Wiki Update, Obsidian Bridge）は **Phase 5 で Opus がまとめて確認** してから委譲する。
 
-## Phase 5.6: Obsidian Bridge（任意）
+### Opus がユーザーに確認する内容（Phase 5 の末尾で一括確認）
 
-Phase 5.5 の後、ユーザーに確認する:
-
-「Obsidian Vault にも Literature Note として保存しますか？」
-
-### Yes の場合
-
-分析レポートを `/digest` 互換の Literature Note 形式に変換し、`mcp__obsidian__write_note` で Vault に保存する。
-
-**frontmatter:**
-
-```yaml
----
-created: "{YYYY-MM-DD}"
-tags:
-  - type/literature
-  - "topic/{分析から抽出したトピック1}"
-  - "topic/{分析から抽出したトピック2}"
-source:
-  title: "{記事タイトル}"
-  author: "{著者名（不明なら空欄）}"
-  url: "{元 URL（テキスト入力なら空欄）}"
-  type: article
----
+```
+後処理について確認します:
+1. Wiki 更新 — docs/wiki/ の INDEX を更新しますか？ (Yes/No)
+2. Obsidian 保存 — Literature Note として Vault に保存しますか？ (Yes/No)
+(Wiki Log は自動追記します)
 ```
 
-**セクション構成:**
+### Sonnet BG への委譲内容
 
-| セクション | 内容 |
-|-----------|------|
-| **Key Takeaways** | Phase 1 の主張・手法から抽出した要点（箇条書き 3-5 個） |
-| **Summary** | Phase 1 の構造化抽出を散文でまとめたもの |
-| **My Thoughts** | Phase 3 の統合判断（何を取り込む/取り込まない、その理由） |
-| **Action Items** | Phase 4 のタスクリスト（`- [ ]` 形式）。プランなしなら省略 |
-| **Related Notes** | 既存分析レポートへのリンク（`[[]]` 形式）。なければ省略 |
+確認結果に応じて、承認された項目のみ Sonnet BG に委譲する:
 
-**保存先:** `05-Literature/lit-{author}-{title-slug}.md`
-- `author`: 著者名（不明なら `unknown`）
-- `title-slug`: タイトルをケバブケースに変換（日本語はそのまま短縮）
+**Wiki Update（承認時のみ）:**
+- `docs/wiki/` が存在する場合、INDEX 更新 + 関連概念の追加/更新
 
-### No の場合
+**Obsidian Bridge（承認時のみ）:**
+- 分析レポートを `/digest` 互換の Literature Note 形式に変換
+- `mcp__obsidian__write_note` で Vault の `05-Literature/lit-{author}-{title-slug}.md` に保存
+- frontmatter: created, tags (type/literature, topic/...), source (title, author, url, type)
+- セクション: Key Takeaways, Summary, My Thoughts, Action Items, Related Notes
 
-スキップ（副作用なし）
-
-## Phase 5.7: Wiki Log（自動）
-
-分析レポートが保存された場合、`docs/wiki/log.md` に ingest エントリを追記する（確認不要）。
+**Wiki Log（自動・確認不要）:**
+- `docs/wiki/log.md` に ingest エントリを追記
 
 ```markdown
 ## [YYYY-MM-DD] ingest | {記事タイトル}
@@ -289,13 +289,15 @@ source:
 
 | NG | 理由 |
 |----|------|
-| 手法ごとに個別ディレクトリを Glob/Grep で走査する | Read 爆発で doom_loop/exploration_spiral を誘発。一括 Grep で検索し、ヒットファイルのみ Read |
+| 手法ごとに個別ディレクトリを Glob/Grep で走査する | Read 爆発で doom_loop/exploration_spiral を誘発。Sonnet Explore に委譲する |
 | ギャップ分析せずに全部取り込む | 既存と重複したり、不要な複雑さを招く |
 | MEMORY.md に詳細を書く | ポインタのみ。詳細は分析レポートに |
 | 分析せずにプランだけ作る | Already/N/A を見落とし無駄な作業が発生 |
-| 記事の主張を無批判に受け入れる | 前提条件が合わない手法を導入してしまう |
+| 記事の主張を無批判に受け入れる | 前提条件が合わない手法を導入してしまう。Phase 2.5 で Codex + Gemini の批評を必ず通す |
 | 1記事から10以上の変更を出す | 消化不良になる。優先度上位3-5個に絞る |
-| **Already と判定して深掘りを止める** | **仕組みの存在 ≠ 記事の知見で強化不要。記事の具体的失敗事例・成功事例と既存の仕組みを突き合わせ、バイアス・失敗モード・パラメータの改善余地を必ず検討する** |
+| **Already と判定して深掘りを止める** | **仕組みの存在 ≠ 記事の知見で強化不要。Pass 2 + Phase 2.5 で必ず検証する** |
+| **Phase 2.5 (Refine) をスキップする** | **スキップ不可。Opus の判断バイアスを補正するために Codex + Gemini の並列批評は必須** |
+| **Opus が Extract や探索を自分でやる** | **定型作業は Haiku/Sonnet に委譲する。Opus は判断・統合・ユーザー対話に集中** |
 
 ## Chaining
 

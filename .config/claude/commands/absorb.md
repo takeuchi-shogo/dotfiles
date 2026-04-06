@@ -14,4 +14,4 @@ absorb スキルの Workflow に従って実行する。
 2. 引数あり（テキスト）: 貼り付けテキストとして分析
 3. 引数なし: 何を分析するか聞く（AskUserQuestion で確認）
 
-Phase 1 (Extract) → Phase 2 (Analyze) → Phase 3 (Triage) → Phase 4 (Plan) → Phase 5 (Handoff) の順で実行。
+Phase 1 (Extract) [Haiku/Gemini] → Phase 2 (Analyze) [Sonnet Explore → Opus] → Phase 2.5 (Refine) [Codex + Gemini 並列] → Phase 3 (Triage) [Opus] → Phase 4 (Plan) [Opus → Sonnet] → Phase 5 (Handoff) [Opus] → Phase 5.5-5.7 (後処理) [Sonnet BG] の順で実行。
