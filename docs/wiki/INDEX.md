@@ -39,6 +39,7 @@
 
 - [スキル設計](concepts/skill-design.md) — SKILL.md のベストプラクティスと評価駆動品質管理
 - [スキルチェイニング](concepts/skill-chaining.md) — スキルをループとして配線する動的アクション設計
+- [Skill ↔ Subagent 合成](concepts/skill-subagent-composition.md) — skills: によるロール定義と context: fork によるタスク隔離
 
 ### security — セキュリティ
 
