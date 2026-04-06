@@ -35,6 +35,7 @@
 | **Haiku** | 軽量な情報取得 | WebFetch+要約、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
 | **Codex** | 異視点の深い推論 | 設計の壁打ち、リスク分析、セカンドオピニオン、コードレビュー | cmux Worker or `/dispatch` |
 | **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
+| **Cursor** | マルチモデル・Cloud Agent | モデル比較、非同期長時間タスク、Cursor インデックス活用 | `/cursor` skill |
 
 ### 並行実行
 
