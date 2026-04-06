@@ -33,7 +33,7 @@
 - [エージェントメモリ](concepts/agent-memory.md) — 7 層メモリアーキテクチャと品質管理
 - [コンテキスト管理](concepts/context-management.md) — コンパクション・コンテキストリセット・トークン予算
 - [軌跡学習](concepts/trajectory-learning.md) — 実行履歴からの知識抽出と蒸留
-- [ナレッジパイプライン](concepts/knowledge-pipeline.md) — raw データから構造化知識への変換パイプライン
+- [ナレッジパイプライン](concepts/knowledge-pipeline.md) — raw データから構造化知識への変換パイプライン。Filing Loop・promote・lint --fix・generate-data で3層サイクル完結
 
 ### skill — スキル設計
 

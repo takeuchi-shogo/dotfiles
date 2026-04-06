@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-07] ingest | LLM Knowledge Bases Full Guide (Karpathy method)
+
+- ソース: How to create your own LLM knowledge bases today (full course)
+- 判定: Gap 1個 (Wiki→Schema昇格パス), Partial 2個 (定期自動コンパイル, Wiki→QA生成), Already強化 4個 (Filing Loop実効化, Lint auto-fix, INDEX強化, frontmatter強化), N/A 1個 (QMD)
+- 取り込み: compile-wiki に promote/lint--fix/generate-data サブコマンド追加、query Filing Loop をデフォルト提案に変更、INDEX に source_count/related_concepts 追加、frontmatter に confidence/last_validated 追加、auto-morning-briefing.sh に wiki auto-update 接続
+
 ## [2026-04-07] ingest | Self-Optimizing Multi-Agent Systems for Deep Research
 
 - ソース: https://arxiv.org/abs/2604.02988 (Câmara+ 2026, ECIR Workshop)

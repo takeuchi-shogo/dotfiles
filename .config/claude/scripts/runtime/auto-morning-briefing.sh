@@ -116,6 +116,21 @@ if [[ -n "$VAULT_PATH" ]] && [[ -d "$VAULT_PATH" ]]; then
     echo "[morning-briefing] Written to $daily_note"
 fi
 
+# --- Wiki auto-update (if new research reports exist) ---
+DOTFILES_DIR="$HOME/dotfiles"
+if [[ -d "$DOTFILES_DIR/docs/wiki" ]]; then
+    last_compiled=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$DOTFILES_DIR/docs/wiki/INDEX.md" 2>/dev/null | head -1 || echo "2020-01-01")
+    new_reports=$(git -C "$DOTFILES_DIR" log --since="$last_compiled" --name-only --pretty=format: -- "docs/research/*.md" 2>/dev/null | sort -u | grep -c . || echo "0")
+    if [[ "$new_reports" -gt 0 ]]; then
+        echo "[morning-briefing] $new_reports new research reports since $last_compiled. Triggering wiki update..."
+        (cd "$DOTFILES_DIR" && claude -p "Run /compile-wiki update" --output-format text 2>/dev/null) || {
+            echo "[morning-briefing] Wiki update failed (non-critical)" >&2
+        }
+    else
+        echo "[morning-briefing] Wiki is up to date (last compiled: $last_compiled)"
+    fi
+fi
+
 # --- Notify via cmux ---
 if [[ -x "$NOTIFY" ]]; then
     "$NOTIFY" "Morning Briefing" "Today's plan is ready" hero
