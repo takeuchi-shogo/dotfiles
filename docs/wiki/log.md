@@ -143,3 +143,16 @@
 - 判定: Gap 0, Partial 3, Already 17 (うち強化可能 4), N/A 6
 - 取り込み: completion-gate パターン分類、AST 構造チェッカー、review 多モデル検証、タスク分解ガイド、ライセンスチェック
 - 変更ファイル: completion-gate.py, structure-check.py, settings.json, task-decomposition-guide.md, security-reviewer.md, analysis report
+
+## [2026-04-08] ingest | ASI-Evolve: AI Accelerates AI
+
+- ソース: https://arxiv.org/abs/2603.29640
+- 判定: Gap 1個, Partial 1個, Already(強化可能) 5個, Already(強化不要) 4個
+- 取り込み: 全6件採用 — P0: proposals.jsonl lineage拡張 + micro-analyzer, P1: proposal-level dedup, P2: knowledge-index + retrieval, P3: 3段ゲート評価, P4: UCB1
+- プラン: `docs/plans/2026-04-08-asi-evolve-autoevolve-integration.md`
+
+## [2026-04-08] ingest | CC Harness Blueprint
+
+- ソース: "How I built harness for my agent using Claude Code leaks" (Medium記事)
+- 判定: Gap 0個, Partial 7個, Already 7個 (強化不要), N/A 4個
+- 取り込み: マイクロループ規律, コンテキスト注入ポリシー, Context Collapse, Progressive Trust, CC内部Retry/Budgeting参照, UI Trust原則

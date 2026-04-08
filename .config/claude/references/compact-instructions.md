@@ -34,13 +34,17 @@ CC の Full Compaction は2フェーズで summary を生成する:
 | memory/ への書き込み | **安全** | CC が ContentReplacementState で安定化 |
 | tool 結果の大量出力 | **安全** | CC が Layer 1-2 で自動管理 |
 
-## 3種の圧縮戦略
+## 4種の圧縮戦略
 
-| 戦略 | コスト | 適用場面 | 現状 |
-|------|--------|---------|------|
-| ツール結果置換 | 極低 | 大きなツール出力 | output-offload.py で実装済み |
-| LLM 要約 | 中 | 長いタスクの中間状態 | PreCompact で half-clone.sh が git 状態保存 |
-| スライディングウィンドウ | 極低 | 短い対話 | Claude Code プラットフォームが管理 |
+| 戦略 | CC内部名称 | コスト | 適用場面 | 現状 |
+|------|-----------|--------|---------|------|
+| ツール結果置換 | Microcompact | 極低 | 同一ツールの重複結果をキャッシュ参照に置換 | output-offload.py で実装済み |
+| スライディングウィンドウ | Snip Compact | 極低 | 古いメッセージを削除（protected tail は保持） | Claude Code プラットフォームが管理 |
+| LLM 要約 | Auto Compact | 中 | トークン閾値超過時に会話を要約 | PreCompact で half-clone.sh が git 状態保存 |
+| 段階的圧縮 | Context Collapse | 高 | 長時間セッション（数時間）。ツール結果→思考ブロック→セクション全体の順に圧縮 | CC 内部 feature flag (CONTEXT_COLLAPSE)。ハーネス側制御不可 |
+
+> **階層の原則**: 安い戦略から順に実行。高コスト戦略は安い戦略で不十分な場合のみ発火する。
+> Microcompact と Snip はモデルコール不要で大部分のケースをカバーする。
 
 ## 保留優先度（圧縮時）
 

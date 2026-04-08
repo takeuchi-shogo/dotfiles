@@ -48,6 +48,22 @@ PreCompact で key decisions を memory/ にフラッシュし、PostCompact で
 ハーネスのメモリ管理機構は過渡的技術。次世代モデルの compaction 品質向上で
 不要になりうる。軽量・モジュラーに保ち、削除コストを最小化する。
 
+## P8: Task-Scoped Context Injection（タスク粒度のコンテキスト注入）
+
+> 出典: Claude Code 内部アーキテクチャ — system-reminder タグによるキャッシュ安定なコンテキスト注入。
+
+タスクごとに「何を・いつ・どの粒度で持ち込むか」を制御する:
+
+| コンテキスト種別 | 注入タイミング | 粒度ガイド |
+|----------------|-------------|-----------|
+| **Plan/Spec** | タスク開始時 | 全文（短いなら）or 該当セクションのみ |
+| **References** | 必要時に遅延ロード | Progressive Disclosure に従う |
+| **Memory** | セッション開始時（自動） | MEMORY.md のインデックスのみ。詳細は Read |
+| **Git状態** | 各ターン（自動） | CC が system-reminder で注入 |
+| **ツール結果** | ツール実行後 | resource-bounds.md の Output Offload 閾値に従う |
+
+**原則**: 静的コンテキスト（変わらない）はシステムプロンプト側に、動的コンテキスト（ターンごとに変わる）はユーザーメッセージ側に配置するとキャッシュ効率が最大化される。CC 内部ではこれを SYSTEM_PROMPT_DYNAMIC_BOUNDARY で実現している。
+
 ---
 
 ## Layer Architecture (7層)

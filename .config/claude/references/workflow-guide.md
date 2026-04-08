@@ -2,6 +2,24 @@
 
 CLAUDE.md から参照される詳細ドキュメント。タスク実行時に必要に応じて読み込む。
 
+## Agent Micro-Loop（ターンレベルの実行規律）
+
+> 出典: Claude Code 内部 `query.ts` の 5-phase iteration pattern を harness レベルの実行規律として抽出。
+
+スキルやエージェントの各ターンは以下の5段階で実行する:
+
+| Phase | 名称 | 内容 | 失敗時 |
+|-------|------|------|--------|
+| 1 | **Intake** | タスクのスコープ確認、前提条件チェック | スコープ不明なら AskUserQuestion |
+| 2 | **Explore** | Read/Grep/Glob で現状把握。recall 重視 | Exploration Spiral 閾値(5回)で STOP |
+| 3 | **Act** | Edit/Write/Bash で実装 | Edit Loop 閾値(3回/10min)で再プラン |
+| 4 | **Verify** | テスト実行、diff 確認、期待値との突合 | 失敗は Explore に戻る |
+| 5 | **Summarize** | 成果の要約。次ターンへの引き継ぎ情報を整理 | — |
+
+マクロワークフロー（Plan→Implement→Test→Review→Verify）の各ステップ内部で、このマイクロループが繰り返される。
+
+---
+
 ## 設計根拠
 
 各承認ゲート（Plan承認、Test、Review、Verify、Security）は ML の**損失関数**として機能する。
@@ -238,6 +256,21 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 - **Best-of-N プランニング（L 規模で推奨）**: 複数モデルに独立してプラン草案を出させ、最良の要素を統合する。手順: (1) Claude / Codex / Gemini にそれぞれ独立にプラン草案を生成させる（`/debate` または個別委譲）、(2) 各プランの強み・弱みを比較表にまとめる、(3) 最良の要素を統合した最終プランを作成する。全モデルが一致する部分は信頼度が高く、分岐する部分はリスク要因として Decision Log に記録する
 - **Plan レビュー（M/L 必須）**: Plan 作成後、ユーザーに提示する**前に** `plan-document-reviewer` サブエージェントを dispatch してレビューを実施する。Issues Found なら修正して再レビュー、Approved ならユーザーへ提示する（writing-plans スキルの Plan Review Loop に従う。最大3イテレーション）
 - **L規模のみ**: チェックポイントコミットを作成してから着手する（`git add -A && git commit -m "checkpoint: before {task description}"`）
+
+## Permission Progressive Trust（段階的信頼構築）
+
+> 出典: Claude Code 内部 7段階 Permission Pipeline の設計思想。
+
+新規ユーザーや新プロジェクトでは、以下の段階で信頼を構築する:
+
+| 段階 | Permission Mode | 適用場面 | settings.json |
+|------|----------------|---------|---------------|
+| 1 | `default` | 初回利用。すべてのアクションを都度承認 | デフォルト |
+| 2 | `acceptEdits` | ファイル編集は自動承認。Bash は都度確認 | `"permissions": {"allow": ["Edit", "Write"]}` |
+| 3 | カスタム allow | 安全なコマンド（git, npm test 等）を自動承認 | `"permissions": {"allow": ["Bash(git *)", "Bash(npm test)"]}` |
+| 4 | `bypassPermissions` | すべて自動承認。十分な信頼構築後のみ | 注意: deny rules は引き続き有効 |
+
+**原則**: binary allow/deny ではなく spectrum。安全性と速度のバランスをユーザーが段階的に調整する。
 
 ### Trust Level マッピング（パーミッションモード選択ガイド）
 
@@ -886,3 +919,22 @@ Spec → Spike → Validate → Decide → Build(/rpi) → Review(3軸) → Comm
 - **Semantic**: `/review` が並列レビュー、`/validate` が仕様整合性
 
 ワークフローの Verify 段階で、3層すべてが PASS であることを確認してからタスク完了とする。
+
+---
+
+## Visibility → Trust → Autonomy（可視性の設計原則）
+
+> 出典: Claude Code の terminal UI 設計思想。
+
+エージェントの作業を可視化することで信頼が生まれ、信頼が自律性を拡大する:
+
+```
+可視性 → 信頼 → 自律性 → 有用な作業
+```
+
+statusline はこの原則の実装:
+- **コンテキスト使用率**: ユーザーがトークン化を理解せずとも残容量を直感的に把握
+- **モデル名・コスト**: 透明性がコスト意識を育てる
+- **references/memory/skill 数**: 何がロードされているかの可視化
+
+可視性が不十分だとユーザーは慎重になり、許可を絞り、エージェントの有用性が下がる悪循環に入る。

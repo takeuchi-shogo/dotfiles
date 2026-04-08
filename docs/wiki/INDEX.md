@@ -52,6 +52,7 @@
 - [進化的プログラム合成](concepts/evolutionary-program-synthesis.md) — LLM × 進化的アルゴリズムの融合。二層モデル探索・差分パッチ変異・島モデル並行進化
 - [RLHF・アライメント](concepts/rlhf-alignment.md) — 報酬モデリング・ポリシー勾配・Verbalized Sampling
 - [Environment-Driven RL](../research/2026-04-08-environment-driven-rl-analysis.md) — 推論プロキシによるトレース記録と本番環境駆動の強化学習
+- [ASI-Evolve 統合](concepts/self-improving-agents.md) — AutoEvolve への ASI-Evolve 知見統合。lineage追跡・micro-analyzer・knowledge retrieval・3段ゲート評価。関連: [メタ進化](concepts/meta-evolution.md)
 
 ### decision — 意思決定
 
