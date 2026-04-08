@@ -22,7 +22,7 @@ from typing import Any
 # Known failure-mode codes (derived from reviewer-eval-tuples.json).
 # FM-001 through FM-010 are the currently recognised codes.
 # ---------------------------------------------------------------------------
-KNOWN_FM_CODES: frozenset[str] = frozenset(f"FM-{i:03d}" for i in range(1, 11))
+KNOWN_FM_CODES: frozenset[str] = frozenset(f"FM-{i:03d}" for i in range(1, 18))
 
 # Known reviewer agent names (derived from agents/ directory).
 KNOWN_REVIEWERS: frozenset[str] = frozenset(
@@ -37,6 +37,8 @@ KNOWN_REVIEWERS: frozenset[str] = frozenset(
         "golang-reviewer",
         "product-reviewer",
         "design-reviewer",
+        "debugger",
+        "build-fixer",
     ]
 )
 

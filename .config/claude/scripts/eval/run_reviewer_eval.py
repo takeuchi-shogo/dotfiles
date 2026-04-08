@@ -6,6 +6,7 @@
 
 Usage:
     python3 run_reviewer_eval.py [--tuples reviewer-eval-tuples.json] [--dry-run]
+    python3 run_reviewer_eval.py --suite regression [--limit N] [--baseline]
 
 出力:
     eval/results/YYYY-MM-DD-reviewer-eval.json — 個別結果
@@ -17,6 +18,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -121,6 +123,28 @@ def load_tuples(path: str) -> list[dict]:
     return data.get("tuples", [])
 
 
+def _build_regression_prompt(tuple_data: dict) -> str:
+    """Build prompt for regression (metadata-based) tuples."""
+    description = tuple_data["description"]
+    context = tuple_data.get("failure_description", tuple_data.get("code", ""))
+    root_cause = tuple_data.get("root_cause", description)
+    severity = tuple_data.get("severity", "unknown")
+    language = tuple_data["language"]
+
+    return f"""以下は過去に検出・修正された failure パターンです。
+このパターンを認識し、FM コードを特定してください。
+
+**言語**: {language}
+**重要度**: {severity}
+**Root cause**: {root_cause}
+**Context**:
+{context}
+
+このパターンは FM-XXX（references/failure-taxonomy.md 参照）のどれに該当しますか？
+該当する FM コードを明示し、confidence score (0-100) を含めてください。
+80未満の指摘は報告不要です。"""
+
+
 def run_single_eval(tuple_data: dict, dry_run: bool = False) -> dict:
     """1つのタプルに対してレビューを実行し、結果を返す。"""
     eval_id = tuple_data["id"]
@@ -130,18 +154,24 @@ def run_single_eval(tuple_data: dict, dry_run: bool = False) -> dict:
     expected_reviewer = tuple_data["expected_reviewer"]
     description = tuple_data["description"]
 
-    prompt = f"""以下のコードをレビューしてください。バグやセキュリティ問題を見つけてください。
+    is_regression = tuple_data.get("tuple_type") == "regression"
 
-```{language}
-{code}
-```
-
-各指摘には以下を含めてください:
-- confidence score (0-100)
-- failure_mode (FM-XXX 形式、references/failure-taxonomy.md 参照)
-- 問題の説明
-
-80未満の指摘は報告不要です。"""
+    if is_regression:
+        prompt = _build_regression_prompt(tuple_data)
+    else:
+        review_header = (
+            "以下のコードをレビューしてください。"
+            "バグやセキュリティ問題を見つけてください。"
+        )
+        prompt = (
+            f"{review_header}\n\n"
+            f"```{language}\n{code}\n```\n\n"
+            "各指摘には以下を含めてください:\n"
+            "- confidence score (0-100)\n"
+            "- failure_mode (FM-XXX 形式、references/failure-taxonomy.md 参照)\n"
+            "- 問題の説明\n\n"
+            "80未満の指摘は報告不要です。"
+        )
 
     if dry_run:
         return {
@@ -261,9 +291,11 @@ def generate_summary(results: list[dict], output_dir: Path) -> str:
             if r["status"] == "completed"
             else r["status"].upper()
         )
-        lines.append(
-            f"- **{r['eval_id']}** [{status}] {r['description']} (expected: {r['expected_fm']})"
+        entry = (
+            f"- **{r['eval_id']}** [{status}] {r['description']}"
+            f" (expected: {r['expected_fm']})"
         )
+        lines.append(entry)
 
     return "\n".join(lines)
 
@@ -275,10 +307,40 @@ def main() -> None:
         default=os.path.join(os.path.dirname(__file__), "reviewer-eval-tuples.json"),
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--suite", choices=["regression"], help="Run named suite (regression)"
+    )
+    parser.add_argument("--suite-path", default=None, help="Override suite JSON path")
+    parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Save results to baseline-eval.json (no date stamp)",
+    )
+    parser.add_argument(
+        "--limit", type=int, default=None, help="Limit number of tuples to run"
+    )
     args = parser.parse_args()
 
-    tuples = load_tuples(args.tuples)
+    if args.suite == "regression":
+        default_regression = os.path.join(
+            os.path.dirname(__file__), "regression-suite.json"
+        )
+        tuples_path = args.suite_path or default_regression
+    elif args.suite_path:
+        tuples_path = args.suite_path
+    else:
+        tuples_path = args.tuples
+
+    if not os.path.exists(tuples_path):
+        print(f"Suite file not found: {tuples_path}")
+        sys.exit(1)
+
+    tuples = load_tuples(tuples_path)
     print(f"Loaded {len(tuples)} eval tuples")
+
+    if args.limit is not None and len(tuples) > args.limit:
+        print(f"Limiting to {args.limit} of {len(tuples)} tuples")
+        tuples = tuples[: args.limit]
 
     results = []
     for t in tuples:
@@ -298,8 +360,20 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     date_str = datetime.now().strftime("%Y-%m-%d")
-    results_path = output_dir / f"{date_str}-reviewer-eval.json"
-    summary_path = output_dir / f"{date_str}-reviewer-eval-summary.md"
+
+    if args.suite == "regression":
+        prefix = "regression-eval"
+    elif args.baseline:
+        prefix = "baseline-eval"
+    else:
+        prefix = "reviewer-eval"
+
+    if args.baseline:
+        results_path = output_dir / f"{prefix}.json"
+        summary_path = output_dir / f"{prefix}-summary.md"
+    else:
+        results_path = output_dir / f"{date_str}-{prefix}.json"
+        summary_path = output_dir / f"{date_str}-{prefix}-summary.md"
 
     with open(results_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)

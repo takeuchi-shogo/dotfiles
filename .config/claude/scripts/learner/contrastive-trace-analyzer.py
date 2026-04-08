@@ -8,13 +8,31 @@ Glean "Trace Learning for Self-Improving Agents":
 
 Called by: /improve Step -0.5 (before Open Coding)
 Output: stdout (strategy candidates or "no data" message)
+
+Usage:
+  # Default mode (analyze all available traces):
+  python contrastive-trace-analyzer.py
+
+  # Version-diff mode (compare two time periods):
+  python contrastive-trace-analyzer.py --version-diff 2026-01-01 2026-04-01
+
+  # With custom traces directory:
+  python contrastive-trace-analyzer.py --traces-dir /path/to/learnings
+  python contrastive-trace-analyzer.py \
+      --version-diff 2026-01-01 2026-04-01 --traces-dir /path/to/learnings
+
+Version-diff semantics:
+  period_1 (old): entries with timestamp < v1 (represents "before" harness state)
+  period_2 (new): entries with timestamp >= v1 AND timestamp < v2
+  Patterns: [v2 new] appeared in new, [v1 only] resolved, [both] persistent
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 LEARNINGS_DIR = Path.home() / ".claude" / "agent-memory" / "learnings"
@@ -26,9 +44,10 @@ MIN_TRACES_FOR_LEARNING = 3
 TIMESTAMP_PROXIMITY_SEC = 300  # 5 minutes
 
 
-def load_strategy_outcomes() -> list[dict]:
+def load_strategy_outcomes(traces_dir: Path | None = None) -> list[dict]:
     """Load strategy-outcomes.jsonl entries."""
-    path = LEARNINGS_DIR / "strategy-outcomes.jsonl"
+    base = traces_dir if traces_dir is not None else LEARNINGS_DIR
+    path = base / "strategy-outcomes.jsonl"
     try:
         text = path.read_text(encoding="utf-8")
     except OSError:
@@ -44,9 +63,10 @@ def load_strategy_outcomes() -> list[dict]:
     return entries
 
 
-def load_errors() -> list[dict]:
+def load_errors(traces_dir: Path | None = None) -> list[dict]:
     """Load errors.jsonl entries with parsed timestamps."""
-    path = LEARNINGS_DIR / "errors.jsonl"
+    base = traces_dir if traces_dir is not None else LEARNINGS_DIR
+    path = base / "errors.jsonl"
     try:
         text = path.read_text(encoding="utf-8")
     except OSError:
@@ -167,10 +187,10 @@ def analyze_task_type(task_type: str, entries: list[dict]) -> list[dict]:
     return candidates
 
 
-def analyze() -> list[dict]:
+def analyze(traces_dir: Path | None = None) -> list[dict]:
     """Run contrastive analysis across all task_types."""
-    outcomes = load_strategy_outcomes()
-    errors = load_errors()
+    outcomes = load_strategy_outcomes(traces_dir)
+    errors = load_errors(traces_dir)
 
     if not outcomes:
         return []
@@ -211,10 +231,191 @@ def format_output(candidates: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _parse_date_boundary(date_str: str) -> datetime:
+    """Parse YYYY-MM-DD date string as UTC-aware datetime (start of day)."""
+    dt = datetime.strptime(date_str, "%Y-%m-%d")
+    return dt.replace(tzinfo=timezone.utc)
+
+
+def filter_by_date_range(
+    entries: list[dict], start: str | None, end: str | None
+) -> list[dict]:
+    """Filter entries by timestamp range [start, end).
+
+    Args:
+        entries: List of dicts with a 'timestamp' field.
+        start: ISO date string YYYY-MM-DD (inclusive lower bound), or None for no limit.
+        end: ISO date string YYYY-MM-DD (exclusive upper bound), or None for no limit.
+
+    Returns:
+        Filtered list of entries whose timestamp falls within [start, end).
+    """
+    start_dt = _parse_date_boundary(start) if start else None
+    end_dt = _parse_date_boundary(end) if end else None
+
+    result = []
+    for entry in entries:
+        ts = parse_timestamp(entry.get("timestamp", ""))
+        if ts is None:
+            continue
+        # Normalize to UTC-aware for comparison
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if start_dt is not None and ts < start_dt:
+            continue
+        if end_dt is not None and ts >= end_dt:
+            continue
+        result.append(entry)
+    return result
+
+
+def _run_analysis_on_entries(outcomes: list[dict], errors: list[dict]) -> list[dict]:
+    """Run cross_reference_errors + analyze_task_type on a given set of entries."""
+    if not outcomes:
+        return []
+    by_type = cross_reference_errors(outcomes, errors)
+    candidates = []
+    for task_type, entries in by_type.items():
+        candidates.extend(analyze_task_type(task_type, entries))
+    return candidates
+
+
+def format_version_diff_output(
+    v1_candidates: list[dict],
+    v2_candidates: list[dict],
+    v1: str,
+    v2: str,
+) -> str:
+    """Format diff report between two time periods.
+
+    Classifies patterns as:
+      [v2 new]  — appeared in period_2 (v1..v2) but not period_1 (..v1)
+      [v1 only] — present in period_1 only (resolved in new period)
+      [both]    — persistent issues across both periods
+    """
+    v1_keys = {c["error_pattern"] for c in v1_candidates}
+    v2_keys = {c["error_pattern"] for c in v2_candidates}
+
+    v2_new = [c for c in v2_candidates if c["error_pattern"] not in v1_keys]
+    v1_only = [c for c in v1_candidates if c["error_pattern"] not in v2_keys]
+    both = [c for c in v2_candidates if c["error_pattern"] in v1_keys]
+
+    lines = [
+        "## Contrastive Trace Analysis — Version Diff",
+        "",
+        f"**比較期間**: period_1 = ~{v1} / period_2 = {v1}~{v2}",
+        f"**period_1 候補数**: {len(v1_candidates)} | "
+        f"**period_2 候補数**: {len(v2_candidates)}",
+        "",
+    ]
+
+    def _append_section(title: str, tag: str, items: list[dict]) -> None:
+        lines.append(f"### {title} ({len(items)} 件)")
+        if not items:
+            lines.append("_なし_")
+            lines.append("")
+            return
+        lines.append("")
+        lines.append("| タグ | 状況 | エビデンス |")
+        lines.append("|-----|------|-----------|")
+        for c in items:
+            lines.append(f"| {tag} | {c['situation']} | {c['evidence']} |")
+        lines.append("")
+
+    _append_section("新規パターン (period_2 のみ)", "[v2 new]", v2_new)
+    _append_section("解消パターン (period_1 のみ)", "[v1 only]", v1_only)
+    _append_section("継続パターン (両期間)", "[both]", both)
+
+    return "\n".join(lines)
+
+
+def version_diff(v1: str, v2: str, traces_dir: Path) -> str:
+    """Compare strategy candidates between two time periods.
+
+    period_1 (old): entries with timestamp < v1
+    period_2 (new): entries with timestamp >= v1 AND timestamp < v2
+
+    Args:
+        v1: Start of new period / end of old period (YYYY-MM-DD).
+        v2: End of new period (YYYY-MM-DD, exclusive).
+        traces_dir: Directory containing strategy-outcomes.jsonl and errors.jsonl.
+
+    Returns:
+        Formatted markdown diff report.
+    """
+    all_outcomes = load_strategy_outcomes(traces_dir)
+    all_errors = load_errors(traces_dir)
+
+    p1_outcomes = filter_by_date_range(all_outcomes, None, v1)
+    p1_errors = filter_by_date_range(all_errors, None, v1)
+
+    p2_outcomes = filter_by_date_range(all_outcomes, v1, v2)
+    p2_errors = filter_by_date_range(all_errors, v1, v2)
+
+    if not p1_outcomes and not p2_outcomes:
+        return (
+            "## Contrastive Trace Analysis — Version Diff\n\n"
+            f"データ不足: period_1 ({len(p1_outcomes)} 件) / "
+            f"period_2 ({len(p2_outcomes)} 件)。"
+            "分析を実行できません。\n"
+        )
+
+    v1_candidates = _run_analysis_on_entries(p1_outcomes, p1_errors)
+    v2_candidates = _run_analysis_on_entries(p2_outcomes, p2_errors)
+
+    if not v1_candidates and not v2_candidates:
+        return (
+            "## Contrastive Trace Analysis — Version Diff\n\n"
+            "両期間ともに候補なし（失敗トレース不足または合意閾値未達）。\n"
+        )
+
+    return format_version_diff_output(v1_candidates, v2_candidates, v1, v2)
+
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Contrastive trace analyzer for strategy candidate extraction.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version-diff",
+        nargs=2,
+        metavar=("V1", "V2"),
+        help=(
+            "Compare two time periods. "
+            "V1/V2 are YYYY-MM-DD dates. "
+            "period_1 = before V1, period_2 = V1..V2."
+        ),
+    )
+    parser.add_argument(
+        "--traces-dir",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Directory containing strategy-outcomes.jsonl and errors.jsonl. "
+            f"Default: {LEARNINGS_DIR}"
+        ),
+    )
+    return parser
+
+
 def main() -> None:
+    parser = _build_arg_parser()
+    args = parser.parse_args()
+
+    traces_dir: Path | None = args.traces_dir
+    if traces_dir is not None:
+        traces_dir = traces_dir.expanduser().resolve()
+
     try:
-        candidates = analyze()
-        print(format_output(candidates))
+        if args.version_diff:
+            v1, v2 = args.version_diff
+            effective_dir = traces_dir if traces_dir is not None else LEARNINGS_DIR
+            print(version_diff(v1, v2, effective_dir))
+        else:
+            candidates = analyze(traces_dir)
+            print(format_output(candidates))
     except Exception as e:
         print(f"## Contrastive Trace Analysis\n\nエラーが発生しました: {e}\n")
 

@@ -53,6 +53,13 @@ mkdir -p "$RUN_DIR"
    - 前回の winning direction → 「継続 or 方向転換」の判断材料に
 4. `~/.claude/agent-memory/proposal-pool.jsonl` を Read（存在しない場合はスキップ）
    - Phase 2.0 の入力コンテキストとして注入（詳細は Phase 2.0 参照）
+5. **Baseline eval の記録**（`results/baseline-eval.json` が存在しない場合のみ実行）:
+   ```bash
+   python3 ~/.claude/scripts/eval/run_reviewer_eval.py --baseline
+   ```
+   - 出力: `scripts/eval/results/baseline-eval.json`
+   - Phase 2 の改善適用後に `aggregate_benchmark.py --baseline results/baseline-eval.json --current results/<latest>.json` で差分確認
+   - Recall +10pp / Precision -5pp max / F1 +5pp が success criteria
 
 ### Phase 1a: Coverage Matrix Analysis → meta-analyzer へ委譲
 

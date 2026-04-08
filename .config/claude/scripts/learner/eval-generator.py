@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import os
@@ -106,16 +107,21 @@ def _pick_representative_instance(cluster: dict) -> dict:
     return max(instances, key=lambda i: len(i.get("message", "")))
 
 
-def _build_code_snippet(instance: dict, fm_code: str) -> str:
-    """instance から代表コードスニペットを構築する。"""
-    msg = instance.get("message", "")
-    file_path = instance.get("file", "")
-    if msg:
-        comment = (
-            f"// Source: {file_path}" if file_path else "// Representative instance"
-        )
-        return f"{comment}\n// {msg[:200]}"
-    return f"// No representative code available for {fm_code}"
+def _build_failure_description(
+    instance: dict, fm_code: str, root_cause: str, severity: str
+) -> str:
+    """instance から構造化された failure description を構築する。"""
+    file_path = instance.get("file", "unknown")
+    msg = instance.get("message", "No message available")
+
+    lines = [
+        f"# Regression: {fm_code}",
+        f"# File: {file_path}",
+        f"# Root cause: {root_cause}",
+        f"# Error: {msg[:200]}",
+        f"# Severity: {severity}",
+    ]
+    return "\n".join(lines)
 
 
 def _load_clusters(clusters_path: Path) -> dict:
@@ -165,7 +171,174 @@ def _next_reg_id(suite: dict) -> str:
     return f"reg-{next_num:03d}"
 
 
+def import_external(
+    external_path: Path,
+    target_path: Path,
+    max_tuples: int,
+    dry_run: bool,
+) -> None:
+    """外部 JSON tuple を target にマージする。"""
+    # 1. Load external file
+    try:
+        external_data = json.loads(external_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.error("import-external: failed to load %s: %s", external_path, exc)
+        sys.exit(1)
+
+    external_tuples = external_data.get("tuples", [])
+    if not external_tuples:
+        logger.info("import-external: no tuples in external file")
+        return
+
+    # 2. Load target file
+    if target_path.exists():
+        try:
+            target_data = json.loads(target_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning(
+                "import-external: failed to load target %s, starting fresh: %s",
+                target_path,
+                exc,
+            )
+            target_data = {"tuples": []}
+    else:
+        target_data = {"tuples": []}
+
+    existing_tuples = target_data.get("tuples", [])
+
+    # 3. Build fingerprint set for dedup
+    existing_fingerprints = {
+        (
+            t.get("language", ""),
+            t.get("failure_mode", ""),
+            t.get("description", "")[:100],
+            t.get("code", "")[:100],
+        )
+        for t in existing_tuples
+    }
+
+    # 4. Generate ext-NNN IDs
+    existing_ext_nums = []
+    for t in existing_tuples:
+        tid = t.get("id", "")
+        if tid.startswith("ext-"):
+            try:
+                existing_ext_nums.append(int(tid[4:]))
+            except ValueError:
+                logger.debug("import-external: could not parse ext id: %s", tid)
+    next_ext_num = max(existing_ext_nums, default=0) + 1
+
+    # 5. Merge
+    added = 0
+    for t in external_tuples:
+        fp = (
+            t.get("language", ""),
+            t.get("failure_mode", ""),
+            t.get("description", "")[:100],
+            t.get("code", "")[:100],
+        )
+        if fp in existing_fingerprints:
+            logger.debug(
+                "import-external: skipping duplicate: %s", t.get("id", "unknown")
+            )
+            continue
+
+        if len(existing_tuples) >= max_tuples:
+            logger.warning(
+                "import-external: max_tuples limit (%d) reached, stopping import",
+                max_tuples,
+            )
+            break
+
+        # Assign ext-NNN ID
+        new_id = f"ext-{next_ext_num:03d}"
+        next_ext_num += 1
+
+        fm = t.get("failure_mode", "")
+        imported_tuple = {
+            "id": new_id,
+            "language": t.get("language", "unknown"),
+            "failure_mode": t.get("failure_mode", "FM-UNKNOWN"),
+            "severity": t.get("severity", SEVERITY_MAP.get(fm, "medium")),
+            "expected_reviewer": t.get(
+                "expected_reviewer",
+                REVIEWER_MAP.get(fm, "code-reviewer"),
+            ),
+            "description": t.get("description", f"Imported from {external_path.name}"),
+            "code": t.get("code", ""),
+        }
+        existing_tuples.append(imported_tuple)
+        existing_fingerprints.add(fp)
+        added += 1
+        logger.info("import-external: added %s from external", new_id)
+
+    if added == 0:
+        logger.info("import-external: no new tuples to import (all duplicates)")
+        return
+
+    target_data["tuples"] = existing_tuples
+
+    if dry_run:
+        print(
+            f"[dry-run] import: would add {added} tuples to {target_path}"
+            f" (total: {len(existing_tuples)})"
+        )
+    else:
+        target_path.write_text(
+            json.dumps(target_data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(
+            f"import: added {added} tuples to {target_path}"
+            f" (total: {len(existing_tuples)})"
+        )
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description=("Generate eval regression tuples from resolved failure clusters")
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Parse clusters but do not write output",
+    )
+    parser.add_argument(
+        "--import-external",
+        metavar="PATH",
+        help="Import external JSON tuples into reviewer-eval-tuples.json",
+    )
+    parser.add_argument(
+        "--import-target",
+        default=None,
+        help="Target file for import (default: reviewer-eval-tuples.json)",
+    )
+    parser.add_argument(
+        "--max-tuples",
+        type=int,
+        default=100,
+        help="Max total tuples after import (default: 100)",
+    )
+    args = parser.parse_args()
+
+    if args.import_external:
+        _setup_logger()
+        external_path = Path(args.import_external)
+        if not external_path.exists():
+            logger.error("import-external: file not found: %s", external_path)
+            sys.exit(1)
+
+        target_path = (
+            Path(args.import_target)
+            if args.import_target
+            else (
+                Path(__file__).resolve().parent.parent
+                / "eval"
+                / "reviewer-eval-tuples.json"
+            )
+        )
+        import_external(external_path, target_path, args.max_tuples, args.dry_run)
+        return
+
     _setup_logger()
 
     try:
@@ -200,17 +373,20 @@ def main() -> None:
             cluster_id = cluster.get("id", "")
             if cluster_id in already_registered:
                 logger.debug(
-                    "eval-generator: skipping already registered cluster %s", cluster_id
+                    "eval-generator: skipping already registered cluster %s",
+                    cluster_id,
                 )
                 continue
 
             fm_code = cluster.get("fm_code", "FM-UNKNOWN")
             root_cause = cluster.get("root_cause", "Unknown")
+            severity = SEVERITY_MAP.get(fm_code, "medium")
             language = _detect_language(cluster)
             representative = _pick_representative_instance(cluster)
-            code = _build_code_snippet(representative, fm_code)
+            description_text = _build_failure_description(
+                representative, fm_code, root_cause, severity
+            )
             reviewer = REVIEWER_MAP.get(fm_code, "code-reviewer")
-            severity = SEVERITY_MAP.get(fm_code, "medium")
 
             # resolved_date: last_seen またはクラスタから取得
             resolved_date = cluster.get("last_seen", "") or datetime.now(
@@ -231,12 +407,15 @@ def main() -> None:
             tuple_entry = {
                 "id": reg_id,
                 "source_cluster": cluster_id,
+                "tuple_type": "regression",
+                "root_cause": root_cause,
                 "language": language,
                 "failure_mode": fm_code,
                 "severity": severity,
                 "expected_reviewer": reviewer,
                 "description": description,
-                "code": code,
+                "failure_description": description_text,
+                "code": "",
                 "resolved_date": resolved_date,
             }
             suite["tuples"].append(tuple_entry)
@@ -262,15 +441,27 @@ def main() -> None:
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
-        suite_path.write_text(
-            json.dumps(suite, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        logger.info(
-            "eval-generator: wrote %d new tuples to %s (total: %d)",
-            generated,
-            suite_path,
-            len(suite["tuples"]),
-        )
+        if args.dry_run:
+            logger.info(
+                "eval-generator: --dry-run mode, skipping write"
+                " (%d new tuples would be written)",
+                generated,
+            )
+            print(
+                f"[dry-run] regression-suite: {suite_path}"
+                f" ({len(suite['tuples'])} tuples)"
+            )
+        else:
+            suite_path.write_text(
+                json.dumps(suite, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            logger.info(
+                "eval-generator: wrote %d new tuples to %s (total: %d)",
+                generated,
+                suite_path,
+                len(suite["tuples"]),
+            )
+            print(f"regression-suite: {suite_path} ({len(suite['tuples'])} tuples)")
 
     except Exception as exc:
         logger.error("eval-generator: fatal error: %s", exc)

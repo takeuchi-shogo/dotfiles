@@ -4,6 +4,65 @@
 > AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義する。
 > ユーザーがこのファイルを編集することで、改善の方向性を操作できる。
 
+## システムパイプライン
+
+```mermaid
+flowchart LR
+    subgraph DataSourcing["Data Sourcing"]
+        ST[Session Traces]
+        FC[failure-clusterer.py]
+        FCJ[failure-clusters.json]
+        ST --> FC --> FCJ
+    end
+
+    subgraph EvalGeneration["Eval Generation"]
+        EG[eval-generator.py]
+        RSJ[regression-suite.json]
+        EXT[external dataset]
+        REJ[reviewer-eval-tuples.json]
+        FCJ --> EG
+        EXT -->|--import-external| EG
+        EG --> RSJ
+        EG --> REJ
+    end
+
+    subgraph Optimization["Optimization"]
+        SP[split_holdout.py]
+        TRAIN[train split]
+        HOLD[holdout split]
+        AE[autoevolve-core.md\nImprove Phase]
+        AB[autoevolve branch]
+        REJ --> SP
+        SP --> TRAIN
+        SP --> HOLD
+        AE --> AB
+    end
+
+    subgraph Evaluation["Evaluation"]
+        RRE[run_reviewer_eval.py]
+        BEJ[baseline-eval.json]
+        REG[regression-eval]
+        AGG[aggregate_benchmark.py]
+        DELTA[delta report]
+        GATE[pass/fail gate]
+        TRAIN -->|--baseline| RRE --> BEJ
+        RSJ -->|--suite regression| RRE --> REG
+        BEJ --> AGG
+        REG --> AGG
+        AGG --> DELTA
+        HOLD --> RRE --> GATE
+        DELTA --> AE
+    end
+
+    subgraph Staleness["Staleness"]
+        ES[eval-staleness.py]
+        RC[retirement candidates]
+        BEJ --> ES
+        REG --> ES
+        ES --> RC
+    end
+```
+
 ## 改善の優先度
 
 以下の順序で改善を優先する:
