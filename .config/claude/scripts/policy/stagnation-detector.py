@@ -37,6 +37,7 @@ CONSECUTIVE_FAILURE_THRESHOLD = 5
 SAME_ERROR_TYPE_THRESHOLD = 3
 SAME_FILE_EDIT_THRESHOLD = 5
 COOLDOWN_STEPS = 3
+CONSOLIDATE_INTERVAL = 20  # Successful commands between knowledge consolidation prompts
 SESSION_MAX_AGE_SECONDS = 7200  # 2h
 STATE_FILE = get_data_dir() / "stagnation-state.json"
 
@@ -123,6 +124,7 @@ def _new_state() -> dict:
         "created_at": time.time(),
         "bash_history": [],
         "consecutive_failures": 0,
+        "successful_commands": 0,
         "same_file_edits": {},
         "last_suggestion_time": 0.0,
     }
@@ -348,6 +350,7 @@ def main() -> None:
         state["consecutive_failures"] += 1
     else:
         state["consecutive_failures"] = 0
+        state["successful_commands"] = state.get("successful_commands", 0) + 1
 
     # ファイル編集追跡 (成功した実行のみ)
     file_target = entry.get("file_target")
@@ -405,6 +408,26 @@ def main() -> None:
 
         save_state(state)
         output_context("PostToolUse", f"[Stagnation Detector] {suggestion}")
+        return
+
+    # Consolidate heartbeat（CORAL inspired — 成功パスでの定期的な知識整理）
+    successful = state.get("successful_commands", 0)
+    if successful >= CONSOLIDATE_INTERVAL:
+        state["successful_commands"] = 0
+        emit(
+            "pattern",
+            {
+                "type": "consolidate_heartbeat",
+                "successful_commands": CONSOLIDATE_INTERVAL,
+            },
+        )
+        save_state(state)
+        output_context(
+            "PostToolUse",
+            "[Consolidate Heartbeat] "
+            "成功が続いています。最近うまくいったアプローチを振り返り、"
+            "再利用可能なパターンがあれば記録を検討してください。",
+        )
         return
 
     save_state(state)
