@@ -407,6 +407,28 @@
         ]
       },
       {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/spec-quality-check.py",
+            "timeout": 5,
+            "statusMessage": "Spec quality check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/type-safety-delta.py",
+            "timeout": 5,
+            "statusMessage": "Type safety check..."
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write",
         "hooks": [
           {
