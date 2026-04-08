@@ -206,6 +206,12 @@
           },
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/diff-coverage-gate.py",
+            "timeout": 10,
+            "statusMessage": "Diff coverage check..."
+          },
+          {
+            "type": "command",
             "command": "node $HOME/.claude/scripts/runtime/session-save.js",
             "timeout": 15
           },
@@ -425,6 +431,17 @@
             "command": "python3 $HOME/.claude/scripts/policy/type-safety-delta.py",
             "timeout": 5,
             "statusMessage": "Type safety check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/impact-scan.py",
+            "timeout": 8,
+            "statusMessage": "Impact scan..."
           }
         ]
       },

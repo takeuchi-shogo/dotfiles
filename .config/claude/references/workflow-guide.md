@@ -405,7 +405,7 @@ Verify と Security Check の間に、AI 自身がコミット対象コードを
 - Critical/High の指摘は必ず修正してからコミット
 
 ```
-Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify -> Security Check -> Commit
+Plan -> Codex Spec/Plan Gate -> Edge Case Analysis(M/L) -> Implement -> Test -> Codex Review Gate -> Verify -> Security Check -> Commit
 
 失敗時のループ:
 - Spec/Plan Gate で指摘 → Claude が修正 or ユーザー判断 → 修正箇所のみ再レビュー
@@ -425,8 +425,8 @@ Plan -> Codex Spec/Plan Gate -> Implement -> Test -> Codex Review Gate -> Verify
 | 規模            | 例                                | 必須段階                         | スキップ可能                           |
 | --------------- | --------------------------------- | -------------------------------- | -------------------------------------- |
 | **S（軽微）**   | typo修正、1行変更、設定値変更     | Implement → Codex Review Gate → Verify                              | Spec Review, Plan, Spec/Plan Gate, Test, Security |
-| **M（標準）**   | 関数追加、バグ修正、小機能        | Spec Review → Plan → Codex Spec/Plan Gate → Implement → Test → Codex Review Gate → Verify | 4並列レビューは1-2エージェントに縮小可           |
-| **L（大規模）** | 新機能、リファクタリング、API設計 | Spec Review → Checkpoint → Plan → Codex Spec/Plan Gate → 全段階（Codex Review Gate 含む） | なし                                             |
+| **M（標準）**   | 関数追加、バグ修正、小機能        | Spec Review → Plan → Codex Spec/Plan Gate → Edge Case Analysis → Implement → Test → Codex Review Gate → Verify | 4並列レビューは1-2エージェントに縮小可           |
+| **L（大規模）** | 新機能、リファクタリング、API設計 | Spec Review → Checkpoint → Plan → Codex Spec/Plan Gate → Edge Case Analysis → 全段階（Codex Review Gate 含む） | なし                                             |
 
 ### Spec Review の定義（M/L で必須）
 
