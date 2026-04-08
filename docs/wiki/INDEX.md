@@ -27,6 +27,7 @@
 
 - [Claude Code アーキテクチャ](concepts/claude-code-architecture.md) — 内部設計とサブエージェント・スキルシステム
 - [コンテキストエンジニアリング](concepts/context-engineering.md) — CLAUDE.md・条件付きタグ・指示バジェットの最適化
+- [プロンプト・ワークフロー実践](../research/2026-04-09-30-claude-prompts-analysis.md) — 実務検証済み30プロンプト。Self-Correction Loop・DELIBERATELY SKIPPING・Voice Guide・Repurpose の統合知見
 
 ### memory — メモリ・コンテキスト
 
@@ -70,6 +71,7 @@
 
 - [エージェント評価](concepts/agent-evaluation.md) — Evals フレームワークとベンチマーク体系
 - [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — 見逃し/過検出の非対称損失とリスクカテゴリ別レビュー方針
+- [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
 
 ### tooling — ツール・エコシステム
 

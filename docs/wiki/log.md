@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-09] ingest | 30 Claude Prompts, Workflows & Automations
+
+- ソース: "30 Claude Prompts, Workflows & Automations I Use Every Single Day" (@eng_khairallah1)
+- 判定: Gap 1個, Partial 6個, Already 10個, Already(強化可能) 3個, N/A 5個
+- 取り込み: /decision スキル作成, /weekly-review 強化(DELIBERATELY SKIPPING + 80/20), /morning 強化(Blocked), /output-mode learning 段階化, /profile-drip スキルギャップ, /obsidian-content Self-Correction + Voice Guide + Repurpose + Thread体系化
+
 ## [2026-04-08] ingest | CORAL: Autonomous Multi-Agent Evolution
 
 - ソース: arXiv:2604.01658 (MIT, NUS, Stanford 他)
@@ -163,3 +169,17 @@
 - ソース: "How I built harness for my agent using Claude Code leaks" (Medium記事)
 - 判定: Gap 0個, Partial 7個, Already 7個 (強化不要), N/A 4個
 - 取り込み: マイクロループ規律, コンテキスト注入ポリシー, Context Collapse, Progressive Trust, CC内部Retry/Budgeting参照, UI Trust原則
+
+## [2026-04-09] ingest | Better Harness: Eval-Driven Hill-Climbing
+
+- ソース: "Better Harness: A Recipe for Harness Hill-Climbing with Evals" (LangChain/Z.ai)
+- 判定: Gap 1個, Partial 2個, Already 4個(うち強化可能4), Already 強化不要 3個, N/A 1個
+- 取り込み: 全7項目 — 実行型 Regression, Holdout split, Eval spring cleaning, External import, Baseline run, Version diff, パイプライン図
+- プラン: docs/plans/2026-04-09-better-harness-integration.md（L規模, 8タスク3Wave）
+
+## [2026-04-09] ingest | 12 Things Claude Can Do for You
+
+- ソース: "12 things Claude can do for you that you've never tried" (@sharbel)
+- 判定: Gap 1個, Partial 4個, Already 6個 (うち強化可能 2個), N/A 1個
+- 取り込み: 全項目。Wave 1: rewrite skill + /think decision + /digest summarize。Wave 2: /challenge persona + /think roleplay + /checkpoint brief。Wave 3: voice guide + data analysis patterns
+- プラン: `docs/plans/2026-04-09-12-claude-patterns-integration.md`

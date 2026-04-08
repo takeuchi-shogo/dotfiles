@@ -16,3 +16,10 @@
 
 ## Carry-over from Yesterday
 - {unfinished_item}
+
+## Blocked / Waiting On
+> 他者の対応待ちで進められないもの。可視化することで忘れない。
+
+| Item | Blocked By | Since | Action |
+|------|-----------|-------|--------|
+| {blocked_item} | {who_or_what} | {date} | {next_action} |
