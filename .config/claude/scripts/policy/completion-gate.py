@@ -45,6 +45,17 @@ COMPLETION_PROMISE = os.environ.get("COMPLETION_PROMISE", "")
 # Max iterations before Ralph Loop allows stop (prevents infinite loops)
 MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "10"))
 
+# Harness Review Gate — mandatory review for harness file changes
+# Path markers that identify harness files (matched against git diff output)
+HARNESS_PATH_MARKERS = [
+    "scripts/policy/",
+    "scripts/runtime/",
+    "settings.json",
+    "CLAUDE.md",
+    "/agents/",
+]
+HARNESS_REVIEW_FLAG_DIR = os.path.join(tempfile.gettempdir(), "claude-harness-review")
+
 # Review Gate — edit count threshold for review reminder
 REVIEW_EDIT_THRESHOLD = 10
 EDIT_COUNTER_FILE = os.path.join(
@@ -162,32 +173,97 @@ def _classify_test_failure(output: str) -> tuple[str, str]:
     output_lower = output.lower()
 
     # Type errors
-    if any(kw in output_lower for kw in ["type error", "typeerror", "cannot assign", "incompatible type", "type mismatch"]):
-        return ("type_error", "型定義を確認し、引数・戻り値の型を修正してください。import の不足も確認。")
+    if any(
+        kw in output_lower
+        for kw in [
+            "type error",
+            "typeerror",
+            "cannot assign",
+            "incompatible type",
+            "type mismatch",
+        ]
+    ):
+        return (
+            "type_error",
+            "型定義を確認し、引数・戻り値の型を修正してください。import の不足も確認。",
+        )
 
     # Nil/null pointer
-    if any(kw in output_lower for kw in ["nil pointer", "null pointer", "nullpointerexception", "cannot read properties of null", "cannot read properties of undefined", "typeerror: cannot read"]):
-        return ("nil_null", "nil/null チェックを追加してください。オプショナルチェーン(?.)やガード節を検討。")
+    if any(
+        kw in output_lower
+        for kw in [
+            "nil pointer",
+            "null pointer",
+            "nullpointerexception",
+            "cannot read properties of null",
+            "cannot read properties of undefined",
+            "typeerror: cannot read",
+        ]
+    ):
+        return (
+            "nil_null",
+            "nil/null チェックを追加してください。"
+            "オプショナルチェーン(?.)やガード節を検討。",
+        )
 
     # Assertion failures
-    if any(kw in output_lower for kw in ["assert", "expected", "to equal", "to be", "got:", "want:"]):
-        return ("assertion", "期待値と実際の出力を比較し、ロジックの誤りを修正してください。テストの期待値が古い可能性も検討。")
+    if any(
+        kw in output_lower
+        for kw in ["assert", "expected", "to equal", "to be", "got:", "want:"]
+    ):
+        return (
+            "assertion",
+            "期待値と実際の出力を比較し、ロジックの誤りを修正してください。テストの期待値が古い可能性も検討。",
+        )
 
     # Import/module errors
-    if any(kw in output_lower for kw in ["import error", "module not found", "cannot find module", "no such file", "unresolved import"]):
-        return ("import", "import パスとモジュール名を確認してください。ファイルの移動・リネームが原因の可能性。")
+    if any(
+        kw in output_lower
+        for kw in [
+            "import error",
+            "module not found",
+            "cannot find module",
+            "no such file",
+            "unresolved import",
+        ]
+    ):
+        return (
+            "import",
+            "import パスとモジュール名を確認してください。"
+            "ファイルの移動・リネームが原因の可能性。",
+        )
 
     # Compilation errors
-    if any(kw in output_lower for kw in ["syntax error", "syntaxerror", "unexpected token", "compile error", "build failed"]):
-        return ("syntax", "構文エラーを修正してください。括弧の対応、セミコロン、インデントを確認。")
+    if any(
+        kw in output_lower
+        for kw in [
+            "syntax error",
+            "syntaxerror",
+            "unexpected token",
+            "compile error",
+            "build failed",
+        ]
+    ):
+        return (
+            "syntax",
+            "構文エラーを修正してください。括弧の対応、セミコロン、インデントを確認。",
+        )
 
     # Timeout
     if any(kw in output_lower for kw in ["timeout", "timed out", "deadline exceeded"]):
-        return ("timeout", "テストがタイムアウトしています。無限ループ、未解決の非同期処理、外部依存のモックを確認。")
+        return (
+            "timeout",
+            "テストがタイムアウトしています。無限ループ、未解決の非同期処理、外部依存のモックを確認。",
+        )
 
     # Permission / access
-    if any(kw in output_lower for kw in ["permission denied", "eacces", "access denied"]):
-        return ("permission", "ファイルまたはリソースのアクセス権限を確認してください。")
+    if any(
+        kw in output_lower for kw in ["permission denied", "eacces", "access denied"]
+    ):
+        return (
+            "permission",
+            "ファイルまたはリソースのアクセス権限を確認してください。",
+        )
 
     return ("unknown", "テスト出力を注意深く読み、失敗の根本原因を特定してください。")
 
@@ -357,6 +433,68 @@ def _check_review_gate() -> str | None:
         f"[Review Gate] このセッションで {edit_count} 回の編集がありました。"
         "`/review` でコードレビューを実行することを推奨します。"
     )
+
+
+def _get_changed_harness_files() -> list[str]:
+    """Get uncommitted harness file changes from git diff."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=os.getcwd(),
+        )
+        if result.returncode != 0:
+            return []
+        return [
+            f.strip()
+            for f in result.stdout.splitlines()
+            if f.strip() and any(m in f for m in HARNESS_PATH_MARKERS)
+        ]
+    except (subprocess.TimeoutExpired, OSError):
+        return []
+
+
+def _harness_review_flag_path(harness_files: list[str]) -> str:
+    """Flag file path keyed by changed harness file set."""
+    import hashlib
+
+    os.makedirs(HARNESS_REVIEW_FLAG_DIR, exist_ok=True)
+    content = "\n".join(sorted(harness_files))
+    h = hashlib.md5(content.encode()).hexdigest()[:12]
+    return os.path.join(HARNESS_REVIEW_FLAG_DIR, f"pass-{h}")
+
+
+def _check_harness_review_gate() -> dict | None:
+    """Mandatory review gate for harness file changes.
+
+    Blocks stop if harness files changed without /review PASS.
+    The flag is keyed by the exact set of changed files, so
+    additional edits after review invalidate the flag.
+    """
+    harness_files = _get_changed_harness_files()
+    if not harness_files:
+        return None
+
+    flag = _harness_review_flag_path(harness_files)
+    if os.path.exists(flag):
+        return None
+
+    flist = "\n".join(f"  - {f}" for f in harness_files[:10])
+    extra = ""
+    if len(harness_files) > 10:
+        extra = f"\n  ...他 {len(harness_files) - 10} 件"
+    return {
+        "decision": "block",
+        "reason": (
+            "[Harness Review Gate] "
+            "ハーネスファイルが変更されています:\n"
+            f"{flist}{extra}\n\n"
+            "`/review` を実行して PASS を取得してください。\n"
+            "ハーネス変更は mandatory review の対象です。"
+        ),
+    }
 
 
 # Test file naming conventions per language
@@ -954,6 +1092,13 @@ def main() -> None:
             {"decision": "block", "reason": "\n".join(ctx_parts)},
             sys.stdout,
         )
+        return
+
+    # --- Harness Review Gate (mandatory) ---
+    harness_block = _check_harness_review_gate()
+    if harness_block:
+        _set_retry_count(retries + 1)
+        json.dump(harness_block, sys.stdout)
         return
 
     # --- Test gate ---

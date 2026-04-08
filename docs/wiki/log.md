@@ -8,6 +8,13 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-08] ingest | Environment-Driven Reinforcement Learning
+
+- ソース: Baseten Blog — Environment-Driven Reinforcement Learning
+- 判定: Gap 0個, Partial 1個, Already 7個 (うち強化可能 5個), N/A 0個
+- 取り込み: Environment-as-User パターン明文化、RL→AutoEvolve接続、Checkpoint→Replay拡張、Recording Proxyストリーミング化、AutoEvolve自動化
+- プラン: `docs/plans/2026-04-08-environment-driven-rl-integration.md`
+
 ## [2026-04-07] ingest | AlphaEvolve: Gemini-powered coding agent for algorithm design
 
 - ソース: AlphaEvolve (Google DeepMind, 2025-05) — 公式ブログ + arXiv:2506.13131
