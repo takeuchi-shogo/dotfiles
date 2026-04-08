@@ -79,20 +79,8 @@
 
 <important if="you are modifying files in .config/claude/ or .bin/">
 
-## Change Surface Matrix
-
-- `.config/claude/CLAUDE.md`, `.config/claude/settings.json`, `.config/claude/scripts/`, `.config/claude/skills/`
-  - 併せて見る: `PLANS.md`, `.config/claude/references/workflow-guide.md`, `docs/agent-harness-contract.md`
-  - 最低検証: `task validate-configs`, `task validate-symlinks`
-- `.config/claude/commands/`
-  - 併せて見る: 対応する skill / script / workflow guide
-  - 最低検証: 関連 skill / script の構文確認
-- `.config/claude/agents/`, `.config/claude/references/`
-  - 併せて見る: `references/workflow-guide.md` の Agent Routing Table、関連スキル定義
-  - 最低検証: 参照整合性の目視確認（エージェント名・ファイルパスの一致）
-- `.bin/symlink.sh`, `.bin/validate_symlinks.sh`
-  - 併せて見る: Claude 側 symlink 対象、`Taskfile.yml`
-  - 最低検証: `task symlink`, `task validate-symlinks`
+- Change Surface Matrix: `references/change-surface-matrix.md` を参照
+- 最低検証: `task validate-configs`, `task validate-symlinks`
 
 </important>
 
@@ -117,43 +105,23 @@
 | **M** | 関数追加、バグ修正       | Plan → Codex Spec/Plan Gate → Edge Case Analysis → Implement → Test → Codex Review Gate → Verify               |
 | **L** | 新機能、リファクタリング | Plan → Codex Spec/Plan Gate → Edge Case Analysis → Implement → Test → Codex Review Gate → Verify → Security Check |
 
-```
-Plan -> Codex Spec/Plan Gate -> Edge Case Analysis(M/L) -> Implement -> Test -> Codex Review Gate -> Verify -> Security Check -> Commit
-失敗時:
-- Spec/Plan Gate で指摘 → Claude が修正 or ユーザー判断 → 修正箇所のみ再レビュー
-- テスト/検証/セキュリティ指摘 → Implement に戻る
-- Review NEEDS_FIX → 修正 → 修正差分のみ再 Review（最大3回、PASS まで繰り返す）
-- Review BLOCK → 修正 → フル再 Review（最大3回）
-- Review NEEDS_HUMAN_REVIEW → ユーザーに判断を委ねる
-- PASS → タスク完了をユーザーに報告
-```
-
-詳細なプロセス・エージェントルーティング・メモリシステム・トークン予算は
-**`.config/claude/references/workflow-guide.md`** を参照。
+失敗時のループ・エージェントルーティング・メモリシステム・トークン予算は **`references/workflow-guide.md`** を参照。
 
 ---
 
 <core_principles>
 
-- **シンプリシティ ファースト (KISS)**: 変更はできる限りシンプルに。コードへの影響を最小限に。「動作させるために最もシンプルな方法は何か」を常に問う
-- **YAGNI**: 今必要なコードのみ書く。「将来使うかも」で汎用化しない。3回繰り返されるまで抽象化しない
-- **DRY**: 同じロジックを複数箇所に書かない。ただし、似ているだけで文脈が異なるコードの無理な共通化は避ける
-- **手抜きなし**: 根本原因を探る。一時しのぎの修正はしない。シニア開発者の基準で
-- **最小インパクト**: 必要な箇所だけ触る。バグを持ち込まない
+- **KISS / YAGNI / DRY**: シンプルに、今必要なものだけ、繰り返さない。3回繰り返されるまで抽象化しない
+- **手抜きなし・最小インパクト**: 根本原因を探る。必要な箇所だけ触る
 - **検索してから実装**: 既存の解決策がないか確認してからコードを書く
-- **壊れたら即STOP**: そのまま突き進まず、再プランする。焦りの蓄積が最悪の判断を生む（desperation → reward hacking の因果経路）
-- **ミスは許される、不正直は許されない**: 間違えること自体は問題ではない。検証を飛ばす・結果を捏造する・うまくいっているふりをすることが問題
-- **エレガンスの追求**: 些細でない変更では「もっと良い方法は？」と一度立ち止まる。ただし過度な設計はNG
-- **自律的バグ解決**: ログ・エラー・テストを自分で調べ、ユーザーのコンテキスト切り替えをゼロにする
-- **生データ優先のデバッグ**: バグ修正時は、ユーザーの解釈ではなく生のエラーログ・スタックトレース・CI出力を直接分析する
-- **修正時の3点説明**: コードを修正・変更したら、以下の3点をユーザーに明示する:
-  1. **原因**: なぜその問題が起きていたか（根本原因）
-  2. **修正内容**: 何をどう変えたか（具体的な変更）
-  3. **効果**: この修正でどう変わるか（ビフォーアフター）
-- **ドキュメント＝インフラ**: エージェントが依存する仕様書は耐荷重構造物。コード変更時に同期更新を怠ると silent failure を招く。「2回説明したら書き下ろせ」— 同じドメイン知識を繰り返しセッション横断で説明している場合は spec/reference に codify する
-- **探索は広く、理解は深く**: ファイル探索時は precision（見たものの正確な理解）に偏りやすい。意識的に recall（見るべきファイルの網羅）を上げる。config/registry → エントリポイント → 個別モジュールの順で探索する
-- **Build to Delete**: ハーネス要素（hook, script, agent）は次世代モデルで不要になりうる過渡的技術。軽量・モジュラーに保ち、削除コストを最小化する。設計時に「何が改善されればこれは不要になるか？」を問う
-- **Scaffolding > Model**: ハーネス設計がモデル選択より重要。Harness-as-Policy(0.870) > GPT-5.2-High(0.844)。協調プロトコル選択が品質差異の44%を説明、モデル選択は~14%。SSD研究も裏付け: 推論時パラメータ調整は +2.2pp、構造的変更（自己蒸留）は +11.8pp — 同じモデルでも仕組みの変更が5倍以上の効果
+- **壊れたら即STOP**: 突き進まず再プランする。焦り → reward hacking の因果経路を断つ
+- **ミスは許される、不正直は許されない**: 検証を飛ばす・結果を捏造する・うまくいっているふりが問題
+- **自律的バグ解決**: 生データ（エラーログ・スタックトレース・CI出力）を直接分析。ユーザーのコンテキスト切り替えゼロ
+- **修正時の3点説明**: 原因・修正内容・効果を必ず明示
+- **ドキュメント＝インフラ**: 仕様書は耐荷重構造物。「2回説明したら書き下ろせ」
+- **探索は広く、理解は深く**: recall を意識的に上げる。config → エントリポイント → モジュールの順
+- **Build to Delete**: ハーネスは過渡的技術。「何が改善されればこれは不要か？」を問う
+- **Scaffolding > Model**: 協調プロトコル選択が品質差異の44%、モデル選択は~14%
 
 </core_principles>
 

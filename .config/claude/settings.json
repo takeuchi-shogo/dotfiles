@@ -450,6 +450,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/approval-fatigue-guard.py",
+            "timeout": 5,
+            "statusMessage": "Fatigue check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/lifecycle/doc-garden-check.py",
             "timeout": 5,
             "statusMessage": "Doc garden check..."
