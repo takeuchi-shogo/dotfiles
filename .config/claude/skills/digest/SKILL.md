@@ -1,6 +1,6 @@
 ---
 name: digest
-description: "Use when converting NotebookLM output text into structured Obsidian Literature Notes. Paste YouTube/article summaries and it auto-infers metadata, saves to 05-Literature/. Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge), コンテンツ生成 (use obsidian-content)."
+description: "Use when converting NotebookLM output text into structured Obsidian Literature Notes, or when summarizing any text/URL/PDF into an actionable brief. Paste YouTube/article summaries and it auto-infers metadata, saves to 05-Literature/. Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに', 'summarize', '要約して', 'ブリーフ作成'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge), コンテンツ生成 (use obsidian-content)."
 metadata:
   pattern: generator
 ---
@@ -18,11 +18,14 @@ NotebookLM やその他のソースから得た要約テキストを、Obsidian 
 ## 引数の解釈
 
 引数なし → インタラクティブモード（テキストの貼り付けを促す）
-引数あり → そのテキストを NotebookLM 出力として処理
+`summarize` → 汎用圧縮モード（Literature Note ではなくアクショナブルブリーフを生成）
+引数あり（summarize 以外） → そのテキストを NotebookLM 出力として処理
 
 例:
 - `/digest` — 対話的にテキスト入力を求める
 - `/digest [貼り付けたテキスト]` — 貼り付けられたテキストを直接処理
+- `/digest summarize` — 汎用要約モード
+- `/digest summarize for [audience]` — オーディエンス指定付き要約
 
 ## 処理手順
 
@@ -169,6 +172,62 @@ AI: (修正を反映して再プレビュー)
 ユーザー: OK
 AI: 05-Literature/lit-ゼンケ・アーレンス-how-to-take-smart-notes.md に保存しました。
 ```
+
+---
+
+## Summarize モード
+
+NotebookLM/Literature Note とは独立した汎用圧縮モード。任意のテキスト・URL・PDF をアクショナブルブリーフに圧縮する。
+
+### Step 1: ソース取得
+
+`AskUserQuestion` で聞く:
+
+「要約するソースを指定してください（テキスト貼り付け、URL、またはファイルパス）。」
+
+- URL の場合: WebFetch で取得
+- PDF の場合: Read で読み込み
+- 大量文書（200+ ページ推定）: Gemini 1M に自動委譲（`/gemini` スキル経由）
+- テキストの場合: そのまま使用
+
+### Step 2: 要約パラメータ
+
+デフォルト: 500語のアクショナブルブリーフ
+
+オプション引数:
+- 語数指定: `/digest summarize 300` → 300語
+- 読者指定: `/digest summarize for [audience]` → `/rewrite` のプリセットと同じオーディエンス分類
+
+### Step 3: 圧縮実行
+
+以下の構造で要約を生成:
+
+```
+## Brief: {ソースタイトル}
+
+**TL;DR**: {1文の核心}
+
+### Key Points
+- {要点1}
+- {要点2}
+- {要点3}
+（最大5点）
+
+### So What?
+{この情報が読者にとって何を意味するか。アクションにつながる示唆}
+
+### Source
+{URL/ファイル名/「貼り付けテキスト」}
+
+---
+*{実際の語数}語 / 元テキスト推定{元の語数}語（{圧縮率}%圧縮）*
+```
+
+### Chaining
+
+- `/digest summarize` → `/rewrite` でオーディエンス別変換
+- `/digest summarize` → `/note` で Obsidian Inbox に保存
+- `/research` → `/digest summarize` でリサーチ結果の圧縮
 
 ## Skill Assets
 
