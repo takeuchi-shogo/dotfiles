@@ -8,6 +8,13 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-08] ingest | CORAL: Autonomous Multi-Agent Evolution
+
+- ソース: arXiv:2604.01658 (MIT, NUS, Stanford 他)
+- 判定: Gap 1個, Partial 3個, Already 5個 (うち強化可能 2個), N/A 1個
+- 取り込み: Consolidate heartbeat導入、attempts構造formalization、蒸留品質因果検証(Wave2)
+- プラン: Wave 1実装完了、Wave 2-3は `docs/research/2026-04-08-coral-autonomous-multi-agent-evolution-analysis.md`
+
 ## [2026-04-08] ingest | Environment-Driven Reinforcement Learning
 
 - ソース: Baseten Blog — Environment-Driven Reinforcement Learning

@@ -106,6 +106,7 @@ def record_experiment(
     forward_plan: str | None = None,
     overcorrection_risk: str | None = None,
     prior_attempts: list[str] | None = None,
+    baseline_metrics: dict | None = None,
 ) -> dict:
     """新しい実験を記録する。
 
@@ -126,6 +127,7 @@ def record_experiment(
         forward_plan: 次に何を試すべきか
         overcorrection_risk: 過修正リスク（例: "strict → too restrictive"）
         prior_attempts: 関連する過去の実験IDリスト
+        baseline_metrics: 実験開始時のベースラインメトリクス（CORAL attempts inspired）
 
     Returns:
         記録された実験の dict
@@ -163,6 +165,7 @@ def record_experiment(
         ("forward_plan", forward_plan),
         ("overcorrection_risk", overcorrection_risk),
         ("prior_attempts", prior_attempts),
+        ("baseline_metrics", baseline_metrics),
     ]:
         if val is not None:
             experiment[key] = val
@@ -428,12 +431,23 @@ def measure_effect(exp_id: str) -> dict:
     else:
         verdict = "neutral"
 
-    return {
+    result = {
         "verdict": verdict,
         "before_count": before_count,
         "after_count": after_count,
         "change_pct": round(change_pct, 1),
     }
+
+    # 測定結果をレジストリに永続化（CORAL attempts inspired）
+    for e in experiments:
+        if e["id"] == exp_id:
+            e["result_metrics"] = result
+            e["measured_at"] = _now_iso()
+            e["updated_at"] = _now_iso()
+            break
+    _save_registry(experiments)
+
+    return result
 
 
 def compute_cqs() -> dict:
