@@ -51,8 +51,15 @@ tasks:
 
   validate-configs:
     desc: Validate syntax for config and script files
+    deps:
+      - validate-agents
     cmds:
       - ~/dotfiles/.bin/validate_configs.sh
+
+  validate-agents:
+    desc: Validate agent definitions (tools, permissions)
+    cmds:
+      - bash .config/claude/scripts/policy/validate-agents.sh
 
   validate-readmes:
     desc: Validate local links in README files

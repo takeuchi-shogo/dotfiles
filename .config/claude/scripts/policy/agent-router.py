@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Agent router hook — detects keywords in user input and suggests Codex/Gemini delegation.
+"""Agent router hook — detects keywords and suggests Codex/Gemini delegation.
 
 Triggered by: hooks.UserPromptSubmit
 Input: JSON with user prompt on stdin
@@ -19,6 +19,23 @@ from hook_utils import (  # noqa: E402
     output_passthrough,
     output_context,
 )
+
+try:
+    from session_events import emit_event as _emit_event  # noqa: E402
+
+    def _log_routing(suggested: str, keywords: list[str], prompt_length: int) -> None:
+        _emit_event(
+            "agent_routing",
+            {
+                "suggested": suggested,
+                "keywords_matched": keywords[:3],
+                "prompt_length": prompt_length,
+            },
+        )
+except Exception:
+
+    def _log_routing(suggested: str, keywords: list[str], prompt_length: int) -> None:  # type: ignore[misc]
+        pass
 
 
 CODEX_KEYWORDS_JA = [
@@ -86,8 +103,8 @@ GEMINI_KEYWORDS_EN = [
 ]
 
 # --- 委譲パターン推奨 ---
-# NOTE: 「調べて」「リサーチ」「research」「investigate」は GEMINI_KEYWORDS と重複するため除外
-# Gemini が Priority 3 で先にマッチするため、ここに含めても dead branch になる
+# NOTE: 「調べて」「リサーチ」「research」「investigate」は GEMINI_KEYWORDS と重複
+# のため除外 — Gemini が Priority 3 で先にマッチするため dead branch になる
 ASYNC_KEYWORDS = [
     r"バックグラウンド",
     r"background",
@@ -152,68 +169,63 @@ def main() -> None:
     mm_files = detect_multimodal(prompt)
     if mm_files:
         exts = ", ".join(f".{e}" for e in mm_files)
-        output_context(
-            "UserPromptSubmit",
-            (
-                f"[Agent Router] マルチモーダルファイル ({exts}) が検出されました。"
-                "Gemini CLI (1Mコンテキスト) での処理を推奨します。"
-                "gemini-explore エージェントまたは gemini スキルを使用してください。"
-            ),
+        _log_routing("multimodal", list(mm_files), len(prompt))
+        msg = (
+            f"[Agent Router] マルチモーダルファイル ({exts}) が検出されました。"
+            "Gemini CLI (1Mコンテキスト) での処理を推奨します。"
+            "gemini-explore エージェントまたは gemini スキルを使用してください。"
         )
+        output_context("UserPromptSubmit", msg)
         return
 
     # Priority 2: Codex keywords
     codex_matches = match_keywords(prompt, CODEX_KEYWORDS_JA + CODEX_KEYWORDS_EN)
     if codex_matches:
         keywords = ", ".join(codex_matches[:3])
-        output_context(
-            "UserPromptSubmit",
-            (
-                f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
-                "Codex CLI での深い分析を検討してください。"
-                "codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。"
-            ),
+        _log_routing("codex", codex_matches, len(prompt))
+        msg = (
+            f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
+            "Codex CLI での深い分析を検討してください。"
+            "codex スキル、codex-debugger または codex exec で実行できます。"
         )
+        output_context("UserPromptSubmit", msg)
         return
 
     # Priority 3: Gemini keywords
     gemini_matches = match_keywords(prompt, GEMINI_KEYWORDS_JA + GEMINI_KEYWORDS_EN)
     if gemini_matches:
         keywords = ", ".join(gemini_matches[:3])
-        output_context(
-            "UserPromptSubmit",
-            (
-                f"[Agent Router] リサーチ/分析キーワード ({keywords}) が検出されました。"
-                "Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。"
-                "gemini-explore エージェントまたは gemini スキルを使用できます。"
-            ),
+        _log_routing("gemini", gemini_matches, len(prompt))
+        msg = (
+            f"[Agent Router] リサーチ/分析キーワード ({keywords}) が検出されました。"
+            "Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。"
+            "gemini-explore または gemini スキルを使用できます。"
         )
+        output_context("UserPromptSubmit", msg)
         return
 
     # Priority 4: Scheduled delegation pattern (takes precedence over async)
     scheduled_matches = match_keywords_regex(prompt, SCHEDULED_KEYWORDS)
     if scheduled_matches:
-        output_context(
-            "UserPromptSubmit",
-            (
-                "💡 Scheduled パターン推奨: このタスクは将来の時刻に実行すると効果的です。"
-                "CronCreate ツールまたは /loop スキルの使用を検討してください。"
-                "実行時のライブデータで分析するため、単なるリマインダーより有用です。"
-            ),
+        _log_routing("scheduled", scheduled_matches, len(prompt))
+        msg = (
+            "Scheduled パターン推奨: このタスクは将来の時刻に実行すると効果的です。"
+            "CronCreate ツールまたは /loop スキルの使用を検討してください。"
+            "実行時のライブデータで分析するため、単なるリマインダーより有用です。"
         )
+        output_context("UserPromptSubmit", msg)
         return
 
     # Priority 5: Async delegation pattern
     async_matches = match_keywords_regex(prompt, ASYNC_KEYWORDS)
     if async_matches:
-        output_context(
-            "UserPromptSubmit",
-            (
-                "💡 Async パターン推奨: このタスクは独立して実行できます。"
-                "Agent(run_in_background=true) または /research スキルで"
-                "メインコンテキストを圧迫せず並列実行できます。"
-            ),
+        _log_routing("async", async_matches, len(prompt))
+        msg = (
+            "Async パターン推奨: このタスクは独立して実行できます。"
+            "Agent(run_in_background=true) または /research スキルで"
+            "メインコンテキストを圧迫せず並列実行できます。"
         )
+        output_context("UserPromptSubmit", msg)
         return
 
     # No match — pass through
