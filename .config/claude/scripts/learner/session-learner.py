@@ -258,6 +258,7 @@ def _record_improve_adoption(summary: dict, logger: logging.Logger) -> None:
             "total_proposals": total,
             "accepted": accepted,
             "adoption_rate": adoption_rate,
+            "cycle_time_hours": None,  # autoevolve-core 側で算出・記録
         }
 
         with open(history_path, "a", encoding="utf-8") as f:

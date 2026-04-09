@@ -17,7 +17,7 @@
 | セッション集計 | `scripts/learner/session-learner.py` | `metrics/session-metrics.jsonl` | JSONL (outcome, task_type, approach, CFS) | 記録のみ |
 | 失敗クラスタ | `scripts/learner/failure-clusterer.py` | `clusters/failure-clusters.json` | JSON (FM code → count, examples) | 記録のみ |
 | proposal verdict | `session_events.py` `emit_event("proposal", ...)` | `learnings/proposal-verdicts.jsonl` | JSONL (verdict: keep/revert) | 記録のみ |
-| 改善採用率 | `/improve` 実行 | `metrics/improve-history.jsonl` | JSONL (adoption_rate) | 記録のみ |
+| 改善採用率 + cycle time | `/improve` 実行 | `metrics/improve-history.jsonl` | JSONL (adoption_rate, cycle_time_hours) | 記録のみ |
 | セッション統計 | `scripts/lifecycle/session-stats.sh` | `~/.claude/session-stats.json` | JSON (total_sessions, duration) | 記録のみ |
 
 ## 2. アクションマップ

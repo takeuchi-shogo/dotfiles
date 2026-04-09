@@ -43,6 +43,7 @@ AutoEvolve の全フェーズを統合実行する。蓄積されたセッショ
 RUN_DIR=~/.claude/agent-memory/runs/$(date +%Y-%m-%d)
 [ -d "$RUN_DIR" ] && RUN_DIR="${RUN_DIR}-$(date +%H%M)"
 mkdir -p "$RUN_DIR"
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "$RUN_DIR/run_started_at.txt"
 ```
 
 **前回ラン状態の読み込み**:
@@ -60,6 +61,29 @@ mkdir -p "$RUN_DIR"
    - 出力: `scripts/eval/results/baseline-eval.json`
    - Phase 2 の改善適用後に `aggregate_benchmark.py --baseline results/baseline-eval.json --current results/<latest>.json` で差分確認
    - Recall +10pp / Precision -5pp max / F1 +5pp が success criteria
+
+### Cycle Time 算出
+
+friction 検出から /improve 実行までの elapsed time を計測する。
+
+1. 前回ランの日付を取得:
+   ```bash
+   LAST_RUN_DATE=$(jq -r '.date // empty' ~/.claude/agent-memory/runs/*/run-summary.json 2>/dev/null | sort | tail -1)
+   ```
+2. friction-events.jsonl から前回ラン日以降の最古タイムスタンプを取得:
+   ```bash
+   FRICTION_START=$(jq -r "select(.timestamp > \"${LAST_RUN_DATE:-1970-01-01}\") | .timestamp" \
+     ~/.claude/agent-memory/learnings/friction-events.jsonl 2>/dev/null | sort | head -1)
+   ```
+3. `cycle_time_hours` を算出:
+   - cycle_start = `FRICTION_START`（friction 検出時刻）
+   - cycle_end = `$RUN_DIR/run_started_at.txt` の値（ラン開始時刻）
+   - `cycle_time_hours = (cycle_end - cycle_start)` を時間単位（小数点1桁）で算出
+   - friction-events.jsonl にエントリがない場合: `cycle_time_hours = null`
+4. 結果を `$RUN_DIR/cycle-time.json` に記録:
+   ```json
+   {"cycle_start": "ISO8601|null", "cycle_end": "ISO8601", "cycle_time_hours": float|null}
+   ```
 
 ### Phase 1a: Coverage Matrix Analysis → meta-analyzer へ委譲
 
@@ -364,7 +388,35 @@ Phase 2.5 完了後に `runs/YYYY-MM-DD/` へ書き出す:
 | `debate-log.md` | Codex の ROI 判定理由 | Phase 2.0 |
 | `winning-direction.md` | 選ばれた方向性と根拠 | Phase 2.0 |
 | `proposals.jsonl` | 提案の構造化記録（1行1提案） | Phase 2.5 後 |
-| `run-summary.json` | メトリクス（提案数, 判定分布, backlog 更新有無） | Phase 2.5 後 |
+| `run-summary.json` | メトリクス（提案数, 判定分布, backlog 更新有無, cycle time） | Phase 2.5 後 |
+| `run_started_at.txt` | ラン開始時刻 (ISO 8601) | Phase 1.0 |
+| `cycle-time.json` | cycle_start, cycle_end, cycle_time_hours | Phase 1.0 |
+
+#### run-summary.json 追加フィールド
+
+Phase 2.5 完了時に以下のフィールドを run-summary.json に含める:
+
+```jsonc
+{
+  // ... 既存フィールド ...
+  "run_started_at": "ISO 8601",          // run_started_at.txt から読み込み
+  "run_completed_at": "ISO 8601",        // run-summary.json 書き込み時に記録
+  "cycle_time_hours": null               // float | null — cycle-time.json から読み込み
+}
+```
+
+#### improve-history.jsonl 追加フィールド
+
+improve-history.jsonl への追記時に以下のフィールドを含める（null 許容で後方互換）:
+
+```jsonc
+{
+  // ... 既存フィールド (date, proposals_total, adoption_rate 等) ...
+  "run_started_at": "ISO 8601 | null",
+  "run_completed_at": "ISO 8601 | null",
+  "cycle_time_hours": null               // float | null
+}
+```
 
 #### proposals.jsonl スキーマ
 

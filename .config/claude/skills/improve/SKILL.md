@@ -209,6 +209,27 @@ Phase 3 → Phase 4 → VULNERABLE? → REFINE → Phase 4（再実行）
 - 前回提案の実施状況: N/M 完了
 - 効果測定結果: ...
 
+## Cycle Time 統計
+
+> friction 検出→/improve 実行の elapsed time（observation→improvement パス）。
+
+<!-- improve-history.jsonl の cycle_time_hours が null でないエントリ数で分岐 -->
+
+**データ蓄積中** (N/3 件): 統計計算には最低 3 サイクルのデータが必要です。
+- 今回の cycle time: {cycle_time_hours} 時間（{cycle_start} → {cycle_end}）
+
+<!-- データ 3 件以上の場合 -->
+
+| 指標 | 値 |
+|------|---|
+| 今回 | {cycle_time_hours} h |
+| 平均 | {mean} h |
+| 中央値 | {median} h |
+| P90 | {p90} h |
+| トレンド | {前回比: 改善/横ばい/悪化} |
+
+> ボトルネック: {最も cycle time に寄与している要因の分析}
+
 ## Coverage Matrix 結果
 
 | カテゴリ | Codex 品質判定 | ANSWERED | INSUFFICIENT | 主要 findings |
