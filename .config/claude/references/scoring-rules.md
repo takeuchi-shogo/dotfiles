@@ -69,6 +69,7 @@
 | `reasoning` (デバッグ, 設計, レビュー) | 各ステップの成否で重み付け | PRM 的。中間推論の正しさが重要 |
 | `outcome` (生成, 変換, フォーマット) | None (従来の回数比配分) | ORM 的。最終出力のみ評価 |
 | `mixed` (実装+テスト) | テスト結果で重み調整 | テスト通過=1.0, 失敗=0.2 |
+| `uncontrollable` (環境障害) | プロセススコア保持 (0.8-1.0) | process_correct + outcome_failed_uncontrollable: プロセス品質を不当にペナルティしない。環境障害 (timeout, permission denied, rate limit) でアウトカム失敗時、アウトカムは `blocked` としてマーク |
 
 A/B 比較では `margin_advantage()` で度合いを保持する。
 K>=3 の variant 比較では `plackett_luce_ranking()` で順序付きランキングを使用する。

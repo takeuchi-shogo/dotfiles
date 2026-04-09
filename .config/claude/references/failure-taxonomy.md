@@ -33,6 +33,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: nullable 値へのアクセスは必ずガードの後に行う
 - **レビューアー**: `code-reviewer`, `nil-path-reviewer`
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: true
 - **suggestedFix**: "nullable ガードの自動挿入（lint --fix）"
 
@@ -45,6 +46,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: catch/except 内では必ずエラーを記録または再送出する
 - **レビューアー**: `silent-failure-hunter`
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "エラーハンドリングパターンの手動レビュー"
 
@@ -57,6 +59,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 新依存追加前に既存の代替を検索する
 - **レビューアー**: `code-reviewer`
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: true
 - **suggestedFix**: "既存依存の検索を促すプロンプト注入"
 
@@ -69,6 +72,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 具体的な型で表現可能な場合は any/interface{} を使わない
 - **レビューアー**: `type-design-analyzer`
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: true
 - **suggestedFix**: "any/interface{} の具体型への自動変換（lint --fix）"
 
@@ -81,6 +85,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 外部入力は使用前に必ずバリデーション/サニタイズする
 - **レビューアー**: `security-reviewer`
 - **recoveryType**: user-fixable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "入力バリデーションの手動設計"
 
@@ -93,6 +98,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: ファイル/ネットワーク操作は権限チェックまたはエラーハンドリングで保護する
 - **レビューアー**: `code-reviewer`
 - **recoveryType**: transient
+- **controllability**: `environment`
 - **autoFixable**: false
 - **suggestedFix**: "権限モデルの手動レビュー"
 
@@ -105,6 +111,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: インポートパスと依存宣言の一致を確認してからコミットする
 - **レビューアー**: `code-reviewer`
 - **recoveryType**: llm-recoverable
+- **controllability**: `environment`
 - **autoFixable**: true
 - **suggestedFix**: "import パスの自動補完（LSP）"
 
@@ -117,6 +124,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: コード変更後は必ずビルド/コンパイルを実行して通過を確認する
 - **レビューアー**: `build-fixer`
 - **recoveryType**: llm-recoverable
+- **controllability**: `mixed`
 - **autoFixable**: true
 - **suggestedFix**: "ビルドエラーの自動修正（build-fixer agent）"
 
@@ -129,6 +137,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: リソース消費がスパンに比例する操作にはタイムアウトとメモリ制限を設定する
 - **レビューアー**: `code-reviewer`
 - **recoveryType**: transient
+- **controllability**: `environment`
 - **autoFixable**: false
 - **suggestedFix**: "リソース制限の手動設計"
 
@@ -141,6 +150,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 外部入力を含む処理は OWASP Top 10 のチェックリストで検証する
 - **レビューアー**: `security-reviewer`
 - **recoveryType**: user-fixable
+- **controllability**: `mixed`
 - **autoFixable**: false
 - **suggestedFix**: "OWASP チェックリストによる手動レビュー"
 
@@ -154,6 +164,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Plan Adherence Failure
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "計画ステップの再確認"
 
@@ -167,6 +178,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx — Invention of New Information
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "参照先の実在確認"
 
@@ -180,6 +192,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `debugger`
 - **着想**: AgentRx — Misinterpretation of Tool Output
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "生出力の再読み取り"
 
@@ -193,6 +206,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `product-reviewer`
 - **着想**: AgentRx — Intent–Plan Misalignment
 - **recoveryType**: user-fixable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "ユーザーへの確認質問"
 
@@ -206,6 +220,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`
 - **着想**: AgentRx の障害分類を拡張した独自カテゴリ
 - **recoveryType**: user-fixable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "操作前の確認プロンプト挿入"
 
@@ -219,6 +234,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`, `codex-reviewer`
 - **着想**: Schwartz "Vibe Physics" (2026-03) — Claude がパラメータ調整でプロットを合わせ、不確定性バンドを美的に平滑化し、検証したと虚偽申告した事例群。FM-012 (Information Invention) とは異なり、参照先は実在するが値・導出が捏造されるパターン
 - **recoveryType**: unexpected
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "中間ステップの導出検証"
 
@@ -232,6 +248,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `code-reviewer`, `product-reviewer`
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — Generator が機能を stub する傾向。ボタンは toggle するがマイク入力を capture しない、ツールは存在するが機能しない等の事例。FM-011 (Plan Adherence) が「ステップ省略」を検出するのに対し、FM-017 は「ステップ完了に見えるが実は hollow」を検出する
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "インタラクションパスの完全性検証"
 
@@ -245,6 +262,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `/review` スキルの合成フェーズ（レビューアー間の judgment divergence として検出）
 - **着想**: Anthropic "Harness Design for Long-Running Apps" (2026-03) — QA エージェントが「legitimate issues を見つけた後、talk itself into deciding they weren't a big deal and approve」する失敗パターン。Self-evaluation bias の具体的発現形態。FM-016 (Result Fabrication) が「結果の捏造」であるのに対し、FM-018 は「正しい検出結果の自己矮小化」
 - **recoveryType**: unexpected
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "severity と最終判定の整合性チェック"
 
@@ -258,6 +276,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **レビューアー**: `completion-gate.py` (Ralph Loop)
 - **着想**: Anthropic "Long-Running Claude for Scientific Computing" (2026-03) — "When asked to complete a complex, multi-part task, they can sometimes find an excuse to stop before finishing the entire task." Ralph Loop パターンで対処。FM-015 (Premature Action) が「早すぎる行動」であるのに対し、FM-019 は「早すぎる停止」
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **autoFixable**: false
 - **suggestedFix**: "Ralph Loop による完了強制"
 
@@ -270,6 +289,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 各ステップを5分以内に完了させ、ステップ間に検証ゲートを挟む
 - **レビューアー**: `completion-gate.py`, plan review
 - **recoveryType**: llm-recoverable
+- **controllability**: `agent`
 - **着想**: 逆瀬川 "Coding Agent Workflow 2026" — 確率的カスケード定量モデル。対策: タスク分割粒度を「1ステップ5分以内」に保ち、失敗時は即座に再プランして残りステップに波及させない
 - **autoFixable**: false
 - **suggestedFix**: "ステップ分割粒度の見直し"
@@ -303,6 +323,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: hook を追加・変更したら対象イベントでの発火を検証する
 - **レビューアー**: `/hook-debugger`, `code-reviewer`
 - **recoveryType**: user-fixable
+- **controllability**: `environment`
 - **autoFixable**: false
 - **suggestedFix**: "regex 検証 + 手動発火テスト（/hook-debugger 参照）"
 
@@ -314,6 +335,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: policy スクリプトは例外をキャッチし、graceful に失敗する（Graceful Degradation 参照）
 - **レビューアー**: `code-reviewer`, `silent-failure-hunter`
 - **recoveryType**: llm-recoverable
+- **controllability**: `environment`
 - **autoFixable**: false
 - **suggestedFix**: "try-except ラッパー追加 + エラーログ出力"
 
@@ -325,6 +347,7 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **不変条件**: 設定変更後は `task validate-configs` で参照整合性を検証する
 - **レビューアー**: `cross-file-reviewer`
 - **recoveryType**: user-fixable
+- **controllability**: `environment`
 - **autoFixable**: true
 - **suggestedFix**: "`task validate-configs` + `task validate-symlinks` の実行"
 

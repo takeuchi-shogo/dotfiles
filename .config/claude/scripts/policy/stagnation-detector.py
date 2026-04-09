@@ -246,6 +246,25 @@ def detect_stagnation(state: dict) -> tuple[str, str] | None:
                 "ファイルの責務分割や、異なる設計パターンの適用を検討。",
             )
 
+    # Pattern 4: alignment tipping — 改善提案の方向性が偏り続ける
+    if len(history) >= WINDOW_SIZE:
+        error_types = [
+            h.get("error_class") or (h.get("command", "").split() or ["unknown"])[0]
+            for h in history[-WINDOW_SIZE:]
+            if h["exit_code_inferred"] == "error"
+        ]
+        if error_types:
+            unique_ratio = len(set(error_types)) / len(error_types)
+            if unique_ratio < 0.3 and len(error_types) >= 5:
+                dominant = max(set(error_types), key=error_types.count)
+                return (
+                    "alignment_tipping",
+                    f"エラーパターンが '{dominant}' に偏っています"
+                    f" (多様性: {unique_ratio:.0%})。"
+                    "同一方向の修正を繰り返している可能性があります。"
+                    "問題を別の角度から捉え直すか、人間にエスカレーションしてください。",
+                )
+
     return None
 
 
