@@ -195,3 +195,9 @@
 - ソース: 外部記事テキスト（URL なし）
 - 判定: Gap 2個, Partial 4個, Already(強化可能) 4個, N/A 0個
 - 取り込み: Wave 1 実装済み（per-skill score attribution + スケール統一）、Wave 2-3 は docs/plans/2026-04-09-skill-eval-improvement-plan.md
+
+## [2026-04-09] ingest | Obsidian + Claude Code is the new meta
+
+- ソース: "Obsidian + Claude Code is the new meta" (Noah, Sovereign Creator OS)
+- 判定: Gap 1個, Partial 1個, Already 6個 (うち強化可能1), N/A 1個
+- 取り込み: T1 Vault自動メンテナンス, T2 双方向整合性チェック, T3 Bases統合(低優先)

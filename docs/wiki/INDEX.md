@@ -76,5 +76,5 @@
 ### tooling — ツール・エコシステム
 
 - [Codex 統合](concepts/codex-integration.md) — Claude × Codex の分業パターンとプラグインアーキテクチャ
-- [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault
+- [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault。Vault 自動メンテナンス・双方向整合性チェック・AI Second Brain 構築パターン。参照: [lit-noah-obsidian-claude-code-meta](../research/2026-04-09-noah-obsidian-claude-code-meta-analysis.md)
 - [ターミナルツーリング](concepts/terminal-tooling.md) — Ghostty + cmux + デュアルオーディエンス CLI

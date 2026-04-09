@@ -156,6 +156,26 @@ tags:
 - [[MOC-関連トピック]]
 ```
 
+### 7. メンテナンス（Maintenance）
+
+**トリガー**: 「メンテナンス」「maintenance」「健全性」「ヘルスチェック」を含む指示
+
+**手順**:
+1. CLAUDE.md を読んで Vault 構成を把握
+2. `vault-maintenance.sh` を `--dry-run` で実行し、結果を取得:
+   ```bash
+   OBSIDIAN_VAULT_PATH="<vault_path>" ~/.claude/scripts/runtime/vault-maintenance.sh --dry-run
+   ```
+3. 結果をユーザーに見やすく表示:
+   - 孤立ノート数、リンク切れ数、Stale Seed 数、重複候補数
+   - 各カテゴリの詳細リスト
+4. AskUserQuestion で対処を確認:
+   - 孤立ノート → リンク候補を提案（Link Discovery と連携）
+   - リンク切れ → 修正候補を提案（類似ファイル名検索）
+   - Stale Seed → アーカイブ or 育成を提案
+   - 重複 → マージ候補を提示
+5. 承認されたアクションを実行
+
 ## memory.md 更新
 
 各操作後、`.claude/memory.md` に実行した操作のサマリーを追記する。
