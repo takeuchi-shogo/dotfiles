@@ -94,6 +94,12 @@ validate スキルを呼び出して acceptance criteria を検証する。
 **Spec**: docs/specs/{feature}.prompt.md
 **Branch**: spike/{feature}
 **Validation**: ✅ PASS / ❌ FAIL / ⚠️ PARTIAL
+**Feasibility**: 🟢 Full-auto / 🟡 Semi-auto / 🔴 Manual
+
+### Feasibility Assessment
+- 🟢 **Full-auto**: claude -p でエンドツーエンド自動実行可能。人間の介入不要
+- 🟡 **Semi-auto**: 一部自動化可能だが、判断ポイントや外部入力で人間の介入が必要
+- 🔴 **Manual**: GUI 操作・外部認証・リアルタイム判断など、自動化困難な要素が支配的
 
 ### Findings
 - 実装で分かったこと
