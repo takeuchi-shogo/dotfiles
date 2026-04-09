@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-09] ingest | Launching Claude Managed Agents
+
+- ソース: Anthropic Blog — Launching Claude Managed Agents
+- 判定: Gap 1個, Partial 2個, Already 2個(強化可能), N/A 1個
+- 取り込み: Hybrid Architecture リファレンス, CLAUDE.md ルーティング更新, Agent Config 標準化, Scheduling 移行検討, ポータビリティガイド
+
 ## [2026-04-09] ingest | 30 Claude Prompts, Workflows & Automations
 
 - ソース: "30 Claude Prompts, Workflows & Automations I Use Every Single Day" (@eng_khairallah1)
