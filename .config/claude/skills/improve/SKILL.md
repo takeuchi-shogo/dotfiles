@@ -291,6 +291,18 @@ Phase 3 → Phase 4 → VULNERABLE? → REFINE → Phase 4（再実行）
 - {INSUFFICIENT_DATA だったカテゴリと理由}
 - {Codex が指摘した missing_proposals}
 
+## TELOS Alignment
+
+> 各提案の `telos_alignment`（`references/telos-outcome-mapping.md` 基準）の分布。
+
+| alignment | 件数 | 割合 |
+|-----------|------|------|
+| high | {high_count} | {high_pct}% |
+| medium | {medium_count} | {medium_pct}% |
+| low | {low_count} | {low_pct}% |
+
+> low が過半数の場合、改善方向が TELOS 目標から乖離している可能性あり。
+
 ## 次回への申し送り
 
 - {Codex の missing_proposals}

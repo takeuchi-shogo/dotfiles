@@ -149,6 +149,7 @@ Phase 1 の分析結果から **3つの改善方向性** を候補生成する:
 - 各候補は 1 文の要約 + 期待効果 + 対象ファイル + リスク
 - 候補は異なるアプローチを取る（例: エラー削減 vs スキル改善 vs ハーネス最適化）
 - Phase 1.0 で読み込んだ backlog・前回 winning direction があれば、継続 or 方向転換を判断材料にする
+- **TELOS alignment**: `references/telos-outcome-mapping.md` を参照し、各候補に `telos_alignment: high/medium/low` を付与する。現在の短期目標への貢献度で判定
 
 **成功パターンの注入（proposal-pool サンプリング）**:
 
