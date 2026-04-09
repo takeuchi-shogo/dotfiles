@@ -247,7 +247,7 @@ def _detect_selective_improvement(tool_output: str) -> str | None:
     # Pattern: "metric_name: +X.Xpp" or "metric_name: -X.Xpp"
     # or "metric_name: X% (delta: +Y)"
     delta_pattern = re.compile(
-        r"(\w[\w\s]*?)\s*[=:]\s*[+-]?[\d.]+%?\s*\(.*?([+-]\d+(?:\.\d+)?)\s*(?:pp|%)",
+        r"(\w[\w\s]*?)\s*[=:]\s*[+-]?[\d.]+%?\s*\([^\n]*?([+-]\d+(?:\.\d+)?)\s*(?:pp|%)",
         re.IGNORECASE,
     )
     # Also match: "metric_name delta: +X.Xpp"
