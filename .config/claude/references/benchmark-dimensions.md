@@ -49,6 +49,32 @@ python .config/claude/scripts/benchmark/setup_health.py --json
 
 `/improve` ダッシュボードの一部として使用される。
 
+## Advisor-Mode 評価
+
+> 出典: Anthropic "The Advisor Strategy" (2026-04-09)
+
+Advisor パターン（`references/advisor-strategy.md`）の効果を定量測定するための評価軸。
+3条件の比較で advisor 導入の ROI を判定する。
+
+### 比較条件
+
+| 条件 | 説明 |
+|------|------|
+| **Executor Solo** | Sonnet/Haiku がアドバイザーなしで単独実行 |
+| **Executor + Advisor** | Sonnet/Haiku が Opus に中間相談しながら実行 |
+| **Strong Model Solo** | Opus が単独で全て実行（ベースライン） |
+
+### 評価軸
+
+| 指標 | 計算方法 | 目的 |
+|------|---------|------|
+| Advisor Invocation Rate | advisor 相談回数 / 総タスク数 | 相談頻度の適正化（高すぎ = 依存、低すぎ = 未活用） |
+| Advisor Token Share | advisor トークン / 総トークン | コスト構造の可視化 |
+| Cost per Task | 総 API コスト / タスク数 | 3条件間のコスト比較 |
+| Stop Signal Rate | stop 発行数 / advisor 相談数 | 安全弁の発動頻度 |
+| Task Success Rate | 成功タスク数 / 総タスク数 | 3条件間の品質比較 |
+| Turns to Completion | タスク完了までのターン数 | 効率性の比較 |
+
 ## Retroactive Scoring
 
 新スキル導入時やデータ不足時に、過去の実行記録からベースラインスコアを遡及算出する。

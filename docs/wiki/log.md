@@ -8,6 +8,13 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-10] ingest | The Art of Building Verifiers for Computer Use Agents
+
+- ソース: https://arxiv.org/abs/2604.06240 (Microsoft Research)
+- 判定: Gap 2個, Partial 1個, Already(強化可能) 4個, Already(強化不要) 1個
+- 取り込み: 全7項目 — controllability帰属, scoring uncontrollable case, 動的ルーブリック生成, Two-pass verification, 動的関連性スコアリング概念, AutoEvolve構造レビュー+alignment tipping対策
+- プラン: `docs/plans/2026-04-10-universal-verifier-integration.md`
+
 ## [2026-04-10] ingest | Scaling Coding Agents via Atomic Skills
 
 - ソース: [arXiv:2604.05013](https://arxiv.org/abs/2604.05013)
@@ -207,3 +214,16 @@
 - ソース: "Obsidian + Claude Code is the new meta" (Noah, Sovereign Creator OS)
 - 判定: Gap 1個, Partial 1個, Already 6個 (うち強化可能1), N/A 1個
 - 取り込み: T1 Vault自動メンテナンス, T2 双方向整合性チェック, T3 Bases統合(低優先)
+
+## [2026-04-10] ingest | Submodular Optimization for Diverse Query Generation in DeepResearch
+
+- ソース: https://jina.ai/news/submodular-optimization-for-diverse-query-generation-in-deepresearch/
+- 判定: Critical Gap 1個, Gap 2個, Partial 1個, 低優先 1個, Already(強化可能) 2個
+- 取り込み: 全項目選択。計測基盤→選択層→Aggregate強化→2段階パイプライン→λ制御の順で統合予定
+- プラン: `docs/plans/2026-04-10-submodular-diversity-integration.md`
+
+## [2026-04-10] ingest | The Advisor Strategy
+
+- ソース: https://claude.com/blog/the-advisor-strategy
+- 判定: Gap 1個, Partial 2個, Already 3個 (うち強化可能 3個), N/A 1個
+- 取り込み: Advisor パターンリファレンス新規作成、委譲ガイドに中間相談プロトコル (Pattern 4) 追加、benchmark-dimensions に Advisor-Mode 評価軸追加
