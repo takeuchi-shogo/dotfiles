@@ -6,16 +6,21 @@ Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext warning on stdout
 
 Detects proxy metric divergence (Goodhart's Law), self-referential
-improvement attempts, and single-metric evaluations per improve-policy
-Rules 21-23.
+improvement attempts, and single-metric evaluations per improve-policy.
 
-Note: This is an initial implementation focused on proxy metric checks.
-Future iterations will add assertion counting and scope narrowing detection.
-Rule 23 (Metric Diversity) implemented — detects single-metric evaluations.
+Implemented rules:
+- Rule 21: Proxy metric score jump detection (+5pp threshold)
+- Rule 21_eval_shrinkage: Eval suite shrinkage detection (20%)
+- Rule 21_fm_skew: Per-FM detection rate skew (4:1 ratio)
+- Rule 22: Self-referential evaluation criteria modification
+- Rule 23: Metric diversity (minimum 2 distinct metrics)
+- Rule 29: Acceleration Guard (accept rate +20pp jump)
+- Rule 30: Selective improvement (one metric up, another down)
 """
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -36,6 +41,11 @@ emit = get_emitter()
 # --- Constants ---
 SCORE_JUMP_THRESHOLD = 5  # +5pp triggers Goodhart warning
 MIN_METRIC_COUNT = 2  # Rule 23: require at least 2 distinct metrics
+EVAL_SHRINKAGE_THRESHOLD = 0.20  # 20% 以上の減少で WARNING
+FM_SKEW_RATIO_THRESHOLD = 4.0  # max/min 比が 4:1 以上で WARNING
+ACCEPT_RATE_JUMP_THRESHOLD = 20  # Rule 29: +20pp triggers Acceleration Guard
+SELECTIVE_IMPROVE_THRESHOLD = 5  # Rule 30: +5pp improvement in one metric
+SELECTIVE_DEGRADE_THRESHOLD = 3  # Rule 30: -3pp degradation in another
 PROTECTED_FILES = [
     "improve-policy.md",
     "skill-benchmarks.jsonl",
@@ -190,6 +200,185 @@ def _detect_score_jump(tool_output: str) -> str | None:
     return None
 
 
+def _detect_acceleration_guard(tool_output: str) -> str | None:
+    """Rule 29: Detect suspiciously rapid increase in accept rate.
+
+    When accept_rate jumps by +20pp or more compared to previous cycle,
+    it may indicate lowered standards or gaming of the acceptance criteria.
+    """
+    # Pattern: "accept rate: 80%" or "accept_rate: 85.5%"
+    rate_pattern = re.compile(
+        r"accept[_ ]rate\s*[=:]\s*(\d+(?:\.\d+)?)\s*%", re.IGNORECASE
+    )
+    matches = rate_pattern.findall(tool_output)
+    if len(matches) < 2:
+        return None
+
+    # Compare last two values (previous and current)
+    try:
+        prev_rate = float(matches[-2])
+        curr_rate = float(matches[-1])
+    except (ValueError, IndexError):
+        return None
+
+    delta = curr_rate - prev_rate
+    if delta >= ACCEPT_RATE_JUMP_THRESHOLD:
+        return (
+            f"[Gaming Detector] Rule 29 Acceleration Guard 警告: "
+            f"accept rate が +{delta:.1f}pp 急上昇しました "
+            f"({prev_rate:.1f}% → {curr_rate:.1f}%)。"
+            f"以下を確認してください: "
+            f"(1) 提案の品質基準が下がっていないか "
+            f"(2) 評価スコープが狭まっていないか "
+            f"(3) Codex Gate の判定閾値が変更されていないか"
+        )
+    return None
+
+
+def _detect_selective_improvement(tool_output: str) -> str | None:
+    """Rule 30: Detect selective improvement.
+
+    Detects when one metric improves while others degrade.
+    When a single metric improves by +5pp or more while another
+    degrades by -3pp or more, this indicates potential metric
+    gaming — optimizing for a specific target at the expense of
+    overall quality.
+    """
+    # Pattern: "metric_name: +X.Xpp" or "metric_name: -X.Xpp"
+    # or "metric_name: X% (delta: +Y)"
+    delta_pattern = re.compile(
+        r"(\w[\w\s]*?)\s*[=:]\s*[+-]?[\d.]+%?\s*\(.*?([+-]\d+(?:\.\d+)?)\s*(?:pp|%)",
+        re.IGNORECASE,
+    )
+    # Also match: "metric_name delta: +X.Xpp"
+    simple_delta = re.compile(
+        r"(\w[\w\s]*?)\s+delta\s*[=:]\s*([+-]\d+(?:\.\d+)?)\s*(?:pp|%)",
+        re.IGNORECASE,
+    )
+
+    deltas: dict[str, float] = {}
+    for pattern in [delta_pattern, simple_delta]:
+        for match in pattern.finditer(tool_output):
+            name = match.group(1).strip().lower()
+            try:
+                delta_val = float(match.group(2))
+                deltas[name] = delta_val
+            except ValueError:
+                continue
+
+    if len(deltas) < 2:
+        return None
+
+    improvements = {k: v for k, v in deltas.items() if v >= SELECTIVE_IMPROVE_THRESHOLD}
+    degradations = {
+        k: v for k, v in deltas.items() if v <= -SELECTIVE_DEGRADE_THRESHOLD
+    }
+
+    if improvements and degradations:
+        imp_str = ", ".join(f"{k} (+{v:.1f}pp)" for k, v in improvements.items())
+        deg_str = ", ".join(f"{k} ({v:.1f}pp)" for k, v in degradations.items())
+        return (
+            f"[Gaming Detector] Rule 30 選択的改善警告: "
+            f"改善: {imp_str} / 劣化: {deg_str}。"
+            f"特定メトリクスの改善が他の品質指標を犠牲にしている可能性があります。"
+            f"全体的な品質バランスを確認してください。"
+        )
+    return None
+
+
+def _get_last_eval_tuple_count() -> int | None:
+    """Read the last eval_tuple_count from improve-history.jsonl."""
+    history_path = (
+        Path.home() / ".claude" / "agent-memory" / "metrics" / "improve-history.jsonl"
+    )
+    if not history_path.exists():
+        return None
+    try:
+        last_line = ""
+        with open(history_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    last_line = line
+        if not last_line:
+            return None
+        entry = json.loads(last_line)
+        count = entry.get("eval_tuple_count")
+        return int(float(count)) if count is not None else None
+    except (ValueError, KeyError, json.JSONDecodeError, OSError) as e:
+        sys.stderr.write(f"[gaming-detector] improve-history parse error: {e}\n")
+        return None
+
+
+def _detect_eval_suite_shrinkage(tool_output: str) -> str | None:
+    """Detect eval suite shrinkage — fewer tuples may indicate hill-climbing.
+
+    Checks for patterns like "eval tuples: 42", "regression tests: 15",
+    "test count: 30" in tool output and compares against the last known
+    count from improve-history.jsonl.
+    """
+    # パターン: "eval tuples: N" / "regression tests: N" / "test count: N"
+    # Note: \b は日本語で誤動作するため lookaround を使用しない (ASCII only context)
+    count_pattern = re.compile(
+        r"(?:eval\s+tuples?|regression\s+tests?|test\s+count)\s*[=:]\s*(\d+)",
+        re.IGNORECASE,
+    )
+    match = count_pattern.search(tool_output)
+    if not match:
+        return None
+
+    current_count = int(match.group(1))
+
+    prev_count = _get_last_eval_tuple_count()
+    if prev_count is None or prev_count == 0:
+        return None  # 比較データなし
+
+    shrinkage = (prev_count - current_count) / prev_count
+    if shrinkage >= EVAL_SHRINKAGE_THRESHOLD:
+        return (
+            f"[Gaming Detector] Eval Suite 縮小警告: "
+            f"eval タプル数が {prev_count} → {current_count} に減少しました "
+            f"({shrinkage:.0%} 減)。"
+            f"テストの削除・無効化によるスコア操作の可能性があります。"
+            f"タプル数の変更理由を確認してください。"
+        )
+    return None
+
+
+def _detect_fm_skew(tool_output: str) -> str | None:
+    """Detect skewed per-FM detection rates indicating over-reliance on specific FMs.
+
+    Checks for patterns like "FM-001: 80%" or "FM-003: 15.5%" and warns
+    if the max/min ratio exceeds the threshold.
+    """
+    # パターン: "FM-NNN: XX%" or "FM-NNN: XX.X%"
+    fm_pattern = re.compile(r"FM-\d{3}\s*[=:]\s*(\d+(?:\.\d+)?)\s*%")
+    rates = [float(m.group(1)) for m in fm_pattern.finditer(tool_output)]
+
+    if len(rates) < 2:
+        return None  # 比較に2つ以上必要
+
+    min_rate = min(rates)
+    max_rate = max(rates)
+
+    if min_rate <= 0:
+        return (
+            "[Gaming Detector] FM 検出率警告: "
+            "検出率 0% の FM が存在します。"
+            "eval スイートから特定の failure mode が除外されている可能性があります。"
+        )
+
+    ratio = max_rate / min_rate
+    if ratio >= FM_SKEW_RATIO_THRESHOLD:
+        return (
+            f"[Gaming Detector] FM 検出率偏り警告: "
+            f"per-FM 検出率の max/min 比が {ratio:.1f}:1 です "
+            f"(閾値: {FM_SKEW_RATIO_THRESHOLD:.0f}:1)。"
+            f"特定 FM への過度な依存は eval の信頼性を下げます。"
+        )
+    return None
+
+
 # --- Main ---
 
 
@@ -245,6 +434,62 @@ def main() -> None:
             {
                 "type": "gaming_detected",
                 "rule": "22_metric_diversity",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # Eval suite integrity: shrinkage check
+    warning = _detect_eval_suite_shrinkage(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "21_eval_shrinkage",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # Eval suite integrity: FM skew check
+    warning = _detect_fm_skew(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "21_fm_skew",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # Rule 29: Acceleration Guard
+    warning = _detect_acceleration_guard(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "29_acceleration_guard",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # Rule 30: Selective improvement detection
+    warning = _detect_selective_improvement(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "30_selective_improvement",
                 "message": warning,
             },
         )

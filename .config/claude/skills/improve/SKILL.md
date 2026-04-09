@@ -209,6 +209,25 @@ Phase 3 → Phase 4 → VULNERABLE? → REFINE → Phase 4（再実行）
 - 前回提案の実施状況: N/M 完了
 - 効果測定結果: ...
 
+## Proposals Outcome 統計
+
+> `runs/*/proposals.jsonl` の outcome フィールドから集計。anti-Goodhart チェックリスト（`references/anti-goodhart-checklist.md`）と併用。
+
+| outcome | 件数 | 割合 |
+|---------|------|------|
+| merged | {merged_count} | {merged_pct}% |
+| reverted | {reverted_count} | {reverted_pct}% |
+| declined | {declined_count} | {declined_pct}% |
+| pending | {pending_count} | {pending_pct}% |
+
+| 指標 | 値 | 判定 |
+|------|---|------|
+| accept rate (merged/total) | {accept_rate}% | {OK / WARNING: >80% は過剰} |
+| revert rate (reverted/merged) | {revert_rate}% | {OK / WARNING: >30% は品質懸念} |
+| 前回比 accept rate 変動 | {delta_accept_rate}pp | {OK / WARNING: +20pp 以上は Rule 29} |
+
+> **anti-Goodhart**: accept rate が急上昇（+20pp 以上）している場合は Rule 29 (Acceleration Guard) を確認。revert rate が高い場合は提案品質の見直しが必要。
+
 ## Cycle Time 統計
 
 > friction 検出→/improve 実行の elapsed time（observation→improvement パス）。
@@ -229,6 +248,23 @@ Phase 3 → Phase 4 → VULNERABLE? → REFINE → Phase 4（再実行）
 | トレンド | {前回比: 改善/横ばい/悪化} |
 
 > ボトルネック: {最も cycle time に寄与している要因の分析}
+
+## Eval Suite Health
+
+> eval スイートの integrity（タプル数・FM 偏り・Goodhart フラグ）。
+> `gaming-detector.py` と `improve-history.jsonl` の `eval_tuple_count` から算出。
+
+<!-- eval_tuple_count が null の場合 -->
+
+**初回計測**: eval_tuple_count が未記録のため、今回のタプル数を baseline として記録します。
+
+<!-- eval_tuple_count が null でない場合 -->
+
+| 指標 | 値 | 判定 |
+|-----|---|-----|
+| eval tuple 数 | {count} (前回比 {delta}) | {OK / WARNING} |
+| per-FM 検出率 範囲 | {min}%〜{max}% | {OK / SKEWED} |
+| Goodhart フラグ | {なし / Rule 21: 詳細} | - |
 
 ## Coverage Matrix 結果
 

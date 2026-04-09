@@ -414,7 +414,9 @@ improve-history.jsonl への追記時に以下のフィールドを含める（n
   // ... 既存フィールド (date, proposals_total, adoption_rate 等) ...
   "run_started_at": "ISO 8601 | null",
   "run_completed_at": "ISO 8601 | null",
-  "cycle_time_hours": null               // float | null
+  "cycle_time_hours": null,              // float | null
+  "eval_tuple_count": null,              // int | null — regression-suite.json のタプル数
+  "eval_goodhart_triggered": false       // bool — gaming-detector が警告を発したか
 }
 ```
 
@@ -436,6 +438,7 @@ Phase 2.5 完了後、各提案を以下の形式で記録する:
   "novelty_score": null,                            // float 0.0-1.0 | null。既存提案との最大類似度の逆数
   "similar_proposal_ids": [],                       // ["IMP-..."]。類似度 > 0.5 の提案 ID リスト（記録用。除外閾値 0.85 とは別）
   "mutation_type": null,                            // "refine" | "pivot" | "novel" | null。探索タイプ
+  "eval_health": "ok",                                  // "ok" | "warning" | "skipped" — gaming-detector の判定結果
   "gate_verdict": "ROBUST|VULNERABLE|FATAL_FLAW",  // Phase 2.5 の判定結果
   "created_at": "YYYY-MM-DDTHH:MM:SS"
 }
@@ -455,6 +458,11 @@ Phase 2.5 完了後、各提案を以下の形式で記録する:
    - delta > +2pp → 「merge 推奨」
    - delta ±2pp → 「効果不明、追加データ待ち」
    - delta < -2pp → 「revert 推奨」（improve-policy Rule 8）
+4. eval suite integrity チェック（anti-Goodhart）:
+   - eval スコア上昇（delta > +3pp）時 → eval タプル数が前回比で減少していないか確認
+   - タプル数減少 + スコア上昇 = Goodhart 疑義 → `eval_health: "warning"` をセット
+   - per-FM 検出率の max/min 比 > 4:1 → FM 偏り警告
+   - 検出は `scripts/policy/gaming-detector.py` が自動実行
 
 ### ブランチ作成と変更
 
