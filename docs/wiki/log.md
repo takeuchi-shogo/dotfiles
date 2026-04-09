@@ -183,3 +183,9 @@
 - 判定: Gap 1個, Partial 4個, Already 6個 (うち強化可能 2個), N/A 1個
 - 取り込み: 全項目。Wave 1: rewrite skill + /think decision + /digest summarize。Wave 2: /challenge persona + /think roleplay + /checkpoint brief。Wave 3: voice guide + data analysis patterns
 - プラン: `docs/plans/2026-04-09-12-claude-patterns-integration.md`
+
+## [2026-04-09] ingest | Skill Evaluation & Self-Improving Loop
+
+- ソース: 外部記事テキスト（URL なし）
+- 判定: Gap 2個, Partial 4個, Already(強化可能) 4個, N/A 0個
+- 取り込み: Wave 1 実装済み（per-skill score attribution + スケール統一）、Wave 2-3 は docs/plans/2026-04-09-skill-eval-improvement-plan.md

@@ -448,14 +448,15 @@ class TestEmitSkillEvent:
 
 
 class TestComputeSkillScore:
-    """スキルの複合スコア計算テスト。"""
+    """スキルの複合スコア計算テスト (1-10 スケール)。"""
 
     def test_perfect_session(self):
         events = [
             {"category": "skill", "type": "invocation", "skill_name": "review"},
         ]
         score = compute_skill_score(events, "review")
-        assert score == 1.0  # base(0.5) + completion(0.5), clamp
+        # 5.0 + 1.5(no err) + 1.0(test ok) + 0.5(no GP) + 0.5(no rev) = 8.5
+        assert score == pytest.approx(8.5)
 
     def test_session_with_errors(self):
         events = [
@@ -464,7 +465,8 @@ class TestComputeSkillScore:
             {"category": "error", "message": "ReferenceError"},
         ]
         score = compute_skill_score(events, "review")
-        assert score == pytest.approx(0.4)  # 0.5 + 0.5 - 0.3*2 = 0.4
+        # 5.0 - 3.0(2err) + 1.0(test ok) + 0.5(no GP) + 0.5(no rev) = 4.0
+        assert score == pytest.approx(4.0)
 
     def test_session_with_test_failure(self):
         events = [
@@ -472,7 +474,8 @@ class TestComputeSkillScore:
             {"category": "pattern", "message": "test_failed", "test_passed": False},
         ]
         score = compute_skill_score(events, "review")
-        assert score == pytest.approx(0.5)  # 0.5 + 0.5 - 0.5 = 0.5
+        # 5.0 + 1.5(no err) - 2.5(test fail) + 0.5(no GP) + 0.5(no rev) = 5.0
+        assert score == pytest.approx(5.0)
 
     def test_session_with_gp_violations(self):
         events = [
@@ -482,9 +485,10 @@ class TestComputeSkillScore:
             {"category": "quality", "rule": "GP-004"},
         ]
         score = compute_skill_score(events, "review")
-        assert score == pytest.approx(0.7)  # 0.5 + 0.5 - 0.1*3 = 0.7
+        # 5.0 + 1.5(no err) + 1.0(test ok) - 1.5(3GP) + 0.5(no rev) = 6.5
+        assert score == pytest.approx(6.5)
 
-    def test_score_clamps_to_zero(self):
+    def test_score_clamps_to_minimum(self):
         events = [
             {"category": "skill", "type": "invocation", "skill_name": "bad-skill"},
             {"category": "error", "message": "err1"},
@@ -493,7 +497,8 @@ class TestComputeSkillScore:
             {"category": "pattern", "message": "test_failed", "test_passed": False},
         ]
         score = compute_skill_score(events, "bad-skill")
-        assert score == 0.0  # 0.5 + 0.5 - 0.9 - 0.5 < 0 → clamp
+        # 5.0 - 4.5(3err) - 2.5(test) + 0.5(no GP) + 0.5(no rev) = -1.0 → 1.0
+        assert score == 1.0
 
     def test_review_criticals_penalty(self):
         events = [
@@ -502,13 +507,13 @@ class TestComputeSkillScore:
             {"category": "quality", "review_severity": "important"},
         ]
         score = compute_skill_score(events, "rpi")
-        assert score == pytest.approx(0.6)  # 0.5 + 0.5 - 0.2*2 = 0.6
+        # 5.0 + 1.5(no err) + 1.0(test ok) + 0.5(no GP) - 2.0(2rev) = 6.0
+        assert score == pytest.approx(6.0)
 
     def test_rust_nested_events_are_normalized(self):
         """CRIT-001: Rust hook の data ラップ形式でもスコアが正しく計算される。"""
         events = [
             {"category": "skill", "type": "invocation", "skill_name": "review"},
-            # Rust hook format: category + data wrapper
             {
                 "category": "error",
                 "data": {"message": "TypeError", "command": "npm test"},
@@ -519,20 +524,37 @@ class TestComputeSkillScore:
             },
         ]
         score = compute_skill_score(events, "review")
-        # 1.0 - 0.3 (error) - 0.1 (GP violation) = 0.6
-        assert score == pytest.approx(0.6)
+        # 5.0 - 1.5(1err) + 1.0(test ok) - 0.5(1GP) + 0.5(no rev) = 4.5
+        assert score == pytest.approx(4.5)
 
     def test_mixed_rust_and_python_events(self):
         """CRIT-001: Rust/Python 混在イベントでもスコアが正しく計算される。"""
         events = [
-            # Python format (flat)
             {"category": "error", "message": "err1"},
-            # Rust format (nested)
             {"category": "error", "data": {"message": "err2", "command": "cargo"}},
         ]
         score = compute_skill_score(events, "test-skill")
-        # 1.0 - 0.3*2 = 0.4
-        assert score == pytest.approx(0.4)
+        # 5.0 - 3.0(2err) + 1.0(test ok) + 0.5(no GP) + 0.5(no rev) = 4.0
+        assert score == pytest.approx(4.0)
+
+    def test_per_skill_attribution(self):
+        """Per-skill attribution: 他スキルのイベントがスコアに影響しない。"""
+        events = [
+            {"category": "skill", "type": "invocation", "skill_name": "review"},
+            {"category": "skill", "type": "invocation", "skill_name": "commit"},
+            # review に帰属されるエラー
+            {"category": "error", "message": "err1", "skill_name": "review"},
+            # commit に帰属されるエラー（review のスコアに影響しない）
+            {"category": "error", "message": "err2", "skill_name": "commit"},
+            {"category": "error", "message": "err3", "skill_name": "commit"},
+        ]
+        review_score = compute_skill_score(events, "review")
+        commit_score = compute_skill_score(events, "commit")
+        # review: 1 error → 5.0 - 1.5 + 1.0 + 0.5 + 0.5 = 5.5
+        assert review_score == pytest.approx(5.5)
+        # commit: 2 errors → 5.0 - 3.0 + 1.0 + 0.5 + 0.5 = 4.0
+        assert commit_score == pytest.approx(4.0)
+        assert review_score > commit_score
 
 
 class TestNormalizeEvent:

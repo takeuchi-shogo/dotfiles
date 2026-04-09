@@ -387,9 +387,7 @@ _VALID_OUTCOMES = {"accept", "reject", "partial", "deferred"}
 _VALID_OUTCOME_SOURCES = {"explicit", "auto_diff"}
 
 
-def update_finding_outcome(
-    finding_id: str, outcome: str, outcome_source: str
-) -> bool:
+def update_finding_outcome(finding_id: str, outcome: str, outcome_source: str) -> bool:
     """review-findings.jsonl の指摘に outcome を設定する。
 
     R-05: outcome_source が "explicit" で記録済みの場合、"auto_diff" では上書きしない。
@@ -421,10 +419,7 @@ def update_finding_outcome(
         if entry.get("id") != finding_id:
             continue
         # R-05: explicit が記録済みなら auto_diff で上書きしない
-        if (
-            entry.get("outcome_source") == "explicit"
-            and outcome_source == "auto_diff"
-        ):
+        if entry.get("outcome_source") == "explicit" and outcome_source == "auto_diff":
             return False
         entry["outcome"] = outcome
         entry["outcome_source"] = outcome_source
@@ -444,9 +439,7 @@ def update_finding_outcome(
 
     # 後方互換: review-feedback.jsonl にも記録
     _outcome_compat = {"accept": "accepted", "reject": "ignored"}
-    emit_review_feedback(
-        finding_id, _outcome_compat.get(outcome, outcome)
-    )
+    emit_review_feedback(finding_id, _outcome_compat.get(outcome, outcome))
     return True
 
 
@@ -581,15 +574,22 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
     → clamp(1.0, 10.0)
     """
     normalized = [_normalize_event(e) for e in session_events]
+    # Per-skill attribution: events for this skill + unattributed events.
+    # Events from OTHER skills are excluded.
+    relevant = [
+        e
+        for e in normalized
+        if e.get("skill_name") == skill_name or not e.get("skill_name")
+    ]
     score = 5.0  # ベースライン (retroactive_scorer と同一)
 
-    errors = [e for e in normalized if e.get("category") == "error"]
+    errors = [e for e in relevant if e.get("category") == "error"]
     if not errors:
         score += 1.5
     else:
         score -= min(1.5 * len(errors), 4.5)
 
-    test_failures = [e for e in normalized if e.get("test_passed") is False]
+    test_failures = [e for e in relevant if e.get("test_passed") is False]
     if not test_failures:
         score += 1.0
     else:
@@ -597,7 +597,7 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
 
     gp_violations = [
         e
-        for e in normalized
+        for e in relevant
         if e.get("category") == "quality" and e.get("rule", "").startswith("GP-")
     ]
     if not gp_violations:
@@ -607,7 +607,7 @@ def compute_skill_score(session_events: list[dict], skill_name: str) -> float:
 
     review_criticals = [
         e
-        for e in normalized
+        for e in relevant
         if e.get("category") == "quality"
         and e.get("review_severity") in ("critical", "important")
     ]

@@ -251,11 +251,11 @@ def generate_proposal(
         return None
 
     reasons = []
-    if report.avg_score < 0.4:
-        reasons.append(f"平均スコア {report.avg_score:.2f} (Failing 閾値 0.4 未満)")
-    elif report.avg_score < 0.6:
+    if report.avg_score < 4.0:
+        reasons.append(f"平均スコア {report.avg_score:.2f} (Failing 閾値 4.0 未満)")
+    elif report.avg_score < 6.0:
         reasons.append(f"平均スコア {report.avg_score:.2f} (Degraded)")
-    if report.trend <= -0.1:
+    if report.trend <= -1.0:
         reasons.append(f"トレンド {report.trend:+.2f} (低下中)")
     if report.benchmark_delta is not None and report.benchmark_delta < 0:
         reasons.append(f"A/B delta {report.benchmark_delta:+.1f}pp (ベースライン以下)")
