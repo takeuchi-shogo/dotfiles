@@ -83,3 +83,39 @@ VS-Multi や `/debate` で生成した候補のうち、採用されなかった
 | 全てのプロンプトに VS を適用 | 事実確認・決定的タスクでは無駄なオーバーヘッド |
 | VS を temperature の代替として使う | 直交する手法。併用が正しい |
 | VS-Multi で N>5 ターン | 後半のターンは無理に差別化しようとして品質が低下する |
+
+## 2段階多様化パイプライン
+
+VS は**生成前**の多様化（プロンプトレベル）。submodular selection は**生成後**の多様化（候補集合レベル）。両者は補完関係にあり、組み合わせて使う。
+
+### Stage 1: 生成前多様化
+
+VS / マルチモデル / temperature で多様な候補を生成する。
+
+- VS-Multi で N 個の異なる視点からの回答を生成
+- /research のマルチモデル並列実行で異なるモデルの出力を収集
+- /debate で Codex / Gemini の独立見解を取得
+
+### Stage 2: 生成後多様化（submodular selection）
+
+候補集合から最適な k 個を選択する。
+
+```bash
+# 候補の類似度を計測
+python3 scripts/lib/diversity_metrics.py --input candidates.jsonl
+
+# k 個の多様な部分集合を選択
+python3 scripts/lib/submodular_selection.py \
+  --candidates candidates.jsonl --k 5 --lambda 0.5
+```
+
+### 使い分け
+
+| 条件 | 推奨 |
+|------|------|
+| 候補数 < 5 | Stage 1 のみで十分。Stage 2 は不要 |
+| 候補数 5-10 | Stage 2 で重複排除（`--duplicates` フラグ） |
+| 候補数 10+ | Stage 2 で最適 k 個を選択 |
+| 候補間の類似度が不明 | まず `diversity_metrics.py` で計測して判断 |
+
+> 詳細な手法比較: `references/diversity-selection-guide.md`
