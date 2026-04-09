@@ -54,6 +54,8 @@
 - [RLHF・アライメント](concepts/rlhf-alignment.md) — 報酬モデリング・ポリシー勾配・Verbalized Sampling
 - [Environment-Driven RL](../research/2026-04-08-environment-driven-rl-analysis.md) — 推論プロキシによるトレース記録と本番環境駆動の強化学習
 - [ASI-Evolve 統合](concepts/self-improving-agents.md) — AutoEvolve への ASI-Evolve 知見統合。lineage追跡・micro-analyzer・knowledge retrieval・3段ゲート評価。関連: [メタ進化](concepts/meta-evolution.md)
+- [サブモジュラー最適化](concepts/submodular-optimization.md) — 部分加法最適化。Facility Location + 貪欲法で関連性と多様性を同時最大化。(1-1/e)≈0.63 の近似率保証あり。/research の多様性保証に適用予定
+- [多様性選択](concepts/diversity-selection.md) — 生成後の多様性選択層。Verbalized Sampling 等の生成前多様化と補完関係にある後処理ステップ。Submodular / DPP / MMR を使い分ける
 
 ### decision — 意思決定
 
@@ -72,6 +74,7 @@
 - [エージェント評価](concepts/agent-evaluation.md) — Evals フレームワークとベンチマーク体系
 - [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — 見逃し/過検出の非対称損失とリスクカテゴリ別レビュー方針
 - [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
+- [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定
 
 ### tooling — ツール・エコシステム
 

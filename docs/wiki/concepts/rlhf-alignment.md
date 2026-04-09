@@ -42,6 +42,8 @@ Typicality Biasへの対処として`references/verbalized-sampling-guide.md`を
 
 - [メタ進化](meta-evolution.md) — AutoEvolveループとRLHFサイクルの対応関係
 - [エージェント評価](agent-evaluation.md) — LLM-as-JudgeとRMの実装パターン
+- [サブモジュラー最適化](submodular-optimization.md) — Verbalized Sampling（生成前多様化）と補完する生成後選択手法
+- [多様性選択](diversity-selection.md) — Typicality Bias 対処の2段階パイプライン後半層
 
 ## ソース
 
