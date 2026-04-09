@@ -68,6 +68,7 @@ Read `instructions/capture-and-write.md` for the full procedure:
   5. **Human Checkpoint** — ユーザー判断が必要なポイントが特定されているか
   6. **Hard Rules** — NG パターン / Anti-Patterns が記述されているか
 - **5D Quality Check**: Safety / Completeness / Executability / Maintainability / Cost-awareness
+- **Evaluability Check**: eval 方法が定義されているか確認。未定義なら Testing セクションに追加必須（[Atomic Skill Design Principles](instructions/skill-writing-guide.md#atomic-skill-design-principles) 参照）
 - **Anti-Patterns**: Recommend including an Anti-Patterns section
 - **Security Scan**: Run `skill-security-scan.py` before testing
 

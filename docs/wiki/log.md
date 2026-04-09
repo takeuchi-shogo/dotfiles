@@ -8,6 +8,12 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-10] ingest | Scaling Coding Agents via Atomic Skills
+
+- ソース: [arXiv:2604.05013](https://arxiv.org/abs/2604.05013)
+- 判定: Gap 0個, Partial 4個, Already 0個, N/A 3個 (うち proxy 可 2個)
+- 取り込み: Independent Evaluability 明示化, Capability マッピング表, Deterministic Metrics 方針, AutoEvolve Multi-Skill Regression Check
+
 ## [2026-04-09] ingest | Launching Claude Managed Agents
 
 - ソース: Anthropic Blog — Launching Claude Managed Agents

@@ -136,6 +136,26 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 - **`compose_with`** 関係にあるスキルは、連鎖実行を検討する
 - **`similar_to` と `conflicts_with` の違い**: similar は同時使用可能だが冗長、conflicts は同時有効化が禁止（設計指針が矛盾）
 
+## Capability Coverage
+
+各 agent/skill が行使する atomic capability のマッピング。
+5 capability は [arXiv:2604.05013](https://arxiv.org/abs/2604.05013) の SE 分解に基づく。
+Codex 批評: atomicity は skill 層ではなく agent/capability 層に課す。
+
+| Capability | Primary Agent(s) | Supporting Skill(s) |
+|------------|-------------------|---------------------|
+| **Localization** (バグ・修正箇所の特定) | debugger, Explore | check-health, fix-issue |
+| **Editing** (コード修正・生成) | frontend-developer, golang-pro, typescript-pro | epd, rpi, spike, frontend-design |
+| **Testing** (テスト生成・検証) | test-engineer, test-analyzer | spike (validate), webapp-testing |
+| **Review** (コード品質評価) | code-reviewer, codex-reviewer, golang-reviewer | review, codex-review, security-review |
+| **Reproduction** (Issue 再現・デバッグ) | debugger, codex-debugger | fix-issue, systematic-debugging |
+
+### ガイダンス
+
+- 新スキル/エージェント追加時、どの capability をカバーするか明示する
+- 1 capability に複数の agent が存在するのは正常（粒度・専門性が異なる）
+- capability カバレッジの偏りは skill-audit で検出する
+
 ## Pattern Distribution
 
 | Pattern | Count | Example Skills |

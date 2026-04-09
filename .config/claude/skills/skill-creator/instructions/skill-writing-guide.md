@@ -45,6 +45,16 @@ These word counts are approximate and you can feel free to go longer if needed.
 - **一般知識を削れ** — エージェントが知っていることは省く
 - **具体的に書け** — 曖昧な指示は無意味、Good/Bad 例を示す
 
+### Atomic Skill Design Principles
+
+スキルの構造品質を保証する 3 原則（[arXiv:2604.05013](https://arxiv.org/abs/2604.05013) に基づく）:
+
+1. **Minimality（最小性）** — 1 つのスキルは 1 つの明確な能力に対応する。複数の責務を混ぜない
+2. **Self-containment（自己完結性）** — スキル単体で実行可能。外部状態への暗黙の依存を排除する（`depend_on` 関係は skill-inventory で明示）
+3. **Independent Evaluability（独立評価可能性）** — スキルの効果を他スキルと独立に測定できる。SKILL.md 作成時に「何をもって成功とするか」の eval 方法を必ず定義する
+
+特に 3 の Independent Evaluability が最も見落とされやすい。eval 方法が定義されていないスキルは改善サイクルに乗せられない。
+
 ---
 
 ## Domain Organization
