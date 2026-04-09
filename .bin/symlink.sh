@@ -35,6 +35,7 @@ SYMLINK_EXCLUDE_FILES=(
   "^\.config/raycast/extensions/"
   "^\.serena/"
   "^sample-dotfiles/"
+  "^\.hammerspoon/" # ~/.hammerspoon/ へディレクトリごとシンボリックリンクするため除外
   "^\.config/zsh/"    # ディレクトリ全体でシンボリックリンクするため除外
   "^\.config/claude/" # ~/.claude/ へカスタムシンボリックリンクするため除外
   "^\.claude/"        # プロジェクトローカルの設定は除外
@@ -46,7 +47,8 @@ SYMLINK_EXCLUDE_FILES=(
 )
 
 # ディレクトリ全体をシンボリックリンクするリスト
-ZSH_SYMLINK_DIRECTORIES=(
+DIRECTORY_SYMLINKS=(
+  ".hammerspoon"
   ".config/zsh"
 )
 
@@ -464,7 +466,7 @@ main() {
 
   # ディレクトリ全体のシンボリックリンクを作成
   echo "Creating directory symlinks..."
-  for dir in "${ZSH_SYMLINK_DIRECTORIES[@]}"; do
+  for dir in "${DIRECTORY_SYMLINKS[@]}"; do
     create_directory_symlink "$dir" || true
   done
 

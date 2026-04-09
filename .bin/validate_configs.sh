@@ -67,7 +67,7 @@ if have_cmd luac; then
   while IFS= read -r file; do
     luac -p "$file"
     echo "ok  $file"
-  done < <(find .config/nvim .config/sketchybar .config/wezterm -type f -name '*.lua' | sort)
+  done < <(find .config/nvim .config/sketchybar .config/wezterm .hammerspoon -type f -name '*.lua' | sort)
 else
   echo "skip  Lua validation (luac not found)"
 fi

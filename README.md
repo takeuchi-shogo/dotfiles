@@ -40,6 +40,7 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 | ディレクトリ | 説明 | キーバインド |
 |---|---|---|
 | [.config/aerospace/](.config/aerospace/) | AeroSpace (タイル型 WM) | [README](.config/aerospace/README.md) |
+| [.hammerspoon/](.hammerspoon/) | wake / unlock 自動化 | [README](.hammerspoon/README.md) |
 | [.config/karabiner/](.config/karabiner/) | キーリマッピング | [README](.config/karabiner/README.md) |
 | [.config/sketchybar/](.config/sketchybar/) | ステータスバー | |
 | [.config/borders/](.config/borders/) | ウィンドウボーダー | |

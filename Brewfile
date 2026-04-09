@@ -32,6 +32,7 @@ brew "direnv"     # ディレクトリ別環境変数マネージャ
 cask "wezterm"            # GPU アクセラレーテッドターミナル
 cask "ghostty"            # GPU アクセラレーテッドターミナル (代替)
 cask "aerospace"          # タイル型ウィンドウマネージャ
+cask "hammerspoon"        # wake / unlock hooks とローカル自動化
 cask "karabiner-elements" # キーボードカスタマイズ
 cask "sf-symbols"         # Apple SF Symbols ブラウザ
 cask "macskk"             # SKK 日本語入力メソッド

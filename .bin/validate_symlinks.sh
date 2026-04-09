@@ -12,6 +12,7 @@ root = pathlib.Path.cwd()
 home = pathlib.Path.home()
 
 managed_links = [
+    (home / ".hammerspoon", root / ".hammerspoon", ".hammerspoon"),
     (home / ".config/aerospace/aerospace.toml", root / ".config/aerospace/aerospace.toml", ".config/aerospace/aerospace.toml"),
     (home / ".config/karabiner/karabiner.json", root / ".config/karabiner/karabiner.json", ".config/karabiner/karabiner.json"),
     (home / ".config/nvim", root / ".config/nvim", ".config/nvim"),

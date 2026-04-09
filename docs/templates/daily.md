@@ -1,7 +1,17 @@
-# 作業日報 - {{ YYYY-MM-DD }}
+# Daily Note - {{ YYYY-MM-DD }}
 
-## やったこと
+## 朝TODO
+<!-- daily-enforcer:morning:start -->
+- [ ] 
+- [ ] 
+- [ ] 
+<!-- daily-enforcer:morning:end -->
 
-## 次やること
+## 進捗メモ
 
-## 感じたこと
+## 日報
+<!-- daily-enforcer:report:start -->
+- Done:
+- Blockers:
+- Next:
+<!-- daily-enforcer:report:end -->
