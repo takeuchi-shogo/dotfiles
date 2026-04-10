@@ -149,6 +149,8 @@ Step 3 の後、追加ラウンドを実行:
 - 単純な事実確認（→ WebSearch や context7）
 - コード実装（→ 直接書く）
 - バグ修正（→ debugger / codex-debugger）
+- **レイテンシ敏感 / streaming 応答が必要な場面** — /debate は MoA パターン (Proposer 並列 → Aggregator 統合) であり、最終層の Aggregator が first token を決めるまで応答開始できない (TTFT penalty)。バッチ処理・壁打ちには向くが、インタラクティブ応答には不向き (出典: Wang et al. "Mixture-of-Agents Enhances LLM Capabilities" ICLR 2025 — failure mode #1)
+- **コスト敏感 / トークン予算がタイトな場面** — 複数モデル呼び出しで単一モデルの 3-7 倍の API コスト。/debate を呼ぶ前に「本当に複数視点が必要か」を自問する
 
 ## Skill Assets
 

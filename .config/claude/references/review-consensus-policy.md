@@ -209,6 +209,8 @@ verdict 計算に含める。Finding 重複率・指摘数の外れ値基準は 
 
 > 論文 "Expert Personas Improve LLM Alignment but Damage Accuracy" (arXiv:2603.18507) の知見に基づく。
 > LLM-as-judge による pointwise 評価は長い回答を過大評価する（verbosity bias）。
+>
+> **補足 (2026-04-11)**: Mixture of Agents (MoA) アーキテクチャ自体にも verbosity failure mode が報告されている (Wang et al. "Mixture-of-Agents Enhances LLM Capabilities" ICLR 2025 Spotlight, arXiv:2406.04692 — failure mode #2)。マルチレビューア合成 (code-reviewer + codex-reviewer + gemini + ...) は MoA そのもので、Proposer 数が増えるほど出力が線形に冗長化しやすい。対策は review skill Step 4 Synthesis ルール 16 "Synthesis Output Verbosity Constraint"。Cross-MoA (異種レビューア優先) を採用する根拠は Li et al. "Rethinking Mixture-of-Agents" (arXiv 2025-02) で、Heterogeneous Signal Priority ポリシー (Section 1) と整合する。
 
 ### 問題
 

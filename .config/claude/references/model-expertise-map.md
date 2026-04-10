@@ -82,6 +82,22 @@
 
 同一タスクを複数モデルに独立実装させ、最初の完了を採用する（AlphaLab Multi-Model Search）。
 
+### Cross-Model vs Same-Model Race (MoA 原則)
+
+> **Cross-Model (異モデル) > Same-Model (同一モデル多サンプリング) を優先する**。Wang et al. "Mixture-of-Agents Enhances LLM Capabilities" (ICLR 2025 Spotlight, arXiv:2406.04692) および Li et al. "Rethinking Mixture-of-Agents" (arXiv 2025-02) が示すように、異なるモデル群の多様性は同一モデル + temperature sampling より有意に高い成果を出す。
+
+| 構成 | 呼称 | 優先度 | 適用場面 |
+|------|------|-------|---------|
+| **Cross-Model** (Claude + Codex + Gemini 等) | Cross-MoA | **第一選択** | 設計判断・レビュー・深い推論・壁打ち |
+| **Same-Model × k** (claude-p を 3 回並列等) | Self-MoA | 限定的 | コスト敏感時のフォールバック、temperature サンプリングで多様性を擬似的に確保 |
+| Single-Model | — | 基本 | 短時間タスク、明確な単一正解があるタスク |
+
+**判断ルール**:
+- 意見の多様性が価値を持つタスク (設計・レビュー) → 必ず Cross-Model
+- 同じ正解を高速に出したいタスク (単純実装) → Single-Model で十分
+- Same-Model × k を選ぶのは「Cross-Model のレート制限に当たった」等の例外時のみ
+- Race 向きタスク判定表 (下記) は Cross-Model 前提で構成されている
+
 ### Race 結果のフィードバック
 
 race 結果は `~/.claude/agent-memory/learnings/race-outcomes.jsonl` に記録:
