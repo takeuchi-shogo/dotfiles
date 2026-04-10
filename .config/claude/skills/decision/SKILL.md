@@ -41,7 +41,7 @@ metadata:
    - **実際結果**: _（後で記入: good / bad / mixed + 1行説明）_
    ```
 
-3. **Obsidian 同期（オプション）**: mcp__obsidian__patch_note で当日の Daily Note に決定サマリを追記
+3. **Obsidian 同期（オプション）**: `obsidian:obsidian-cli` または `obsidian:obsidian-markdown` skill 経由で当日の Daily Note に決定サマリを追記（`mcp__obsidian__*` 直呼びは禁止 — `references/wrapper-vs-raw-boundary.md` 参照）
    - 追記内容: `## Decisions\n- [タイトル] — 選択の1行要約`
    - Daily Note が存在しない場合はスキップ（エラーにしない）
 
