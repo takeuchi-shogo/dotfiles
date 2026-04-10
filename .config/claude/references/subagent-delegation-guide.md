@@ -870,3 +870,72 @@ plasticity が高いほど:
 - **利点**: 表現力が増し、多様なタスクに対応可能
 - **代償**: 検証負荷↑、credit assignment が困難、予算制御が複雑化
 - **原則**: edit は select で不十分な場合のみ。generate は select で不十分な場合のみ
+
+---
+
+## Bubble Permission Mode — サブエージェントは自分の危険操作を承認できない
+
+> Claude Code 本体 Ch01/Ch08 の "Bubble Mode" に基づく。
+> 7 パーミッションモードの最後に位置する `bubble` は、サブエージェントが危険操作に遭遇したとき
+> **自分で "allow" を返せない**ようにする。承認要求は親ターミナルまで bubble up する。
+
+### なぜ必要か
+
+サブエージェントは独立した `query()` インスタンスで動く。通常のパーミッションチェックだと、
+サブエージェント内部で "このコマンドを許可するか" を自己判断してしまい、
+**親の意図を超えて危険操作を実行するルート**が開いてしまう。
+
+bubble mode はこれを塞ぐ:
+
+- サブエージェント内の `rm -rf`, `git push --force`, `DROP TABLE` 等の危険コマンドは
+- サブエージェント自身では allow/deny できず
+- 親エージェント（最終的にはユーザーのターミナル）まで承認要求が**泡のように浮き上がる** (bubble up)
+
+### dotfiles 側の実装ポリシー
+
+dotfiles のサブエージェント定義でも同じ原則を守る:
+
+1. **危険操作を伴うサブエージェントには `disallowedTools: [Bash, Edit, Write]` を付ける**
+   - 調査・レビュー系 (read-only) は `Edit/Write/NotebookEdit` を禁止
+   - 既に `code-reviewer`, `security-reviewer`, `silent-failure-hunter` 等で実装済み
+2. **`bypassPermissions` モードをサブエージェント定義に書かない**
+   - サブエージェントは親の permission mode を継承するが、エスカレーション権限は持たない
+3. **危険操作の承認要求は親に返す**
+   - サブエージェントは「この操作を実行したい」と報告するに留め、実行は親が行う
+
+### 実装チェックリスト（新サブエージェント作成時）
+
+- [ ] このエージェントは Edit/Write が必要か？不要なら `disallowedTools` で明示的に禁止する
+- [ ] このエージェントが `Bash` を使う場合、使うコマンドパターンを `description` に列挙しているか
+- [ ] `bypassPermissions` や `dontAsk` モードを frontmatter で要求していないか（原則禁止）
+- [ ] 破壊的操作は親に「提案」として返し、親が実行する設計になっているか
+- [ ] サブエージェントが自分自身の hook や settings を変更しようとしないか
+
+### Anti-pattern: "自分で deny を解除する" サブエージェント
+
+```yaml
+# BAD: サブエージェントが自分で危険操作を正当化する
+name: aggressive-refactorer
+model: opus
+# 権限モード指定なし → 危険
+tools: [Bash, Edit, Write, NotebookEdit]
+prompt: "リファクタリングのために必要なら rm -rf も実行してよい"
+```
+
+```yaml
+# GOOD: 危険操作は親に投げ返す
+name: refactor-proposer
+model: sonnet
+disallowedTools: [Bash, Edit, Write, NotebookEdit]
+tools: [Read, Grep, Glob]
+prompt: |
+  リファクタリング案を「提案」として返す。
+  破壊的操作（ファイル削除、rm 等）は実行せず、提案テキストに含める。
+  親エージェントがユーザー承認を得てから実行する。
+```
+
+### 関連: `strictPluginOnlyCustomization` との対比
+
+CC 本体には `strictPluginOnlyCustomization` というポリシーもあり、
+「user agent の hook を無視する」選択肢を提供する。dotfiles は個人運用のため該当しないが、
+**エージェント自身が自分の設定を書き換えられない** という同じ思想が根底にある。

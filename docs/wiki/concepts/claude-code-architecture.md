@@ -1,8 +1,8 @@
 ---
 title: Claude Codeアーキテクチャ
 topics: [claude-code]
-sources: [2026-04-01-claude-code-internal-architecture-analysis.md, 2026-03-31-instructkr-claude-code-src-analysis.md, 2026-04-02-harness-wars-begin-analysis.md, 2026-04-04-12-claude-features-top-operators-analysis.md]
-updated: 2026-04-04
+sources: [2026-04-01-claude-code-internal-architecture-analysis.md, 2026-03-31-instructkr-claude-code-src-analysis.md, 2026-04-02-harness-wars-begin-analysis.md, 2026-04-04-12-claude-features-top-operators-analysis.md, 2026-04-10-claude-code-from-source-analysis.md]
+updated: 2026-04-10
 ---
 
 # Claude Codeアーキテクチャ
@@ -14,8 +14,10 @@ Claude Code（v2.1.88）は約512K行のTypeScriptで実装されたCLIエージ
 ## 主要な知見
 
 - **QueryEngine中心設計** — `src/QueryEngine.ts`が会話単位のstateful engine。message history / permission denial / file cache / usageを保持
-- **サブエージェント5種** — general-purpose / Explore（Edit/Write禁止, Haiku）/ Plan / claude-code-guide / verification（GrowthBook feature gate）
+- **ビルトインエージェント6種** — general-purpose / Explore（Edit/Write禁止, Haiku, **one-shot 135字最適化で週3400万回呼び出し**） / Plan（4ステップ構造化設計, Inherit model） / Verification（常時背景実行, anti-avoidance prompt, read-only） / claude-code-guide（Haiku, Read+Web, SDK 除外時のみ） / statusline-setup（Sonnet, Read+Edit, ステータスライン専用）
 - **AgentDefinition統一スキーマ** — `agentType / whenToUse / tools / disallowedTools / model / effort / omitClaudeMd`で定義
+- **モデル選定意図** — Explore/claude-code-guide が Haiku なのは「頻度が高く軽量化効果が大きい」から。Plan/Verification が inherit なのは「親の推論水準を継承する必要がある」から。固定ではなく設計上の選択
+- **Bubble permission mode** — 7パーミッションモードの最後。サブエージェントは自分の危険操作を承認できず、親ターミナルまで承認要求が bubble up する
 - **read-onlyエージェント原則** — 調査系エージェントは`disallowedTools: [Edit, Write, NotebookEdit]` + `omitClaudeMd: true`で権限最小化
 - **effortレベル** — `high/medium/low`でAPIコストとレスポンス品質をトレードオフ。エージェント定義に直接指定可能
 - **コンパクション** — `src/services/compact/`で自動/リアクティブなセッションメモリコンパクションを実装。Context Compactionへの進化

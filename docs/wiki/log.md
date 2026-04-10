@@ -8,6 +8,17 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-10] ingest | Claude Code from Source (全18章リバースエンジニアリング)
+
+- ソース: https://claude-code-from-source.com/ — 2000ファイル/~150-200K LoC のモノリスを 36 エージェント×6時間で復元した18章解説書
+- 判定: Already 9個, Already(強化可能) 4個, Partial 15個, Gap 4個, N/A 28個 (全60キーワード)
+- 取り込み (Tier 1): Memory staleness 運用ポリシー + 4型分類境界判定ルール (`memory-safety-policy.md`) / Coordinator "Never delegate understanding" 4-phase (`agent-orchestration-map.md`) / Hook snapshot security 対応表 新規 (`hook-snapshot-security.md`)
+- 取り込み (Tier 2): 6 built-in agents の全体像 (`wiki/concepts/claude-code-architecture.md`) / 2^N problem 警告 原則9 (`skill-writing-principles.md`) / Derivability Test 具体禁止リスト (`compact-instructions.md`) / Sub-agent bubble permission mode (`subagent-delegation-guide.md`)
+- 記録のみ (Tier 3): 16項目を包括研究ノートに集約
+- 却下/降格: Fork agents byte-identical (Gemini: 実効25-50%/OS差異リスク/ROI negative → 採用非推奨), 4-layer context compression (過度に複雑), KAIROS mode (AutoEvolve で類似カバー済み), Generator Loop 1730行 monolith (dotfiles 責務外)
+- Codex/Gemini 批評: Codex は 14 分タイムアウトで cancel (task-mnsmuwyq-sifv6r), Gemini のみで Phase 3 に進行。Gemini は file-based memory + self-describing tools + hook-based architecture を「最も堅牢」、Fork agents + Query.ts monolith + KAIROS を「最も脆弱」と判定
+- 分析: [2026-04-10-claude-code-from-source-analysis.md](../research/2026-04-10-claude-code-from-source-analysis.md) (包括研究ノート), [2026-04-10-claude-code-from-source-integration-report.md](../research/2026-04-10-claude-code-from-source-integration-report.md) (/absorb レポート)
+
 ## [2026-04-10] ingest | How to Build a Full AI Stack Using Only Claude in 2026 (cyrilXBT)
 
 - ソース: cyrilXBT blog post "How to Build a Full AI Stack Using Only Claude in 2026 (Full Course)"
