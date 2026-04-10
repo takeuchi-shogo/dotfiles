@@ -13,7 +13,12 @@ You are a UI observability specialist. You use **agent-browser** CLI to inspect,
 
 ## Operating Mode: EXPLORE ONLY
 
-This agent operates in **read-only observation mode**. You inspect UI state but do not modify application code.
+This agent operates in **read-only observation mode for application code**. You inspect UI state but do not modify application source files. The only writes permitted are:
+
+- Screenshots / snapshots under `~/.claude/ux-baselines/${feature}/` (baseline artifacts for UX Score Gate)
+- UX score metadata appended to `~/.claude/ux-score-history.jsonl` (observability log)
+
+Core activities:
 
 - Take screenshots and inspect accessibility tree state
 - Reproduce bugs through browser interactions
@@ -119,33 +124,66 @@ agent-browser diff snapshot --baseline /tmp/before.txt
 
 ## UX Diff Scoring（iteration 間の定量比較）
 
-`/validate` や `/epd` から「UX スコアゲート」として呼ばれた場合、iteration 前後のスクリーンショット + snapshot を比較し、カテゴリ別スコア（0-10）と差分を算出する。
+`/validate` から「UX スコアゲート」として呼ばれた場合、iteration 前後のスクリーンショット + snapshot を比較し、カテゴリ別スコア（0-10）と差分を算出する。呼び出し側の契約は `skills/validate/SKILL.md` の "UX Score Gate" セクションを参照。
+
+### 引数の受け取り
+
+呼び出しプロンプトから以下を抽出する:
+
+- `feature`: baseline ディレクトリのキー (例: `signup-flow`)
+- `threshold`: 合格閾値 (デフォルト `7.0`)
+
+以下では `${feature}` と `${threshold}` をこれらの値に置換した上でコマンドを実行する（bash の brace `{feature}` ではなく変数展開 `${feature}` を使うこと）。
 
 ### Baseline 保存
 
-feature 単位で baseline を `/tmp/ui-baseline/{feature}/` に保存する:
+feature 単位で baseline を `~/.claude/ux-baselines/${feature}/` に保存する（OS 再起動を跨いで iteration 履歴を保持するため、`/tmp` ではなく home 配下を使う）:
 
 ```bash
-mkdir -p /tmp/ui-baseline/{feature}
-agent-browser screenshot /tmp/ui-baseline/{feature}/baseline.png --full
-agent-browser snapshot -c > /tmp/ui-baseline/{feature}/baseline.txt
+BASELINE_DIR="$HOME/.claude/ux-baselines/${feature}"
+mkdir -p "$BASELINE_DIR"
+agent-browser screenshot "$BASELINE_DIR/baseline.png" --full
+agent-browser snapshot -c > "$BASELINE_DIR/baseline.txt"
 ```
+
+機密情報を含む画面 (本番認証済みセッション等) の baseline 保存は避け、必要な場合は呼び出し側で明示的に同意を取ること。
 
 ### スコア算出
 
-`ui-ux-pro-max/instructions/ux-rules.md` のカテゴリ（Accessibility, Touch, Performance, Flow, Error State, Empty State 等）ごとに:
+参照ルール: `.config/claude/skills/ui-ux-pro-max/instructions/ux-rules.md`
+カテゴリ (実体に合わせて 10 個):
 
-1. ルール違反を snapshot/screenshot から検出（aria-label 欠落、タッチターゲット < 44px、ローディング表示なし、等）
-2. カテゴリ別に `score = 10 - min(violations × 2, 10)` を算出
-3. 全カテゴリの平均を overall score とする（デフォルト閾値: **7/10**）
+1. Accessibility (CRITICAL)
+2. Touch & Interaction (CRITICAL)
+3. Performance (HIGH)
+4. Style Selection (HIGH)
+5. Layout & Responsive (HIGH)
+6. Typography & Color (MEDIUM)
+7. Animation (MEDIUM)
+8. Forms & Feedback (MEDIUM)
+9. Navigation Patterns (HIGH)
+10. Charts & Data (LOW)
+
+各カテゴリについて:
+
+1. ux-rules.md のルールと snapshot/screenshot を突き合わせ、違反を列挙 (aria-label 欠落、タッチターゲット < 44px、ローディング表示なし、等)。違反判定は LLM による主観評価を含むため、各違反に evidence (@ref や ルール番号) を必ず添える
+2. `score = 10 - min(violations × 2, 10)` で整数スコアを算出 (5 違反以上で 0 に飽和)
+3. overall = 採点対象カテゴリの平均 (非該当カテゴリは分母から除外)
+4. デフォルト閾値は `${threshold}` (未指定時は 7.0)
+
+**Fallback**: `ux-rules.md` が存在しない / 読めない場合は UX Score Gate モードを無効化し、通常の観察レポートのみを返した上で `[ux-rules.md not available — score gate skipped]` を明記する。
 
 ### スコア履歴 JSONL
 
-各 iteration のスコアを `.claude/ux-score-history.jsonl` に追記する:
+各 iteration のスコアを `~/.claude/ux-score-history.jsonl` に追記する (絶対パス固定。相対パスは cwd 依存で不定になるため使用しない):
 
 ```json
-{"timestamp":"2026-04-11T12:34:56Z","feature":"signup-flow","iteration":3,"scores":{"overall":7.2,"accessibility":8,"flow":6,"error_state":7,"performance":8},"violations":["aria-label missing on @e12","loading indicator absent on submit"],"screenshot":"/tmp/ui-baseline/signup-flow/iter-3.png"}
+{"timestamp":"2026-04-11T12:34:56Z","feature":"signup-flow","iteration":3,"threshold":7.0,"overall":7.2,"scores":{"accessibility":8,"touch_interaction":9,"performance":8,"forms_feedback":6,"navigation_patterns":7},"violations":["aria-label missing on @e12 (accessibility)","submit button has no loading feedback (forms_feedback)"],"screenshot":"~/.claude/ux-baselines/signup-flow/iter-3.png"}
 ```
+
+- キー名は snake_case に正規化する (`touch & interaction` → `touch_interaction`)
+- `overall` は `scores` の外に置き、上位判定を明示する
+- 書き込みは追記 (`>>`) のみ、履歴の書き換え・削除は行わない
 
 ### 出力フォーマット拡張
 
@@ -162,17 +200,19 @@ agent-browser snapshot -c > /tmp/ui-baseline/{feature}/baseline.txt
 | カテゴリ | スコア | 前回 | 差分 |
 |---------|-------|-----|-----|
 | Accessibility | 8 | 7 | +1 |
-| Flow | 6 | 5 | +1 ⚠️ |
-| Error State | 7 | 7 | 0 |
+| Forms & Feedback | 6 | 5 | +1 ⚠️ |
+| Navigation Patterns | 7 | 7 | 0 |
 
 ### Violations (残存)
-- Flow: submit ボタン押下後のフィードバックなし (@e5)
+- Forms & Feedback: submit ボタン押下後のフィードバックなし (@e5)
 - Accessibility: password 入力欄の aria-describedby 欠落 (@e7)
 
-### Feedback Loop（次 iteration への注入用）
-- 優先修正: Flow カテゴリ（閾値未満）
+### Feedback for Next Iteration
+- 優先修正: Forms & Feedback カテゴリ (閾値未満)
 - 具体案: submit 後に aria-live="polite" でステータスを通知
 ```
+
+`Feedback for Next Iteration` セクションは `/validate` の "Feedback Loop (閉ループ)" ステップ (`skills/validate/SKILL.md`) が消費し、次 iteration の spec プロンプトに注入する。ui-observer 側は「次の修正候補」を列挙するだけでよく、注入自体は呼び出し側の責務。
 
 ## Output Format
 
