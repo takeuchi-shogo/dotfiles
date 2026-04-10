@@ -43,6 +43,7 @@
 - [スキルチェイニング](concepts/skill-chaining.md) — スキルをループとして配線する動的アクション設計
 - [Skill ↔ Subagent 合成](concepts/skill-subagent-composition.md) — skills: によるロール定義と context: fork によるタスク隔離
 - [Pre-generation Contract Pattern](concepts/pre-generation-contract.md) — 生成前に Must/Important/Optional の義務差を宣言し、生成中に照合できる形で SKILL.md に埋め込む品質契約パターン
+- [GP-012 Wire Before You Decorate](../references/golden-principles.md) — 試作順序強制原則。機能ワイヤリング完了前にスタイリング・装飾・最適化を行わない。「動く vs 使える」ギャップの構造的な防止策 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [NotebookLM Claude 拡張分析](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md) — DBS rubric (Direction/Blueprints/Solutions) を skill-writing-guide に統合。非公式 API の production harness 採用リスク評価の事例
 - [PostHog Agent-First Rules — Skill as Onboarding](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — スキルはマニュアルではなくオンボーディング。Skill Audit Policy + Onboarding-not-manuals を skill-writing-guide に統合
 
@@ -78,7 +79,7 @@
 - [エージェント評価](concepts/agent-evaluation.md) — Evals フレームワークとベンチマーク体系
 - [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — 見逃し/過検出の非対称損失とリスクカテゴリ別レビュー方針
 - [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
-- [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定
+- [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定。UX Diff Scoring (ui-observer snapshot baseline比較) と /validate UX Score Gate を Wave 2 に追加 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [PostHog Agent-First Rules — Friction to Eval Loop](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — エージェントを実ユーザーとして扱い、trace 観測から eval ループへ接続する原則。Friction→Eval Loop ポリシーを improve-policy.md に統合
 
 ### tooling — ツール・エコシステム

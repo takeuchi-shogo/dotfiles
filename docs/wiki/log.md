@@ -266,6 +266,12 @@
 - 分析レポート: docs/research/2026-04-10-ui-quality-3layers-article-analysis.md
 - Codex 批評で L3「感動品質」を排除、固定比率も採用せず義務差ベースに変換
 
+## [2026-04-11] ingest | 仕様通り動くの先へ。Claude Codeで「使える」を検証する
+
+- **ソース**: gotalab555 (Speaker Deck)
+- **判定**: Gap 1 (M3 UX差分閉ループ), Already 2 (M1, M4), N/A 2 (M2残4, M5), 強化 1 (GP-012)
+- **取り込み**: GP-012 Wire Before You Decorate、Task 7 (ui-observer UX Diff Scoring) 実装、Task 8 (/validate UX Score Gate) 実装、Universal Verifier プラン Wave 2 に合流
+
 ## [2026-04-11] ingest | PostHog Agent-First Rules
 
 - ソース: The golden rules of agent-first product engineering (Jina Yoon, posthog.com)
