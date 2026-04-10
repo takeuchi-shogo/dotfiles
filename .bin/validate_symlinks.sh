@@ -14,6 +14,7 @@ home = pathlib.Path.home()
 managed_links = [
     (home / ".hammerspoon", root / ".hammerspoon", ".hammerspoon"),
     (home / ".config/aerospace/aerospace.toml", root / ".config/aerospace/aerospace.toml", ".config/aerospace/aerospace.toml"),
+    (home / ".config/rtk/config.toml", root / ".config/rtk/config.toml", ".config/rtk/config.toml"),
     (home / ".config/karabiner/karabiner.json", root / ".config/karabiner/karabiner.json", ".config/karabiner/karabiner.json"),
     (home / ".config/nvim", root / ".config/nvim", ".config/nvim"),
     (home / ".config/sheldon/plugins.toml", root / ".config/sheldon/plugins.toml", ".config/sheldon/plugins.toml"),

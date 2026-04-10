@@ -17,6 +17,7 @@ import tomllib
 toml_files = [
     ".codex/config.toml",
     ".config/aerospace/aerospace.toml",
+    ".config/rtk/config.toml",
     ".config/sheldon/plugins.toml",
     ".config/starship.toml",
 ]

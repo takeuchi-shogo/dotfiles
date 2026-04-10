@@ -1,0 +1,15 @@
+# rtk configuration
+# See: https://github.com/rtk-ai/rtk#configuration
+
+[telemetry]
+enabled = false
+
+[hooks]
+# Skip rewrite for commands that are already denied/handled by Claude Code
+# (curl is denied in settings.json, so we don't want rtk curl either)
+exclude_commands = ["curl"]
+
+[tee]
+enabled = true
+mode = "failures"
+max_files = 20
