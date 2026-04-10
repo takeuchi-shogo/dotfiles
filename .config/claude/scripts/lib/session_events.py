@@ -368,6 +368,18 @@ def emit_review_finding(finding: dict) -> None:
     append_to_learnings("review-findings", finding)
 
 
+def emit_agent_invocation(invocation: dict) -> None:
+    """Agent ツール呼び出しを agent-invocations.jsonl に記録する。
+
+    Routing Observability Wave 1 の計測層。skill-audit Dominant tier 判定の
+    入力として利用される。
+    詳細: docs/plans/2026-04-11-routing-observability-closed-loop.md
+
+    記録失敗はコミットに影響しない (best-effort)。
+    """
+    append_to_learnings("agent-invocations", invocation)
+
+
 def emit_review_feedback(finding_id: str, outcome: str, reason: str = "") -> None:
     """レビュー指摘に対するフィードバック（accepted/ignored）を記録する。
 

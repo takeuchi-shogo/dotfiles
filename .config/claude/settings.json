@@ -593,6 +593,12 @@
             "command": "python3 $HOME/.claude/scripts/policy/rationalization-scanner.py",
             "timeout": 5,
             "statusMessage": "Rationalization check..."
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/agent-invocation-logger.py",
+            "timeout": 3,
+            "statusMessage": "Logging agent invocation..."
           }
         ]
       },
