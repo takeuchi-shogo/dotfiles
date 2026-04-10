@@ -8,6 +8,24 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-10] ingest | How to Build a Full AI Stack Using Only Claude in 2026 (cyrilXBT)
+
+- ソース: cyrilXBT blog post "How to Build a Full AI Stack Using Only Claude in 2026 (Full Course)"
+- 判定: Already 3個 (L1,L3,L4), Partial 2個 (L2,L5), N/A 1個 (L6)
+- 取り込み: Stop hook に `sync-memory-to-vault.sh` を追加（L5 核心未回収の閉ループ化）。Dry-run で 18 ファイルのバックログ検出が hook 欠落の物証
+- 却下: P1 (Research→Draft→QC playbook — 既存 skills で実質カバー), P3 (反論メモ — 情報密度不足), L6 (スコープ外)
+- Codex/Gemini 批評: 「記事の本質は単一ツール信仰でなく、定時実行／成果物固定／QC を挟む設計」「このセットアップは既に記事の先を行っている」
+- 分析: [2026-04-10-claude-full-ai-stack-2026-analysis.md](../research/2026-04-10-claude-full-ai-stack-2026-analysis.md)
+
+## [2026-04-10] ingest | NotebookLM Extend Sessions (blog)
+
+- ソース: "I want to extend my Claude sessions (full guide)" (Teng Ling の notebooklm-py 言及)
+- 判定: Gap 1個 (採用), Partial 3個, N/A 2個 (defer 付き), 新規 Gap 1個 (データ分類ゲート)
+- 取り込み: skill-writing-guide に DBS rubric (Direction/Blueprints/Solutions) チェックリスト追加。Atomic Skill の Self-containment と連携
+- 却下: notebooklm-py CLI 導入, Master Brain 方式, /wrap-up 独立スキル (非公式 API の production harness リスク + 既存 /checkpoint + continuous-learning + Obsidian で充足)
+- Codex セカンドオピニオン: 「採用は 1 つだけ、DBS rubric のみ」の勧告に従う
+- 分析: [2026-04-10-notebooklm-claude-extend-sessions-analysis.md](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md)
+
 ## [2026-04-10] ingest | The Art of Building Verifiers for Computer Use Agents
 
 - ソース: https://arxiv.org/abs/2604.06240 (Microsoft Research)
@@ -227,3 +245,12 @@
 - ソース: https://claude.com/blog/the-advisor-strategy
 - 判定: Gap 1個, Partial 2個, Already 3個 (うち強化可能 3個), N/A 1個
 - 取り込み: Advisor パターンリファレンス新規作成、委譲ガイドに中間相談プロトコル (Pattern 4) 追加、benchmark-dimensions に Advisor-Mode 評価軸追加
+
+## [2026-04-10] ingest | UI Quality 3-Layers (SKILL.md 品質3層定義)
+
+- ソース: UIデザインスタジオ記事「Claude Code の SKILL.md に品質3層定義を書いたら 40 画面のデザインが破綻しなくなった」
+- 判定: Gap 4 (K1/K3/K5/K7), Partial 2 (K2/K6), N/A 1 (K4)
+- 取り込み: K5 (SKILL.md 検証基準埋め込み) + K1 縮約版 (Must/Important/Optional 義務差) をパイロット先行
+- 変更: skill-writing-guide.md (Pre-generation Contract Pattern), rpi.md (Phase 1/2/3 Must Contract)
+- 分析レポート: docs/research/2026-04-10-ui-quality-3layers-article-analysis.md
+- Codex 批評で L3「感動品質」を排除、固定比率も採用せず義務差ベースに変換

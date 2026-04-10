@@ -17,6 +17,24 @@ skill-name/
     └── assets/     - Files used in output (templates, icons, fonts)
 ```
 
+### DBS Rubric — どこに書くかの分類原則
+
+新しいリソースを追加する前に、それが Direction / Blueprints / Solutions のどれかを問う。分類を誤ると、柔軟性が落ちるか再現性が落ちる。
+
+| 分類 | 置き場所 | 役割 | 例 |
+|------|---------|------|-----|
+| **Direction** | `SKILL.md` + `instructions/` | 手順・判断基準・失敗時のループ | 「Phase 1 で X を実行、失敗時は Y にフォールバック」 |
+| **Blueprints** | `references/` + `assets/` | 静的参照、テンプレート、分類表、ルーブリック | コミットメッセージテンプレート、Good/Bad 例、命名規約表 |
+| **Solutions** | `scripts/` | 決定論的に実行すべきコード | JSON 整形、API 呼び出し、ファイル生成 |
+
+**判断→Direction / 参照→Blueprints / 実行→Solutions** の対応を崩さない。
+
+- 判断ロジックを `scripts/` に埋め込むと、LLM が柔軟に調整できずハードコーディングになる
+- 決定論的処理を `SKILL.md` に書くと、毎回 LLM が再生成して再現性が落ちる
+- 静的参照を `SKILL.md` 本文に混ぜると、SKILL.md が肥大化して Progressive Disclosure が崩れる
+
+Atomic Skill の Self-containment と併せて考えると、1 スキル = 1 つの Direction + 必要な Blueprints/Solutions の束、と捉えられる。
+
 ---
 
 ## Progressive Disclosure
@@ -54,6 +72,49 @@ These word counts are approximate and you can feel free to go longer if needed.
 3. **Independent Evaluability（独立評価可能性）** — スキルの効果を他スキルと独立に測定できる。SKILL.md 作成時に「何をもって成功とするか」の eval 方法を必ず定義する
 
 特に 3 の Independent Evaluability が最も見落とされやすい。eval 方法が定義されていないスキルは改善サイクルに乗せられない。
+
+### Pre-generation Contract Pattern
+
+スキルが複数フェーズの生成タスクを扱う場合、SKILL.md 本文に「生成中に毎回照合する最低基準」を書く。設計参考資料と違うのは、**生成の途中で self-check が強制される形式** にすること。抽象的な「ベストプラクティス」は読み流されるが、checkbox 形式の Contract は途中照合を促す。
+
+#### 義務レベルの 3 層
+
+| レベル | 意味 | 扱い |
+|--------|------|------|
+| **Must** | 毎回照合、skip 不可 | checklist で明示、生成途中に self-check |
+| **Important** | 条件付き照合 | 深度 Standard 以上、または特定フェーズで適用 |
+| **Optional** | 判断余地あり | 文脈に応じて選択 |
+
+#### Good 例（生成中照合型）
+
+```markdown
+## Phase 3: Implement — Must Contract
+- [ ] 関連ファイルを最低 1 つ Read してから編集した
+- [ ] lint/test を最低 1 回実行した
+- [ ] 完了宣言前に検証コマンドを実行した
+```
+
+#### Bad 例（設計参考型・読み流される）
+
+```markdown
+## ベストプラクティス
+実装時は関連ファイルを確認し、lint を通し、検証することが重要です。
+```
+
+Bad 例は抽象的で self-check されない。Good 例は checkbox 形式で途中照合が強制される。
+
+#### 適用条件
+
+- SKILL.md が複数フェーズの手順を持つ
+- 各フェーズで「これだけは守る」最低基準が明確
+- 基準が machine-checkable（具体的な動詞 + 観測可能な結果）
+
+#### アンチパターン
+
+- 抽象的・主観的な項目を Must に入れる（形骸化する）
+- 「感動品質」のような客観検証できない項目を Must に含める
+- Must 項目が 6 個を超える（疲労で skip される。5 個以内に抑える）
+- Optional の肥大化（Must/Important が守れていれば十分、Optional の過剰追加は形骸化の原因）
 
 ---
 

@@ -41,6 +41,8 @@
 - [スキル設計](concepts/skill-design.md) — SKILL.md のベストプラクティスと評価駆動品質管理
 - [スキルチェイニング](concepts/skill-chaining.md) — スキルをループとして配線する動的アクション設計
 - [Skill ↔ Subagent 合成](concepts/skill-subagent-composition.md) — skills: によるロール定義と context: fork によるタスク隔離
+- [Pre-generation Contract Pattern](concepts/pre-generation-contract.md) — 生成前に Must/Important/Optional の義務差を宣言し、生成中に照合できる形で SKILL.md に埋め込む品質契約パターン
+- [NotebookLM Claude 拡張分析](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md) — DBS rubric (Direction/Blueprints/Solutions) を skill-writing-guide に統合。非公式 API の production harness 採用リスク評価の事例
 
 ### security — セキュリティ
 
