@@ -80,23 +80,31 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 #### 手順
 
 1. `skill-executions.jsonl` を読み、過去 30 日間の各スキルの実行回数を集計する
-2. 以下の 3 段階に分類する:
+2. **全スキルの合計実行回数に対する占有率**を算出し、以下の 4 段階に分類する:
 
 | Tier | 基準（過去30日） | アクション |
 |------|----------------|-----------|
-| **Weekly** | 4回以上 | 維持・優先改善対象 |
+| **Dominant** | 全実行の **40% 以上** を占有 | Expert Collapse 兆候。役割重複 or 過剰委譲を疑う |
+| **Weekly** | 4回以上（Dominant 未満） | 維持・優先改善対象 |
 | **Monthly** | 1〜3回 | 現状維持。改善は低優先 |
 | **Unused** | 0回 | retire 候補としてレポートに出力 |
 
 3. `skill-executions.jsonl` が存在しない、またはデータ不足の場合はこのステップをスキップし、5D スキャンのみで判定する
 4. 結果を audit report Summary テーブルの Usage 列に記録する
 5. Unused スキルは audit report の「Retire Candidates」セクションにリストする
+6. Dominant スキルは audit report の「Over-Use (Expert Collapse)」セクションにリストし、以下を確認する:
+   - **役割重複**: 本来別スキルが担うべきタスクを吸収していないか（description の境界が曖昧になっていないか）
+   - **過剰委譲**: 代替スキルが使われない理由が description 不備か品質問題か
+   - **代替不在**: 実運用で他に選択肢がないだけなのか（この場合は崩壊ではなく健全な専門化）
 
 #### 判断ガイド
 
 - Unused でも 5D が全 Good → 休眠状態。削除より「使われない理由」を調査（description 改善で復活する可能性）
 - Unused かつ 5D に Poor あり → retire 最有力候補
 - Weekly かつ 5D に Poor あり → 品質改善を最優先
+- **Dominant かつ 5D 全 Good** → 役割集中リスク。同ドメインの代替スキルを育成 or 明示的に「主スキル」と宣言する判断が必要
+- **Dominant かつ 5D に Poor あり** → 品質に関わらず使われている = 代替不在の信号。最優先で改善
+- **Dominant + Unused の共存** → Expert Collapse の決定的証拠。Unused スキル側の description/trigger 不備を真っ先に疑う
 
 ### Step 1: Select target skills
 
@@ -349,6 +357,11 @@ GRPO は z-score なので ±1.0 が1標準偏差。
    - 同一 tools セットを持ち、ドメインが隣接
    - 片方の機能が他方の機能の部分集合
    - 両方とも使用頻度が低い（直近100コミットで各5回未満）
+5. **Orthogonality Check (出力種別の直交性)** — description から各エージェントの**主な出力種別**を推定し (`review-report` / `observation-report` / `plan` / `spec` / `implementation-patch` / `research-summary` など)、以下をフラグする:
+   - 同一出力種別のエージェントが **3 体以上**存在 → 役割の直交性が低い。主エージェント + skill mode 化を検討
+   - ドメインが異なっても出力種別が同じペア → 統合判定の補助シグナルとして提示（ドメイン重複とは独立に評価）
+
+> **Orthogonality の原則**: 「エージェントの役割空間は出力種別 × ドメインの 2 軸で張る。同じセルに複数エージェントが居ると Expert Collapse または Role Confusion を起こしやすい」(2025-2026 マルチエージェント粒度研究より)
 
 ### 出力テーブル
 
