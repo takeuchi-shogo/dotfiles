@@ -262,9 +262,10 @@ Phase 5 の実行判断後、以下の後処理を `Agent(model: "sonnet", run_i
 
 **Obsidian Bridge（承認時のみ）:**
 - 分析レポートを `/digest` 互換の Literature Note 形式に変換
-- `mcp__obsidian__write_note` で Vault の `05-Literature/lit-{author}-{title-slug}.md` に保存
+- **Sonnet BG に `obsidian:obsidian-cli` または `obsidian:obsidian-markdown` skill の呼び出しを委譲**し、Vault の `05-Literature/lit-{author}-{title-slug}.md` に保存する
 - frontmatter: created, tags (type/literature, topic/...), source (title, author, url, type)
 - セクション: Key Takeaways, Summary, My Thoughts, Action Items, Related Notes
+- **NG**: `mcp__obsidian__write_note` を直接呼ぶこと。obsidian-skills plugin が提供する skill 経由が正規ルート。MCP 直接呼びは `mcp-audit.py` の VeriGrey Tool Filter で soft block される（absorb の SKILL.md に `mcp-tools: obsidian` が宣言されていないため）。さらに PostHog "Meet agents at their abstraction level" 原則の観点からも、低レベル MCP より skill abstraction を使うべき
 
 **Wiki Log（自動・確認不要）:**
 - `docs/wiki/log.md` に ingest エントリを追記
