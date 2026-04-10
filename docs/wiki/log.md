@@ -279,3 +279,13 @@
 - 取り込み: wrapper-vs-raw-boundary.md 新規 + Capability Restriction Policy + Friction→Eval Loop + Onboarding-not-manuals
 - 不採用: Weekly traces hour (Codex 批評), 既存 skills rewrite (dead weight)
 - レポート: docs/research/2026-04-11-posthog-agent-first-rules-analysis.md
+
+## [2026-04-11] ingest | Skills for Claude Code — The Ultimate Guide from an Anthropic Engineer
+
+- ソース: Medium 記事 (Anthropic engineer, URL 特定不可)
+- 判定: Gap 1 (BP5 config.json), Partial 6 (Gotchas 浸透率 25%, 9-type taxonomy=Documented/Not operationalized, Product Verification, BP9 hooks 乖離, BP6 description 棚卸し, BP7 memory, skill sharing), N/A 1 (Infra Ops), Already 強化不要 5 (DBS/Onboarding/Scripts/Usage measurement/Iterative dev)
+- 取り込み: T1 skill-writing-principles に Setup Config & Persistent State 標準スキーマ + skill_name validation/containment check, T2 skill-audit に Gotchas Coverage Scan + lessons-learned 昇格経路, T3 skill-archetypes に Tool Wrapper 5a Product Verification 派生型 (repo 固有 oracle + credential 分離 + HAR sanitize + 7日 retention)
+- 不採用: 9-type 全面 metadata 化, Infra Ops 専用 skill, marketplace 重装備化, BP9 hooks 全面再設計 (Codex 推奨)
+- 批評: Codex が当初 90% 判定 → 実質 60-70% に修正。Gotchas 23/92 実態など [verified] 指摘多数。security-reviewer 3 Medium 指摘 (path traversal / Evidence PII / credential) も反映済み
+- Gemini 空振り (別調査に分岐)
+- レポート: docs/research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md

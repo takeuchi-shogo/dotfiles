@@ -46,6 +46,7 @@
 - [GP-012 Wire Before You Decorate](../references/golden-principles.md) — 試作順序強制原則。機能ワイヤリング完了前にスタイリング・装飾・最適化を行わない。「動く vs 使える」ギャップの構造的な防止策 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [NotebookLM Claude 拡張分析](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md) — DBS rubric (Direction/Blueprints/Solutions) を skill-writing-guide に統合。非公式 API の production harness 採用リスク評価の事例
 - [PostHog Agent-First Rules — Skill as Onboarding](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — スキルはマニュアルではなくオンボーディング。Skill Audit Policy + Onboarding-not-manuals を skill-writing-guide に統合
+- [Skills for Claude Code Ultimate Guide](../research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md) — Setup Config & Persistent State 標準スキーマ、Gotchas Coverage Scan (25% → 60% 目標)、Product Verification 派生型 (repo 固有 oracle + credential 分離 + HAR sanitize + 7日 retention) を追加。Codex 批評で当初 90% 判定 → 実質 60-70% に修正
 
 ### security — セキュリティ
 
