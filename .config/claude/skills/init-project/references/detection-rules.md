@@ -82,7 +82,7 @@ find . -maxdepth 3 -type d \( \
   - 言語: TypeScript, Go
   - フレームワーク: Next.js 15, Echo
   - CI: GitHub Actions (3 workflows)
-  - テスト: Vitest, Go testing, Playwright
+  - テスト: Vitest, Go testing, agent-browser
   - Contributors: 4
   - リスキーモジュール: src/auth/, src/billing/
   - スコア: 2.6 / 3.0

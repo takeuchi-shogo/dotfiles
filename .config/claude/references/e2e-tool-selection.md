@@ -12,12 +12,10 @@ npx agent-browser             # コールドスタートなし
 
 | ツール | 同一タスクのトークン消費 | 備考 |
 |--------|------------------------|------|
-| Playwright MCP | ~114,000 tokens | MCP Tax が大きい（廃止） |
-| Playwright CLI | ~26,300 tokens | 基準 |
 | agent-browser `-i` | ~33,500 tokens | interactive のみ |
-| agent-browser `-i -c` | ~28,000 tokens | **推奨。Playwright CLI 比 +6%** |
+| agent-browser `-i -c` | ~28,000 tokens | **推奨**。`-i` 比 -16%（空要素除去） |
 
-`-c`（compact）オプションで空の構造要素を除去し、トークン消費を大幅に削減。
+`-c`（compact）オプションで空の構造要素を除去し、トークン消費を削減。
 
 ## 用途別推奨
 

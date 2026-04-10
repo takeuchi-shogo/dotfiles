@@ -65,7 +65,7 @@ SEO が重要                 → Server Component
 |----------|--------|------|
 | Unit | Vitest | ユーティリティ関数、カスタムフック |
 | Integration | Testing Library | コンポーネントの振る舞い |
-| E2E | Playwright | ユーザーフロー全体 |
+| E2E | agent-browser | ユーザーフロー全体 |
 | Visual | Storybook + Chromatic | UIの見た目の変化検出 |
 
 **テストの優先順位**: Integration > Unit > E2E > Visual

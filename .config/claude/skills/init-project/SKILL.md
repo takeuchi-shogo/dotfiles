@@ -59,7 +59,7 @@ ls .github/workflows/*.yml .gitlab-ci.yml 2>/dev/null
 git shortlog -sn --no-merges 2>/dev/null | wc -l
 
 # テスト検出
-ls jest.config* vitest.config* pytest.ini conftest.py playwright.config* 2>/dev/null
+ls jest.config* vitest.config* pytest.ini conftest.py 2>/dev/null
 find . -name '*_test.go' -o -name '*.test.ts' -o -name '*.spec.ts' | head -3
 
 # docs 検出
