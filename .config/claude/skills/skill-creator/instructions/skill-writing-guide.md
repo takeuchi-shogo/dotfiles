@@ -63,6 +63,94 @@ These word counts are approximate and you can feel free to go longer if needed.
 - **一般知識を削れ** — エージェントが知っていることは省く
 - **具体的に書け** — 曖昧な指示は無意味、Good/Bad 例を示す
 
+### Onboarding, not manuals（良いマネージャの比喩）
+
+スキルを「高い能力を持った新しいチームメンバーへの onboarding ドキュメント」として書く。マニュアル（手順書）ではなく、**信頼した同僚に渡す引き継ぎメモ**の感覚。
+
+- **悪いマネージャ**: 全手順を micromanage する（A → B → 絶対に C するな → 必ず D）
+- **良いマネージャ**: 信頼して任せ、agent が**自力では知り得ないこと**だけを補足する
+
+スキルに書くべきは、この 3 種類だけ:
+
+| 種類 | 意味 | 例 |
+|------|------|-----|
+| **Idiosyncratic knowledge** | プロジェクト固有の暗黙知 | 社内 acronym、命名規約、独自の分類 |
+| **Edge cases** | 通常は通らないが壊れる場所 | 「prod では X が true のとき Y が起きる」 |
+| **Taste & craft** | 「正しく使う」を超えた「良く使う」 | 「retention 分析は $pageview をデフォルトにする（他は skew する）」 |
+
+### What to write / What NOT to write
+
+| ✅ 書くべき | ❌ 書くべきでない |
+|------------|------------------|
+| 社内/プロジェクト固有の暗黙知 | 一般的な best practice（agent は既に知っている） |
+| 稀な edge case と復旧手順 | 常識的な手順を step-by-step に分解したもの |
+| taste / opinion（なぜその選択が良いか） | tool の仕様をそのまま書き写したもの |
+| ユーザーが過去に修正した pattern | 将来こう使うかもしれないという speculative な記述 |
+| 誰でも踏む落とし穴と回避策 | 「丁寧に段取りを説明」しただけの散文 |
+
+### Good 例（taste encoding 型）
+
+```markdown
+## Retention 分析
+
+For activation and retention events, use the `$pageview` event by default.
+Avoid infrequent or inconsistent events like `signed_in` unless asked explicitly,
+as they skew the data and make retention look worse than it actually is.
+```
+
+この 3 行には 3 つの要素が含まれている:
+1. デフォルトの選択（`$pageview`）
+2. 除外する選択肢（`signed_in`）
+3. なぜ除外するか（skew する）
+
+これは agent が自力では知り得ない taste であり、書く価値がある。
+
+### Bad 例（micromanage 型）
+
+```markdown
+## Retention 分析の手順
+
+1. まず PostHog にアクセスします
+2. 左メニューから Insights を選びます
+3. New Insight ボタンを押します
+4. Retention type を選びます
+5. ...
+```
+
+これは agent が tool を触れば分かる。書いても読み流されるか、tool の仕様が変わった瞬間に stale 化する。
+
+---
+
+## Skill Audit Policy
+
+既存スキルの品質を保つため、定期的に棚卸しする。完全な audit は `/skill-audit` に委譲するが、判断基準は以下を使う。
+
+### 象限分類
+
+| 使用頻度 | Manual 度（micromanage 寄り） | Taste encoding 寄り |
+|---------|------------------------------|---------------------|
+| **高** | 🔴 **最優先 rewrite** — 頻繁に使われるのに taste がない | 🟢 理想状態 |
+| **低** | 🟡 **削除候補** — 使われず手順書化されているだけ | 🟡 保留 — 有用だが hit しない理由を探る |
+
+### Manual 度の判定
+
+スキルを読んで以下を数え、合計スコアが高いほど manual 度が高い:
+
+- 「まず X します」「次に Y します」のような逐次手順: +1 each
+- 一般知識を解説している段落: +1 each
+- tool の仕様を書き写している箇所: +1 each
+- taste / opinion のない「best practice」記述: +1 each
+
+合計が**5 以上**なら rewrite 候補。
+
+### 使用頻度の推定
+
+- `scripts/learner/skill-executions.jsonl` を参照
+- 直近 30 日で 0 回実行なら「低」
+- 直近 30 日で 3 回以上なら「高」
+
+
+
 ### Atomic Skill Design Principles
 
 スキルの構造品質を保証する 3 原則（[arXiv:2604.05013](https://arxiv.org/abs/2604.05013) に基づく）:

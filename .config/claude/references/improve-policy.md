@@ -97,6 +97,44 @@ flowchart LR
 - `model` 設定の変更
 - 他人のプロジェクト固有の設定
 
+## Friction → Eval Loop（失敗・成功の双方向学習）
+
+> 背景: PostHog "Treat agents like real users" の自動部分のみを採用。weekly traces hour のような**人手の定期 review は不採用**（個人 harness には dead weight）。代わりに friction-events.jsonl + autoevolve-core の**接続ギャップ**を埋める。
+
+### 原則: 悪い挙動も良い挙動も eval に流す
+
+AutoEvolve のデフォルトは「失敗から学ぶ」だが、**良い挙動を見逃して regression させるリスク**がある。
+PostHog は「自信満々に誤答 → 撤回」のような silent failure、および「weird data pattern を AI が自発的に指摘」のような good behavior、**両方**を eval case に昇格させている。
+
+このループの個人 harness 版として、以下を policy 化する:
+
+| 対象 | 収集元 | 昇格先 |
+|------|--------|--------|
+| **悪い挙動（明示的失敗）** | friction-events.jsonl のエラー・CFS | eval-generator → regression gate |
+| **悪い挙動（silent failure）** | user correction / "actually no" 発言 | continuous-learning → 新規 eval case |
+| **良い挙動（自発的発見）** | /eureka 記録、ユーザーが "yes exactly" と確認した行動 | skill-writing-guide の Good 例 + eval case |
+| **良い挙動（運用継続）** | session-observer の「成功完了」signal | regression gate（既存の正しい挙動を守る） |
+
+### /improve 実行時の必須参照
+
+`/improve` スキルまたは autoevolve-core を起動する際、以下を**暗黙デフォルト**で参照する:
+
+1. **failure-clusters**: 直近の failure cluster を読んで提案候補に含める
+2. **good-behavior log**: /eureka エントリと positive user feedback を参照
+3. **improve-history**: 過去の改善提案の採用率。採用率 < 30% が続くなら Critic を強化
+
+### 不採用: Weekly Traces Hour
+
+PostHog の「weekly traces hour」は個人 harness では不採用。理由:
+
+- 習慣化コストが高く観測対象が自分一人なので得られる分散が小さい
+- 既存の friction-events.jsonl による anomaly alert で十分
+- manual review より「異常時に自動 surface」の方が scale する
+
+代わりに「**anomaly detected の時だけ人間の目を入れる**」方針を取る。具体的には、failure-clusters の新規 cluster が閾値を超えたとき、/improve が自動で PR 候補を生成する。
+
+---
+
 ## 実験カテゴリ
 
 | カテゴリ | 変更対象 | スコアリング基準 |

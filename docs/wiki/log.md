@@ -265,3 +265,11 @@
 - 変更: skill-writing-guide.md (Pre-generation Contract Pattern), rpi.md (Phase 1/2/3 Must Contract)
 - 分析レポート: docs/research/2026-04-10-ui-quality-3layers-article-analysis.md
 - Codex 批評で L3「感動品質」を排除、固定比率も採用せず義務差ベースに変換
+
+## [2026-04-11] ingest | PostHog Agent-First Rules
+
+- ソース: The golden rules of agent-first product engineering (Jina Yoon, posthog.com)
+- 判定: Gap 1 (wrapper-vs-raw), Already 強化可能 3 (subagent/improve/skill-writing), 強化不要 1 (universal context)
+- 取り込み: wrapper-vs-raw-boundary.md 新規 + Capability Restriction Policy + Friction→Eval Loop + Onboarding-not-manuals
+- 不採用: Weekly traces hour (Codex 批評), 既存 skills rewrite (dead weight)
+- レポート: docs/research/2026-04-11-posthog-agent-first-rules-analysis.md

@@ -19,6 +19,7 @@
 - [マルチエージェント・アーキテクチャ](concepts/multi-agent-architecture.md) — 複数エージェントの協調パターンとトポロジー
 - [並列エージェントオーケストレーション](concepts/parallel-agent-orchestration.md) — worktree 隔離・Awareness Summary・Pre-Merge Conflict Detection による並列実行設計
 - [エージェント競合解決](concepts/agent-conflict-resolution.md) — 並列エージェント間の矛盾検出・調停パターン
+- [PostHog Agent-First Rules — Wrapper vs Raw Boundary](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — API parity と raw primitive 公開の設計原則。Capability Restriction Policy を subagent-delegation-guide に統合。control plane 設計問題としての wrapper-vs-raw-boundary.md 新規作成
 - [自己改善エージェント](concepts/self-improving-agents.md) — フィードバックループで自律的に能力を向上させる設計
 - [複利ループ](concepts/compounding-loop.md) — フィードバックループによる品質の加速度的改善と堀の構築
 - [ワークフロー最適化](concepts/workflow-optimization.md) — エージェントワークフローの形式化と効率改善
@@ -43,6 +44,7 @@
 - [Skill ↔ Subagent 合成](concepts/skill-subagent-composition.md) — skills: によるロール定義と context: fork によるタスク隔離
 - [Pre-generation Contract Pattern](concepts/pre-generation-contract.md) — 生成前に Must/Important/Optional の義務差を宣言し、生成中に照合できる形で SKILL.md に埋め込む品質契約パターン
 - [NotebookLM Claude 拡張分析](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md) — DBS rubric (Direction/Blueprints/Solutions) を skill-writing-guide に統合。非公式 API の production harness 採用リスク評価の事例
+- [PostHog Agent-First Rules — Skill as Onboarding](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — スキルはマニュアルではなくオンボーディング。Skill Audit Policy + Onboarding-not-manuals を skill-writing-guide に統合
 
 ### security — セキュリティ
 
@@ -77,6 +79,7 @@
 - [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — 見逃し/過検出の非対称損失とリスクカテゴリ別レビュー方針
 - [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
 - [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定
+- [PostHog Agent-First Rules — Friction to Eval Loop](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — エージェントを実ユーザーとして扱い、trace 観測から eval ループへ接続する原則。Friction→Eval Loop ポリシーを improve-policy.md に統合
 
 ### tooling — ツール・エコシステム
 
