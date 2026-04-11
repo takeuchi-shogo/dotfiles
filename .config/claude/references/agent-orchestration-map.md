@@ -127,6 +127,33 @@ CC 本体の coordinator prompt が規定する 4 フェーズは、任意のマ
 - 現在の Coordinator パターンを破壊する必要はない。**既存のオーケストレーションパターン内で Sequential の原則（最小構造+最大役割自律）を適用する**
 - 詳細: `subagent-delegation-guide.md` § Sequential Protocol
 
+### 移行判断シグナル
+
+> 出典: Anthropic "Multi-agent coordination patterns" (2026-04-10) — Orchestrator-Subagent から Sequential への移行は段階的判断
+
+Implicit Coordinator から Sequential 原則への移行は、観測シグナルに基づく:
+
+| 移行検討シグナル（2 つ以上で検討） | 移行しない条件 |
+|---|---|
+| Coordinator context > 70% を継続観測 | 並列性が本質的（独立ファイルレビュー） |
+| サブエージェント結果の情報損失が繰り返される | 逐次依存がない |
+| 役割固定が柔軟性を損なう（事前 role に合わないタスクが頻出） | 5 分以内で完了する見込み |
+| サブエージェント数が常に 7+ で summary 層でも改善しない | セキュリティ制約あり（db-reader 等） |
+
+### Dochkina 2026 boundary conditions
+
+論文の +14% / +44% 改善幅は dotfiles に直接転用できない:
+
+| 条件 | Dochkina | dotfiles |
+|---|---|---|
+| 役割プール | 5000+ | 10-20 |
+| タスク数 | 25,000+ | 1 セッション 1-10 |
+| 並列度 | 高 | 1-3 |
+
+**結論**: 数値ではなく **構造原則**（最小構造 + 最大役割自律）のみを転用する。
+
+詳細な移行 3 ステップと boundary conditions: `subagent-delegation-guide.md § Sequential Protocol 移行判断基準`
+
 ---
 
 ## 4. Agent 依存グラフ
