@@ -1,5 +1,6 @@
 # Taps
 tap "FelixKratz/formulae"    # borders
+tap "k1LoW/tap"
 tap "nikitabobko/tap"
 
 # CLI tools
@@ -27,6 +28,7 @@ brew "uv"         # Python パッケージマネージャ (uvx で code-review-g
 brew "borders"    # ウィンドウ枠線ハイライト
 brew "nb"         # ターミナルノート管理 CLI
 brew "direnv"     # ディレクトリ別環境変数マネージャ
+brew "k1LoW/tap/mo" # Markdown ビューア
 
 # GUI apps
 cask "wezterm"            # GPU アクセラレーテッドターミナル
