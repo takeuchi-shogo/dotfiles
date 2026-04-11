@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 """Promote pending patterns in patterns.jsonl.
 
-Daily batch classifier for the promotion pipeline:
-  - learned / rejected entries older than 7 days -> promoted
+Daily batch classifier for the promotion pipeline (evidence-based since 2026-04-11):
+  - learned / rejected entries with recurrence evidence -> promoted
+    * Primary:  same pattern observed in 2+ distinct scopes (contexts)
+    * Fallback: same pattern observed 3+ times within a single scope
   - doom_loop entries with same hash appearing 5+ times -> dismissed
-  - entries newer than 7 days -> remain pending
+  - pending entries older than 30 days with no recurrence -> dismissed (stale)
+  - entries that never recurred -> remain pending until they do or become stale
+
+Rationale (2026-04-11 pepabo failure-learning-loop /absorb):
+  The prior "age >= 7 days -> promoted" rule promoted every observation, defeating
+  the "実戦で検証されたものだけ残す" (only promote patterns proven by recurrence)
+  philosophy. Evidence-based promotion keeps the promoted insights ledger focused
+  on patterns that actually repeat in practice.
 
 Promoted entries are summarized into:
   ~/.claude/agent-memory/insights/promoted-{date}.md
@@ -18,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -26,8 +36,12 @@ PATTERNS_PATH = (
     Path.home() / ".claude" / "agent-memory" / "learnings" / "patterns.jsonl"
 )
 INSIGHTS_DIR = Path.home() / ".claude" / "agent-memory" / "insights"
-PENDING_AGE_DAYS = 7
 DOOM_LOOP_DISMISS_THRESHOLD = 5
+# Evidence-based promotion thresholds (pepabo 2026-04-11 philosophy shift)
+RECURRENCE_MIN_DISTINCT_SCOPES = 2  # Primary: cross-context reproducibility
+RECURRENCE_MIN_SAME_SCOPE_COUNT = 3  # Fallback: strong same-context recurrence
+# Safety rail to prevent unbounded pending growth
+STALE_DISMISS_DAYS = 30
 
 
 def parse_timestamp(ts_str: str) -> datetime | None:
@@ -68,12 +82,63 @@ def count_doom_loop_hashes(entries: list[dict]) -> Counter:
     return counter
 
 
+def _pattern_key(entry: dict) -> str | None:
+    """Stable key for grouping learned/rejected entries for recurrence detection.
+
+    Prefers ``generalized_detail`` (the abstracted form written by the learner)
+    over raw ``detail`` so that superficial wording differences cluster under
+    the same semantic pattern. Returns ``None`` if no usable text exists; the
+    entry is then treated as un-groupable and stays pending until it either
+    acquires evidence or becomes stale.
+    """
+    text = (entry.get("generalized_detail") or entry.get("detail") or "").strip()
+    if not text:
+        return None
+    # Normalize: NFKC (fullwidth/halfwidth, combining marks) + casefold, then
+    # first 120 code points. NFKC is important for Japanese (全角→半角) and
+    # Unicode combining sequences; casefold handles Turkish ``İ/ı`` edge cases
+    # better than ``lower()``. The 120-char cap trades false-positive clustering
+    # against false-negative fragmentation (tunable if recurrence rate changes).
+    normalized = unicodedata.normalize("NFKC", text).casefold()
+    return normalized[:120]
+
+
+def build_pattern_groups(entries: list[dict]) -> dict[str, dict]:
+    """Group learned/rejected entries by pattern key for recurrence evidence.
+
+    Returns a dict mapping pattern_key -> {"scopes": set[str], "count": int}.
+    Previously-promoted entries are intentionally included: they still count
+    as evidence for a pending entry observing the same pattern (a second
+    scope seeing a promoted pattern reinforces cross-context reproducibility).
+    """
+    groups: dict[str, dict] = {}
+    for entry in entries:
+        if entry.get("type") not in ("learned", "rejected"):
+            continue
+        key = _pattern_key(entry)
+        if key is None:
+            continue
+        g = groups.setdefault(key, {"scopes": set(), "count": 0})
+        g["scopes"].add(entry.get("scope", ""))
+        g["count"] += 1
+    return groups
+
+
 def classify_entries(
     entries: list[dict],
     now: datetime,
     doom_hash_counts: Counter,
+    pattern_groups: dict[str, dict],
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """Classify entries into promoted, dismissed, still-pending, and unchanged.
+
+    Promotion is evidence-based (pepabo 2026-04-11 philosophy):
+      - Primary:  the same pattern was observed in >= RECURRENCE_MIN_DISTINCT_SCOPES
+                  distinct scopes -> promoted (cross-context reproducibility).
+      - Fallback: the same pattern was observed >= RECURRENCE_MIN_SAME_SCOPE_COUNT
+                  times overall -> promoted (strong single-context recurrence).
+      - Stale pending entries (> STALE_DISMISS_DAYS) with no recurrence ->
+                  dismissed as noise; they never proved themselves in practice.
 
     Returns:
         (promoted, dismissed, still_pending, unchanged)
@@ -83,7 +148,7 @@ def classify_entries(
     still_pending = []
     unchanged = []
 
-    cutoff = now - timedelta(days=PENDING_AGE_DAYS)
+    stale_cutoff = now - timedelta(days=STALE_DISMISS_DAYS)
 
     for entry in entries:
         status = entry.get("promotion_status")
@@ -107,31 +172,55 @@ def classify_entries(
                 dismissed.append(entry)
                 continue
 
-        # learned / rejected older than cutoff -> promoted
+        # learned / rejected: promote only with recurrence evidence
         if entry_type in ("learned", "rejected"):
-            if ts is not None and ts < cutoff:
-                entry["promotion_status"] = "promoted"
-                promoted.append(entry)
+            key = _pattern_key(entry)
+            group = pattern_groups.get(key) if key else None
+            if group is not None:
+                distinct_scopes = len(group["scopes"])
+                total = group["count"]
+                if (
+                    distinct_scopes >= RECURRENCE_MIN_DISTINCT_SCOPES
+                    or total >= RECURRENCE_MIN_SAME_SCOPE_COUNT
+                ):
+                    entry["promotion_status"] = "promoted"
+                    entry["promotion_evidence"] = {
+                        "distinct_scopes": distinct_scopes,
+                        "total_occurrences": total,
+                    }
+                    promoted.append(entry)
+                    continue
+
+            # No recurrence yet. Dismiss if stale, otherwise keep waiting for evidence.
+            if ts is not None and ts < stale_cutoff:
+                entry["promotion_status"] = "dismissed"
+                dismissed.append(entry)
                 continue
 
-        # New entries (within cutoff) or unclassified -> stay pending
-        if ts is not None and ts >= cutoff:
-            still_pending.append(entry)
-        else:
-            # Old entries of other types (e.g. skill_security_scan) -> stay pending
-            # but if older than cutoff and not learned/rejected, just keep pending
-            still_pending.append(entry)
+        # Everything else: stay pending (new, insufficient evidence, or other types)
+        still_pending.append(entry)
 
     return promoted, dismissed, still_pending, unchanged
 
 
 def write_entries(path: Path, entries: list[dict]) -> None:
-    """Write entries back to JSONL atomically via temp file."""
+    """Write entries back to JSONL atomically via temp file.
+
+    Ensures the parent directory exists (``mkdir -p``) before writing so that
+    the first invocation on a fresh ``~/.claude/agent-memory/learnings/`` tree
+    does not crash. Cleans up the temp file on write failure so a corrupted
+    half-written JSONL never survives.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(".jsonl.tmp")
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        for entry in entries:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    tmp_path.replace(path)
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        tmp_path.replace(path)
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise
 
 
 def generate_summary(promoted: list[dict], date_str: str) -> str:
@@ -189,8 +278,9 @@ def main() -> None:
         return
 
     doom_hash_counts = count_doom_loop_hashes(entries)
+    pattern_groups = build_pattern_groups(entries)
     promoted, dismissed, still_pending, unchanged = classify_entries(
-        entries, now, doom_hash_counts
+        entries, now, doom_hash_counts, pattern_groups
     )
 
     print(f"Total entries:   {len(entries)}")
@@ -204,13 +294,24 @@ def main() -> None:
         if promoted:
             print("\nWould promote:")
             for e in promoted:
-                print(f"  - [{e.get('type')}] {e.get('scope', e.get('hash', 'N/A'))}")
+                evidence = e.get("promotion_evidence", {})
+                scopes = evidence.get("distinct_scopes", "?")
+                total = evidence.get("total_occurrences", "?")
+                scope = e.get("scope", e.get("hash", "N/A"))
+                print(f"  - [{e.get('type')}] {scope} (scopes={scopes}, total={total})")
         if dismissed:
             print("\nWould dismiss:")
             for e in dismissed:
-                h = e.get("hash")
-                cnt = doom_hash_counts.get(h, "?")
-                print(f"  - [doom_loop] hash={h} (count={cnt})")
+                etype = e.get("type", "?")
+                if etype == "doom_loop":
+                    h = e.get("hash")
+                    cnt = doom_hash_counts.get(h, "?")
+                    print(f"  - [doom_loop] hash={h} (count={cnt})")
+                else:
+                    print(
+                        f"  - [{etype}] {e.get('scope', 'N/A')} "
+                        f"(stale > {STALE_DISMISS_DAYS}d, no recurrence)"
+                    )
         return
 
     # Entries were modified in-place, so re-serialize the original list

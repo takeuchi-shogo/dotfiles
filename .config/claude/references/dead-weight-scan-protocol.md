@@ -7,7 +7,9 @@
 
 - `/improve` の Step 5 陳腐化チェック（自動）
 - モデルアップグレード後の初回セッション（手動推奨）
-- CLAUDE.md が 150 行を超えた場合（check-claudemd-lines.sh で検知）
+- CLAUDE.md が 150 行を超えた場合（check-claudemd-lines.sh で自動検知）
+- **MEMORY.md が 200 行または索引エントリ 50 件を超えた場合**（2026-04-11 追加。検知は `memory-status` スキルでの手動運用。将来的に `check-memory-lines.sh` として自動化候補）
+- **lessons-learned.md が 50 エントリを超えた場合**（improve-policy.md の容量管理に準拠、検知は `/improve` Garden フェーズで手動確認）
 
 ## スキャン対象と問い
 
@@ -26,6 +28,10 @@
 
 - 統合済み記事由来のルールで、現行モデルが自然に守るものはないか？
 - 3ヶ月以上参照されていない reference は本当に必要か？
+- 容量上限（improve-policy.md）を超えたら必ず降格候補を出す:
+  - `lessons-learned.md` 50 エントリ: verify PASS 10+ 連続を昇格 or `situation-strategy-map.md` へ降格
+  - MEMORY.md 200 行 / 索引 50 件: 参照頻度の低い項目を `_index.md` へ外出し
+  - CLAUDE.md 150 行: `<important if>` ブロックを references/ へ外出し
 
 ### 4. hooks / scripts
 
