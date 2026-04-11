@@ -10,6 +10,11 @@ sample-dotfiles
 settings.local.json
 CLAUDE.local.md
 
+# Claude Code local runtime state
+.claude/agent-memory/
+.claude/channels/
+.claude/scheduled_tasks.lock
+
 # Machine-local zsh config
 .config/zsh/local.zsh
 
@@ -42,6 +47,11 @@ skills-lock.json
 
 # Reviewer eval results (実行ごとに生成されるローカルデータ)
 .config/claude/scripts/eval/results/
+
+# Scratch copies. Canonical Claude runtime scripts live under .config/claude/scripts/runtime/
+scripts/runtime/auto-morning-briefing.sh
+scripts/runtime/sync-memory-to-vault.sh
+scripts/runtime/save-briefing-to-vault.sh
 
 # Context knowledge base (personal learning notes)
 .context/

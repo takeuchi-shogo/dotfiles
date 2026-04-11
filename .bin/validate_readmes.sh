@@ -7,10 +7,30 @@ cd "$ROOT_DIR"
 python3 - <<'PY'
 import pathlib
 import re
+import subprocess
 import sys
 
 root = pathlib.Path.cwd()
-readmes = sorted(root.rglob("README.md"))
+result = subprocess.run(
+    [
+        "git",
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "--",
+        "*README.md",
+    ],
+    cwd=root,
+    check=True,
+    capture_output=True,
+)
+readmes = sorted(
+    root / path.decode()
+    for path in result.stdout.split(b"\0")
+    if path
+)
 link_pattern = re.compile(r'!?\[[^\]]*\]\(([^)]+)\)')
 missing = []
 

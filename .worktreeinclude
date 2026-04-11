@@ -1,0 +1,10 @@
+# Local environment
+.env
+.env.local
+.env.worktree
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Machine-local shell config
+.config/zsh/local.zsh
