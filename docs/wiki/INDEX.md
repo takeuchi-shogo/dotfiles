@@ -23,6 +23,10 @@
 - [自己改善エージェント](concepts/self-improving-agents.md) — フィードバックループで自律的に能力を向上させる設計
 - [複利ループ](concepts/compounding-loop.md) — フィードバックループによる品質の加速度的改善と堀の構築
 - [ワークフロー最適化](concepts/workflow-optimization.md) — エージェントワークフローの形式化と効率改善
+- [Multi-Agent Coordination Patterns](../references/multi-agent-coordination-patterns.md) — 5 パターン統合ビュー (Generator-Verifier / Orchestrator-Subagent / Agent Teams / Message Bus / Shared State)。「Start with Orchestrator-Subagent」原則と観測された限界に応じた進化戦略。Wave 1 で `references/multi-agent-coordination-patterns.md` 新設予定 → 参照: [analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
+- **Sequential Protocol** — Dochkina 2026 で Orchestrator-Subagent を 14% 上回る実測あり。役割を動的に自動選択する逐次プロトコル。移行シグナル (coordinator context > 70%、情報損失の繰り返し) が定義されたら `references/agent-orchestration-map.md` に明記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
+- **Coordinator Context Budget** — Orchestrator-Subagent パターンにおける並列サブエージェント件数の閾値管理。5 並列: safe、5-10: 警戒・summary 層検討、10+: 強制 summary 層 or Agent Teams 切替。Wave 1 Task 2 で `references/subagent-delegation-guide.md` に追記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
+- **Generator-Verifier Reward Hacking** — Verifier が Generator の出力を形式的に pass させてしまう失敗モード。ralph-loop の盲点。N サイクル毎の人間監査 + Verifier 基準の periodic update で検知・防止。Wave 2 Task 4 で `references/review-consensus-policy.md` に "Reward Hacking Mitigation" セクション追加予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 
 ### claude-code — Claude Code
 

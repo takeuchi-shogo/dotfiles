@@ -8,6 +8,15 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-11] ingest | Multi-agent coordination patterns (Anthropic)
+
+- ソース: https://claude.com/blog/multi-agent-coordination-patterns
+- 判定: Gap 1 (Sequential Protocol 移行判断), Partial 6 (Generator-Verifier/Agent Teams weak/Message Bus 前提ズレ/Shared State/Context Accumulation/Information Bottleneck), Already 4 (うち強化可能 3: Orchestrator-Subagent context budget, Pattern Selection 5-view, Reward Hacking)
+- 取り込み: Wave 1 (5-Pattern 統合ビュー新設 + Coordinator Context Budget + Sequential Protocol 移行判断基準), Wave 2 (Reward Hacking 検知 + Agent Teams 実ランタイム + Shared State 制約明示) — 計 6 タスク L 規模、新セッションで `/rpi` 実行予定
+- 分析レポート: docs/research/2026-04-11-multi-agent-coordination-patterns-analysis.md
+- 統合プラン: docs/plans/2026-04-11-multi-agent-coordination-patterns-integration.md
+- Phase 2.5 メモ: Codex プロセス途中終了 (task-registry.jsonl 実体未発見のみ取得)、Gemini で代替批評完了
+
 ## [2026-04-11] ingest | The New Software: CLI, Skills & Vertical Models
 
 - ソース: Agent Experience 時代の SaaS 戦略論
