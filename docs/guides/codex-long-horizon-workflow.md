@@ -135,6 +135,7 @@
 ## Recommended Profiles
 
 - 軽い修正: `codex --profile fast`
+- UI 実装・frontend 生成: `codex --profile frontend`
 - レビューや整理: `codex --profile review`
 - 調査や比較: `codex --profile research`
 

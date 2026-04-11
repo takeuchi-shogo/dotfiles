@@ -7,13 +7,17 @@ personality = "pragmatic"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
-# 通常タスクは high、レビュー時は必ず xhigh (profiles.review) を使用する
+# 通常タスクは high、UI 実装は medium (profiles.frontend)、レビュー時は必ず xhigh (profiles.review) を使用する
 # model_reasoning_summary = "detailed" で推論過程の可視性を向上
 # personality は persistent default だけに使う。出力形式や長さは task / skill 側で制御する
 # approval_policy = "on-request" と sandbox_mode = "workspace-write" を既定にして
 # 低摩擦に編集できる状態を保ちつつ、危険な操作は都度確認する
 
 [profiles.fast]
+model_reasoning_effort = "medium"
+model_reasoning_summary = "auto"
+
+[profiles.frontend]
 model_reasoning_effort = "medium"
 model_reasoning_summary = "auto"
 

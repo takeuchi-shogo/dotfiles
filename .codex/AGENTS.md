@@ -29,6 +29,15 @@
 - `CLAUDE.md` や Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提をそのまま実行しない。
 - OpenAI 製品や API の調査では global `openai-docs` skill と `openaiDeveloperDocs` MCP を優先し、fallback browse は OpenAI 公式 docs に限定する。
 
+## Frontend / UI Work
+- visually strong な landing page、app、dashboard、prototype、game UI を実装する依頼では `$frontend-skill` を使う。
+- GPT-5.4 frontend prompt template、OpenAI frontend guidance の運用化、または UI brief の作成では `$openai-frontend-prompt-workflow` を先に使う。
+- UI 実装では `profiles.frontend` を推奨する。global default の high reasoning は維持しつつ、frontend 生成では low / medium reasoning を優先する。
+- 実装前に、UI 品質が重要な場合は `visual thesis`、`content plan`、`interaction thesis` を短く定義する。
+- visual reference、real copy、product context があれば優先して使う。欠けている場合は、必要最小限を聞き返すか、仮定を明示する。
+- landing page は narrative structure、full-bleed visual anchor、cardless hero を基本にする。app / dashboard は workspace-first、utility copy、calm surface hierarchy を基本にする。
+- UI 完了前は可能な限り Playwright で desktop / mobile viewport、主要 flow、overlap、fixed/floating UI、視覚的 hierarchy を確認する。
+
 ## Editing Defaults
 - 変更は既存の命名規則・構成・formatter に従う。無関係な差分を広げない。
 - パッケージ追加や新規 utility の前に、既存の task、script、skill、MCP を確認する。
