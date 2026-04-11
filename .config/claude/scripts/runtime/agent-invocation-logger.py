@@ -10,10 +10,16 @@ Part of Routing Observability Wave 1:
 
 Records one line per Agent tool invocation for later analysis by skill-audit
 Dominant tier detection (Expert Collapse) and agent-level usage histograms.
+
+Also parses cascade promotion gate markers from description (see
+references/cascade-routing.md). Marker format: [cascade:<name>/step:<N>]
+When present, cascade_name and cascade_step are added to the invocation
+record so AutoEvolve can aggregate cascade chains by name.
 """
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +27,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import load_hook_input, output_passthrough, run_hook  # noqa: E402
 from session_events import emit_agent_invocation  # noqa: E402
+
+# Cascade marker: [cascade:<name>/step:<N>] where:
+#   - name is [A-Za-z0-9_-]+ (ASCII only, see references/cascade-routing.md)
+#   - step is a positive integer starting from 1 (step:0 is rejected by regex;
+#     [1-9][0-9]* prevents leading zeros and forbids fullwidth digits via
+#     explicit [0-9] instead of \d which would match Unicode digits).
+# Only the first marker per description is captured (single cascade per
+# invocation is the convention; see cascade-routing.md Anti-Patterns).
+_CASCADE_MARKER_RE = re.compile(
+    r"\[cascade:(?P<name>[A-Za-z0-9_-]+)/step:(?P<step>[1-9][0-9]*)\]"
+)
+
+
+def _extract_cascade_marker(description: str) -> dict:
+    """Parse [cascade:<name>/step:<N>] from description.
+
+    Returns dict with cascade_name and cascade_step if marker present,
+    empty dict otherwise. Never raises.
+
+    The regex alone guarantees that name is ASCII alphanumeric/underscore/
+    hyphen and step is a positive integer, so no post-parse validation or
+    exception handling is needed here.
+    """
+    if not isinstance(description, str):
+        return {}
+    match = _CASCADE_MARKER_RE.search(description)
+    if not match:
+        return {}
+    return {
+        "cascade_name": match.group("name"),
+        "cascade_step": int(match.group("step")),
+    }
 
 
 def _extract_usage(tool_response: object) -> dict:
@@ -46,9 +84,8 @@ def main() -> None:
     tool_input = payload.get("tool_input") or {}
     tool_response = payload.get("tool_response") or {}
 
-    description = tool_input.get("description", "")
-    if isinstance(description, str):
-        description = description[:120]
+    raw_description = tool_input.get("description", "")
+    description = raw_description[:120] if isinstance(raw_description, str) else ""
 
     invocation = {
         "agent_type": tool_input.get("subagent_type") or "general-purpose",
@@ -56,6 +93,13 @@ def main() -> None:
         "description": description,
         "run_in_background": bool(tool_input.get("run_in_background")),
     }
+
+    # Cascade promotion gate marker (see references/cascade-routing.md).
+    # Parse from the full description so long markers are not clipped by [:120].
+    cascade = _extract_cascade_marker(
+        raw_description if isinstance(raw_description, str) else ""
+    )
+    invocation.update(cascade)
 
     usage = _extract_usage(tool_response)
     invocation.update({k: v for k, v in usage.items() if v is not None})
