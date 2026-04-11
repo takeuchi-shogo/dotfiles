@@ -12,7 +12,7 @@ status: integrated
 **手法**:
 - 日本語 brevity ルール（体言止め・助詞圧縮・クッション語禁止）
 - 禁止リスト型プロンプト（Drop: 形式 — "Drop: articles, filler, hedging, pleasantries"）
-- 5段階強度レベル（Lite / Full / Ultra / Wenyan）
+- 多段階強度レベル（Lite / Full / Ultra / Wenyan の4段階を caveman README で確認）
 - SessionStart hook + `~/.claude/.caveman-active` ファイルブリッジによる状態永続化
 - 3-arm 評価ハーネス（baseline / terse / skill）
 - 危険操作時の自動リバート

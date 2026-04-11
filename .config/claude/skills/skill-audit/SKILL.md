@@ -174,13 +174,14 @@ bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-e
 
 2-arm delta が大きくても arm C − arm B が小さい場合、そのスキルは「単に簡潔に書けと指示すれば代替可能」を意味する。過大評価を防ぐ重要な補正。
 
-**起動方法**:
+**起動方法**（※現状 `run_eval.sh` の `--three-arm` は未実装。下記「最小実装」の手順で代替する）:
 
 ```bash
+# 将来 run_eval.sh が --three-arm をサポートした際のインタフェース想定
 bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json" --three-arm
 ```
 
-`run_eval.sh` が `--three-arm` をサポートしない場合の最小実装:
+**現時点での最小実装**（`run_eval.sh` が `--three-arm` をサポートしないため、以下を手動で実行する）:
 
 1. `evals.json` の各 eval に `terse_control_prompt` フィールドを追加（省略時は元プロンプト + "Answer concisely. No preamble, no summary."）
 2. eval を 3 回実行（A/B/C）し、結果を `arm_{a,b,c}.json` に分けて保存

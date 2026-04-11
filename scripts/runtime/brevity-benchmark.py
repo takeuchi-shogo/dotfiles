@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -39,7 +40,9 @@ except ImportError:
 
 # ── 定数・カラーコード ───────────────────────────────────
 
-CLAUDE_BIN = "/Users/takeuchishougo/.local/bin/claude"
+# 個人環境の優先パス。無ければ get_claude_bin() で PATH から解決。
+CLAUDE_BIN_DEFAULT = "/Users/takeuchishougo/.local/bin/claude"
+_claude_bin_cache: Optional[str] = None
 
 RED = "\033[91m"
 YELLOW = "\033[93m"
@@ -55,23 +58,37 @@ ARM_SLEEP_SEC = 1.0  # arm 間の sleep
 PROMPT_SLEEP_SEC = 2.0  # プロンプト間の sleep
 TIMEOUT_SEC = 120  # claude 呼び出し per-arm タイムアウト
 
-# ── brevity システムメッセージ ───────────────────────────
+# 内容妥当性検証: default の 5% 未満のトークンしか返さない異常応答を警告する閾値。
+# ultra 条件で claude が「理解不能です」等の1文だけ返した場合の偽陽性防止。
+MIN_CONTENT_RATIO = 0.05
 
-_JA_BREVITY = (
-    "日本語応答では: 敬語を体言止めに変換し、"
-    "クッション言葉（〜と思います、〜かもしれません）を除去し、"
-    "文脈から自明な助詞を省略する。"
-)
+# ── brevity システムメッセージ ───────────────────────────
+# concise.md の強度グラデーションに合わせ lite/standard/ultra を段階化する。
+# lite = Drop リスト（英語 + 日本語フィラー）のみ
+# standard = lite + 体言止め + 助詞圧縮
+# ultra = standard + 箇条書き + 接続詞削除
+
 _BASE_BREVITY = (
     "Remove filler, hedging, and pleasantries from your response. "
     "No preamble, no recap, no trailing summary."
 )
+_JA_DROP_LIST = (
+    "日本語フィラー（なるほど、確認しました、それでは、まず）、"
+    "クッション語（〜と思います、〜かもしれません、もしかして、〜っぽい）、"
+    "結果要約（以上のように、つまり、要するに）も削除する。"
+)
+_JA_STRUCT_BREVITY = (
+    "日本語応答では: 敬語を体言止めに変換し、文脈から自明な助詞を省略する。"
+)
 
 SYSTEM_PROMPTS: dict[str, str] = {
     "default": "",  # システムプロンプト追加なし
-    "lite": _BASE_BREVITY,
-    "standard": f"{_BASE_BREVITY} {_JA_BREVITY}",
-    "ultra": f"{_BASE_BREVITY} {_JA_BREVITY} 箇条書き優先、接続詞削除、一文一事実。",
+    "lite": f"{_BASE_BREVITY} {_JA_DROP_LIST}",
+    "standard": f"{_BASE_BREVITY} {_JA_DROP_LIST} {_JA_STRUCT_BREVITY}",
+    "ultra": (
+        f"{_BASE_BREVITY} {_JA_DROP_LIST} {_JA_STRUCT_BREVITY} "
+        "箇条書き優先、接続詞削除、一文一事実。"
+    ),
 }
 
 ARM_ORDER = ["default", "lite", "standard", "ultra"]
@@ -144,19 +161,52 @@ def count_tokens(text: str) -> int:
     return len(enc.encode(text))
 
 
-def check_claude_bin() -> None:
-    """claude バイナリの存在確認。なければ即座にエラー終了。"""
-    p = Path(CLAUDE_BIN)
-    if not p.exists():
-        # PATH 上も探す
-        result = subprocess.run(["which", "claude"], capture_output=True, text=True)
-        if result.returncode != 0 or not result.stdout.strip():
-            sys.exit(
-                f"{RED}ERROR{RESET}: claude CLI が見つかりません。\n"
-                f"  試行したパス: {CLAUDE_BIN}\n"
-                f"  PATH 上にも 'claude' がありません。\n"
-                "  Claude Code をインストールしてください。"
-            )
+def get_claude_bin() -> str:
+    """claude バイナリパスを解決してキャッシュする。
+
+    優先順位:
+      1. CLAUDE_BIN_DEFAULT のハードコードパス
+      2. PATH 上の `claude`（`which claude` で解決）
+
+    見つからなければ sys.exit で終了。
+    """
+    global _claude_bin_cache
+    if _claude_bin_cache is not None:
+        return _claude_bin_cache
+
+    p = Path(CLAUDE_BIN_DEFAULT)
+    if p.exists():
+        _claude_bin_cache = str(p)
+        return _claude_bin_cache
+
+    # PATH 上も探す
+    which_result = subprocess.run(
+        ["which", "claude"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if which_result.returncode == 0 and which_result.stdout.strip():
+        _claude_bin_cache = which_result.stdout.strip()
+        return _claude_bin_cache
+
+    sys.exit(
+        f"{RED}ERROR{RESET}: claude CLI が見つかりません。\n"
+        f"  試行したパス: {CLAUDE_BIN_DEFAULT}\n"
+        f"  PATH 上にも 'claude' がありません。\n"
+        "  Claude Code をインストールしてください。"
+    )
+
+
+def sanitize_stderr(text: str) -> str:
+    """stderr から秘密情報らしきパターンをマスクする。ログ出力前に必ず通す。"""
+    patterns = [
+        r"(token|session|auth|key|secret|api[-_]?key)\s*[:=]\s*\S+",
+        r"Bearer\s+\S+",
+    ]
+    for pat in patterns:
+        text = re.sub(pat, r"[REDACTED]", text, flags=re.IGNORECASE)
+    return text
 
 
 def run_claude(
@@ -165,19 +215,30 @@ def run_claude(
     """claude -p を実行し (stdout, stderr) を返す。
 
     system_prompt が空の場合は --append-system-prompt を付与しない。
-    タイムアウト時は CalledProcessError ではなく TimeoutExpired を raise する。
+    non-zero exit 時は RuntimeError を raise する（stderr は sanitize される）。
+    タイムアウト時は TimeoutExpired を raise する。
+
+    Security:
+      - shell=False (list 形式) でシェルインジェクションは防がれる
+      - `--` セパレータでプロンプトがオプションとして誤解釈されるのを防ぐ
+      - `--dangerously-skip-permissions` は benchmark 自動実行のため必須
     """
-    cmd = [CLAUDE_BIN, "-p", "--dangerously-skip-permissions"]
+    cmd = [get_claude_bin(), "-p", "--dangerously-skip-permissions"]
     if system_prompt:
         cmd += ["--append-system-prompt", system_prompt]
-    cmd.append(prompt)
+    # `--` 以降はすべて位置引数として解釈される
+    cmd += ["--", prompt]
 
     result = subprocess.run(
         cmd,
         capture_output=True,
         text=True,
         timeout=timeout,
+        check=False,  # returncode を自前で見るため False
     )
+    if result.returncode != 0:
+        err_msg = sanitize_stderr((result.stderr or "").strip())[:300]
+        raise RuntimeError(f"claude CLI failed (exit {result.returncode}): {err_msg}")
     return result.stdout, result.stderr
 
 
@@ -289,14 +350,14 @@ def run_benchmark(
     verbose: bool = False,
 ) -> list[PromptResult]:
     """全プロンプトのベンチマークを実行し結果を返す。"""
-    check_claude_bin()
+    get_claude_bin()  # 起動時に解決（見つからなければ sys.exit）
 
     # 実行ディレクトリ作成
     timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = Path(".skill-eval/brevity") / timestamp
 
     print(f"\n{BOLD}{'=' * 60}")
-    print("  Brevity Benchmark (Opus 4.6)")
+    print("  Brevity Benchmark")
     print(f"{'=' * 60}{RESET}")
     print(
         f"  prompts: {len(prompts)}, arms: {len(ARM_ORDER)}, encoding: {ENCODING_NAME}"
@@ -419,13 +480,19 @@ def _fmt_arm(r: PromptResult, arm: str) -> str:
 
 
 def print_summary(results: list[PromptResult]) -> None:
-    """サマリテーブルを stdout に出力する。"""
+    """サマリテーブルを stdout に出力する。
+
+    主張マッピング:
+      - 日本語 ultra = 80% (genshijin 原著値)
+      - 英語 ultra  = 68% (caveman 原著の Full モード相当)
+      - standard は原著に独立した主張値がないため claim なし (参考値のみ表示)
+    """
     print(f"\n{BOLD}{'=' * 60}")
-    print("  Brevity Benchmark Results (Opus 4.6)")
+    print("  Brevity Benchmark Results")
     print(f"{'=' * 60}{RESET}\n")
 
-    _print_lang_block(results, "ja", "Japanese prompts", std_claim=68.0, ult_claim=80.0)
-    _print_lang_block(results, "en", "English prompts", std_claim=68.0)
+    _print_lang_block(results, "ja", "Japanese prompts", ult_claim=80.0)
+    _print_lang_block(results, "en", "English prompts", ult_claim=68.0)
 
     # ── JA vs EN 比較 ──
     ja_ult = _avg_reduction(results, "ja", "default", "ultra")

@@ -51,7 +51,7 @@
 
 - `lite`: フィラー除去のみ
 - `standard`（default）: Drop + 体言止め + 助詞圧縮
-- `ultra`: standard + 箇条書き優先。定型の短いタスクのみ
+- `ultra`: standard + 箇条書き優先 + 接続詞削除。定型の短いタスクのみ
 
 **Verbosity Guard 連携**: MoA Synthesis の verbosity bias 抑制制約は `/review` Step 4 rule 16 で実装済み。minimal モードは同じ方向性だが **全面適用はしない**（検証報告・テスト結果まで痩せるのを防ぐ）。
 
