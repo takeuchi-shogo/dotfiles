@@ -248,4 +248,4 @@ run = 'move-node-to-workspace 3'
 # vertical tabs, agent notifications, socket API, tmux compat CLI
 [[on-window-detected]]
 if.app-id = 'com.cmuxterm.app'
-run = 'move-node-to-workspace 4'
+run = ['move-node-to-workspace 4', 'layout accordion']
