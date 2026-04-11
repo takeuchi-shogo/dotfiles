@@ -154,6 +154,44 @@ For each skill, run the eval harness. This launches `claude -p` with and without
 bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json"
 ```
 
+#### Optional: 3-arm evaluation（terse-control）
+
+スキルの真の付加価値を「Just tell the model to be terse」の効果と分離して測定したい場合、3-arm モードを使う。JuliusBrussee/caveman リポジトリの評価手法より。
+
+**3 つの条件**:
+
+- **arm A (baseline)**: プロンプトそのまま、スキルなし
+- **arm B (terse-control)**: 「Answer concisely. No preamble, no summary.」のみ追加、スキルなし
+- **arm C (with-skill)**: 通常の with-skill 実行
+
+**解釈**:
+
+| 比較 | 意味 |
+|------|------|
+| arm C − arm A | スキル全体の効果（従来の 2-arm delta） |
+| arm C − arm B | **スキル固有の付加価値**（terse 指示で代替不可能な部分） |
+| arm B − arm A | terse 指示だけで得られる効果（ベースライン補正） |
+
+2-arm delta が大きくても arm C − arm B が小さい場合、そのスキルは「単に簡潔に書けと指示すれば代替可能」を意味する。過大評価を防ぐ重要な補正。
+
+**起動方法**:
+
+```bash
+bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json" --three-arm
+```
+
+`run_eval.sh` が `--three-arm` をサポートしない場合の最小実装:
+
+1. `evals.json` の各 eval に `terse_control_prompt` フィールドを追加（省略時は元プロンプト + "Answer concisely. No preamble, no summary."）
+2. eval を 3 回実行（A/B/C）し、結果を `arm_{a,b,c}.json` に分けて保存
+3. `aggregate.py` が 3 アーム対応で `delta_skill_vs_terse` と `delta_terse_vs_baseline` を出力
+
+**適用基準**: 出力スタイル系スキル（concise, persona, output-mode, rewrite 等）や「簡潔さ・文体で価値を出す」タイプのスキルに優先適用。複雑なワークフロー系（review, audit, epd 等）は 2-arm で十分。
+
+**注意**: 3-arm は実行コスト 1.5 倍。Step 0.5 の Usage Tier で Dominant / Weekly に分類されたスキルから優先適用する。
+
+**出典**: `docs/research/2026-04-11-caveman-genshijin-brevity-analysis.md`
+
 ### Step 4: Compare and grade
 
 For each eval directory produced by step 3, run blind A/B comparison:
