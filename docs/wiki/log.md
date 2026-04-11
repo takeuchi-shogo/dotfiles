@@ -8,6 +8,31 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-11] ingest | The New Software: CLI, Skills & Vertical Models
+
+- ソース: Agent Experience 時代の SaaS 戦略論
+- 判定: Gap 2 (online cascade, model debt register) / Partial 2 / Already 3 / N/A 2
+- 取り込み:
+  - cascade-routing.md (新規 references)
+  - model-debt-register.md (新規 references)
+  - agent-invocation-logger.py に cascade marker parser をパッチ
+  - deterministic-task-contract-plan.md (M plan 化、未実装)
+- Codex 批評で Claude バイアス 4 点補正 (cover 過大評価、Pitfall 重複、Harvey 誤読、deterministic Already 甘い)
+- 詳細: docs/research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md
+
+## [2026-04-11] ingest | pepabo 失敗学習ループ記事
+
+- ソース: https://zenn.dev/pepabo/articles/claude-code-failure-learning-loop (あたに, GMOペパボ)
+- 判定: Partial 4 / Already 1 / N/A 1 / Gap 0（当初 Gap 1 判定だったが Codex 批評で N/A に修正）
+- 取り込み:
+  - MEMORY.md 棚卸し + docs/research/_index.md 分離
+  - continuous-learning に「記録しない基準」DNR-1〜7 追加
+  - improve-policy を Pruning-First 思想に書き換え (verify 行付き)
+  - promote-patterns.py を evidence-based 昇格 (2+ scopes OR 3+ occurrences, 30日 stale dismiss)
+  - dead-weight-scan-protocol に容量上限トリガー追加
+- 除外: 項目2 失敗フィールド追加 (over-engineering), 項目5 EUC-JP guard (repo に該当ファイルなし)
+- 最大の学び: Codex 批評で「記事の核心は3層構造ではなく『記録しない基準』と『まず1件だけの導入容易性』」と指摘。既存セットアップの「研究知見を吸収する力が強すぎる」バイアスが可視化された
+
 ## [2026-04-10] ingest | Claude Code from Source (全18章リバースエンジニアリング)
 
 - ソース: https://claude-code-from-source.com/ — 2000ファイル/~150-200K LoC のモノリスを 36 エージェント×6時間で復元した18章解説書
@@ -289,3 +314,13 @@
 - 批評: Codex が当初 90% 判定 → 実質 60-70% に修正。Gotchas 23/92 実態など [verified] 指摘多数。security-reviewer 3 Medium 指摘 (path traversal / Evidence PII / credential) も反映済み
 - Gemini 空振り (別調査に分岐)
 - レポート: docs/research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md
+
+## [2026-04-11] ingest | caveman + genshijin brevity
+
+- ソース: https://github.com/JuliusBrussee/caveman (Julius Brussee, 15.6k stars) + https://zenn.dev/mikana0918/articles/7ad57493a04f88 (mikana0918, Zenn)
+- 判定: Gap 3個 (日本語 brevity, Drop リスト型, 強度グラデーション), Partial 2個 (3-arm 評価, token delta 記録), Already 3個 (SessionStart + state file, 自動リバート, Verbosity Guard), N/A → Conditional 1個 (入力圧縮), N/A 2個 (npx 配布, 5x API 利用)
+- 取り込み: A1+A2 (concise.md 日本語+Drop+例外), A3 (skill-audit 3-arm オプション), Gap#3 縮小版 (minimal 3段階強度), A4 縮小版 (Verbosity Guard 参照リンクのみ), brevity-benchmark.py 新規
+- 見送り: 入力圧縮 caveman-compress, 5段階 (3段階に縮小), Verbosity Guard 全面適用 (Codex 警告により縮小)
+- 批評: Codex で「MoA verbosity guard (構造レベル) と Drop リスト (語彙レベル) は別物で新規性あり」「5段階は過剰」「日英混在時の技術説明曖昧化が真の副作用」「A4 全面適用は検証報告まで痩せる」を受けた修正を反映
+- 実測検証: 未実行 (brevity-benchmark.py は実装済みだが実行は明示トリガー待ち、tiktoken インストール要)
+- レポート: [2026-04-11-caveman-genshijin-brevity-analysis.md](../research/2026-04-11-caveman-genshijin-brevity-analysis.md)

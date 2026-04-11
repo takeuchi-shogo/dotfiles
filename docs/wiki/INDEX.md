@@ -36,6 +36,7 @@
 - [コンテキスト管理](concepts/context-management.md) — コンパクション・コンテキストリセット・トークン予算
 - [軌跡学習](concepts/trajectory-learning.md) — 実行履歴からの知識抽出と蒸留
 - [ナレッジパイプライン](concepts/knowledge-pipeline.md) — raw データから構造化知識への変換パイプライン。Filing Loop・promote・lint --fix・generate-data で3層サイクル完結
+- [失敗学習ループ・Pruning-First](../research/2026-04-11-pepabo-failure-learning-loop-analysis.md) — 同じ指摘を繰り返させない失敗記録ループ。「記録しない基準」DNR-1〜7 と Pruning-First 思想。認知負荷を主敵として捉え、何を記録しないかを先に決める。→ 実装プラン: [Pruning-First philosophy shift](../plans/2026-04-11-pruning-first-philosophy-shift.md)
 
 ### skill — スキル設計
 
@@ -47,6 +48,7 @@
 - [NotebookLM Claude 拡張分析](../research/2026-04-10-notebooklm-claude-extend-sessions-analysis.md) — DBS rubric (Direction/Blueprints/Solutions) を skill-writing-guide に統合。非公式 API の production harness 採用リスク評価の事例
 - [PostHog Agent-First Rules — Skill as Onboarding](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — スキルはマニュアルではなくオンボーディング。Skill Audit Policy + Onboarding-not-manuals を skill-writing-guide に統合
 - [Skills for Claude Code Ultimate Guide](../research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md) — Setup Config & Persistent State 標準スキーマ、Gotchas Coverage Scan (25% → 60% 目標)、Product Verification 派生型 (repo 固有 oracle + credential 分離 + HAR sanitize + 7日 retention) を追加。Codex 批評で当初 90% 判定 → 実質 60-70% に修正
+- [caveman + genshijin brevity](../research/2026-04-11-caveman-genshijin-brevity-analysis.md) — 出力トークン削減のためのプロンプトスタイル制御。concise.md に Drop リスト+日本語 brevity+例外条項、skill-audit に 3-arm 評価 (terse-control)、brevity-benchmark.py 新規。Codex 批評で 5段階→3段階に縮小、A4 (Verbosity Guard 全面適用) は参照リンクのみに縮小
 
 ### security — セキュリティ
 
@@ -82,6 +84,12 @@
 - [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
 - [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定。UX Diff Scoring (ui-observer snapshot baseline比較) と /validate UX Score Gate を Wave 2 に追加 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [PostHog Agent-First Rules — Friction to Eval Loop](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — エージェントを実ユーザーとして扱い、trace 観測から eval ループへ接続する原則。Friction→Eval Loop ポリシーを improve-policy.md に統合
+
+### routing — ルーティング・モデル選択
+
+- [Cascade Routing / Online Cascade](../references/cascade-routing.md) — cheap→judge→escalate の動的ルーティング設計。FrugalGPT 98% コスト削減の実証。静的 tier routing より常に優先する。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
+- [Model Debt Register](../references/model-debt-register.md) — model-specific rule を永続資産ではなく削除条件付き負債として管理する register。Harvey 事例の示唆: モデルアップデートで即座に無効化されるルールは事前に退場戦略を書く。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
+- [Agent Experience (AX)](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md) — AX 時代における SaaS の設計原則。エージェントを主要ユーザーとして捉え、CLI / MCP / Skills インターフェースを人間向け UI と同等以上に優先する。Vertical model 台頭により performance が新たな moat になる
 
 ### tooling — ツール・エコシステム
 
