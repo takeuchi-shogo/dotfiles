@@ -333,3 +333,14 @@
 - 批評: Codex で「MoA verbosity guard (構造レベル) と Drop リスト (語彙レベル) は別物で新規性あり」「5段階は過剰」「日英混在時の技術説明曖昧化が真の副作用」「A4 全面適用は検証報告まで痩せる」を受けた修正を反映
 - 実測検証: 未実行 (brevity-benchmark.py は実装済みだが実行は明示トリガー待ち、tiktoken インストール要)
 - レポート: [2026-04-11-caveman-genshijin-brevity-analysis.md](../research/2026-04-11-caveman-genshijin-brevity-analysis.md)
+
+## [2026-04-12] ingest | Garry Tan: Thin Harness, Fat Skills (10 Design Principles)
+
+- ソース: Garry Tan "Ten Design Principles of Agentic AI Skills Design"
+- 判定: Gap 0, Partial 3 (#1 Parameterized Skill / #7 Narrow Tools / #10 Invocation Pattern), Already 6, 強化可能 2 (#2 Invert Test / #5 Negative Routing)
+- 取り込み:
+  - skill-invocation-patterns.md 新設 (事例集: improve/absorb/research/モデルルーティング)
+  - skill-writing-principles.md 原則 1 に Invert Test 追加
+  - skill-conflict-resolution.md 新設 (negative routing + 衝突優先度 + 規模ガード)
+- 批評反映: Codex 指摘で #1 frontmatter parameters 仕様化を却下 (形式主義リスク)、#5 Resolver を強化可能に昇格。Gemini 総評で 70% 既実装 → 取り込み最小限
+- レポート: `docs/research/2026-04-12-tan-thin-harness-fat-skills-analysis.md`

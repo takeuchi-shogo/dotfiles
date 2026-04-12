@@ -53,6 +53,9 @@
 - [PostHog Agent-First Rules — Skill as Onboarding](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — スキルはマニュアルではなくオンボーディング。Skill Audit Policy + Onboarding-not-manuals を skill-writing-guide に統合
 - [Skills for Claude Code Ultimate Guide](../research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md) — Setup Config & Persistent State 標準スキーマ、Gotchas Coverage Scan (25% → 60% 目標)、Product Verification 派生型 (repo 固有 oracle + credential 分離 + HAR sanitize + 7日 retention) を追加。Codex 批評で当初 90% 判定 → 実質 60-70% に修正
 - [caveman + genshijin brevity](../research/2026-04-11-caveman-genshijin-brevity-analysis.md) — 出力トークン削減のためのプロンプトスタイル制御。concise.md に Drop リスト+日本語 brevity+例外条項、skill-audit に 3-arm 評価 (terse-control)、brevity-benchmark.py 新規。Codex 批評で 5段階→3段階に縮小、A4 (Verbosity Guard 全面適用) は参照リンクのみに縮小
+- [Thin Harness, Fat Skills — Invocation Pattern & Conflict Resolution](../research/2026-04-12-tan-thin-harness-fat-skills-analysis.md) — Garry Tan の 10 原則から取り込み: skill-invocation-patterns.md (同一スキルを異なる world で使い回す 4 事例集)、skill-conflict-resolution.md (Negative Routing + 衝突優先度 + 規模ガード)、Invert Test (skill-writing-principles.md 原則 1 に追加)。Gemini 総評で 70% 既実装 → 取り込み最小限
+- [スキル呼び出しパターン](concepts/skill-invocation-patterns.md) — 同一スキルを異なる World（呼び出し文脈・フェーズ・モデル）で再利用するパターン。improve/absorb/research/モデルルーティングの 4 事例。Invert Test による World 追加検証
+- [スキル競合解決](concepts/skill-conflict-resolution.md) — Negative Routing（Do NOT use for 明示）・衝突優先度（supersedes → priority → specificity）・規模ガード。/skill-audit conflict-scan との連携
 
 ### security — セキュリティ
 

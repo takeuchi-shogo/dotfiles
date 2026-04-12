@@ -17,6 +17,28 @@ hamelsmu/evals-skills (meta-skill.md) から適応した、スキル品質を高
 
 **例外**: 指示に従わないと重大な結果を招く場合のみ、1文の「なぜ」を添える。
 
+### 1.1. Invert Test — 反対の結論を導けるか？
+
+skill が conclusion を先取りしていないかを検証する測定可能なテスト。skill を反転した question で呼び出し、反対側の結論に到達できるかを試す。
+
+**Bad:** `/investigate-whistleblower` が常に「silenced された」結論に到達する（どんな evidence でも silenced と判定する）
+
+**Good:** 同じ skill で「complaint は unfounded だった」にも evidence に応じて到達できる
+
+**テスト手順:**
+
+1. skill を本来の question（例: "Was X silenced?"）で呼ぶ
+2. 同じ skill を反転 question（例: "Was X's complaint unfounded?"）で呼ぶ
+3. 両方が **その場の evidence に基づいて** 異なる結論を出せるか確認
+4. 常に同じ側に寄るなら、skill は conclusion を先取りしている prompt の disguise である
+
+**適用範囲:**
+- 判断系 skill（investigate, review, validate, debate）
+- 評価系 skill（scoring, rating, audit）
+- 除外: guard 系 skill（careful, freeze）や pipeline 系 skill（epd, spike）は pass/fail で良い
+
+出典: Garry Tan "Thin Harness, Fat Skills" Principle 2 (Teach Thinking, Not Conclusions)
+
 ## 2. 一般知識を削れ (Cut general knowledge)
 
 エージェントが既に知っていることは書かない。ドメイン固有の手順・テンプレート・閾値のみ残す。

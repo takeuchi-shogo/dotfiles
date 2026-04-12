@@ -19,6 +19,7 @@
 - Better Harness — eval hill-climbing: regression + holdout + staleness + 4強化
 - Skill Eval Loop — Wave1実装済み: per-skill score attribution + スケール統一、Wave2-3: `docs/plans/2026-04-09-skill-eval-improvement-plan.md`
 - Managed Agents — Hybrid Architecture + Agent Config標準化 + Scheduling移行 + ポータビリティ → `references/managed-agents-*.md`
+- **Tan: Thin Harness, Fat Skills 10原則 (2026-04-12)** — Codex 批評で #1 Parameterized Skill は frontmatter 仕様化却下 (thin harness 形式主義リスク) + #5 Resolver を過小評価から昇格 (negative routing 不足)。採用: `skill-invocation-patterns.md` 新設 (improve/absorb/research 事例集) + `skill-writing-principles.md` 原則 1 に Invert Test 追加 + `skill-conflict-resolution.md` 新設 (衝突時優先度・読まない条件・規模ガード)。Gemini 総評「70% 既実装」— 原則 8 自己スコアリングが OK Learning Loop に相当 → `docs/research/2026-04-12-tan-thin-harness-fat-skills-analysis.md`
 
 ### エージェント設計
 
