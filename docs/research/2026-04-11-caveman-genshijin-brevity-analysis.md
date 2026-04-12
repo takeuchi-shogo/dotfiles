@@ -163,3 +163,59 @@ status: integrated
 - **日英混在の曖昧化**: 技術用語・エラーメッセージは通常文でないと意味が崩れる。例外条項の維持が最重要
 - **人格指示との衝突**: `/persona` スキルや人格変更系プロンプトと concise.md が競合する可能性。優先順位を明示
 - **検証ログ不足**: 実測なしの80%主張は信頼度低。brevity-benchmark.py 実行まで数値を引用しない
+
+---
+
+## 追補: 2026-04-12 re-absorb session
+
+同じソース記事 (mikana0918 Zenn + JuliusBrussee/caveman) を Phase 2.5 まで再分析した結果の記録。
+
+### Phase 2 ギャップ分析 (Sonnet Explore)
+
+| # | 要素 | 判定 | 根拠 |
+|---|------|------|------|
+| A | 敬語削除ルール | Already (強化可能) | 体言止め例1件のみ、です/ます 禁止が未網羅 |
+| B | クッション言葉削除 | Partial | えーと/まあ/ちなみに/一応/基本的に が漏れ |
+| C | ぼかし表現削除 | Already (強化可能) | 〜と思われます (受動+推量) 未列挙 |
+| D | 冗長助詞圧縮 | Partial | 語形短縮ルール未定義 → 代表変換5件追加で対応 |
+| E | 冗長接続圧縮 | Partial | 接続句変換ルール未定義 |
+| F | 自明助詞省略 | Already (強化可能) | ultra での強度差が曖昧 |
+| G | 情報水増し禁止 | Already (強化可能) | evidence 保持境界未明文化 |
+| H | 破壊的操作安全弁 | Already (強化可能) | failed validation/review gate/approval も復帰条件に |
+| I | 3-level gradation | Already (強化可能) | ultra 適用 gate の厳格化必要 |
+| J | 実測ベンチマーク | Gap (validation) | 実装済み・未実行。初回実行で default/standard がタイムアウト |
+| K | code-switching 対策 | Already (強化可能) | 判定基準未定義 |
+| L | 具体例3パターン | Already (強化可能) | 実装済み・未実行 |
+
+### Phase 2.5 批評 (Codex + Gemini 並列)
+
+**Codex の主要指摘:**
+- D を Gap → Partial に格下げ (体言止め+助詞圧縮で実質カバー)
+- G/H/I を Already 強化不要 → 強化可能に昇格
+- 優先度: J (benchmark) → G/H/I (gate 強化) → D (語形短縮)
+- リスク: ultra 強化で verification report / Codex Review Gate の深掘りが痩せる
+
+**Gemini の主要補完:**
+- Anchored Summarization: State/Constraint は圧縮禁止、History のみ圧縮可
+- Answer-First Patterning: user 向けは短く、hook/gate 内推論は完全保持
+- Cascade failure: Agent A の略語指示 → Agent B が事実と誤解釈
+- 記事の主戦場 (技術 QA) と dotfiles の主戦場 (harness engineering) の前提シフト
+
+**新規要素 (Phase 2 見落とし):**
+- M: 入力圧縮 (prompt compression)
+- N: Anchored Summarization (State/Constraint 保護)
+- O: Answer-First Patterning (2 層分離)
+- P: Cascade failure 対策 (agent chain 誤伝播)
+
+### 実施した変更 (2026-04-12)
+
+1. **concise.md**: Drop リスト拡充 (B/C)、語形短縮ルール追加 (D)、例外条項拡張 (G/H/K/P)、2 層分離セクション新設 (N/O)、ultra gate 厳格化 (I)
+2. **output-modes.md**: minimal モードの強度・例外・2 層分離を同期更新
+3. **brevity-benchmark.py**: --model sonnet 追加 (nested 実行の opus[1m] 継承バグ修正)
+4. **benchmark 実測 (J)**: 2 prompt × 4 arm で初回実行。default/standard がタイムアウト (120s)、lite/ultra のみ結果取得。タイムアウト延長が次の課題
+
+### 残課題
+
+- J: benchmark のタイムアウト調整 + 全 6 prompt での完全実行
+- M: 入力圧縮の設計検討 (別セッションで)
+- brevity-benchmark.py の _JA_DROP_LIST を concise.md と同期

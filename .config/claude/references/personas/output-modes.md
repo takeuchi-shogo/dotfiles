@@ -45,13 +45,17 @@
 - 定型的なタスク
 - コード生成中心の作業
 
-**実装**: `output-styles/concise.md` で Drop リスト・日本語 brevity ルール（体言止め・助詞圧縮）・例外条項を定義する。
+**実装**: `output-styles/concise.md` で Drop リスト・日本語 brevity ルール（体言止め・語形短縮・助詞圧縮）・例外条項・2 層分離を定義する。
 
 **強度グラデーション**（`concise.md` 参照）:
 
 - `lite`: フィラー除去のみ
-- `standard`（default）: Drop + 体言止め + 助詞圧縮
-- `ultra`: standard + 箇条書き優先 + 接続詞削除。定型の短いタスクのみ
+- `standard`（default）: Drop + 体言止め + 語形短縮 + 助詞圧縮
+- `ultra`: standard + 箇条書き優先 + 接続詞削除 + 助詞省略積極化。**user-facing の定型短文のみ**。hook / gate / sub-agent 通信では使用禁止
+
+**2 層分離** (Answer-First + Anchored Summarization):
+- **user-facing 層**: brevity 全面適用。結論先頭、推論省略可
+- **harness-internal 層**: brevity 適用しない。推論チェーン・State・Constraint を完全保持
 
 **Verbosity Guard 連携**: MoA Synthesis の verbosity bias 抑制制約は `/review` Step 4 rule 16 で実装済み。minimal モードは同じ方向性だが **全面適用はしない**（検証報告・テスト結果まで痩せるのを防ぐ）。
 
@@ -60,8 +64,10 @@
 - セキュリティ警告・認証情報・破壊的操作の確認
 - 技術概念の説明（API 契約・定義・仕様）
 - 不可逆操作前の最終確認
-- レビュー・テスト・検証結果の報告（エビデンス系）
-- 日英混在時の技術用語（冠詞を残して曖昧化防止）
+- レビュー・テスト・検証結果の報告（エビデンス系）: 「何を検証し、何が通り、何が落ちたか」は完全文
+- 日英混在時の技術用語（英語識別子を含む文は冠詞・格助詞を保持）
+- failed validation / review gate finding / approval request
+- agent chain の出力（主語・責務境界を省略しない — cascade failure 防止）
 
 ## default（指定なし）
 

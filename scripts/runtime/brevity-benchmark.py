@@ -58,6 +58,11 @@ ARM_SLEEP_SEC = 1.0  # arm 間の sleep
 PROMPT_SLEEP_SEC = 2.0  # プロンプト間の sleep
 TIMEOUT_SEC = 120  # claude 呼び出し per-arm タイムアウト
 
+# ベンチマーク実行時のモデル固定。親セッションの opus[1m] が継承されると
+# nested 実行で失敗するため、デフォルトで sonnet を指定する。
+# --model オプションで上書き可能。
+DEFAULT_MODEL = "sonnet"
+
 # 内容妥当性検証: default の 5% 未満のトークンしか返さない異常応答を警告する閾値。
 # ultra 条件で claude が「理解不能です」等の1文だけ返した場合の偽陽性防止。
 MIN_CONTENT_RATIO = 0.05
@@ -73,8 +78,10 @@ _BASE_BREVITY = (
     "No preamble, no recap, no trailing summary."
 )
 _JA_DROP_LIST = (
-    "日本語フィラー（なるほど、確認しました、それでは、まず）、"
-    "クッション語（〜と思います、〜かもしれません、もしかして、〜っぽい）、"
+    "日本語フィラー（なるほど、確認しました、それでは、まず、えーと、まあ、"
+    "ちなみに、一応、基本的に、そもそも、ちょっと）、"
+    "クッション語（〜と思います、〜と思われます、〜かもしれません、もしかして、〜っぽい）、"
+    "敬語装飾（〜です、〜ます、〜でございます、〜させていただきます）、"
     "結果要約（以上のように、つまり、要するに）も削除する。"
 )
 _JA_STRUCT_BREVITY = (
@@ -210,7 +217,10 @@ def sanitize_stderr(text: str) -> str:
 
 
 def run_claude(
-    prompt: str, system_prompt: str, timeout: int = TIMEOUT_SEC
+    prompt: str,
+    system_prompt: str,
+    model: str = DEFAULT_MODEL,
+    timeout: int = TIMEOUT_SEC,
 ) -> tuple[str, str]:
     """claude -p を実行し (stdout, stderr) を返す。
 
@@ -222,8 +232,19 @@ def run_claude(
       - shell=False (list 形式) でシェルインジェクションは防がれる
       - `--` セパレータでプロンプトがオプションとして誤解釈されるのを防ぐ
       - `--dangerously-skip-permissions` は benchmark 自動実行のため必須
+
+    Model:
+      - `--model` を明示指定しない場合、親セッションが opus[1m] 等の
+        1M context モデルだと nested 実行で失敗するため DEFAULT_MODEL
+        (sonnet) を渡す。
     """
-    cmd = [get_claude_bin(), "-p", "--dangerously-skip-permissions"]
+    cmd = [
+        get_claude_bin(),
+        "-p",
+        "--dangerously-skip-permissions",
+        "--model",
+        model,
+    ]
     if system_prompt:
         cmd += ["--append-system-prompt", system_prompt]
     # `--` 以降はすべて位置引数として解釈される

@@ -344,3 +344,12 @@
   - skill-conflict-resolution.md 新設 (negative routing + 衝突優先度 + 規模ガード)
 - 批評反映: Codex 指摘で #1 frontmatter parameters 仕様化を却下 (形式主義リスク)、#5 Resolver を強化可能に昇格。Gemini 総評で 70% 既実装 → 取り込み最小限
 - レポート: `docs/research/2026-04-12-tan-thin-harness-fat-skills-analysis.md`
+
+## [2026-04-12] re-absorb | caveman / genshijin brevity (mikana0918 Zenn 記事)
+
+- ソース: https://zenn.dev/mikana0918/articles/7ad57493a04f88
+- 種別: 既存統合の再検証 (Phase 2.5 まで再分析)
+- 判定: Gap 1個 (J: benchmark validation), Partial 3個 (B/D/E), Already強化可能 8個, 新規要素 4個 (M/N/O/P)
+- 取り込み: concise.md 拡充 (Drop リスト・語形短縮・2層分離・ultra gate 強化)、output-modes.md 同期、brevity-benchmark.py バグ修正
+- Codex 批評: ultra 強化で verification/review gate の情報損失リスク → gate 出力は ultra 禁止に
+- Gemini 補完: Anchored Summarization (State/Constraint 圧縮禁止)、cascade failure 対策
