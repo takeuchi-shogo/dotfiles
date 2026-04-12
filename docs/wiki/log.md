@@ -353,3 +353,11 @@
 - 取り込み: concise.md 拡充 (Drop リスト・語形短縮・2層分離・ultra gate 強化)、output-modes.md 同期、brevity-benchmark.py バグ修正
 - Codex 批評: ultra 強化で verification/review gate の情報損失リスク → gate 出力は ultra 禁止に
 - Gemini 補完: Anchored Summarization (State/Constraint 圧縮禁止)、cascade failure 対策
+
+## [2026-04-12] ingest | Andrej Karpathy Skills
+
+- ソース: https://github.com/forrestchang/andrej-karpathy-skills
+- 判定: Gap 0個, Partial 4個, Already 3個(うち強化可能1個), N/A 0個
+- 取り込み: 多解釈列挙プロトコル、スコープ外3層禁止、抽象化アンチパターン、TDD 事前宣言強化
+- Codex 批評: instruction層のみの分析は盲点あり — hook/gateの暗黙カバーを考慮すべき。真のギャップは#1と#5
+- Gemini 補完: 分析麻痺リスク(タイムボックス必要)、Surgical Changesの断片化リスク、SDD台頭
