@@ -101,6 +101,19 @@ const activeNames = items.filter(x => x.active).map(x => x.name);
 - **スコープの判定**: 「この変更を1文で要約できるか？」— できなければ分割する
 - **目安**: 400行超の差分は分割を検討する
 
+### スコープ外変更の3層禁止（Karpathy "Surgical Changes"）
+
+タスクに無関係な変更は、影響が小さく見えても混入させない:
+
+| 層 | 禁止される変更例 |
+|----|----------------|
+| **コードレベル** | 既存の死亡コード削除、フォーマット変更、quote スタイル統一、boolean 形式変更 |
+| **依存レベル** | import の並べ替え、未使用 import の除去、パッケージバージョン更新 |
+| **設計レベル** | 「ついでにインターフェースを改善」「ここのAPI、ついでに整理」 |
+
+改善が必要だと気づいた場合は、別 Issue に切り出す（実装中のタスクに混ぜない）。
+例外: 自分の変更が直接引き起こした不要コード（import 等）のみ削除してよい。
+
 ## LLM Anti-Slop Patterns
 
 LLM が反復的編集で特に陥りやすいパターン（SlopCodeBench, Orlanski et al. 2026）。
@@ -112,6 +125,27 @@ LLM が反復的編集で特に陥りやすいパターン（SlopCodeBench, Orla
 - **God function 化**: 既存の大関数にロジックを追加するのではなく、新しい focused callable に分割する
 - **Scaffold コピペ**: 同じ引数パース/バリデーション構造を複数箇所にコピーしない → 共通関数に抽出
 - **elif/case チェーンの成長**: 新しい条件を追加するなら dispatch table やポリモーフィズムを検討
+
+### 過度な抽象化アンチパターン（Karpathy "Simplicity First"）
+
+シンプルな関数を不要なデザインパターンで複雑化しない:
+
+```python
+# NG: 単純な割引計算に Strategy pattern を導入
+class DiscountStrategy(ABC): ...
+class PercentageDiscount(DiscountStrategy): ...
+class FlatDiscount(DiscountStrategy): ...
+class DiscountContext: ...
+
+# OK: 関数で十分
+def apply_discount(price: float, discount_type: str, value: float) -> float:
+    if discount_type == "percentage":
+        return price * (1 - value / 100)
+    return price - value
+```
+
+判断基準: 「この抽象化を導入しなかった場合、何が困るか？」に具体的に答えられなければ過剰。
+不要になりがちなパターン: Strategy, Factory, Builder, Observer（用途が1つしかない場合）
 
 ### 冗長コードの回避
 
