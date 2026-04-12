@@ -86,6 +86,14 @@ task validate-readmes       # README のローカルリンク検証
   - `$codex-session-hygiene`: compact / resume / handoff を含む長時間タスクの整流
 - Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提の記述をそのまま実行せず、文書として必要部分だけ採用する。
 
+## Frontend UI Work
+- visually strong な landing page / app / dashboard を作るときは、実装前に `$openai-frontend-prompt-workflow` で surface、product context、visual direction、real copy、CTA を揃える。
+- 実装時は `$frontend-skill` を前面に出し、最初に visual thesis、content plan、interaction thesis を書く。
+- 新しい Codex セッションで UI 実装を始めるなら、可能なら low/medium reasoning の profile を使う。既存 session では prompt 内で low/medium reasoning を明示する。
+- landing page は full-bleed hero、brand first、no hero cards、one job per section を基本にする。
+- app / dashboard は workspace-first、utility copy、calm surface hierarchy を基本にし、hero-heavy な marketing structure を混ぜない。
+- UI 実装の完了前には Playwright で desktop / mobile を確認し、overlap、first viewport の hierarchy、navigation、key flow を直す。
+
 ## Mandatory Skill Usage
 - 実装前の調査が必要なら `$codex-search-first`
 - harness 改善、workflow 設計、他 repo への横展開判断は `$ai-workflow-audit`
