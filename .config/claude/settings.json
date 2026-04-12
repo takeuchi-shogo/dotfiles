@@ -5,9 +5,7 @@
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "ENABLE_LSP_TOOL": "1",
-    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
-    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-4-6-opus"
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1"
   },
   "attribution": {
     "commit": "",
@@ -178,11 +176,6 @@
     "disableBypassPermissionsMode": "disable"
   },
   "model": "opus[1m]",
-  "sandbox": {
-    "filesystem": {
-      "denyRead": ["./.env", "./.env.*"]
-    }
-  },
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
@@ -727,6 +720,14 @@
     }
   },
   "language": "japanese",
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "./.env",
+        "./.env.*"
+      ]
+    }
+  },
   "effortLevel": "high",
   "plansDirectory": "./tmp/plans"
 }
