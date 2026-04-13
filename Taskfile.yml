@@ -91,6 +91,20 @@ tasks:
     cmds:
       - node ~/dotfiles/tools/system-prompt-patcher/verify-patch.js --restore
 
+  list-claude:
+    desc: List installed Claude Code versions and the active one
+    cmds:
+      - ls -1 ~/.local/share/claude/versions/
+      - 'echo "active: $(basename "$(readlink ~/.local/bin/claude 2>/dev/null)")"'
+
+  rollback-claude:
+    desc: 'Switch active Claude Code to a specific version (usage: task rollback-claude -- 2.1.101)'
+    cmds:
+      - 'test -n "{{.CLI_ARGS}}" || (echo "usage: task rollback-claude -- <version>" && exit 1)'
+      - 'test -e ~/.local/share/claude/versions/{{.CLI_ARGS}} || (echo "version {{.CLI_ARGS}} not installed under ~/.local/share/claude/versions/" && exit 1)'
+      - 'ln -snf ~/.local/share/claude/versions/{{.CLI_ARGS}} ~/.local/bin/claude'
+      - '~/.local/bin/claude --version'
+
   build-claude:
     desc: Build CLAUDE.md from template components
     cmds:
