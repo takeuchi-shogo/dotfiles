@@ -14,6 +14,7 @@
 - [長時間実行エージェント](concepts/long-running-agents.md) — 数時間〜数日にわたる自律実行の安定化手法
 - [AutoHarness](concepts/autoharness.md) — LLM 自身にハーネスを生成・最適化させるアプローチ
 - [批評を成果物に (Criticism as Artifact)](concepts/criticism-as-artifact.md) — pre-mortem / review / retrospective の批評を 1st-class artifact として扱う原則。CREAO AI-First 記事 + Karpathy 4 原則から導出
+- [Drafts Lifecycle (Graduation Mechanism)](concepts/_drafts/README.md) — agent→human authorship 昇格をディレクトリ分離で実装。Karpathy Modified Second Brain pattern (2026-04) から採用
 
 ### agent — エージェント設計
 
@@ -105,3 +106,7 @@
 - [Codex 統合](concepts/codex-integration.md) — Claude × Codex の分業パターンとプラグインアーキテクチャ
 - [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault。Vault 自動メンテナンス・双方向整合性チェック・AI Second Brain 構築パターン。参照: [lit-noah-obsidian-claude-code-meta](../research/2026-04-09-noah-obsidian-claude-code-meta-analysis.md)
 - [ターミナルツーリング](concepts/terminal-tooling.md) — Ghostty + cmux + デュアルオーディエンス CLI
+
+### personal-analyst — 個人アナリスト・AI活用
+
+- [Hermes を個人アナリストとして 3 週間運用](../research/2026-04-14-hermes-personal-analyst-analysis.md) — Setup > Model 思想と月$5-10のコストで研究・投資・営業アナリストを構築する手法。Already 強化不要 5 / Already 強化可能 2 / Gap 小 1 / N/A 2。morning-briefing 情報源拡張 + MCP→Skill ヒント hook を実装

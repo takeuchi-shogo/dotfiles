@@ -379,3 +379,25 @@
 - 取り込み: A1 (observability action loop) + A2 (review 責務ドメイン並列) + A3 (SOP 昇格基準) + B1 (pre-mortem checklist) + B3 (CLAUDE.md 4 原理)
 - 棄却: 自動チケット化、常時 3 Opus、自動 rollback、no manual override (Codex 害判定)
 - プラン: docs/plans/2026-04-14-creao-absorb-plan.md
+
+## [2026-04-14] ingest | Hermes as a personal analyst (3 weeks)
+
+- ソース: 個人ブログ記事 (PE/VC/IB 出身者、匿名)
+- 判定: Gap 小 1 / Partial 0 / Already 強化不要 5 / Already 強化可能 2 / N/A 2
+- 取り込み:
+  - [実装] auto-morning-briefing.sh に Hacker News + arXiv + 任意 RSS 統合 (SSRF validation + prompt injection hardening 付き)
+  - [実装] mcp-skill-hint.py PostToolUse hook 新規 (`.claude.json` / `.mcp.json` の mcpServers 追加検知で /skill-creator 起動ヒント)
+  - [spike] 月次コストダッシュボード feasibility 調査 (Claude/Codex JSONL は feasible、Gemini blind) → 別 plan 化
+- Phase 2.5 補正: #2 Daily Briefing Automation を Codex search で auto-morning-briefing.sh 発見により N/A → Already 強化可能に修正
+- Codex 批評: Stream idle timeout したが search phase で auto-morning-briefing.sh 発見が決定打
+- Review: 2 回実施 (初回 NEEDS_FIX → SSRF + arXiv HTML + keyword false positive + 絵文字 + prompt injection 修正 → PASS)
+- 分析レポート: `docs/research/2026-04-14-hermes-personal-analyst-analysis.md`
+
+## [2026-04-14] ingest | Kevin's "My Second Brain Setup: A Modified Karpathy Method"
+
+- ソース: Kevin article (pasted text, no canonical URL)
+- 判定: Gap 4, Partial 3, Already 2 (Phase 2.5 後)
+- 取り込み: A-alt (directory separation `_drafts/`), B1 (lint citation check), B3 (query depth), B4 (research angles preset)
+- 棄却: A1/A2 frontmatter (Gemini 推奨でディレクトリ分離へ), B2 重み付け (過剰複雑), C 3 sub-folders (N/A)
+- プラン: docs/plans/2026-04-14-karpathy-second-brain-absorb-plan.md
+- レポート: docs/research/2026-04-14-karpathy-second-brain-modified-analysis.md
