@@ -25,7 +25,7 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 | アーキテクチャ設計 | `backend-architect`                                       | API設計, DB設計, システム構成, マイクロサービス                  |
 | Next.js 設計       | `nextjs-architecture-expert`                              | App Router, RSC, Server Components, SSR, ISR                     |
 | フロントエンド実装 | `frontend-developer`                                      | React, コンポーネント, UI, CSS, スタイル                         |
-| コードレビュー     | `code-reviewer` + `golang-reviewer` + `codex-reviewer`    | レビュー, review, 品質チェック                                   |
+| コードレビュー     | 責務ドメイン軸: `code-reviewer` (常時) + `security-reviewer` (リスク時/依存設定変更時) ／ 言語層: `golang-reviewer` (Go 変更時) ／ 深さ層: `codex-reviewer` (M/L 規模 OR 50 行超) | レビュー, review, 品質チェック                                   |
 | テスト作成         | `test-engineer`                                           | テスト, test, coverage, TDD                                      |
 | デバッグ           | `debugger`                                                | バグ, エラー, 原因調査, 動かない                                 |
 | ビルドエラー       | `build-fixer`                                             | ビルド失敗, 型エラー, コンパイル, 依存関係                       |
@@ -67,8 +67,14 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 
 ## Routing Rules
 
-1. **レビューは常に3並列**: code-reviewer（言語チェックリスト注入）+ golang-reviewer（Go変更時）+ codex-reviewer（50行超）
-2. **セキュリティ関連のコード変更**: 通常レビューに加えて security-reviewer を追加
+1. **レビューは 2 軸並列モデル** (CREAO AI-First 統合 2026-04-14):
+   - **責務ドメイン軸 (常時起動)**:
+     - `code-reviewer` — quality (汎用品質、言語チェックリスト注入)
+     - `security-reviewer` — security-if-risk (リスク検出時) + dependency-config (依存パッケージ/設定/互換性、新責務)
+   - **言語層 (条件付き)**: `golang-reviewer` — Go 変更時のみ
+   - **深さ層 (条件付き)**: `codex-reviewer` — M/L 規模 OR 50 行超
+   - **dependency-config トリガ**: 依存 manifest / lockfile 変更時 (`package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `go.mod`, `go.sum`, `Cargo.toml`, `Cargo.lock`, `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `Gemfile.lock`) に限定して security-reviewer を起動する。汎用的な `.yaml` / `.toml` 変更 (Taskfile.yml, lefthook.yml, tmux.toml 等) は対象外
+2. **セキュリティ関連のコード変更**: Rule 1 の security-if-risk トリガ (auth, crypto, input validation, permission) を満たす場合に security-reviewer が起動する
 3. **言語固有の問題**: 専門エージェント（golang-pro, typescript-pro）を優先
 4. **不明確なタスク**: まず Explore エージェントで調査してから再度トリアージ
 5. **ビルドエラー**: debugger ではなく build-fixer を優先（ビルド特化）

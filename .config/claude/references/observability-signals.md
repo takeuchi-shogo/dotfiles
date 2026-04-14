@@ -5,42 +5,44 @@
 
 ## 1. 信号カタログ
 
-| 信号 | ソース | 出力先 | フォーマット | 接続状態 |
-|------|--------|--------|-------------|---------|
-| エラーイベント | `session_events.py` `emit_event("error", ...)` | `~/.claude/agent-memory/learnings/errors.jsonl` | JSONL (FM code, importance, confidence) | 接続済 |
-| GP 違反 | `session_events.py` `emit_event("quality", ...)` | `learnings/quality.jsonl` | JSONL (GP-xxx, review_severity) | 接続済 |
-| friction イベント | `session_events.py` `emit_event("pattern", ...)` | `learnings/patterns.jsonl` | JSONL (friction_event, repeated_topic) | 記録のみ |
-| スキル実行 | `session_events.py` `emit_event("skill", ...)` | `learnings/skill-executions.jsonl` | JSONL (skill name, score 1-10) | 記録のみ |
-| エラーレートスパイク | `scripts/runtime/error-rate-monitor.py` | stderr 警告 + negative-knowledge.md | 5分ウィンドウで同 FM 3回 | 接続済 |
-| サブエージェント完了 | `scripts/runtime/subagent-monitor.py` | `logs/subagent-metrics.jsonl` | JSONL (timestamp, session_id) | 記録のみ |
-| Agent routing 判定 | `scripts/policy/agent-router.py` | additionalContext 注入 | キーワード→モデル推奨 | 接続済(ログなし) |
-| セッション集計 | `scripts/learner/session-learner.py` | `metrics/session-metrics.jsonl` | JSONL (outcome, task_type, approach, CFS) | 記録のみ |
-| 失敗クラスタ | `scripts/learner/failure-clusterer.py` | `clusters/failure-clusters.json` | JSON (FM code → count, examples) | 記録のみ |
-| proposal verdict | `session_events.py` `emit_event("proposal", ...)` | `learnings/proposal-verdicts.jsonl` | JSONL (verdict: keep/revert) | 記録のみ |
-| 改善採用率 + cycle time | `/improve` 実行 | `metrics/improve-history.jsonl` | JSONL (adoption_rate, cycle_time_hours) | 記録のみ |
-| セッション統計 | `scripts/lifecycle/session-stats.sh` | `~/.claude/session-stats.json` | JSON (total_sessions, duration) | 記録のみ |
+> **owner 列の意味**: 誰がこの信号を読み、アクションに変換する責任を持つか。`unassigned` は読み手不在（Gap として §3 で追跡）。
+
+| 信号 | ソース | 出力先 | owner | 接続状態 |
+|------|--------|--------|-------|---------|
+| エラーイベント | `session_events.py` `emit_event("error", ...)` | `~/.claude/agent-memory/learnings/errors.jsonl` | `error-rate-monitor.py` | 接続済 |
+| GP 違反 | `session_events.py` `emit_event("quality", ...)` | `learnings/quality.jsonl` | `code-reviewer` | 接続済 |
+| friction イベント | `session_events.py` `emit_event("pattern", ...)` | `learnings/patterns.jsonl` | `pre-mortem-checklist` トリガ (B1) | 接続予定 |
+| スキル実行 | `session_events.py` `emit_event("skill", ...)` | `learnings/skill-executions.jsonl` | `/improve` Garden phase | 接続予定 |
+| エラーレートスパイク | `scripts/runtime/error-rate-monitor.py` | stderr 警告 + negative-knowledge.md | `negative-knowledge.md` updater | 接続済 |
+| サブエージェント完了 | `scripts/runtime/subagent-monitor.py` | `logs/subagent-metrics.jsonl` | `unassigned` (Gap 4) | 記録のみ |
+| Agent routing 判定 | `scripts/policy/agent-router.py` | additionalContext 注入 | `unassigned` (Gap 5) | 接続済(ログなし) |
+| セッション集計 | `scripts/learner/session-learner.py` | `metrics/session-metrics.jsonl` | `autoevolve-core` | 記録のみ |
+| 失敗クラスタ | `scripts/learner/failure-clusterer.py` | `clusters/failure-clusters.json` | `/improve` Phase 1 (Gap 2 解消) | 接続予定 |
+| proposal verdict | `session_events.py` `emit_event("proposal", ...)` | `learnings/proposal-verdicts.jsonl` | `autoevolve-core` | 記録のみ |
+| 改善採用率 + cycle time | `/improve` 実行 | `metrics/improve-history.jsonl` | `/improve` Garden phase (< 0.3 で alert) | 接続予定 |
+| セッション統計 | `scripts/lifecycle/session-stats.sh` | `~/.claude/session-stats.json` | `unassigned` (Gap 6) | 記録のみ |
 
 ## 2. アクションマップ
 
 ### 接続済み
 
-| 信号 | 閾値条件 | アクション | 実装状態 |
-|------|---------|-----------|---------|
-| エラーレートスパイク | 同 FM が 5分ウィンドウで 3回以上 | stderr `[ERROR_RATE_SPIKE]` 警告 + negative-knowledge.md 追記 | 実装済 |
-| Agent routing | UserPromptSubmit のキーワードマッチ | additionalContext でモデル推奨を注入 | 実装済 |
-| 失敗セッション | outcome = failure/recovery | negative-knowledge.md 追記 + Playbook 更新 | 実装済 |
-| Change Surface 検出 | Edit/Write のファイルパスがパターンにマッチ | アドバイスメッセージ出力（advisory） | 実装済 |
+| 信号 | 閾値条件 | アクション | escalation (action 失敗時) | 実装状態 |
+|------|---------|-----------|---------------------------|---------|
+| エラーレートスパイク | 同 FM が 5分ウィンドウで 3回以上 | stderr `[ERROR_RATE_SPIKE]` 警告 + negative-knowledge.md 追記 | session 停止 → 手動 triage | 実装済 |
+| Agent routing | UserPromptSubmit のキーワードマッチ | additionalContext でモデル推奨を注入 | 推奨採用率を `/improve` で監視 | 実装済 |
+| 失敗セッション | outcome = failure/recovery | negative-knowledge.md 追記 + Playbook 更新 | 同パターン 3 回再発 → pre-mortem-checklist トリガ | 実装済 |
+| Change Surface 検出 | Edit/Write のファイルパスがパターンにマッチ | アドバイスメッセージ出力（advisory） | violation 検出時は PreToolUse hook で block | 実装済 |
 
 ### 未接続（推奨アクション）
 
-| 信号 | 閾値条件 | 推奨アクション | 優先度 |
-|------|---------|--------------|--------|
-| CFS (Critical Failure Step) | importance ≥ 0.7 のエラー後に correction なし | stderr 警告 + 再プラン促進 | High |
-| failure-clusters Top-N | 同 FM が cluster 内で 5件超 | `/improve` 候補として自動提案 | High |
-| improve-history 採用率低下 | 直近5回の adoption_rate < 0.3 | 改善提案の品質見直しアラート | Medium |
-| subagent 失敗 | exit_code ≠ 0 or エラー検出 | re-dispatch 候補として通知 | Medium |
-| friction 集中 | 同 friction_class が 3セッション連続 | 対応する situation-strategy-map エントリ追加を提案 | Low |
-| routing ログ未記録 | (常時) | `emit_event("telemetry", {type: "routing_suggestion", ...})` を追加 | Low |
+| 信号 | 閾値条件 | 推奨アクション | escalation | 優先度 |
+|------|---------|--------------|-----------|--------|
+| CFS (Critical Failure Step) | importance ≥ 0.7 のエラー後に correction なし | stderr 警告 + 再プラン促進 | 連続 3 回で session 強制 STOP | High |
+| failure-clusters Top-N | 同 FM が cluster 内で 5件超 | `/improve` 候補として自動提案 (Gap 2 解消) | 改善 reject 連続 → pre-mortem-checklist へ昇格 | High |
+| improve-history 採用率低下 | 直近5回の adoption_rate < 0.3 | 改善提案の品質見直しアラート | 連続 2 サイクルで Critic 強化 | Medium |
+| subagent 失敗 | exit_code ≠ 0 or エラー検出 | re-dispatch 候補として通知 | 同 task で 2 回失敗 → 手動 escalate | Medium |
+| friction 集中 | 同 friction_class が 3セッション連続 | pre-mortem-checklist トリガ + situation-strategy-map 追加提案 | 5 連続で Plan 必須化 | Low |
+| routing ログ未記録 | (常時) | `emit_event("telemetry", {type: "routing_suggestion", ...})` を追加 | — (実装タスク) | Low |
 
 ## 3. 未接続ギャップ
 

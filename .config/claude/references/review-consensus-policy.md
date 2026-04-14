@@ -285,6 +285,15 @@ hybrid_score = 0.5 * normalized_agreement_rate + 0.5 * normalized_avg_confidence
 
 `reviewer-capability-scores.md` の Score Table を使用する。
 
+### 責務ドメイン軸との関係 (CREAO 統合 2026-04-14)
+
+`triage-router.md` の 2 軸並列モデル（責務ドメイン × 言語 × 深さ）と本セクションの capability score は補完関係にある:
+
+- **責務ドメイン軸** (triage-router) は「**誰を起動するか**」を決める (quality / security-if-risk / dependency-config)
+- **capability score** (本セクション) は「**起動後の指摘をどう重み付けするか**」を決める
+
+`dependency-config` 責務は `security-reviewer` が担当するが、その指摘は capability score 上では `Security` または `Architecture` ドメインにマッピングされる（dependency-config を独立カラムとして追加しない理由: 責務ドメインは task-routing 軸であり、品質ドメインは finding-classification 軸で直交）。
+
 ### 合成ルール
 
 ```

@@ -59,6 +59,25 @@
 | 外部情報の取得経路 | MCP / tool config | prompt ではなく接続面に寄せる |
 | 変更対象に近い操作メモ | tool README / guide | 実ファイルの近くで見つけやすい |
 
+## SOP Promotion Criteria
+
+> Promotion Matrix は **WHERE**（どこに昇格させるか）を示す。本セクションは **WHEN**（昇格すべきかどうか）の判定基準。
+> 出典: CREAO AI-First 統合 (2026-04-14) — 失敗を capability gap として durable artifact に変える
+
+prompt や ad-hoc な手順を skill / script / hook へ昇格させる前に、以下の 3 条件をすべて満たすか確認する:
+
+| 条件 | 定義 | 満たさない場合 |
+|---|---|---|
+| **Frequency** | 同じ作業を 2 回以上繰り返した（または 2 回以上発生する見込み） | 1 回限りなら memo / checkpoint で十分 |
+| **Failure Branching** | 失敗時の分岐（rollback / retry / escalate）が定義可能 | 失敗パスが不明なら guide / checklist に留める |
+| **I/O Contract** | 入力条件と終了条件（acceptance criteria）が定義可能 | 入出力が曖昧なら skill 化せず prompt のまま運用 |
+
+**3 条件すべて満たす** → skill / script / hook に昇格（Promotion Matrix で WHERE を選択）
+**1-2 条件のみ** → guide / checklist として `docs/` または `references/` に残す
+**0 条件** → memo / checkpoint で十分。durable artifact への昇格を急がない
+
+昇格後は `docs/agent-harness-contract.md` の **Operational Contract** 3 要素を満たすか再検証する。
+
 ## Recommended Workflow
 
 1. Goal と friction を 1 文ずつ定義する

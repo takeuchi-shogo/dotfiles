@@ -63,7 +63,7 @@
 - 非自明な変更では root の `PLANS.md` に従う。
 - Claude Code の `plansDirectory` は `tmp/plans/` だが、長時間タスク、handoff、または将来参照したい plan は `docs/plans/` に昇格する。
 - harness 変更、複数ディレクトリ変更、30 分以上の作業見込みでは plan を必須とする。
-- M/L 規模の Plan 策定時は `references/reversible-decisions.md` のチェックリストを参照する（撤退条件・反証は必須）。
+- M/L 規模の Plan 策定時は `references/reversible-decisions.md`（撤退条件・反証）と `references/pre-mortem-checklist.md`（失敗モード列挙）を参照する。
 
 </important>
 
@@ -112,17 +112,17 @@
 
 <core_principles>
 
-- **KISS / YAGNI / DRY**: シンプルに、今必要なものだけ、繰り返さない。3回繰り返されるまで抽象化しない
-- **手抜きなし・最小インパクト**: 根本原因を探る。必要な箇所だけ触る
-- **検索してから実装**: 既存の解決策がないか確認してからコードを書く
-- **壊れたら即STOP**: 突き進まず再プランする。焦り → reward hacking の因果経路を断つ
-- **ミスは許される、不正直は許されない**: 検証を飛ばす・結果を捏造する・うまくいっているふりが問題
-- **自律的バグ解決**: 生データ（エラーログ・スタックトレース・CI出力）を直接分析。ユーザーのコンテキスト切り替えゼロ
-- **修正時の3点説明**: 原因・修正内容・効果を必ず明示
+- **KISS / YAGNI / DRY / 最小インパクト**: シンプルに、必要な箇所だけ触る。3回繰り返されるまで抽象化しない。根本原因を探る
+- **search-first / 広く探索・深く理解**: 既存の解決策を確認してから書く。config → エントリポイント → モジュールの順で recall を上げる
+- **壊れたら即STOP・ごまかし禁止**: 突き進まず再プラン、焦りは reward hacking を生む。失敗報告は許される、検証スキップ・結果捏造は許されない
+- **自律的バグ解決 + 3点説明**: 生データ（ログ・スタックトレース・CI出力）を直接分析。修正時は原因・修正内容・効果を必ず明示
 - **ドキュメント＝インフラ**: 仕様書は耐荷重構造物。「2回説明したら書き下ろせ」
-- **探索は広く、理解は深く**: recall を意識的に上げる。config → エントリポイント → モジュールの順
 - **Build to Delete**: ハーネスは過渡的技術。「何が改善されればこれは不要か？」を問う
 - **Scaffolding > Model**: 協調プロトコル選択が品質差異の44%、モデル選択は~14%
+- **観測可能にする**: agent が診断に使えない信号は実質ゼロ。記録装置ではなく神経系として設計（observability-signals.md）
+- **判断をゲート化する**: review/gate は suggestion ではなく pass/block 判定を出す（completion-gate, codex-reviewer）
+- **批評を成果物にする**: criticism は会話の副産物ではなく pre-mortem/review/retrospective の 1st-class artifact
+- **失敗 → capability gap → durable artifact**: "try harder" ではなく "what capability is missing, how to make it legible and enforceable"
 
 </core_principles>
 

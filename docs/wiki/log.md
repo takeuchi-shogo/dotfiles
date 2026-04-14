@@ -371,3 +371,11 @@
   - `docs/plans/2026-04-14-agent-memory-enhancement-plan.md`（統合プラン、`/rpi` 実行用）
 - Phase 3 Triage: ユーザー「全部」選択
 - Gemini 補完: 分析麻痺リスク(タイムボックス必要)、Surgical Changesの断片化リスク、SDD台頭
+
+## [2026-04-14] ingest | CREAO "Why Your AI-First Strategy Is Probably Wrong"
+
+- ソース: CREAO CTO 記事 (公開検索で未特定, text で提供)
+- 判定: exists 0, partial 15, not_found 2 (Phase 2.5 Refine 後。初回 exists 5 → すべて partial に修正)
+- 取り込み: A1 (observability action loop) + A2 (review 責務ドメイン並列) + A3 (SOP 昇格基準) + B1 (pre-mortem checklist) + B3 (CLAUDE.md 4 原理)
+- 棄却: 自動チケット化、常時 3 Opus、自動 rollback、no manual override (Codex 害判定)
+- プラン: docs/plans/2026-04-14-creao-absorb-plan.md

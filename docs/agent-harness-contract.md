@@ -49,6 +49,21 @@
 
 **Runtime Contamination リスク**: 強い runtime charter がハーネスロジックの効果を吸収し、モジュール追加の効果測定を困難にする。新モジュールの効果検証時は、runtime charter の影響を意識する。
 
+### Operational Contract（SOP として昇格した手順の I/O 契約）
+
+> 出典: CREAO AI-First 統合 (2026-04-14) — SOP は単なる手順書ではなく入力・失敗分岐・終了条件を持つ運用契約
+
+Runtime Charter に SOP を昇格させる際は、**Operational Contract** の 3 要素を必ず備える:
+
+| 要素 | 定義 | 例（`/commit` skill） |
+|---|---|---|
+| **Input Conditions** | 起動の前提条件（必要な状態・ファイル・権限） | working tree が clean でない、ステージ済み変更がある |
+| **Failure Branching** | 失敗時の分岐パス（rollback / retry / escalate） | hook 失敗 → 修正して新コミット作成（amend 禁止） |
+| **Exit Criteria** | 終了条件（成功/失敗の判定基準） | `git log -1` で commit 確認、CI が走り出す |
+
+3 要素を満たさない手順は Harness Logic 側（skill / agent）に留め、Runtime Charter には昇格させない。
+昇格判定は `docs/guides/ai-workflow-audit.md` の **SOP Promotion Criteria** を参照。
+
 ## Durable State の3性質
 
 > 出典: Pan et al. 2026 "Natural-Language Agent Harnesses" §2.4 — file-backed state モジュールの設計原則

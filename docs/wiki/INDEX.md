@@ -13,6 +13,7 @@
 - [品質ゲート](concepts/quality-gates.md) — 自律エージェントの品質を多段検証で担保する仕組み
 - [長時間実行エージェント](concepts/long-running-agents.md) — 数時間〜数日にわたる自律実行の安定化手法
 - [AutoHarness](concepts/autoharness.md) — LLM 自身にハーネスを生成・最適化させるアプローチ
+- [批評を成果物に (Criticism as Artifact)](concepts/criticism-as-artifact.md) — pre-mortem / review / retrospective の批評を 1st-class artifact として扱う原則。CREAO AI-First 記事 + Karpathy 4 原則から導出
 
 ### agent — エージェント設計
 
