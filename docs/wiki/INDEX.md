@@ -41,6 +41,7 @@
 - [軌跡学習](concepts/trajectory-learning.md) — 実行履歴からの知識抽出と蒸留
 - [ナレッジパイプライン](concepts/knowledge-pipeline.md) — raw データから構造化知識への変換パイプライン。Filing Loop・promote・lint --fix・generate-data で3層サイクル完結
 - [失敗学習ループ・Pruning-First](../research/2026-04-11-pepabo-failure-learning-loop-analysis.md) — 同じ指摘を繰り返させない失敗記録ループ。「記録しない基準」DNR-1〜7 と Pruning-First 思想。認知負荷を主敵として捉え、何を記録しないかを先に決める。→ 実装プラン: [Pruning-First philosophy shift](../plans/2026-04-11-pruning-first-philosophy-shift.md)
+- [エージェントメモリ強化（Cognee 分析由来）](../research/2026-04-14-cognee-agent-memory-analysis.md) — vector/graph DB は導入せず、既存の markdown + jsonl + hooks ベースを usage-based・entity-aware に拡張する方針。7 タスク（A: usage-based edge weight、B: 軽量 entity index、C: 2-hop related memory 提示、D: implicit relationships 抽出、E: session 代名詞解決、F/G: 境界条件 docs 整理）。Codex+Gemini 合意で、個人 dotfiles レベルでは graph DB の固定費が改善を上回るため、既存インフラ（`temporal-decay-policy.md`、`memory-eviction.py`、`session-learner.py`、`cc-7-layer-memory-model.md`）の拡張を優先。→ 統合プラン: [エージェントメモリ強化プラン](../plans/2026-04-14-agent-memory-enhancement-plan.md)
 
 ### skill — スキル設計
 

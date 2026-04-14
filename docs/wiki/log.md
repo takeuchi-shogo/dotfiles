@@ -360,4 +360,14 @@
 - 判定: Gap 0個, Partial 4個, Already 3個(うち強化可能1個), N/A 0個
 - 取り込み: 多解釈列挙プロトコル、スコープ外3層禁止、抽象化アンチパターン、TDD 事前宣言強化
 - Codex 批評: instruction層のみの分析は盲点あり — hook/gateの暗黙カバーを考慮すべき。真のギャップは#1と#5
+
+## [2026-04-14] ingest | Build Agents that never forget (Cognee / Akshay Pachaar)
+
+- ソース: テキスト貼り付け (`@akshay_pachaar` Substack / Blog)
+- 判定: Gap 0, Partial 4 (T4 entity dedup / T6 代名詞解決 / T9 multihop traversal / T8 lost-in-middle 境界条件), Already 強化 4 (T2 implicit relationships / **T5 usage-based edge weight ★ 最優先** / T7 境界条件 docs / T8 compression 担保), N/A 2 (T3 vector/graph DB / T1 4 分類メモリ階層)
+- Codex + Gemini 合意: vector/graph DB 導入は個人 dotfiles に過剰。既存 markdown + jsonl + hooks の拡張で対応
+- 取り込み: 7 タスク (A-G) L 規模統合プラン
+  - `docs/research/2026-04-14-cognee-agent-memory-analysis.md`（分析レポート）
+  - `docs/plans/2026-04-14-agent-memory-enhancement-plan.md`（統合プラン、`/rpi` 実行用）
+- Phase 3 Triage: ユーザー「全部」選択
 - Gemini 補完: 分析麻痺リスク(タイムボックス必要)、Surgical Changesの断片化リスク、SDD台頭
