@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
+# DEPRECATED 2026-04-13: Replaced by Rust post_bash::check_error_to_codex()
+# since 2026-03-08 (commit a7e31e5 wired Python; later unwired when
+# `claude-hooks post-bash` took over). NOT wired in settings.json.
+# Kept for historical reference only. Do NOT re-wire — the Rust binary is
+# the live path and now also includes exit-code-based detection
+# (see post_bash::check_exit_code_error).
+# Full context: docs/audit/telemetry-coverage.md
 """Error-to-Codex hook — suggests codex-debugger when Bash errors are detected.
 
 Also injects fix guidance from error-fix-guides.md when available.
 
-Triggered by: hooks.PostToolUse (Bash)
+Triggered by: NONE — DEPRECATED. Historically hooks.PostToolUse (Bash) until 2026-03-08.
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
