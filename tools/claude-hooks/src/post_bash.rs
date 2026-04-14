@@ -61,12 +61,83 @@ fn md5_simple(data: &[u8]) -> u64 {
     h
 }
 
+// ── shared helpers ──────────────────────────────────────────────────
+
+/// Truncate a &str to at most `max_bytes`, never breaking UTF-8 char boundaries.
+/// Returns a subslice (no allocation). Safe for any valid &str including
+/// multibyte (日本語, emoji). If the natural cut point is mid-character, walks
+/// backward until a valid boundary is found.
+fn safe_truncate(s: &str, max_bytes: usize) -> &str {
+    if s.len() <= max_bytes {
+        return s;
+    }
+    let mut boundary = max_bytes;
+    while boundary > 0 && !s.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    &s[..boundary]
+}
+
+/// Strip leading env assignments (`FOO=bar BAZ=qux cmd ...`) and optional
+/// `sudo` prefix, returning (head, second) as lowercase tokens. Both are
+/// empty strings when no command is found.
+///
+/// Returning the second token (not just head) lets callers disambiguate
+/// `git grep` (safe: no match is exit 1) from `git commit` (not safe).
+fn effective_command_parts(command: &str) -> (String, String) {
+    let mut tokens = command.split_whitespace().peekable();
+    while let Some(&tok) = tokens.peek() {
+        // KEY=value env assignment (VAR must start with letter/underscore,
+        // rest must be [A-Za-z0-9_]). `--option=val` and `=val` do NOT qualify.
+        if let Some(eq) = tok.find('=') {
+            let name = &tok[..eq];
+            if !name.is_empty()
+                && name
+                    .chars()
+                    .next()
+                    .map(|c| c.is_ascii_alphabetic() || c == '_')
+                    .unwrap_or(false)
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_')
+            {
+                tokens.next();
+                continue;
+            }
+        }
+        break;
+    }
+    // Optional sudo prefix
+    if tokens.peek().copied() == Some("sudo") {
+        tokens.next();
+    }
+    let head = tokens
+        .next()
+        .map(|t| t.to_lowercase())
+        .unwrap_or_default();
+    let second = tokens
+        .next()
+        .map(|t| t.to_lowercase())
+        .unwrap_or_default();
+    (head, second)
+}
+
 // ── error-to-codex ──────────────────────────────────────────────────
 
 const IGNORE_COMMANDS: &[&str] = &[
     "git status", "git log", "git diff", "git branch",
     "ls", "cat", "head", "tail", "pwd", "which", "echo",
     "codex", "gemini",
+];
+
+// Commands where exit_code != 0 is NOT an error (used by check_exit_code_error only):
+//   grep/rg exit 1 = no match; test/[[ exit 1 = false; diff exit 1 = files differ;
+//   find exit 1 = permission denied on subdir; cmp/jq exit 1 = expected difference.
+// Matched against effective_command_head() so env vars / sudo are transparent.
+const EXIT_CODE_SAFE_COMMANDS: &[&str] = &[
+    "grep", "egrep", "fgrep", "rg",
+    "test", "[", "[[",
+    "diff", "cmp", "find", "jq",
 ];
 
 fn error_patterns() -> Vec<Regex> {
@@ -179,16 +250,16 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
             let start = output[..m.start()].rfind('\n').map(|i| i + 1).unwrap_or(0);
             let end = output[m.end()..].find('\n').map(|i| m.end() + i).unwrap_or(output.len());
             let line = &output[start..end];
-            if line.len() > 200 { line[..200].to_string() } else { line.to_string() }
+            safe_truncate(line, 200).to_string()
         })
     })?;
 
-    // Emit event
+    // Emit event (safe_truncate prevents UTF-8 boundary panic on multibyte commands)
     crate::events::emit_event(
         "error",
         &serde_json::json!({
             "message": &error_match,
-            "command": &command[..command.len().min(200)],
+            "command": safe_truncate(command, 200),
         }),
     );
 
@@ -220,9 +291,105 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
     }
 
     parts.push("codex-debugger エージェントを使用してこのエラーの根本原因を分析できます。".to_string());
-    parts.push(format!("コマンド: {}", &command[..command.len().min(100)]));
+    parts.push(format!("コマンド: {}", safe_truncate(command, 100)));
 
     Some(parts.join("\n"))
+}
+
+// ── exit-code-based error detection ─────────────────────────────────
+//
+// Complements check_error_to_codex (regex-on-output). Captures real failures
+// that regex misses: non-English error messages, silent exit 1, custom tool
+// output. Reads tool_result.is_error from the Claude Code hook API (same
+// field post_edit.rs consumes).
+//
+// Design decisions (informed by code review, 2026-04-13):
+//   - safe_truncate() prevents UTF-8 boundary panics on multibyte commands
+//   - effective_command_head() strips env vars / sudo before classification
+//   - EXIT_CODE_SAFE_COMMANDS is exact-match on the head token (not prefix)
+//   - already_caught=true path skips entirely to avoid double-emit with
+//     the existing regex path (which has its own dedup within emit_event)
+//   - blank-first-line output returns a fixed placeholder instead of
+//     falling back to trim() which could balloon into huge snippets
+
+/// Extract a short error message for emission. Never returns more than
+/// 200 bytes and always respects UTF-8 boundaries.
+fn exit_code_short_msg(output: &str) -> String {
+    let trimmed = output.trim();
+    if trimmed.is_empty() {
+        return "(exit_code!=0, no output)".to_string();
+    }
+    let first_line = output.lines().next().unwrap_or("").trim();
+    if first_line.is_empty() {
+        return "(exit_code!=0, blank first line)".to_string();
+    }
+    safe_truncate(first_line, 200).to_string()
+}
+
+// Git subcommands where a non-zero exit code is informational (no match /
+// files differ / status variance), not a failure to investigate.
+const GIT_SAFE_SUBCOMMANDS: &[&str] = &[
+    "grep", "diff", "log", "show", "status", "branch",
+];
+
+/// True when a non-zero exit_code should NOT be treated as an error.
+/// Order of checks:
+///   1. raw prefix match against IGNORE_COMMANDS (shared with regex path;
+///      note: env-prefixed IGNORE commands like `FOO=bar git status` are
+///      a known limitation — rare in practice, documented for future fix)
+///   2. effective command head (env + sudo stripped) against
+///      EXIT_CODE_SAFE_COMMANDS (exact match, e.g. `grep`, `test`)
+///   3. git subcommand check for `git grep`, `git diff`, etc.
+fn exit_code_should_skip(command: &str) -> bool {
+    let cmd_lower = command.trim().to_lowercase();
+    if IGNORE_COMMANDS.iter().any(|ic| cmd_lower.starts_with(ic)) {
+        return true;
+    }
+    let (head, second) = effective_command_parts(command);
+    if head.is_empty() {
+        return true; // empty or unparseable — do not alert
+    }
+    if EXIT_CODE_SAFE_COMMANDS.iter().any(|&c| c == head) {
+        return true;
+    }
+    if head == "git" && GIT_SAFE_SUBCOMMANDS.iter().any(|&s| s == second) {
+        return true;
+    }
+    false
+}
+
+fn check_exit_code_error(
+    command: &str,
+    output: &str,
+    data: &serde_json::Value,
+    already_caught: bool,
+) -> Option<String> {
+    if already_caught {
+        return None;
+    }
+    if !data["tool_result"]["is_error"].as_bool().unwrap_or(false) {
+        return None;
+    }
+    if exit_code_should_skip(command) {
+        return None;
+    }
+
+    let short_msg = exit_code_short_msg(output);
+    crate::events::emit_event(
+        "error",
+        &serde_json::json!({
+            "message": &short_msg,
+            "command": safe_truncate(command, 200),
+            "detection": "exit_code",
+        }),
+    );
+
+    Some(format!(
+        "[Error-ExitCode] 非ゼロ終了を検出 (regex パターン非該当): {}\n\
+         コマンド: {}",
+        short_msg,
+        safe_truncate(command, 100)
+    ))
 }
 
 // ── post-test-analysis ──────────────────────────────────────────────
@@ -539,7 +706,7 @@ fn check_stagnation(command: &str, output: &str) -> Option<String> {
     let mut history: Vec<serde_json::Value> = state["bash_history"]
         .as_array().cloned().unwrap_or_default();
     history.push(serde_json::json!({
-        "command": &command[..command.len().min(200)],
+        "command": safe_truncate(command, 200),
         "is_error": is_error,
         "ts": now,
     }));
@@ -611,7 +778,12 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     if let Some(ctx) = check_output_offload(command, output) {
         contexts.push(ctx);
     }
-    if let Some(ctx) = check_error_to_codex(command, output) {
+    let regex_error_caught = check_error_to_codex(command, output);
+    let regex_caught_flag = regex_error_caught.is_some();
+    if let Some(ctx) = regex_error_caught {
+        contexts.push(ctx);
+    }
+    if let Some(ctx) = check_exit_code_error(command, output, data, regex_caught_flag) {
         contexts.push(ctx);
     }
     if let Some(ctx) = check_post_test(command, output) {
