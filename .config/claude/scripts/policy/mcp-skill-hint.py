@@ -28,7 +28,7 @@ from hook_utils import (
 MCP_CONFIG_BASENAMES = (".claude.json", ".mcp.json", "mcp.json")
 
 HINT_MESSAGE = (
-    "💡 [mcp-skill-hint] MCP 設定が変更されました。\n"
+    "[mcp-skill-hint] MCP 設定が変更されました。\n"
     "新しい MCP server を追加した場合、`/skill-creator` で既存ツールと"
     "組み合わせたタスク固有スキルを生成することを検討してください\n"
     "(例: 朝ブリーフィングに DefiLlama を統合する skill、"
@@ -60,9 +60,10 @@ def main() -> None:
         output_passthrough(data)
         return
 
-    # MCP server 関連キーワードが追加内容に含まれるかチェック
-    # (true positive を高めるための最小検出)
-    if "mcpServers" not in added and '"command"' not in added:
+    # mcpServers ブロックの追加のみを検出対象とする
+    # ("command" 単体キーワードは他の JSON (Taskfile 等) に頻出するため
+    #  false positive を招く)
+    if "mcpServers" not in added:
         output_passthrough(data)
         return
 
