@@ -43,6 +43,50 @@ metadata:
 > サブタスク**出力**の重複排除には Step 4 Aggregate の類似度ベース重複排除を使用する。
 > 詳細: `references/diversity-selection-guide.md`
 
+### `--angles` preset (多角度リサーチ)
+
+`--angles=academic,practitioner,contrarian,historical,empirical` を指定すると、サブ目標を以下の **5 角度テンプレート** で強制展開する。単一視点に偏らないよう多様性を担保するための opt-in オプション。
+
+出典: Kevin's "Modified Karpathy Method" (2026-04) の `/research [topic]` — 5-8 並列エージェントを学術/実務/反対/歴史/実証の 5 角度で展開するパターンの移植。
+
+| angle | 担当視点 | デフォルトモデル | 具体的な焦点 |
+|-------|---------|-----------------|-------------|
+| `academic` | 学術文献・理論 | Scite MCP | 査読論文、理論的裏付け、研究ギャップ |
+| `practitioner` | 実務採用・事例 | Gemini | プロダクション事例、採用企業、運用知見 |
+| `contrarian` | 反対意見・批判 | Codex | 手法の限界、失敗事例、反証、代替案 |
+| `historical` | 歴史的経緯 | claude -p | 先行手法、議論の変遷、deprecated アプローチ |
+| `empirical` | 実証データ | Gemini | ベンチマーク、統計、定量比較 |
+
+#### 起動方法
+
+- **明示的指定**: `/research <topic> --angles=academic,practitioner,contrarian,historical,empirical`
+- **部分指定**: `--angles=academic,contrarian` のように 2-5 角度を自由に組み合わせ可能
+- **自動提案**: トピックが「技術選定」「手法比較」「設計判断」を含む場合、Step 2 Plan で preset 採用を **推奨** する（`AskUserQuestion` で確認）
+
+#### preset 使用時の Reconnaissance 出力
+
+preset を使う場合、Step 1 の出力に各 angle のサブ目標を明示する:
+
+```
+## Reconnaissance (--angles preset)
+
+| angle | サブ目標 | 担当モデル |
+|-------|---------|-----------|
+| academic | {topic} の理論的基盤・査読研究の要約 | Scite MCP |
+| practitioner | {topic} を本番採用した企業・実例 | Gemini |
+| contrarian | {topic} に対する批判・失敗事例・代替案 | Codex |
+| historical | {topic} 手法の変遷・先行手法・議論史 | claude -p |
+| empirical | {topic} のベンチマーク・定量データ | Gemini |
+```
+
+各 angle は **独立した Agent 呼び出し** として起動され、Step 4 Aggregate で統合される。
+
+#### 既存ワークフローとの関係
+
+- `--angles` は **opt-in** — 指定しなければ従来通り性質ベースの自動割り当て
+- preset 指定時も既存の「3サブタスク以上なら Gemini 最低1つ」「Codex/Gemini 利用不可時の claude -p フォールバック」ルールは尊重
+- サブ目標数の上限 8 を超える場合は優先度の低い angle を自動スキップ (contrarian > historical > empirical > practitioner > academic の優先順)
+
 ## Step 2: Plan
 
 サブタスクを一覧としてユーザーに提示し、承認を得る:
