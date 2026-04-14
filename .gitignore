@@ -71,3 +71,4 @@ codex-best-practice
 
 # Temporary files
 tmp/
+.dmux/
