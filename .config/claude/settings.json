@@ -500,6 +500,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/mcp-skill-hint.py",
+            "timeout": 3,
+            "statusMessage": "MCP skill hint..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/policy/approval-fatigue-guard.py",
             "timeout": 5,
             "statusMessage": "Fatigue check..."

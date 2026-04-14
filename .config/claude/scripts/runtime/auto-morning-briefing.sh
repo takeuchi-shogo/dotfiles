@@ -6,8 +6,9 @@
 #
 # Usage: auto-morning-briefing.sh
 # Env:
-#   OBSIDIAN_VAULT_PATH (optional) — 設定時は Daily Note に書き込み
-#   GITHUB_USERNAME      (optional) — gh CLI のデフォルトユーザー
+#   OBSIDIAN_VAULT_PATH        (optional) — 設定時は Daily Note に書き込み
+#   GITHUB_USERNAME            (optional) — gh CLI のデフォルトユーザー
+#   MORNING_BRIEFING_RSS_FEEDS (optional) — 改行区切りの RSS feed URL 一覧
 #
 # cron example: 30 8 * * 1-5 /path/to/auto-morning-briefing.sh
 
@@ -62,7 +63,63 @@ recent_commits=$(git -C "$HOME/dotfiles" log --oneline --since="yesterday" \
     --no-merges 2>/dev/null | head -10 || echo "(none)")
 context+="## Yesterday's Commits
 $recent_commits
+
 "
+
+# --- External information sources (best-effort, network-dependent) ---
+# 各ソースは失敗してもブリーフィング全体を止めない（|| true / 条件付き append）
+
+# Hacker News Top 5
+if command -v jq &>/dev/null; then
+    hn_ids=$(curl -s --max-time 10 "https://hacker-news.firebaseio.com/v0/topstories.json" 2>/dev/null | jq -r '.[:5][]' 2>/dev/null || true)
+    if [[ -n "$hn_ids" ]]; then
+        hn_lines=""
+        while IFS= read -r id; do
+            [[ -z "$id" ]] && continue
+            story=$(curl -s --max-time 5 "https://hacker-news.firebaseio.com/v0/item/${id}.json" 2>/dev/null || true)
+            [[ -z "$story" ]] && continue
+            title=$(echo "$story" | jq -r '.title // empty' 2>/dev/null || true)
+            url=$(echo "$story" | jq -r '.url // empty' 2>/dev/null || true)
+            [[ -n "$title" ]] && hn_lines+="- ${title}${url:+ ($url)}"$'\n'
+        done <<< "$hn_ids"
+        if [[ -n "$hn_lines" ]]; then
+            context+="## Hacker News Top 5
+$hn_lines
+"
+        fi
+    fi
+fi
+
+# arXiv cs.AI Latest
+arxiv_raw=$(curl -s --max-time 10 "https://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=5" 2>/dev/null || true)
+if [[ -n "$arxiv_raw" ]]; then
+    # feed の <title> 要素の 1 番目はフィード自体のタイトルなので 2 番目以降だけ使う
+    arxiv_titles=$(echo "$arxiv_raw" | grep -oE '<title>[^<]+</title>' | tail -n +2 | sed 's|<title>||; s|</title>||' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sed 's/^/- /')
+    if [[ -n "$arxiv_titles" ]]; then
+        context+="## arXiv cs.AI Latest
+$arxiv_titles
+
+"
+    fi
+fi
+
+# Optional RSS feeds (MORNING_BRIEFING_RSS_FEEDS env var, newline-separated URLs)
+if [[ -n "${MORNING_BRIEFING_RSS_FEEDS:-}" ]]; then
+    rss_section=""
+    while IFS= read -r feed_url; do
+        [[ -z "$feed_url" ]] && continue
+        rss_raw=$(curl -s --max-time 10 "$feed_url" 2>/dev/null || true)
+        [[ -z "$rss_raw" ]] && continue
+        feed_titles=$(echo "$rss_raw" | grep -oE '<title>[^<]+</title>' | head -6 | tail -n +2 | sed 's|<title>||; s|</title>||' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | sed 's/^/- /')
+        if [[ -n "$feed_titles" ]]; then
+            rss_section+="### ${feed_url}"$'\n'"$feed_titles"$'\n\n'
+        fi
+    done <<< "$MORNING_BRIEFING_RSS_FEEDS"
+    if [[ -n "$rss_section" ]]; then
+        context+="## RSS Feeds
+$rss_section"
+    fi
+fi
 
 # --- Generate briefing via claude -p ---
 prompt="You are a morning briefing assistant. Based on the following GitHub data, generate a concise Japanese morning briefing for today ($DATE).
