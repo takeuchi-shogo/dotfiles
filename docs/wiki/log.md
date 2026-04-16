@@ -402,6 +402,13 @@
 - プラン: docs/plans/2026-04-14-karpathy-second-brain-absorb-plan.md
 - レポート: docs/research/2026-04-14-karpathy-second-brain-modified-analysis.md
 
+## [2026-04-17] ingest | Hermes Fleet Zero To Hero
+
+- ソース: "Building a Hermes Fleet Zero To Hero! Reproducing Moshe's Self-Hosted Agent Stack"（週末ブログ、Moshe Hermes 再現）
+- 判定: Gap 3, Partial 3, Already 4, N/A 1
+- 取り込み: (1) JSONL secret 監査 (2) Redactor を Stop hook に統合 (3) Memory schema/retention 策定 (4) Semantic search 小実験
+- プラン: docs/plans/2026-04-17-hermes-absorb-plan.md
+
 ## [2026-04-17] ingest | Using Claude Code: Session Management & 1M Context
 
 - ソース: https://claude.com/blog/using-claude-code-session-management-and-1m-context

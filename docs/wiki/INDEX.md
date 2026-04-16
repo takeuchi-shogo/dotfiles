@@ -110,3 +110,4 @@
 ### personal-analyst — 個人アナリスト・AI活用
 
 - [Hermes を個人アナリストとして 3 週間運用](../research/2026-04-14-hermes-personal-analyst-analysis.md) — Setup > Model 思想と月$5-10のコストで研究・投資・営業アナリストを構築する手法。Already 強化不要 5 / Already 強化可能 2 / Gap 小 1 / N/A 2。morning-briefing 情報源拡張 + MCP→Skill ヒント hook を実装
+- [Hermes Fleet 共有メモリ分析](../research/2026-04-17-hermes-fleet-shared-memory-analysis.md) — Qdrant+Ollama+mem0+Stop hook で自己ホスト共有メモリを構築。Gap 3, Partial 3, Already 4, N/A 1
