@@ -64,6 +64,25 @@ PreCompact で key decisions を memory/ にフラッシュし、PostCompact で
 
 **原則**: 静的コンテキスト（変わらない）はシステムプロンプト側に、動的コンテキスト（ターンごとに変わる）はユーザーメッセージ側に配置するとキャッシュ効率が最大化される。CC 内部ではこれを SYSTEM_PROMPT_DYNAMIC_BOUNDARY で実現している。
 
+#### Context Rot の実測目安（タスク複雑度依存）
+
+> 出典: Anthropic "Using Claude Code: Session Management & 1M Context" (2026-04) + NVIDIA RULER (arXiv:2404.06654)
+
+1M context window でも実効的な有効帯域はタスクによって大きく変動する:
+
+| タスク特性 | 実効有効帯域（目安） | 根拠 |
+|-----------|-------------------|------|
+| **単純抽出 / Needle-in-Haystack** | ~1M までほぼ劣化なし | RULER NIAH ベンチマークで実証 |
+| **Multi-hop 推論 / 複雑なコードレビュー** | **~300-400k** で劣化が顕著化 | Anthropic 公式の observation、RULER multi-hop で指数的劣化 |
+| **長期タスクの一貫性維持** | compaction 2-3 回目以降で急速に劣化 | Reset > Compaction 原則の実証根拠 |
+
+**運用上の帰結:**
+
+- `/check-context` が Edit 数 (20/30/50) で間接的に監視している閾値は、上記の multi-hop 帯域 (~300-400k) に対応する経験則
+- Debug / refactor / architecture 判断のような multi-hop タスクは 300k 超で品質が落ちる前提で設計する
+- 単純な情報抽出（grep 結果の分類、ドキュメント要約）は 1M 近くまで使い切ってよい
+- **タスクの複雑度を測らずに「1M あるから大丈夫」と判断しない**
+
 #### 動的関連性スコアリング（将来課題）
 
 > Universal Verifier (Rosset et al., 2026): 分割統治型コンテキスト管理 — スクリーンショットを

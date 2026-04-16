@@ -65,3 +65,39 @@ L タスクのセッション終了時は、変更の影響範囲を確認して
 - 同一セッションで複数機能を完了させない（コンテキスト喪失のリスク）
 - S/M 規模タスクにはこのルールを適用しない（過剰制約を避ける）
 - `completion-gate.py` が 2 機能以上の同時完了を検出した場合、警告を出す
+
+## Compact vs Clear Decision Matrix
+
+> 出典: Anthropic "Using Claude Code: Session Management & 1M Context" (2026-04) — `/compact` (lossy auto-summary, steering 可) と `/clear` (自作 distilled brief + 新セッション) のトレードオフ。
+
+長セッションでコンテキストを軽量化する2手段の使い分け:
+
+| 判断軸 | `/compact {steering}` | `/clear` + 自作 brief |
+|--------|----------------------|----------------------|
+| **方向性** | 直後も同方向のタスクを継続 | 方向転換、または関連度の低い次タスク |
+| **Context rot** | まだ感じていない（compaction 1-2回目） | 感じている（同質問の繰り返し、Plan 逸脱、compaction 3回超） |
+| **重要情報の再取得コスト** | 高い（多数のファイルを再読する必要がある） | 低い（重要ファイルは brief に書き起こせる） |
+| **ユーザーのコスト** | 低い（自動要約に任せる） | 高い（自分で brief を書く） |
+| **出力品質** | モデル任せ（lossy、セマンティックドリフトのリスク）| 自分で取捨選択（意図が残る）|
+| **dotfiles での代替** | `pre-compact-save.js` が git 状態・Plan を自動保存 + `compact-instructions.md` の保留優先度で品質を補強 | `/checkpoint` で HANDOFF.md + RUNNING_BRIEF.md 生成 → 新セッション |
+
+### Bad Compact の兆候と回避
+
+> 記事の知見: モデルが次の方向を予測できない時に autocompact が発動すると重要情報が欠落する。debugging セッション直後に autocompact → 次ターンで「別ファイルの warning を直して」と指示 → warning の情報が summary から落ちていて誤動作、等。
+
+**回避策（優先順）:**
+
+1. **autocompact を待たず proactive に `/compact {focus}` を発動**: 次にやりたいことを明示する (`/compact focus on auth refactor, drop test debugging`)
+2. **方向転換時は `/compact` ではなく `/clear` を選ぶ**: モデルが方向を予測できない状態での compact は品質が最低
+3. **compaction 3回超えたら迷わず `/clear`**: `context-compaction-policy.md` の Reset > Compaction 原則と整合
+
+### 判断フロー
+
+```
+新しいターンを送る前に状況を評価:
+├─ 次タスクが現セッションと同方向?
+│   └─ Yes → /compact {focus-instruction} で steering
+│   └─ No  → /clear + 自作 brief で新セッション
+└─ context rot や bad compact の兆候あり?
+    └─ Yes → 即 /clear（compact は品質劣化を悪化させる）
+```

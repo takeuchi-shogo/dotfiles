@@ -56,6 +56,37 @@ CC の Full Compaction は2フェーズで summary を生成する:
 4. **未解決の TODO とロールバックノート** — 次のアクションに直結
 5. **ツール出力** — 削除可。pass/fail の結論だけ残す
 
+## Steering Compact — ユーザー実行時のベストプラクティス
+
+> 出典: Anthropic "Using Claude Code: Session Management & 1M Context" (2026-04) — `/compact` に steering instruction を渡すことで、モデル任せの lossy summary を「何を保持すべきか」ユーザーが明示できる。
+
+### 基本形
+
+```
+/compact focus on {保持すべきテーマ}[, drop {削除してよいテーマ}]
+```
+
+### 使用例
+
+| 状況 | コマンド例 |
+|------|-----------|
+| auth リファクタ中にデバッグログでコンテキスト膨張 | `/compact focus on auth refactor, drop test debugging` |
+| 複数機能の横断調査の後に1機能の実装に入る | `/compact focus on payment flow implementation, drop research on other features` |
+| 長時間の調査後に統合レポート作成 | `/compact focus on final findings and their sources, drop intermediate exploration` |
+| デバッグ完了後に関連警告の修正へ | `/compact focus on fixed root cause and related warnings in module X, drop unrelated debugging details` |
+
+### steering の効果と限界
+
+- **効果**: summary 生成時にモデルが保持優先度を決める際のヒントになる。保留優先度（本文書 §保留優先度）と併用され、ユーザー指定テーマが最優先で保持される
+- **限界**: steering は**指示**であり**保証**ではない。モデルが方向を理解できない状況（bad compact の典型）では steering 自体が弱く機能する場合がある
+- **判断**: steering で救えるのは「同方向継続だがコンテキストを軽くしたい」場合。**方向転換時は `/compact` より `/clear` + 自作 brief を選ぶ**（`session-protocol.md § Compact vs Clear Decision Matrix`）
+
+### 発動タイミング
+
+- **Proactive（推奨）**: autocompact 発動前に能動的に `/compact {focus}` を叩く。1M context では `/check-context` で残量確認しながら自分で判断できる
+- **Reactive（NG）**: autocompact が発動してから steering を追加しても遅い。autocompact は「モデルが方向を予測できない状態」で発動するため、bad compact を招きやすい
+- **Forbidden**: compaction 3回超えたセッションでは、さらなる compact ではなく `/clear` を選ぶ（context-compaction-policy.md の Reset > Compaction 原則）
+
 ## 識別子の保全ルール
 
 圧縮時に以下の値を絶対に改変しない:

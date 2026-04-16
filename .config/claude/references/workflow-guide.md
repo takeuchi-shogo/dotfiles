@@ -786,6 +786,57 @@ LLM は長いコンテキストの中間部分を見落としやすい（Lost-in
 
 Compaction は最大3回/セッションを上限とする。Reset > Compaction が原則。
 
+### Every Turn Is a Branching Point（ターン毎の選択儀式）
+
+> 出典: Anthropic "Using Claude Code: Session Management & 1M Context" (2026-04) — 各ターン終了時は Continue がデフォルトだが、それ以外の4択（`/rewind` / `/clear` / `/compact` / Subagent）も意識的に検討する。
+
+Claude のターンが終わった直後はコンテキスト分岐点。惰性で Continue せず、以下を自問する:
+
+| 状況 | 選択 | 根拠 |
+|------|------|------|
+| 次の作業が直前のコンテキストに依存 | **Continue** | 必要情報がコンテキストに既にある |
+| 誤ったファイル探索・失敗した試行で汚染されたコンテキストを捨てたい | **`/rewind`** (esc esc) | 探索結果を消して clean point から再プロンプト |
+| 現セッションが方向転換、または context rot を感じる | **`/clear`** + brief | 自分で distilled brief を書き起こして新セッション |
+| 同方向の継続だがコンテキストが重い | **`/compact {focus-instruction}`** | Steering 付きで重要情報を保持したまま圧縮 |
+| 次の作業が中間出力を大量に生む（大規模探索、ログ解析） | **Subagent** | 結論のみ親に返し context pollution 回避 |
+
+#### `/rewind` を選ぶ具体トリガー
+
+- 5ファイル読んだ後に approach が外れ、「try X instead」と続けたくなった時 → rewind して「approach A を避けろ、B で」と再プロンプト
+- デバッグ中に誤った仮説で長い対話を重ねた時 → 仮説棄却が判明した直後に rewind
+- エージェントに委譲した結果が的外れで、追加指示で修正したい時 → rewind して prompt を書き直す
+
+#### `/rewind` の隠れコスト
+
+| コスト | 内容 |
+|--------|------|
+| **Prompt cache 全無効化** | rewind 後は全ターンが cache miss。長セッション後半では推論コスト増 |
+| **Tool 副作用の乖離** | rewind は会話のみを戻す。ファイル書き換え・git commit・DB 書き込みは巻き戻らない。ファイルシステムと LLM 世界モデルに乖離が生じる |
+| **`summarize from here` の活用** | rewind 前に「ここまでの学びを future-self への handoff として要約して」と指示すると、rewind 後のプロンプトに学びを注入できる |
+
+**原則**: ファイル副作用がない read-only 調査の rewind は安全。Edit/Write/Bash 実行後の rewind は要注意（副作用を手動で戻すか、新セッション化を検討）。
+
+#### Subagent 委譲の Mental Test
+
+「この tool 出力を再利用するか、結論だけで十分か？」— 結論だけで十分なら Subagent に隔離する。詳細: `references/subagent-delegation-guide.md`
+
+### Task Boundary Grey Area（セッション切り替えの判断例）
+
+> 出典: Anthropic 同記事 — "new task = new session" は rule of thumb。grey area は再読コストと汚染リスクのトレードオフで判断。
+
+以下の関連タスク群で「同一セッション継続」か「新セッション開始」かを選ぶ判断例:
+
+| シナリオ | 推奨 | 理由 |
+|---------|------|------|
+| 実装 → 直後のドキュメント書き | **継続** | 実装ファイルの再読コストが高い、docs は intelligence-light で context pollution 耐性あり |
+| 実装 → 直後のテスト追加 | **継続** | 実装コンテキストをそのまま使える、テスト設計は実装の反映 |
+| デバッグ完了 → 別機能の新規実装 | **新セッション** | デバッグ時の失敗仮説・無関係なログがノイズになる |
+| デバッグ完了 → 関連 warning の修正 | **条件付き**: `/compact {focus on warning}` で steering、context rot を感じるなら新セッション | warning の文脈がデバッグ中に context から落ちている可能性が高い |
+| リサーチ → 実装 | **新セッション推奨** | リサーチの探索ノイズを持ち込まない（workflow-guide.md § "リサーチは広範だが実装は狭い"と整合）|
+| 実装 → 別モジュールの実装 | **新セッション** | モジュール境界で区切る、shared assumptions は MEMORY や Plan で明示 |
+
+判断に迷ったら: `/check-context` で残容量確認 → 残量に余裕なら継続、逼迫なら新セッション。
+
 ### Loop Monitoring（Build-QA ラウンド監視）
 
 Build-QA ラウンドを反復する際、以下のメトリクスを各ラウンド終了時に確認する:

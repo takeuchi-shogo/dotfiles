@@ -401,3 +401,10 @@
 - 棄却: A1/A2 frontmatter (Gemini 推奨でディレクトリ分離へ), B2 重み付け (過剰複雑), C 3 sub-folders (N/A)
 - プラン: docs/plans/2026-04-14-karpathy-second-brain-absorb-plan.md
 - レポート: docs/research/2026-04-14-karpathy-second-brain-modified-analysis.md
+
+## [2026-04-17] ingest | Using Claude Code: Session Management & 1M Context
+
+- ソース: https://claude.com/blog/using-claude-code-session-management-and-1m-context
+- 判定: Gap 3件（Rewind workflow, Task boundary grey area, Turn Decision Table）, Partial 0件, Already 4件（Context Rot threshold, Proactive Compaction, Clear Session, Subagent Delegation — すべて強化可能）, N/A 0件
+- 取り込み: workflow-guide.md に Every Turn Branching Point + Task Boundary Grey Area セクション追加 / session-protocol.md に Compact vs Clear Decision Matrix / compact-instructions.md に Steering Compact / subagent-delegation-guide.md に Mental Test / context-constitution.md に 300-400k task-dependent threshold
+- 分析レポート: docs/research/2026-04-17-claude-code-session-mgmt-analysis.md

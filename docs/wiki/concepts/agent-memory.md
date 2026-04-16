@@ -59,6 +59,16 @@ dotfiles のメモリシステムは Short-term を `context-compaction-policy.m
 - [knowledge-pipeline](knowledge-pipeline.md) — 外部知見の取り込みと内部知識化フロー
 - [trajectory-learning](trajectory-learning.md) — 実行軌跡からの知識抽出と昇格ロジック
 
+## 外部比較事例: Hermes Fleet 共有メモリ
+
+Moshe の Hermes setup を再現した週末ブログ記事（2026-04-17 取り込み）は、自己ホスト型の共有メモリ構成を示す外部事例として参考になる。
+
+- **構成**: Qdrant（vector DB）+ Ollama（nomic-embed-text ローカル埋め込み）+ mem0（抽象層）を Claude Code の Stop hook から毎ターン書き込み
+- **定性的 gain**: "context switching without re-explanation" — 複数エージェント（Telegram bot + coder）が同一コンテキストを共有する体験
+- **実運用 4 本柱**: Redactor（sk-/ghp_/Bearer マスク）・Idempotency key（session_id + turn_index）・Provider pinning（allow_fallbacks: false）・Local fallback（gemma2:9b）
+- **dotfiles との差分**: 既存の Stop hook → session-learner.py パイプラインと類似するが、(a) secret redactor が hook 経路に未統合、(b) JSONL での semantic search 不可、(c) memory schema/retention 未明文化 の 3 点がギャップ
+- 参照: [Hermes Fleet 共有メモリ分析](../../research/2026-04-17-hermes-fleet-shared-memory-analysis.md) / プラン: [2026-04-17-hermes-absorb-plan.md](../../plans/2026-04-17-hermes-absorb-plan.md)
+
 ## ソース
 
 - [CC 7-Layer Memory Architecture Analysis](../../research/2026-04-02-cc-7-layer-memory-architecture-analysis.md) — Claude Code の 7 層メモリ設計と Dreaming・Circuit Breaker の実装詳細
