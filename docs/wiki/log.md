@@ -415,3 +415,16 @@
 - 判定: Gap 3件（Rewind workflow, Task boundary grey area, Turn Decision Table）, Partial 0件, Already 4件（Context Rot threshold, Proactive Compaction, Clear Session, Subagent Delegation — すべて強化可能）, N/A 0件
 - 取り込み: workflow-guide.md に Every Turn Branching Point + Task Boundary Grey Area セクション追加 / session-protocol.md に Compact vs Clear Decision Matrix / compact-instructions.md に Steering Compact / subagent-delegation-guide.md に Mental Test / context-constitution.md に 300-400k task-dependent threshold
 - 分析レポート: docs/research/2026-04-17-claude-code-session-mgmt-analysis.md
+
+## [2026-04-17] ingest | How to fix your life in 1 prompt (Dan Koe風 心理監査プロトコル)
+
+- ソース: ユーザー貼り付けテキスト（Dan Koe 風コミュニティ記事）
+- 判定: Gap 7個, Partial 4個, Already強化可能 3個, N/A 1個
+- 取り込み (最小採択セット):
+  - Anti-vision → `memory/telos_strategies.md` に「やらないことリスト」節追加
+  - 3 daily non-negotiables → `/timekeeper plan` に Q0 追加
+  - Midday check → `/timekeeper midday` モード新設
+  - Horizon 5 life 質問 → `/weekly-review` Phase 5.5 追加
+- 棄却: 9-domain audit 全体、Identity declaration、Psychological excavation、Root pattern naming、Push on comfort の agent 化
+- 根拠: Codex + Gemini 並列批評（Insight abandonment 75%, performative audit trap, Ashcroft End-gaining, Ehrenreich 批判）
+- 分析レポート: [2026-04-17-life-audit-protocol-absorb.md](../research/2026-04-17-life-audit-protocol-absorb.md)

@@ -128,6 +128,22 @@ In Progress のタスクを確認:
   → 来週レビューする / リマインド送る / 別の人に依頼
 ```
 
+### Phase 5.5: Horizon 5 — Life Review (軽量, 2-3問のみ)
+
+Career/Product/Tech の外側を**週次で軽く**点検する。心理カウンセリングではなく、TELOS の Horizon 5 (長期目的) に接続する事実確認のみ。**各質問 1 行で答えて OK、詳細を求めない。スキップ自由**。
+
+```
+## Horizon 5 — 今週の生活点検
+
+Q1: 今週の最重要 Non-negotiables (/timekeeper plan で設定した3つ) の達成率はどれくらい？ ざっくり%で。
+Q2: Career/Product 以外の領域（健康/関係/休養/学習）で、無視できない信号はあったか？ 1行で。
+Q3: 来週、どれか1つだけ継続強化するとしたら何？
+```
+
+- 「特になし」も有効な回答。深掘りしない
+- **Anti-Pattern**: 9ドメイン全部を毎週聞かない (performative audit trap)。3問で終わる
+- この記録は `~/.claude/skill-data/weekly-review/horizon5.jsonl` に append-only で蓄積し、四半期に一度 TELOS Goals の見直しに使う
+
 ### Phase 6: 来週の計画
 
 ```
