@@ -416,6 +416,15 @@
 - 取り込み: workflow-guide.md に Every Turn Branching Point + Task Boundary Grey Area セクション追加 / session-protocol.md に Compact vs Clear Decision Matrix / compact-instructions.md に Steering Compact / subagent-delegation-guide.md に Mental Test / context-constitution.md に 300-400k task-dependent threshold
 - 分析レポート: docs/research/2026-04-17-claude-code-session-mgmt-analysis.md
 
+## [2026-04-17] ingest | 組織的なAI活用を阻む最大のハードルはコンテキストデザインだった
+
+- ソース: https://speakerdeck.com/ixbox/zu-zhi-de-naaihuo-yong-wozu-mu-zui-da-nohadoruha-kontekisutodezaindatuta (久保星哉/i3design)
+- 判定: Gap 2個 (Connector drift, Hook 陳腐化), Partial 4個 (Skill version lock, Telemetry 品質, 予算管理, MCP 非依存性), Already 6個 (うち強化可能 4個)
+- 取り込み: 全10タスク採用。P1=Connector inventory+Telemetry 品質、P2=cwd-aware profile+Hook 条件付き実行、P3=MCP 台帳+金額予算+skill-local lock、P4=skill dashboard+smoke-test+tacit→rule trace
+- 分析: docs/research/2026-04-17-context-design-absorb-analysis.md
+- プラン: docs/plans/2026-04-17-context-design-absorb-plan.md
+- Phase 2.5 貢献: Codex=Context Infrastructure 層の見落とし指摘・優先度並び替え, Gemini=Context Ops 業界事例・Hook 陳腐化リスク指摘
+
 ## [2026-04-17] ingest | How to fix your life in 1 prompt (Dan Koe風 心理監査プロトコル)
 
 - ソース: ユーザー貼り付けテキスト（Dan Koe 風コミュニティ記事）

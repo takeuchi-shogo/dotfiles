@@ -39,7 +39,7 @@
 ### memory — メモリ・コンテキスト
 
 - [エージェントメモリ](concepts/agent-memory.md) — 7 層メモリアーキテクチャと品質管理
-- [コンテキスト管理](concepts/context-management.md) — コンパクション・コンテキストリセット・トークン予算。Context Rot (300-400k threshold)・Every Turn 5択・Rewind workflow・Compact vs Clear・Subagent Mental Test を含む → 参照: [session-mgmt-analysis](research/2026-04-17-claude-code-session-mgmt-analysis.md)
+- [コンテキスト管理](concepts/context-management.md) — コンパクション・コンテキストリセット・トークン予算。Context Rot (300-400k threshold)・Every Turn 5択・Rewind workflow・Compact vs Clear・Subagent Mental Test・Context Design 5層モデル (Infrastructure/Creation/Distribution/Governance/Execution) を含む → 参照: [session-mgmt-analysis](research/2026-04-17-claude-code-session-mgmt-analysis.md), [context-design-absorb-analysis](research/2026-04-17-context-design-absorb-analysis.md)
 - [軌跡学習](concepts/trajectory-learning.md) — 実行履歴からの知識抽出と蒸留
 - [ナレッジパイプライン](concepts/knowledge-pipeline.md) — raw データから構造化知識への変換パイプライン。Filing Loop・promote・lint --fix・generate-data で3層サイクル完結
 - [失敗学習ループ・Pruning-First](../research/2026-04-11-pepabo-failure-learning-loop-analysis.md) — 同じ指摘を繰り返させない失敗記録ループ。「記録しない基準」DNR-1〜7 と Pruning-First 思想。認知負荷を主敵として捉え、何を記録しないかを先に決める。→ 実装プラン: [Pruning-First philosophy shift](../plans/2026-04-11-pruning-first-philosophy-shift.md)
