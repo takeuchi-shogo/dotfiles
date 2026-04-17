@@ -1,0 +1,52 @@
+[
+  {
+    "id": "q1",
+    "query": "TypeError undefined property in JavaScript code",
+    "expected_hint": "errors.jsonl TypeError entries"
+  },
+  {
+    "id": "q2",
+    "query": "Permission denied EACCES file access",
+    "expected_hint": "errors.jsonl permission failures"
+  },
+  {
+    "id": "q3",
+    "query": "redactor regex pattern for API key leak",
+    "expected_hint": "review-findings or patterns related to redaction / secret handling"
+  },
+  {
+    "id": "q4",
+    "query": "hook latency exceeds threshold",
+    "expected_hint": "telemetry or friction-events for slow hooks"
+  },
+  {
+    "id": "q5",
+    "query": "skill invocation outcome success",
+    "expected_hint": "skill-executions / skill-credit entries"
+  },
+  {
+    "id": "q6",
+    "query": "AutoEvolve improvement proposal merge decision",
+    "expected_hint": "improve-history / strategy-outcomes"
+  },
+  {
+    "id": "q7",
+    "query": "session ended with multiple errors and corrections",
+    "expected_hint": "session-metrics recovery outcome"
+  },
+  {
+    "id": "q8",
+    "query": "review-finding about silent failure in catch block",
+    "expected_hint": "review-findings silent-failure"
+  },
+  {
+    "id": "q9",
+    "query": "Codex reviewer flagged risk in plan",
+    "expected_hint": "review-findings or patterns from codex review"
+  },
+  {
+    "id": "q10",
+    "query": "Go test failure with nil pointer",
+    "expected_hint": "errors.jsonl Go nil pointer"
+  }
+]
