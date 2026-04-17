@@ -23,6 +23,34 @@ from session_events import (
 )
 
 
+# Categories that count as "intentional remediation" after an error.
+# Excludes telemetry / quality observational events which are emitted
+# passively and would cause false positive recovery inference.
+# Ref: docs/audit/telemetry-coverage.md "2026-04-17 Update" — Action 2.
+_RECOVERY_SIGNAL_CATEGORIES = frozenset({"correction", "pattern", "skill"})
+
+
+def _infer_recovery(events: list[dict]) -> bool:
+    """Infer whether the session recovered from errors.
+
+    True when an "intentional remediation" event (see
+    ``_RECOVERY_SIGNAL_CATEGORIES``) follows the last error event.
+    Passive categories (telemetry, quality) are excluded to avoid
+    false positive inference from routine tool-usage pings.
+
+    Approximate proxy for the missing explicit ``correction`` producer;
+    see docs/audit/telemetry-coverage.md.
+    """
+    last_error_idx = -1
+    for i, e in enumerate(events):
+        if e.get("category") == "error":
+            last_error_idx = i
+    if last_error_idx < 0:
+        return False
+    tail = events[last_error_idx + 1 :]
+    return any(e.get("category") in _RECOVERY_SIGNAL_CATEGORIES for e in tail)
+
+
 def build_session_summary(cwd: str | None = None) -> dict:
     """セッションイベントを集約してサマリーを構築する。"""
     events = flush_session()
@@ -43,7 +71,9 @@ def build_session_summary(cwd: str | None = None) -> dict:
     )
 
     # Outcome classification (arXiv:2603.10600 Multi-Outcome Learning)
-    if errors and corrections:
+    # recovery: errors present AND either explicit corrections OR post-error activity
+    recovery_inferred = _infer_recovery(events)
+    if errors and (corrections or recovery_inferred):
         outcome = "recovery"
     elif errors:
         outcome = "failure"

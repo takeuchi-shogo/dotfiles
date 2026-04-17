@@ -250,3 +250,50 @@ friction-events.jsonl: 3 entries
 *調査日: 2026-04-13*
 *調査者: Sonnet 4.6 (subagent)*
 *調査範囲: dotfiles/.config/claude/scripts/, tools/claude-hooks/src/, ~/.claude/agent-memory/*
+
+---
+
+## 2026-04-17 Update — context-design-absorb P1/T2 対応
+
+本 audit の推奨アクション Top 3 に対応:
+
+### Action 1: Exit code ベースのエラー記録 — 既に実装済
+
+- **状態**: 完了 (本 audit 以後に実装)
+- **実装箇所**: `tools/claude-hooks/src/post_bash.rs:361-393` — `check_exit_code_error()` が `tool_result.is_error` を読み取り、テキストパターンマッチ不一致でも `emit_event("error", ...)` を呼ぶ
+- **受入**: exit code 非ゼロのエラーが errors.jsonl に記録されるようになった (コードレビューで確認、運用データは 1 週間後に再集計予定)
+
+### Action 2: `correction` category producer — 推論型で実装
+
+- **状態**: 完了
+- **実装箇所**: `.config/claude/scripts/learner/session-learner.py` — `_infer_recovery(events)` を追加
+- **ロジック**: 最後の `category=="error"` 以降に **意図的な remediation** カテゴリ (`correction` / `pattern` / `skill`) の event が 1 件でもあれば recovery と判定。`telemetry` / `quality` の観察系イベントは bash 実行時に自動発火するため false positive 源となり除外:
+  ```python
+  _RECOVERY_SIGNAL_CATEGORIES = frozenset({"correction", "pattern", "skill"})
+  # outcome 分類:
+  if errors and (corrections or recovery_inferred):
+      outcome = "recovery"
+  elif errors:
+      outcome = "failure"
+  else:
+      outcome = "clean_success"
+  ```
+- **選択理由**: session events のスキーマに `command_family` / `exit_code_inferred` が含まれないため、プラン原案 (案 A: flush 時の command 系列再分類) は適用不可。error 後の意図的活動の有無で recovery を推定する方式に変更
+- **レビューで得た知見**: 初版は `any(category != "error")` だったが、code-reviewer/codex-reviewer から telemetry 継続による false positive リスクを指摘され、remediation カテゴリのみに絞る設計に変更
+- **撤退条件**: false positive > 20% → `_RECOVERY_SIGNAL_CATEGORIES` を `{"correction"}` のみに縮退、または明示 `emit_event("correction", ...)` producer を別途実装
+
+### Action 3: `error-to-codex.py` dead code — 削除済
+
+- **状態**: 完了
+- **処置**: `.config/claude/scripts/policy/error-to-codex.py` を `git rm`。Rust `post_bash.rs` の `check_error_to_codex()` + `check_exit_code_error()` が完全上位互換
+
+### 次のステップ
+
+1. 1 週間運用後に再集計:
+   - errors.jsonl の週間件数が 0.65 → 目標 30+ に向かうか
+   - strategy-outcomes.jsonl の outcome 分布 (`clean_success` 99.8% からどう変化するか)
+2. `stagnation-detector.py` の friction cooldown パラメータ調整 (本 update では未対応、T4 で検討)
+3. `skill-executions` / `session-stats` の consumer 実装 (T8 で対応)
+
+*Update 日: 2026-04-17*
+*Plan 参照: docs/plans/2026-04-17-context-design-absorb-plan.md (P1/T2)*
