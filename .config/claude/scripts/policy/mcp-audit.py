@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -51,46 +52,62 @@ _NATIVE_SERVERS = {
 _known_servers_cache: set[str] | None = None
 
 
-def _load_known_servers() -> set[str]:
-    """Build known server set from config files + native fallback."""
-    known = set(_NATIVE_SERVERS)
+def _add_server(known: set[str], name: str) -> None:
+    """Add server + display-name alias to known set."""
+    known.add(name)
+    if name in _SERVER_NAME_MAP:
+        known.add(_SERVER_NAME_MAP[name])
 
-    # 1. Load from .mcp.json (cwd then home)
+
+def _load_mcp_json(known: set[str]) -> None:
+    """Merge servers from .mcp.json (cwd then home)."""
+    for candidate in [Path.cwd() / ".mcp.json", Path.home() / ".mcp.json"]:
+        try:
+            if candidate.exists():
+                cfg = json.loads(candidate.read_text())
+                for name in cfg.get("mcpServers", {}):
+                    _add_server(known, name)
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"[MCP Audit] .mcp.json read error: {exc}", file=sys.stderr)
+
+
+def _load_settings_json(known: set[str]) -> None:
+    """Merge servers from settings.enabledMcpjsonServers."""
+    path = Path.home() / ".claude" / "settings.json"
+    try:
+        if path.exists():
+            settings = json.loads(path.read_text())
+            for name in settings.get("enabledMcpjsonServers", []):
+                _add_server(known, name)
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"[MCP Audit] settings.json read error: {exc}", file=sys.stderr)
+
+
+def _load_codex_toml(known: set[str]) -> None:
+    """Merge servers from .codex/config.toml [mcp_servers.*]."""
     for candidate in [
-        Path.cwd() / ".mcp.json",
-        Path.home() / ".mcp.json",
+        Path.cwd() / ".codex" / "config.toml",
+        Path.home() / ".codex" / "config.toml",
     ]:
         try:
             if candidate.exists():
-                mcp_cfg = json.loads(candidate.read_text())
-                for name in mcp_cfg.get("mcpServers", {}):
-                    known.add(name)
-                    if name in _SERVER_NAME_MAP:
-                        known.add(_SERVER_NAME_MAP[name])
-        except (json.JSONDecodeError, OSError) as exc:
+                with open(candidate, "rb") as f:
+                    cfg = tomllib.load(f)
+                for name in cfg.get("mcp_servers", {}):
+                    _add_server(known, name)
+        except (tomllib.TOMLDecodeError, OSError) as exc:
             print(
-                f"[MCP Audit] .mcp.json read error: {exc}",
+                f"[MCP Audit] .codex/config.toml read error: {exc}",
                 file=sys.stderr,
             )
 
-    # 2. Load from settings.json enabledMcpjsonServers
-    settings_path = Path.home() / ".claude" / "settings.json"
-    try:
-        if settings_path.exists():
-            settings = json.loads(settings_path.read_text())
-            for name in settings.get(
-                "enabledMcpjsonServers",
-                [],
-            ):
-                known.add(name)
-                if name in _SERVER_NAME_MAP:
-                    known.add(_SERVER_NAME_MAP[name])
-    except (json.JSONDecodeError, OSError) as exc:
-        print(
-            f"[MCP Audit] settings.json read error: {exc}",
-            file=sys.stderr,
-        )
 
+def _load_known_servers() -> set[str]:
+    """Build known server set from 4 sources: .mcp.json, settings, Codex, native."""
+    known = set(_NATIVE_SERVERS)
+    _load_mcp_json(known)
+    _load_settings_json(known)
+    _load_codex_toml(known)
     return known
 
 
