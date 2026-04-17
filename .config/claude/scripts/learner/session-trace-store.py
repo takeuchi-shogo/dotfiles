@@ -19,6 +19,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+from redactor import redact_obj  # noqa: E402
+
 TRACES_DIR = Path.home() / ".claude" / "agent-memory" / "traces"
 MAX_AGE_DAYS = 90
 MAX_TOTAL_BYTES = 500 * 1024 * 1024  # 500 MB
@@ -117,9 +120,12 @@ def _store_trace(data: str) -> None:
     else:
         entry["data"] = payload
 
-    # Append as JSONL (one line per entry, grep-friendly)
+    # Append as JSONL (one line per entry, grep-friendly); redact secrets first
     with open(trace_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False, separators=(",", ":")) + "\n")
+        f.write(
+            json.dumps(redact_obj(entry), ensure_ascii=False, separators=(",", ":"))
+            + "\n"
+        )
 
     logger.info("session-trace-store: saved trace to %s", trace_path.name)
 
@@ -193,7 +199,7 @@ def _generate_fleet_summary() -> None:
     }
 
     with open(fleet_path, "w", encoding="utf-8") as f:
-        json.dump(fleet_data, f, ensure_ascii=False, indent=2)
+        json.dump(redact_obj(fleet_data), f, ensure_ascii=False, indent=2)
 
     logger.info(
         "session-trace-store: fleet summary — %d sessions, %d active, %d with errors",

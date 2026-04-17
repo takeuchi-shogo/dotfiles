@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from redactor import redact_obj
 from storage import get_data_dir as _storage_get_data_dir
 
 
@@ -213,7 +214,7 @@ def emit_event(category: str, data: dict) -> None:
             "config_version": compute_config_version(),
         }
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(redact_obj(entry), ensure_ascii=False) + "\n")
         brief = str(data.get("message", data.get("rule", "")))[:80]
         logger.debug("emit: %s [i=%.1f] - %s", category, importance, brief)
     except Exception as exc:
@@ -345,7 +346,7 @@ def append_to_learnings(filename: str, data: dict) -> None:
         entry.setdefault("tier", "raw")
         entry.setdefault("score", 0.0)
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(redact_obj(entry), ensure_ascii=False) + "\n")
         brief = str(data.get("message", data.get("rule", "")))[:80]
         logger.debug("append learnings/%s: %s", filename, brief)
     except Exception as exc:
@@ -504,7 +505,7 @@ def append_to_metrics(data: dict) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         entry = {"timestamp": _now_iso(), **data}
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(redact_obj(entry), ensure_ascii=False) + "\n")
         project = data.get("project", "unknown")
         total = data.get("total_events", 0)
         logger.info("metrics: %s - %d events", project, total)
@@ -537,7 +538,7 @@ def emit_skill_event(event_type: str, data: dict) -> None:
             **data,
         }
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(redact_obj(entry), ensure_ascii=False) + "\n")
         logger.debug("skill_event: %s %s", event_type, data.get("skill_name"))
     except Exception as exc:
         try:
