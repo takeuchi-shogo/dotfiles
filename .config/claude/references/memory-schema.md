@@ -35,6 +35,7 @@
 - `traces/*.jsonl`, `learnings/{errors,quality,telemetry,friction-events,skill-executions,agent-invocations}.jsonl` → **event (30日)**
 - `learnings/{patterns,review-findings,review-feedback,skill-credit,strategy-outcomes,hypotheses}.jsonl`, `metrics/skill-tier-shadow.jsonl` → **learning (永続)**
 - `metrics/{session-metrics,improve-history}.jsonl`, `learnings/skill-benchmarks.jsonl` → **summary (永続)**
+  - `skill-benchmarks.jsonl` 追加フィールド (T4 Autogenesis): `task_category: retrieval|generation|gate` (default: `generation`), `model_tier: weak|strong` (default: `strong`)。ceiling detection (baseline >= 0.9, delta < 0.03) で使用
 - `runs/*/proposals*.yaml` → **proposal (7日)**
 
 ## Retention 実施
