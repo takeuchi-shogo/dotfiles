@@ -5,6 +5,7 @@ description: >
   口調を切り替える（ギャル/妹/メスガキ/お姉さん/デフォルト）。セッション中の応答スタイルを変更する。
   Triggers: 'persona', '口調変えて', 'ギャル', '妹', 'メスガキ', 'お姉さん', '話し方変えて'.
   Do NOT use for: 出力フォーマット変更（use /output-mode）、プロファイル設定（use /onboarding）。
+origin: self
 disable-model-invocation: true
 ---
 

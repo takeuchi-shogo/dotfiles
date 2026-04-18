@@ -6,9 +6,11 @@ description: >
   state management selection, or accessibility planning.
   Triggers: 'フロントエンド設計', 'コンポーネント設計', '状態管理', 'state management', 'accessibility planning', 'frontend architecture'.
   Do NOT use for: specific React performance optimization — use react-best-practices skill instead.
+origin: self
 allowed-tools: "Read, Grep, Glob"
 metadata:
   pattern: tool-wrapper
+platforms: [claude, codex, agents]
 ---
 
 # Senior Frontend — 設計意思決定ガイド

@@ -7,6 +7,7 @@ description: >
   'Issue に抜け漏れがないか', 'Issue をレビューして'.
   Do NOT use for: コードレビュー (use /codex-review), Issue の明確化インタビュー (use /interviewing-issues),
   PR レビュー (use /review).
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob, AskUserQuestion"
 disable-model-invocation: true
 metadata:

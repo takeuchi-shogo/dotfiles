@@ -1,6 +1,7 @@
 ---
 name: digest
 description: "Use when converting NotebookLM output text into structured Obsidian Literature Notes, or when summarizing any text/URL/PDF into an actionable brief. Paste YouTube/article summaries and it auto-infers metadata, saves to 05-Literature/. Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに', 'summarize', '要約して', 'ブリーフ作成'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge), コンテンツ生成 (use obsidian-content)."
+origin: self
 metadata:
   pattern: generator
 ---

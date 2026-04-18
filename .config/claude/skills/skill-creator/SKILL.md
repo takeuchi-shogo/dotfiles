@@ -6,6 +6,7 @@ description: >
   run evals to test a skill, or benchmark skill performance.
   Triggers: 'skill-creator', 'スキル作成', 'create skill', 'スキル改善', 'skill eval', 'スキルのテスト'.
   Do NOT use for: スキル一括監査（use /skill-audit）、AI ワークフロー監査（use /ai-workflow-audit）。
+origin: self
 metadata:
   pattern: pipeline+inversion
 ---

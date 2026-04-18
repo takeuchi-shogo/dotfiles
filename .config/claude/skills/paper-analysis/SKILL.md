@@ -7,6 +7,7 @@ description: |
   '複数論文', 'systematic review', 'papers uploaded'.
   Do NOT use for: 単一記事の要約（直接要約で十分）、記事の知見統合（use /absorb）、
   対話型学習（use /deep-read）、文献ノート作成（use /digest）。
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline

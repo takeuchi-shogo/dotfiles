@@ -6,6 +6,7 @@ description: >
   コード変更後の品質チェック、または手動で /simplify で起動。
   Triggers: '/simplify', 'simplify', 'コード簡素化', 'DRY チェック', '重複検出', 'reduce complexity'.
   Do NOT use for: アーキテクチャレビュー（use /review）、セキュリティ検証（use security-reviewer agent）。
+origin: self
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, Agent
 metadata:
   pattern: orchestrator

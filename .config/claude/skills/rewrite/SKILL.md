@@ -5,6 +5,7 @@ description: >
   またはカスタムペルソナを指定可能。
   Triggers: 'リライト', 'rewrite', '書き直して', '言い換えて', 'rewrite for', 'この文章を変換'.
   Do NOT use for: 翻訳（直接依頼で十分）、文献ノート作成（use /digest）、コンテンツ生成（use /obsidian-content）。
+origin: self
 argument-hint: "[preset: technical|executive|slack|casual] or [for persona]"
 allowed-tools: AskUserQuestion
 metadata:

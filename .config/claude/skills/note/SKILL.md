@@ -1,6 +1,7 @@
 ---
 name: note
 description: "セッション中の知見を Obsidian Vault の Inbox に即時保存する。Triggers: '/note 内容'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge)."
+origin: self
 metadata:
   pattern: action
 argument-hint: "<保存したい内容>"

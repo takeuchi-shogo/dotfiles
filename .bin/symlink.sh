@@ -94,24 +94,18 @@ CURSOR_SYMLINK_DIRECTORIES=(
 
 # Codex スキル: 共有可能な skill を ~/.codex/skills/ に個別共有
 # ~/.codex/skills/.system/ を壊さないよう個別にシンボリックリンク
-CODEX_SHARED_CLAUDE_SKILLS=(
-  "senior-backend"
-  "senior-frontend"
-  "react-best-practices"
-  "frontend-design"
-)
+#
+# 共有対象は SKILL.md frontmatter の `platforms:` 宣言から動的に決まる:
+#   - .config/claude/skills/*/SKILL.md に `platforms: [claude, codex, agents]` を含むもの
+#   - .agents/skills/*/SKILL.md        に `platforms: [agents, codex]` を含むもの
+# 解決は scripts/lib/skill_platforms.py で行い、このスクリプト内では配列化しない
+SKILL_PLATFORMS_HELPER="$DOTFILES_DIR/scripts/lib/skill_platforms.py"
 
-CODEX_SHARED_PROJECT_SKILLS=(
-  "codex-search-first"
-  "codex-verification-before-completion"
-  "dotfiles-config-validation"
-  "codex-checkpoint-resume"
-  "codex-memory-capture"
-  "codex-session-hygiene"
-  "openai-frontend-prompt-workflow"
-  "github-review-workflow"
-  "artifact-workflow"
-)
+list_skills_for_platform() {
+  local source="$1"  # claude | agents
+  local needs="$2"   # codex | agents | cursor | ...
+  python3 "$SKILL_PLATFORMS_HELPER" --source "$source" --needs "$needs"
+}
 
 share_skill_directory() {
   local target="$1"
@@ -331,17 +325,20 @@ create_codex_symlinks() {
   mkdir -p "$codex_skills_dir"
   mkdir -p "$agents_skills_dir"
 
-  for skill in "${CODEX_SHARED_CLAUDE_SKILLS[@]}"; do
+  local skill
+  while IFS= read -r skill; do
+    [ -z "$skill" ] && continue
     local target="$claude_skills_dir/$skill"
     share_skill_directory "$target" "$codex_skills_dir/$skill"
     share_skill_directory "$target" "$agents_skills_dir/$skill"
-  done
+  done < <(list_skills_for_platform claude codex)
 
-  for skill in "${CODEX_SHARED_PROJECT_SKILLS[@]}"; do
+  while IFS= read -r skill; do
+    [ -z "$skill" ] && continue
     local target="$project_skills_dir/$skill"
     share_skill_directory "$target" "$codex_skills_dir/$skill"
     share_skill_directory "$target" "$agents_skills_dir/$skill"
-  done
+  done < <(list_skills_for_platform agents codex)
 }
 
 # Gemini設定用のシンボリックリンク作成 (.gemini/ -> ~/.gemini/)

@@ -5,6 +5,7 @@ description: >
   と依頼したとき、または /prompt-review で呼び出されたときに使用する。
   過去のAIエージェント対話履歴（Claude Code, GitHub Copilot Chat, Cursor, Cline, Roo Code, Windsurf,
   Antigravity, Gemini CLI, OpenAI Codex, OpenCode）を読み取り、技術理解度・プロンプティングパターン・AI依存度を推定してレポートを生成する。
+origin: self
 disable-model-invocation: true
 argument-hint: "[<days> | all | <project> [<days>]]"
 allowed-tools: Read, Write, Glob, Grep, Bash

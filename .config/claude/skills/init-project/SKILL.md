@@ -8,6 +8,7 @@ description: >
   'CLAUDE.md 作りたい', 'プロジェクト構造', 'scaffold', 'プロジェクトセットアップ'.
   Do NOT use for: 既存 CLAUDE.md の修正のみ（claude-md-management を使用）、
   背景エージェントのみ（setup-background-agents を使用）。
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline+inversion

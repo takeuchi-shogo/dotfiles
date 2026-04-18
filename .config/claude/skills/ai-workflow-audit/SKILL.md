@@ -6,6 +6,7 @@ description: >
   reusable AI practices across repos.
   Triggers: 'AI ワークフロー', 'workflow audit', 'スキル整理', 'skills vs memory', 'AI 運用改善', 'AI practices'.
   Do NOT use for: コードベース監査（use /audit）、スキル個別の改善（use /skill-creator）、ドキュメント鮮度チェック（use /check-health）。
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:
   pattern: reviewer

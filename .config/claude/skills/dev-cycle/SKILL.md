@@ -1,6 +1,7 @@
 ---
 name: dev-cycle
 description: "Claude Code + Codex 協調開発サイクルを Issue 作成からマージまで一貫実行するオーケストレーター。auto（全自動）/ semi（確認ポイント付き）/ manual（手順ガイド）の3モードで実行。 Triggers: 'dev-cycle', '開発サイクル', 'Issue から マージまで', 'Claude + Codex サイクル', 'フル開発フロー Issue 起点', 'Issue 作成から実装まで', '全自動開発'. Do NOT use for: 仕様が既に明確な単発タスク（use /rpi）、Issue なしの直接実装（use /epd）、レビューのみ（use /review or /codex-review）。"
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob, AskUserQuestion, Agent, Skill"
 metadata:
   pattern: orchestrator

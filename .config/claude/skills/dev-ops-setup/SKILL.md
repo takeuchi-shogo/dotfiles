@@ -4,6 +4,7 @@ description: >
   プロジェクトの開発オペレーション設定をセットアップする。GitHub Projects カンバン、Slack 連携、GTD キャプチャラベル等をローカル設定ファイルに保存。
   Triggers: 'dev-ops-setup', '開発設定', 'kanban setup', 'プロジェクト設定', 'ops setup'.
   Do NOT use for: Claude Code プロジェクト初期化（use /init-project）、既存 kanban 操作（use /kanban）。
+origin: self
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Write, Edit
 argument-hint: "[--reset]"

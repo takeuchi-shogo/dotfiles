@@ -5,6 +5,7 @@ description: >
   Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
   Triggers: 'ブラウザテスト', 'UIテスト', 'webapp test', 'browser test', 'スクリーンショット確認', 'UI動作確認'.
   Do NOT use for: ユニットテスト（use test-engineer agent）、API テスト（use Bash with curl/Hurl）。
+origin: self
 license: Complete terms in LICENSE.txt
 metadata:
   pattern: tool-wrapper

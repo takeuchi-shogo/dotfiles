@@ -7,6 +7,7 @@ description: >
   or optimizing GraphQL API performance.
   Triggers: 'GraphQL', 'スキーマ設計', 'resolver', 'mutation', 'subscription', 'GraphQL performance'.
   Do NOT use for: REST API design (use senior-backend) or general system architecture (use senior-architect).
+origin: self
 allowed-tools: "Read, Grep, Glob, Bash"
 metadata:
   pattern: tool-wrapper

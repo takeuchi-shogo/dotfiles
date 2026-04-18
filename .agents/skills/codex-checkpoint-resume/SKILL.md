@@ -1,6 +1,7 @@
 ---
 name: codex-checkpoint-resume
 description: Durable checkpoint workflow for Codex long-horizon tasks. Use before stopping unfinished work, before compaction, before handoff, or whenever a task will continue across sessions and you need a filesystem checkpoint plus a concrete resume prompt.
+platforms: [agents, codex]
 ---
 
 # Codex Checkpoint Resume

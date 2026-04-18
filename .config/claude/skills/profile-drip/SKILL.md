@@ -4,6 +4,7 @@ description: >
   プロファイルのギャップを1問で埋める（Daily Drip）。毎日1つの質問でユーザー理解を深める。
   Triggers: 'profile-drip', 'プロファイル', 'daily drip', '自己紹介の続き'.
   Do NOT use for: 初回オンボーディング（use /onboarding）、メモリ確認（use /memory-status）。
+origin: self
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---

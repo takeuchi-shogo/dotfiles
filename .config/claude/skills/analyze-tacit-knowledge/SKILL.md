@@ -7,6 +7,7 @@ description: >
   '知見抽出', 'knowledge extraction', '暗黙知の言語化'.
   Do NOT use for: 単純なセッションログの要約（daily-report を使用）、
   スキルの新規作成（skill-creator を使用）。
+origin: self
 metadata:
   pattern: analyzer
 disable-model-invocation: true

@@ -7,6 +7,7 @@ description: >
   '設計を詰めたい', 'プランに穴がないか'.
   Do NOT use for: spec 策定インタビュー（use /interview）、実装済みコードの防御的質問（use /challenge grill）、
   思考の壁打ち（use /think）。
+origin: self
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 disable-model-invocation: true
 metadata:

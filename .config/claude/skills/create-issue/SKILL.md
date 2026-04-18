@@ -5,6 +5,7 @@ description: >
   タイトル・本文（背景/要件/受入基準/技術メモ）・ラベルを自動生成し、プレビュー確認後に投稿。
   Triggers: 'Issue 作りたい', 'Issue 作成', 'create issue', '要件を Issue にして', 'GitHub Issue'.
   Do NOT use for: 既存 Issue の明確化（use /interviewing-issues）、仕様書作成（use /spec）、PR 作成（use /pull-request）。
+origin: self
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion
 metadata:
   pattern: generator

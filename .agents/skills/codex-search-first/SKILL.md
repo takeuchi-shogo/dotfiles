@@ -1,6 +1,7 @@
 ---
 name: codex-search-first
 description: Research-before-editing workflow for Codex. Use when starting a new feature, adding a dependency, introducing a new script or utility, configuring MCP, or before creating a new abstraction in an unfamiliar area.
+platforms: [agents, codex]
 ---
 
 # Codex Search First

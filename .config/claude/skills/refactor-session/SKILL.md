@@ -4,6 +4,7 @@ description: >
   機能実装禁止の清掃専用セッション。技術的負債の解消、コード品質改善、テスト補強に集中する。progress.log で5セッション連続機能追加時に自動推奨。
   Triggers: 'リファクタ', 'refactor', '技術的負債', 'tech debt', 'コード整理', 'cleanup session'.
   Do NOT use for: 機能追加を含む作業（use /rpi or /epd）、コードレビュー（use /review）、監査（use /audit）。
+origin: self
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 metadata:
   pattern: executor

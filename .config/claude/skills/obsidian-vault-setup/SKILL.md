@@ -1,6 +1,7 @@
 ---
 name: obsidian-vault-setup
 description: "Use when setting up a new Obsidian Vault as an 'AI second brain'. Creates folder structure from templates and customizes CLAUDE.md. Triggers: 'Vault 作りたい', 'Obsidian セットアップ', 'new vault', '第二の脳'. Do NOT use for: 既存 Vault のコンテンツ生成 (use obsidian-content), ナレッジ整理 (use obsidian-knowledge). .base/.canvas file formats → defer to obsidian plugin skills."
+origin: self
 metadata:
   pattern: generator
 ---

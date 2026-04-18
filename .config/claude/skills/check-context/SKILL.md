@@ -5,6 +5,7 @@ description: >
   Check current context window usage and session state.
   Triggers: 'check-context', 'コンテキスト確認', 'context usage', '残りコンテキスト', 'how much context'.
   Do NOT use for: メモリ状態確認（use /memory-status）、セッション分析（use /analyze-tacit-knowledge）。
+origin: self
 disable-model-invocation: true
 ---
 

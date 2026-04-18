@@ -1,6 +1,7 @@
 ---
 name: validate
 description: "Product Validation ゲート。spec file の acceptance criteria に照らして実装を検証する。「正しいものを作っているか」を確認。/spike や /epd から呼び出し、または手動で使用。Triggers: '仕様通り？', 'validate', '検証して', 'spec に合ってる？', 'acceptance criteria'. Do NOT use for: コード品質レビュー（use /review）、テスト実行（use test-engineer agent）、セキュリティ検証（use security-reviewer agent）。"
+origin: self
 allowed-tools: Read, Bash, Glob, Grep, Agent
 user-invocable: true
 metadata:

@@ -1,6 +1,7 @@
 ---
 name: dev-insights
 description: "Use when analyzing development patterns data-driven — commit frequency, issue completion rate, day-of-week performance, stale task trends. Visualizes metrics and suggests improvements. Triggers: '開発分析', 'コミット頻度', 'パフォーマンス分析', '滞留タスク', 'dev metrics'. Do NOT use for: daily status (use daily-report), weekly task review (use weekly-review)."
+origin: self
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Grep, Glob
 argument-hint: "[weekly | monthly | custom-range]"

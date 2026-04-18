@@ -1,6 +1,7 @@
 ---
 name: github-review-workflow
 description: Use when the user wants help with GitHub PR comments, failing GitHub Actions checks, or a short workflow that routes between gh-address-comments and gh-fix-ci.
+platforms: [agents, codex]
 ---
 
 # GitHub Review Workflow

@@ -8,6 +8,7 @@ description: >
   'deep module', 'エージェントフレンドリー', 'コード構造改善', 'module depth'.
   Do NOT use for: 機能実装（use /rpi）、リファクタリング実行（use /refactor-session）、
   コード品質監査（use /audit）。
+origin: self
 allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 metadata:
   pattern: diagnosis

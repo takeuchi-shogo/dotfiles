@@ -6,6 +6,7 @@ description: >
   Reconstruct development context from contextual commit history. コミット履歴から開発文脈を復元する。
   Triggers: 'recall', '前回の続き', '文脈復元', 'what was I working on', 'reconstruct context'.
   Do NOT use for: 日報確認（use /daily-report）、チェックポイント復元（use /checkpoint）。
+origin: self
 disable-model-invocation: true
 ---
 

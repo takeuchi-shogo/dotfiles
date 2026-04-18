@@ -1,6 +1,7 @@
 ---
 name: spec
 description: "Prompt-as-PRD を生成する。アイデアを構造化プロンプトとして記述し、docs/specs/ にバージョン管理する。agent にそのまま渡せる実行可能な仕様書を作成。Triggers: '仕様書', 'spec', 'PRD', '要件定義', '仕様を書いて', 'what to build'. Do NOT use for: 実装込みのフルフロー（use /epd）、曖昧な Issue の明確化（use /interviewing-issues）、プロトタイプ検証（use /spike）。"
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 user-invocable: true
 metadata:

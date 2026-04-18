@@ -1,6 +1,7 @@
 ---
 name: codex-session-hygiene
 description: Session and runtime hygiene for Codex long-running work. Use when a task spans many turns, before compact or resume, when deciding between continuing or forking a thread, or when you need to preserve stable completion criteria across continuation.
+platforms: [agents, codex]
 ---
 
 # Codex Session Hygiene

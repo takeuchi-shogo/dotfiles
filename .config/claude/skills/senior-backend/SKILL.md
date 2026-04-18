@@ -7,9 +7,11 @@ description: >
   Triggers: 'API設計', 'DB選定', 'REST vs GraphQL', '認証方式', 'backend architecture', 'データベース最適化'.
   Do NOT use for: frontend component design (use senior-frontend)
   or system-level architecture decisions (use senior-architect).
+origin: self
 allowed-tools: "Read, Grep, Glob"
 metadata:
   pattern: tool-wrapper
+platforms: [claude, codex, agents]
 ---
 
 # Senior Backend — 設計意思決定ガイド

@@ -6,6 +6,7 @@ description: >
   Triggers: 'diff 見せて', 'diff viewer', '変更を見たい', 'difit', 'レビュー画面',
   'PR見たい', '差分確認', 'コメント処理して', 'difit コメント', 'レビューコメント反映'.
   Do NOT use for: エージェントによるコードレビュー (use /review).
+origin: self
 allowed-tools: Bash
 user-invocable: true
 metadata:

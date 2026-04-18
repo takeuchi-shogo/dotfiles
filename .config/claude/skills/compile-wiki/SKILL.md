@@ -6,6 +6,7 @@ description: >
   Karpathy "LLM Knowledge Bases" アプローチに基づくナレッジベースパイプライン。
   Triggers: 'wiki コンパイル', 'compile-wiki', 'ナレッジベース', 'knowledge base', '概念抽出', 'wiki 更新', 'wiki 生成'.
   Do NOT use for: 単一記事の要約（直接回答で十分）、外部記事の統合（use /absorb）、Obsidian ナレッジ管理（use /obsidian-knowledge）。
+origin: self
 allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(wc:*), Bash(git diff:*), Glob, Grep, Agent, AskUserQuestion
 argument-hint: compile | update | index | lint | lint --fix | query | promote | promote-draft | generate-data
 metadata:

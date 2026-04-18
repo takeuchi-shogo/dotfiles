@@ -1,6 +1,7 @@
 ---
 name: ui-ux-pro-max
 description: "Use when designing or implementing UI/UX for web and mobile apps — component styling, color systems, typography, layout, accessibility, or chart visualization. Supports 10 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui, HTML/CSS). Triggers: 'UI設計', 'デザイン', 'カラーパレット', 'フォント選定', 'アクセシビリティ', 'チャート'. Do NOT use for: frontend architecture decisions (use senior-frontend), React performance optimization (use react-best-practices)."
+origin: external
 metadata:
   pattern: tool-wrapper+generator
 ---
