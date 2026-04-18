@@ -29,9 +29,30 @@ metadata:
 ### Standard Mode（デフォルト）
 
 1. ユーザーのアイデア・要求を受け取る
-2. 対話で要件を明確化する（2-5 個の質問、1回に1つ）
-3. 構造化プロンプトを生成する
-4. `docs/specs/{feature}.prompt.md` に保存する
+2. **Phase 0 (任意): PRD Quick Interview** — 以下を確認して実行判断する
+3. 対話で要件を明確化する（2-5 個の質問、1回に1つ）
+4. 構造化プロンプトを生成する
+5. `docs/specs/{feature}.prompt.md` に保存する
+
+#### Phase 0: PRD Quick Interview（軽量版、任意）
+
+Standard Mode 開始時に「Phase 0 interview を実行しますか？ (Yes / No / skip all)」を聞く。
+**Yes** を選んだ場合、AskUserQuestion で以下の 6 項目を順次収集する（各 1 問、スキップ可）:
+
+| # | カテゴリ | 質問の目的 |
+|---|---------|----------|
+| 1 | **Goals** | この仕様で何を達成したいか（1-2 文で） |
+| 2 | **Non-goals** | 明示的にやらないこと（スコープクリープ防止） |
+| 3 | **User stories** | 誰がどう使うか（1-3 個） |
+| 4 | **Success metrics** | 成功をどう測るか（検証可能な指標） |
+| 5 | **Constraints** | 技術・ビジネス・時間の制約 |
+| 6 | **Related systems** | 既存のどのシステム・コードに触れるか |
+
+- 回答はそのまま spec file の対応セクションに反映する
+- 「skip all」で Phase 0 をバイパスし、従来の Standard Mode 動作に戻る
+- Deep Interview Mode (10-40 問) とは独立。軽量な spec 作成で要件を 6 項目だけ確認したい時に使う
+
+> **使い分け**: S 規模は Phase 0 skip、M 規模は Phase 0 推奨、L 規模は Deep Interview Mode 推奨
 
 ### Deep Interview Mode（`/interview` または引数に `--interview`）
 

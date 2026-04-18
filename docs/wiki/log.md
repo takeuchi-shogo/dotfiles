@@ -8,6 +8,19 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-19] ingest | Top 67 Claude Skills (polydao)
+
+- ソース: X/Twitter 経由の polydao 記事 "Top 67 Claude Skills That Turn a $20 Subscription Into a Full Dev Team"
+- 判定: 34 Already / 8 Partial / 2 Gap / 23 N/A
+- 取り込み:
+  - `ubiquitous-language` skill 新規 (DDD glossary 抽出・語彙 drift 検出)
+  - `dependency-auditor` skill 新規 (npm/go/cargo/pip 横断の supply chain lens)
+  - `spec` skill に Phase 0 PRD Quick Interview 追加 (6項目、Standard Mode 軽量版)
+- 却下: Change Log Generator (/commit で代替), API Doc Generator (Context7+PRD で代替), 他 21件 N/A
+- Pruning-First: skill 数 93 → 95 (+2)。IFScale 制約を遵守
+- 分析レポート: docs/research/2026-04-19-top67-claude-skills-analysis.md
+- 統合プラン: docs/plans/pending/2026-04-19-top67-skills-integration-plan.md
+
 ## [2026-04-11] ingest | Multi-agent coordination patterns (Anthropic)
 
 - ソース: https://claude.com/blog/multi-agent-coordination-patterns
