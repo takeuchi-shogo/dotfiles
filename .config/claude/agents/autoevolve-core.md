@@ -155,6 +155,11 @@ Phase 1 の分析結果から **3つの改善方向性** を候補生成する:
 - 候補は異なるアプローチを取る（例: エラー削減 vs スキル改善 vs ハーネス最適化）
 - Phase 1.0 で読み込んだ backlog・前回 winning direction があれば、継続 or 方向転換を判断材料にする
 - **TELOS alignment**: `references/telos-outcome-mapping.md` を参照し、各候補に `telos_alignment: high/medium/low` を付与する。現在の短期目標への貢献度で判定
+- **Co-evolution 操作空間** (`references/proposal-schema.md` 参照):
+  - 各候補に `resource_targets: ["prompt" | "config" | "strategy"]` (1-2 個) を付与
+  - 2 個同時変更時は `interaction_hypothesis` (resource 間の相互作用仮説) を必須
+  - 3 候補の中に少なくとも 1 つは single-resource baseline を含める (ablation 保証)
+  - 全 3 要素を同時変更する候補は生成しない (blast radius 過大)
 
 **仮説の注入（hypotheses.jsonl）**:
 
@@ -200,12 +205,18 @@ codex exec -m xhigh "
 1. 実装コスト（変更ファイル数、blast_radius）
 2. 期待される改善幅（エラー削減率、スキルスコア向上幅）
 3. データの裏付けの強さ（evidence_chain の confidence）
+4. 最小変更原則 (resource_targets が少ない候補を優先)
+5. Ablation 設計 (prompt-only / strategy-only / both の比較が将来可能か)
+
+2 個同時変更 (resource_targets が 2 要素) の候補を選ぶ場合、
+interaction_hypothesis が具体的かつ検証可能である必要があります。
+単一 resource 版で十分なら単一を優先してください。
 
 ## 候補
 {candidates}
 
 ## 出力
-JSON: {\"winner\": N, \"reasoning\": \"...\", \"runner_up\": N, \"risks\": [\"...\"]}
+JSON: {\"winner\": N, \"reasoning\": \"...\", \"runner_up\": N, \"risks\": [\"...\"], \"ablation_note\": \"...\"}
 "
 ```
 
@@ -457,12 +468,16 @@ Phase 2.5 完了後、各提案を以下の形式で記録する:
   "parent_id": null,                                // IMP-YYYY-MM-DD-NNN | null。親提案の ID（改良元がある場合）
   "novelty_score": null,                            // float 0.0-1.0 | null。既存提案との最大類似度の逆数
   "similar_proposal_ids": [],                       // ["IMP-..."]。類似度 > 0.5 の提案 ID リスト（記録用。除外閾値 0.85 とは別）
-  "mutation_type": null,                            // "refine" | "pivot" | "novel" | null。探索タイプ
+  "mutation_type": null,                            // "refine" | "pivot" | "novel" | null。lineage 分類 (resource_targets と直交)
+  "resource_targets": ["prompt"],                   // ["prompt" | "config" | "strategy"]。1-2 個。T2 co-evolution 操作空間
+  "interaction_hypothesis": null,                   // 2 resource 同時変更時は必須 (1 個のみなら null)
   "eval_health": "ok",                                  // "ok" | "warning" | "skipped" — gaming-detector の判定結果
   "gate_verdict": "ROBUST|VULNERABLE|FATAL_FLAW",  // Phase 2.5 の判定結果
   "created_at": "YYYY-MM-DDTHH:MM:SS"
 }
 ```
+
+完全 schema (evidence_chain, blast_radius, rollback_plan 等) は `references/proposal-schema.md` を参照。
 
 - `outcome` の値: `pending` → `merged` / `reverted` / `declined`
 - `outcome_delta`: 効果測定値（例: `"+2.3pp"`, `"neutral"`, `"-1.1pp"`）。Layer 2 で自動更新
