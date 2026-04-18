@@ -205,7 +205,14 @@ PostHog の「weekly traces hour」は個人 harness では不採用。理由:
 5. **ロールバック可能な変更のみ** — 不可逆な変更は提案のみ
 6. **スキル改善は実行データ5回以上** — データ不足での改善は行わない
 7. **retire は段階的** — まず `[DEPRECATED]` 付与、次回 audit で改善なければ削除提案
-8. **修正後の A/B delta が +2pp 未満なら merge しない** — SkillsBench 研究 (7,308 runs) でノイズマージンが ±2pp と判明。それ以下の改善は統計的に有意でない
+8. **修正後の A/B delta カテゴリ別 MDE (minimum detectable effect)** — 汎用の ±2pp 閾値をタスクカテゴリ別に分解する (Autogenesis T3 採用):
+   - **retrieval tasks** (検索、grep、fetch 系): merge +3pp / revert -2pp — ベースライン散らばりが大きいため高めの閾値
+   - **generation tasks** (コード生成、要約): merge +2pp / revert -2pp — 従来の SkillsBench 基準
+   - **gate/classifier tasks** (gaming-detector, completion-gate): merge +1pp / revert -1pp — 判定の安定性が本質、小さな delta でも累積効果大
+   - holdout 明文化: eval と improvement で同じ holdout を使わない (overfitting 防止)。`scripts/eval/split_holdout.py` の train (70%) / holdout (30%) を維持し、holdout は merge 判定専用とする
+   - **ceiling aware**: baseline >= 0.9 の場合、delta 閾値を緩める (+1pp で merge 可)。既に天井付近では統計的差が小さくなる
+   - task_category の宣言: skill は `skill-inventory.md` で `task_category: retrieval|generation|gate` を必須化 (未指定は generation 扱い、safe default)
+   - 根拠: SkillsBench (7,308 runs) の ±2pp ノイズマージンは generation task 基準。retrieval/gate は別分布 (Autogenesis T3 Codex 格下げ)
 9. **スキル修正後は必ずベースラインテスト** — 修正前にスキルなし性能を測定し、修正後も同テストを実行。delta を定量化してから merge 判断
 10. **LLM 自動生成の修正は人間レビュー必須** — SkillsBench で LLM 自己生成スキルは平均 -1.3pp。`skills/*/SKILL.md` および `agents/*.md` の変更は自動マージ条件から除外。`gate_proposal()` が `auto_accept` を返しても、これらのファイル変更は `pending_review` に格下げ
 11. **Brevity Bias 対策** — エージェント定義のドメイン知識セクション（Symptom-Cause-Fix テーブル、コードパターン、failure modes）は簡潔化の対象外。ACE 研究 [Zhang+ 2026] で反復最適化がプロンプトを汎用的に崩壊させる傾向が確認されている。行動指示（tools, permissions, format）のみ簡潔化対象
