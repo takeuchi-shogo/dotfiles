@@ -44,7 +44,23 @@ RUN_DIR=~/.claude/agent-memory/runs/$(date +%Y-%m-%d)
 [ -d "$RUN_DIR" ] && RUN_DIR="${RUN_DIR}-$(date +%H%M)"
 mkdir -p "$RUN_DIR"
 date -u +"%Y-%m-%dT%H:%M:%SZ" > "$RUN_DIR/run_started_at.txt"
+# T5 Cost Gate: cycle-cost.json を空で初期化 (improve-policy Rule 46)
+python3 ~/.claude/scripts/policy/cost-gate.py init "$RUN_DIR"
 ```
+
+**コストゲート運用**:
+
+Codex/Gemini 呼び出しや A/B eval の完了時に、API cost を `cost-gate.py add` で追記する:
+
+```bash
+python3 ~/.claude/scripts/policy/cost-gate.py add "$RUN_DIR" \
+  --json '{"model":"gpt-5.4","input_tokens":N,"output_tokens":N,"cost_usd":N.NN}'
+```
+
+Phase 2.5 開始前と Phase 3 開始前に `cost-gate.py check` で verdict を確認:
+- `ok`: 継続
+- `warn` ($5 超): レポートに警告を含め、残りのサイクルでの追加コストを抑制
+- `stop` ($10 超): サイクルを停止し、ユーザー override なしに継続しない
 
 **前回ラン状態の読み込み**:
 1. `~/.claude/agent-memory/improvement-backlog.md` を Read（存在しない場合はスキップ）
