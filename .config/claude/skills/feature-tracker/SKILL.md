@@ -4,6 +4,7 @@ description: >
   マルチセッションプロジェクトのフィーチャーリスト管理。feature_list.json で進捗を構造化追跡。init/next/pass/status サブコマンド。
   Triggers: 'feature-tracker', '次のタスク', '進捗確認', 'フィーチャー管理', 'what feature is next'.
   Do NOT use for: GitHub Issues の操作（use /kanban）、単一セッションのタスク管理（use TaskCreate）。
+origin: self
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 metadata:
   pattern: executor

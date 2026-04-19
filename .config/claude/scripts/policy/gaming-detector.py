@@ -46,6 +46,9 @@ FM_SKEW_RATIO_THRESHOLD = 4.0  # max/min 比が 4:1 以上で WARNING
 ACCEPT_RATE_JUMP_THRESHOLD = 20  # Rule 29: +20pp triggers Acceleration Guard
 SELECTIVE_IMPROVE_THRESHOLD = 5  # Rule 30: +5pp improvement in one metric
 SELECTIVE_DEGRADE_THRESHOLD = 3  # Rule 30: -3pp degradation in another
+# T4 (Autogenesis): ceiling effect detection
+CEILING_BASELINE_THRESHOLD = 0.9  # baseline >= 0.9 で天井付近とみなす
+CEILING_DELTA_THRESHOLD = 0.03  # delta < 0.03 は天井効果で真の改善ではない
 PROTECTED_FILES = [
     "improve-policy.md",
     "skill-benchmarks.jsonl",
@@ -345,6 +348,61 @@ def _detect_eval_suite_shrinkage(tool_output: str) -> str | None:
     return None
 
 
+def _detect_ceiling_effect(tool_output: str) -> str | None:
+    """T4 (Autogenesis): Detect ceiling-effect false positives in skill benchmarks.
+
+    When baseline_score >= 0.9 and delta < 0.03, the apparent improvement
+    is more likely measurement noise at the ceiling than a real gain. Flag
+    it so reviewers do not merge a benchmark-positive change that has no
+    headroom to improve.
+
+    Pattern: "baseline: 0.92 delta: 0.02" or "quality_baseline=9.2, delta=+0.2"
+    (normalized to 0-1 scale — scores >= 10 are interpreted as percentages).
+    """
+    # Pattern: baseline and delta reported together
+    baseline_pattern = re.compile(
+        r"(?:baseline|quality_baseline|baseline_score)"
+        r"\s*[=:]\s*([+-]?\d+(?:\.\d+)?)",
+        re.IGNORECASE,
+    )
+    delta_pattern = re.compile(
+        r"(?:delta|improvement)\s*[=:]\s*([+-]?\d+(?:\.\d+)?)", re.IGNORECASE
+    )
+
+    baseline_match = baseline_pattern.search(tool_output)
+    delta_match = delta_pattern.search(tool_output)
+    if not (baseline_match and delta_match):
+        return None
+
+    try:
+        baseline = float(baseline_match.group(1))
+        delta = float(delta_match.group(1))
+    except ValueError:
+        return None
+
+    # Normalize both to 0-1 scale using the same factor derived from baseline.
+    # Delta is assumed to be on the same scale as baseline.
+    if baseline > 10.0:
+        scale = 100.0
+    elif baseline > 1.0:
+        scale = 10.0
+    else:
+        scale = 1.0
+    baseline /= scale
+    delta /= scale
+
+    if baseline >= CEILING_BASELINE_THRESHOLD and 0 < delta < CEILING_DELTA_THRESHOLD:
+        return (
+            f"[Gaming Detector] T4 Ceiling Effect 警告: "
+            f"baseline {baseline:.2f} は天井付近 (>= {CEILING_BASELINE_THRESHOLD}) "
+            f"かつ delta {delta:+.3f} が {CEILING_DELTA_THRESHOLD} 未満です。"
+            f"見かけ上の改善は測定ノイズの可能性があります。"
+            f"真の改善かを判定するには: (1) task_category 別 MDE を適用、"
+            f"(2) 異なるモデル階層で再評価、(3) 複数 seed で検証。"
+        )
+    return None
+
+
 def _detect_fm_skew(tool_output: str) -> str | None:
     """Detect skewed per-FM detection rates indicating over-reliance on specific FMs.
 
@@ -490,6 +548,20 @@ def main() -> None:
             {
                 "type": "gaming_detected",
                 "rule": "30_selective_improvement",
+                "message": warning,
+            },
+        )
+        output_context("PostToolUse", warning)
+        return
+
+    # T4 (Autogenesis): Ceiling effect detection
+    warning = _detect_ceiling_effect(tool_output)
+    if warning:
+        emit(
+            "pattern",
+            {
+                "type": "gaming_detected",
+                "rule": "t4_ceiling_effect",
                 "message": warning,
             },
         )

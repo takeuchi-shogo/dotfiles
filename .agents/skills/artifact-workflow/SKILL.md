@@ -1,6 +1,7 @@
 ---
 name: artifact-workflow
 description: Use when the user wants documents, PDFs, slide decks, or desktop screenshots and needs routing between doc, pdf, slides, and screenshot with the right validation expectations.
+platforms: [agents, codex]
 ---
 
 # Artifact Workflow

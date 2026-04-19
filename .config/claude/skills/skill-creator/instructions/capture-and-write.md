@@ -75,6 +75,7 @@ Based on the user interview, fill in these components:
   **Bad:** `"Helps with projects."` (too vague, no triggers)
   **Bad:** `"Implements the Project entity model with hierarchical relationships."` (too technical, no user triggers)
 
+- **origin**: Provenance classification — `self` (locally authored, default), `external` (installed from upstream repo, tracked in `skills-lock.json`), or `forked` (based on external skill but diverged). New skills default to `origin: self`.
 - **compatibility**: Required tools, dependencies (optional, rarely needed)
 - **the rest of the skill :)**
 

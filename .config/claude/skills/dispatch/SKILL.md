@@ -4,6 +4,7 @@ description: >
   cmux Worker Router — タスクをサブエージェントまたは cmux Worker（Claude Code / Codex / Gemini）に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。
   Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて'.
   Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）。
+origin: self
 user_invocable: true
 ---
 

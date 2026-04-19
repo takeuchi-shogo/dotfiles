@@ -11,6 +11,10 @@ import sys
 root = pathlib.Path.cwd()
 home = pathlib.Path.home()
 
+sys.path.insert(0, str(root / "scripts"))
+from lib import skill_platforms  # noqa: E402
+
+# Static (non-skill) symlinks managed by .bin/symlink.sh.
 managed_links = [
     (home / ".hammerspoon", root / ".hammerspoon", ".hammerspoon"),
     (home / ".config/aerospace/aerospace.toml", root / ".config/aerospace/aerospace.toml", ".config/aerospace/aerospace.toml"),
@@ -32,33 +36,19 @@ managed_links = [
     (home / ".claude/skills", root / ".config/claude/skills", ".claude/skills"),
     (home / ".codex/AGENTS.md", root / ".codex/AGENTS.md", ".codex/AGENTS.md"),
     (home / ".codex/config.toml", root / ".codex/config.toml", ".codex/config.toml"),
-    (home / ".codex/skills/frontend-design", root / ".config/claude/skills/frontend-design", ".codex/skills/frontend-design"),
-    (home / ".codex/skills/react-best-practices", root / ".config/claude/skills/react-best-practices", ".codex/skills/react-best-practices"),
-    (home / ".codex/skills/senior-backend", root / ".config/claude/skills/senior-backend", ".codex/skills/senior-backend"),
-    (home / ".codex/skills/senior-frontend", root / ".config/claude/skills/senior-frontend", ".codex/skills/senior-frontend"),
-    (home / ".codex/skills/codex-search-first", root / ".agents/skills/codex-search-first", ".codex/skills/codex-search-first"),
-    (home / ".codex/skills/codex-verification-before-completion", root / ".agents/skills/codex-verification-before-completion", ".codex/skills/codex-verification-before-completion"),
-    (home / ".codex/skills/dotfiles-config-validation", root / ".agents/skills/dotfiles-config-validation", ".codex/skills/dotfiles-config-validation"),
-    (home / ".codex/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".codex/skills/codex-checkpoint-resume"),
-    (home / ".codex/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".codex/skills/codex-memory-capture"),
-    (home / ".codex/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".codex/skills/codex-session-hygiene"),
-    (home / ".codex/skills/openai-frontend-prompt-workflow", root / ".agents/skills/openai-frontend-prompt-workflow", ".codex/skills/openai-frontend-prompt-workflow"),
-    (home / ".codex/skills/github-review-workflow", root / ".agents/skills/github-review-workflow", ".codex/skills/github-review-workflow"),
-    (home / ".codex/skills/artifact-workflow", root / ".agents/skills/artifact-workflow", ".codex/skills/artifact-workflow"),
-    (home / ".agents/skills/frontend-design", root / ".config/claude/skills/frontend-design", ".agents/skills/frontend-design"),
-    (home / ".agents/skills/react-best-practices", root / ".config/claude/skills/react-best-practices", ".agents/skills/react-best-practices"),
-    (home / ".agents/skills/senior-backend", root / ".config/claude/skills/senior-backend", ".agents/skills/senior-backend"),
-    (home / ".agents/skills/senior-frontend", root / ".config/claude/skills/senior-frontend", ".agents/skills/senior-frontend"),
-    (home / ".agents/skills/codex-search-first", root / ".agents/skills/codex-search-first", ".agents/skills/codex-search-first"),
-    (home / ".agents/skills/codex-verification-before-completion", root / ".agents/skills/codex-verification-before-completion", ".agents/skills/codex-verification-before-completion"),
-    (home / ".agents/skills/dotfiles-config-validation", root / ".agents/skills/dotfiles-config-validation", ".agents/skills/dotfiles-config-validation"),
-    (home / ".agents/skills/codex-checkpoint-resume", root / ".agents/skills/codex-checkpoint-resume", ".agents/skills/codex-checkpoint-resume"),
-    (home / ".agents/skills/codex-memory-capture", root / ".agents/skills/codex-memory-capture", ".agents/skills/codex-memory-capture"),
-    (home / ".agents/skills/codex-session-hygiene", root / ".agents/skills/codex-session-hygiene", ".agents/skills/codex-session-hygiene"),
-    (home / ".agents/skills/openai-frontend-prompt-workflow", root / ".agents/skills/openai-frontend-prompt-workflow", ".agents/skills/openai-frontend-prompt-workflow"),
-    (home / ".agents/skills/github-review-workflow", root / ".agents/skills/github-review-workflow", ".agents/skills/github-review-workflow"),
-    (home / ".agents/skills/artifact-workflow", root / ".agents/skills/artifact-workflow", ".agents/skills/artifact-workflow"),
 ]
+
+# Skill symlinks derived from SKILL.md frontmatter `platforms:` declarations.
+# This is the same source of truth used by .bin/symlink.sh.
+for skill in skill_platforms.list_skills_needing("claude", "codex"):
+    target = root / ".config/claude/skills" / skill
+    managed_links.append((home / ".codex/skills" / skill, target, f".codex/skills/{skill}"))
+    managed_links.append((home / ".agents/skills" / skill, target, f".agents/skills/{skill}"))
+
+for skill in skill_platforms.list_skills_needing("agents", "codex"):
+    target = root / ".agents/skills" / skill
+    managed_links.append((home / ".codex/skills" / skill, target, f".codex/skills/{skill}"))
+    managed_links.append((home / ".agents/skills" / skill, target, f".agents/skills/{skill}"))
 
 errors = []
 

@@ -55,6 +55,15 @@ def main() -> None:
     quality_baseline = without_skill.get("mean_quality_score", 0.0)
     delta = round(quality_with - quality_baseline, 2)
 
+    # T4 (Autogenesis): task_category + model_tier for ceiling detection
+    # Read from benchmark.json if present, else use safe defaults.
+    task_category = benchmark.get("task_category", "generation")
+    if task_category not in ("retrieval", "generation", "gate"):
+        task_category = "generation"
+    model_tier = benchmark.get("model_tier", "strong")
+    if model_tier not in ("weak", "strong"):
+        model_tier = "strong"
+
     learning_entry = {
         "type": "skill_benchmark",
         "skill": skill_name,
@@ -66,6 +75,8 @@ def main() -> None:
         "delta": delta,
         "pass_rate_with_skill": with_skill.get("pass_rate", 0.0),
         "pass_rate_baseline": without_skill.get("pass_rate", 0.0),
+        "task_category": task_category,
+        "model_tier": model_tier,
     }
 
     append_to_learnings("skill-benchmarks", learning_entry)

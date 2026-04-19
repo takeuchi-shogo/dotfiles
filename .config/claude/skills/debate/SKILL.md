@@ -5,6 +5,7 @@ description: >
   Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons',
   'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better'.
   Do NOT use for factual questions with clear answers — use WebSearch or gemini skill instead.
+origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline

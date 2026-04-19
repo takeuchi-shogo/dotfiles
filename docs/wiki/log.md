@@ -8,6 +8,26 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-19] ingest | Harnesses are everything
+
+- ソース: Baseten blog (unverified) 記事、元記事タイトル "Harnesses are everything. Here's how to optimize yours."
+- 判定: Gap 1 (総量 instruction budget 指標), Partial 3 (Human-written/CLI-discovery/Harness Commit), Already 5 (Skills PD, R.P.I, MCP 選別, Parallel fan-out, Sequential pipeline)
+- 取り込み: 6 タスク全採択 (Q1 Harness Commit 弱化, Q2 Human-written 方針, Q3 CLI PD, M1 instruction budget 計測, M2 dead-weight scan, L1 reviewer calibration)
+- 実装完了: Wave 1-3 全て完了、後処理中
+
+## [2026-04-19] ingest | Top 67 Claude Skills (polydao)
+
+- ソース: X/Twitter 経由の polydao 記事 "Top 67 Claude Skills That Turn a $20 Subscription Into a Full Dev Team"
+- 判定: 34 Already / 8 Partial / 2 Gap / 23 N/A
+- 取り込み:
+  - `ubiquitous-language` skill 新規 (DDD glossary 抽出・語彙 drift 検出)
+  - `dependency-auditor` skill 新規 (npm/go/cargo/pip 横断の supply chain lens)
+  - `spec` skill に Phase 0 PRD Quick Interview 追加 (6項目、Standard Mode 軽量版)
+- 却下: Change Log Generator (/commit で代替), API Doc Generator (Context7+PRD で代替), 他 21件 N/A
+- Pruning-First: skill 数 93 → 95 (+2)。IFScale 制約を遵守
+- 分析レポート: docs/research/2026-04-19-top67-claude-skills-analysis.md
+- 統合プラン: docs/plans/pending/2026-04-19-top67-skills-integration-plan.md
+
 ## [2026-04-11] ingest | Multi-agent coordination patterns (Anthropic)
 
 - ソース: https://claude.com/blog/multi-agent-coordination-patterns
@@ -437,3 +457,22 @@
 - 棄却: 9-domain audit 全体、Identity declaration、Psychological excavation、Root pattern naming、Push on comfort の agent 化
 - 根拠: Codex + Gemini 並列批評（Insight abandonment 75%, performative audit trap, Ashcroft End-gaining, Ehrenreich 批判）
 - 分析レポート: [2026-04-17-life-audit-protocol-absorb.md](../research/2026-04-17-life-audit-protocol-absorb.md)
+
+## [2026-04-19] ingest | Manage agent skills with GitHub CLI (gh skill)
+
+- ソース: https://github.blog/changelog/2026-04-16-manage-agent-skills-with-github-cli/
+- 判定: Gap 3, Partial 3, Low-priority 2, N/A 1 (Already 強化可能 3)
+- 取り込み: P1 (lockfile provenance, 外部 drift 検知) + P2 (origin: frontmatter, symlink platforms:) + P3 (rollback, gh skill wrapper, hash 検証)。全 7 タスク採用、L 規模
+- 戦略: Partial Adopt。539 スキル一括移行せず、外部由来・共有スキルに絞る (Codex 批評反映)
+- 分析レポート: [2026-04-19-gh-skill-cli-analysis.md](../research/2026-04-19-gh-skill-cli-analysis.md)
+- 統合プラン: [2026-04-19-gh-skill-absorb-plan.md](../plans/2026-04-19-gh-skill-absorb-plan.md)
+
+## [2026-04-19] ingest | Top 67 Claude Skills (polydao)
+
+- ソース: X/Twitter 記事「Top 67 Claude Skills That Turn a $20 Subscription Into a Full Dev Team」
+- 判定: 34 Already / 8 Partial / 2 Gap / 23 N/A
+- 取り込み: ubiquitous-language skill 新規、dependency-auditor skill 新規、spec skill に PRD interview phase 強化。M 規模、新セッションで `/rpi` 実行予定
+- 却下: Change Log Generator (Codex 批評: /commit で代替)、API Doc Generator (Context7 + PRD で代替)、他 21 件 (Office/マーケ/メディア系は用途外)
+- 戦略: Pruning-First。93 skills → 95 に限定、記事のマーケティング文脈 (67 全部入れろ) に踊らされない
+- 分析レポート: [2026-04-19-top67-claude-skills-analysis.md](../research/2026-04-19-top67-claude-skills-analysis.md)
+- 統合プラン: [2026-04-19-top67-skills-integration-plan.md](../plans/pending/2026-04-19-top67-skills-integration-plan.md)

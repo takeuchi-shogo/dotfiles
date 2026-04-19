@@ -15,6 +15,32 @@
 - [ ] AC-2:
 - [ ] AC-3:
 
+## Scenarios
+<!-- mizchi/empirical-prompt-tuning: 2-3 シナリオ (中央値 + エッジ) で baseline を構成 -->
+<!-- median は必須。edge_cases は 1 件以上推奨。holdout_scenarios は最適化ループから隔離 -->
+
+### median
+<!-- 通常の期待されるユースケース。最低 1 つ必須 -->
+- Scenario 1:
+  - Given:
+  - When:
+  - Then:
+
+### edge_cases
+<!-- 境界値・異常系・想定外入力。improve ループの主な学習対象 -->
+- Edge 1:
+  - Given:
+  - When:
+  - Then:
+
+### holdout_scenarios
+<!-- 改善ループに混入させない検証専用シナリオ (Rule 47 Holdout Contamination 対策) -->
+<!-- convergence 判定時のみ使用。spec 更新時に holdout_scenarios は変更しない -->
+- Holdout 1:
+  - Given:
+  - When:
+  - Then:
+
 ## Exit Criteria (撤退条件)
 <!-- いつ止めるか。時間上限、失敗回数、メトリクス閾値など -->
 - 撤退条件:

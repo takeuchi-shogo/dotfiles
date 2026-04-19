@@ -4,6 +4,7 @@ description: >
   arxiv 論文を alphaxiv.org 経由で構造化レポートとして取得する。PDF を読むより高速・高精度。
   Triggers: arxiv URL, 論文 ID (2401.12345), alphaxiv URL, '論文を読んで', 'paper lookup'.
   Do NOT use for non-arxiv content — use WebFetch or /research instead.
+origin: self
 allowed-tools: WebFetch, Bash, Read
 disable-model-invocation: true
 metadata:

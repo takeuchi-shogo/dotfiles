@@ -6,9 +6,11 @@ description: >
   Avoids generic AI aesthetics.
   Triggers: 'UI作って', 'ページ作成', 'コンポーネント', 'デザイン改善', 'UI磨いて', 'polish', 'distill', 'UIがダサい', 'AI臭い'.
   Do NOT use for: UIレビュー/監査（use /web-design-guidelines）、フロントエンドアーキテクチャ（use /senior-frontend）、パフォーマンス最適化（use /react-best-practices）。
+origin: self
 license: Complete terms in LICENSE.txt
 metadata:
   pattern: generator
+platforms: [claude, codex, agents]
 ---
 
 This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.

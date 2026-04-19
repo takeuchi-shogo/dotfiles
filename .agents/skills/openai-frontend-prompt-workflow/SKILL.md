@@ -1,6 +1,7 @@
 ---
 name: openai-frontend-prompt-workflow
 description: Use when the user wants reusable GPT-5.4 frontend prompt templates, wants OpenAI frontend prompting guidance operationalized, or wants Codex to ask for missing inputs before drafting a frontend prompt.
+platforms: [agents, codex]
 ---
 
 # OpenAI Frontend Prompt Workflow

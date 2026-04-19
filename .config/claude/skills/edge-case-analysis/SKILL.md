@@ -6,6 +6,7 @@ description: >
   Triggers: 'エッジケース', '境界値', 'nilチェック', '異常系', 'what if', '壊れるケース',
   'edge case', 'boundary', 'corner case', 'error path'.
   Do NOT use for S規模タスク(typo修正、1行変更) — オーバーキル。
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob, Agent"
 metadata:
   pattern: reviewer

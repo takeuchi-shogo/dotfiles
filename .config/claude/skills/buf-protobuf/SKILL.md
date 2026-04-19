@@ -11,6 +11,7 @@ description: >
   'protovalidate', 'Iceberg integration', 'proto validation'.
   Do NOT use for general Kafka administration without Buf/Protobuf context —
   use senior-backend instead.
+origin: self
 metadata:
   pattern: tool-wrapper
 ---

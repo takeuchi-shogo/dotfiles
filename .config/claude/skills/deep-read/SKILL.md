@@ -7,6 +7,7 @@ description: |
   '記事の理解を深めたい', '内容を確認したい', 'この記事について質問', '読んだけど理解できてるか確認'.
   Do NOT use for: 記事の要約のみ（直接要約で十分）、リサーチ（use /research）、
   文献ノート作成（use /digest）、記事の知見統合（use /absorb）。
+origin: self
 metadata:
   pattern: pipeline
 ---

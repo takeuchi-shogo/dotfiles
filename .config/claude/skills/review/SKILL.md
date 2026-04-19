@@ -6,6 +6,7 @@ description: >
   言語固有チェックリストは references/review-checklists/ に配置。code-reviewer のプロンプトに注入して使用。
   Triggers: 'レビューして', 'review', 'コードレビュー', 'セルフレビュー', 'check my code'.
   Do NOT use for: 直近の差分確認のみ（use git diff）、100行超の Codex レビュー（use /codex-review）、Product 観点の検証（use /validate）。
+origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 hooks:
   PreToolUse:

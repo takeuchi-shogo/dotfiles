@@ -5,6 +5,7 @@ description: >
   Triggers: user corrections ('no not that', 'instead do', 'don't do X'), recurring patterns (same fix applied 2+ times),
   new project conventions discovered during work, debugging insights worth preserving.
   Do NOT use for one-off fixes or task-specific context — use memory system instead.
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob"
 metadata:
   pattern: pipeline

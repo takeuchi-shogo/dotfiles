@@ -85,9 +85,18 @@ def _store_trace(data: str) -> None:
     _RISK_WEIGHT = {"low": 1, "medium": 3, "high": 10, "critical": 50}
     risk_score = sum(_RISK_WEIGHT.get(r, 1) for r in risk_levels)
 
+    # Evaluator Drift detection — record the model version active during this trace.
+    # Source: mizchi/empirical-prompt-tuning + Anthropic Agent Evals guidance.
+    evaluator_model_version = (
+        os.environ.get("CLAUDE_MODEL_VERSION")
+        or os.environ.get("CLAUDE_MODEL")
+        or "unknown"
+    )
+
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "session_id": session_id,
+        "evaluator_model_version": evaluator_model_version,
         "tool_strategy": {
             "tools_used": tools_used,
             "sequence_pattern": "",  # populated by contrastive-trace-analyzer

@@ -4,6 +4,7 @@ description: >
   AutoEvolve のオンデマンド改善サイクルを実行。学習データの分析 → 知識整理 → 設定改善提案を一括で行う。/improve で起動。
   Triggers: '/improve', '改善提案', '設定見直し', 'autoevolve', 'optimize setup'.
   Do NOT use for: 外部記事の統合（use /absorb）、スキル個別の改善（use /skill-creator）、コードベース監査（use /audit）。
+origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline
@@ -69,6 +70,19 @@ tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl 2>/dev/null | jq -r
   「改善余地が縮小しています。`/audit`, `/refactor-session`, `/improve --deep` を検討してください」
 - 5件未満: スキップ（データ蓄積中）
 - 5件の平均 > 0.30: 通常通り Phase 2 へ進む
+
+#### Dual-Axis 安定性チェック (mizchi/empirical-prompt-tuning)
+
+adoption_rate に加え、以下の定量・定性シグナルの安定性を 2 iteration 連続で確認:
+
+- **tool_uses.total_count**: ±10-15% の範囲で安定
+- **tool_uses.precision**: 0.70 以上を維持
+- **ambiguity_count**: 新規の曖昧さが 0 件 (2 iteration 連続)
+- **holdout シナリオの pass_rate**: train シナリオと乖離 ≤ 5pp
+
+上記を全て満たすと **真の収束**。いずれかが不安定なら改善継続。
+データソース: `~/.claude/agent-memory/qualitative-signals/qualitative_signals.jsonl`
+Schema: `references/qualitative-signals-spec.md`
 
 4. **前回ラン状態の読み込み** — `~/.claude/agent-memory/improvement-backlog.md` と最新の `runs/*/winning-direction.md` を Read。存在しない場合はスキップ（初回実行時）。Phase 3 の autoevolve-core プロンプトに注入する。
 

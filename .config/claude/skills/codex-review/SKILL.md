@@ -6,6 +6,7 @@ description: >
   結果をコメント投稿可能。実装・編集には codex スキルを使うこと。
   S規模以上の全変更で Review Gate として使用可能。/review スキルからの自動起動にも対応。
   Do NOT use for posting comments without user confirmation — always preview before posting.
+origin: self
 allowed-tools: "Read, Bash, Grep, Glob, Agent, AskUserQuestion"
 disable-model-invocation: true
 metadata:

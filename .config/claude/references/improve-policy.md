@@ -205,7 +205,14 @@ PostHog の「weekly traces hour」は個人 harness では不採用。理由:
 5. **ロールバック可能な変更のみ** — 不可逆な変更は提案のみ
 6. **スキル改善は実行データ5回以上** — データ不足での改善は行わない
 7. **retire は段階的** — まず `[DEPRECATED]` 付与、次回 audit で改善なければ削除提案
-8. **修正後の A/B delta が +2pp 未満なら merge しない** — SkillsBench 研究 (7,308 runs) でノイズマージンが ±2pp と判明。それ以下の改善は統計的に有意でない
+8. **修正後の A/B delta カテゴリ別 MDE (minimum detectable effect)** — 汎用の ±2pp 閾値をタスクカテゴリ別に分解する (Autogenesis T3 採用):
+   - **retrieval tasks** (検索、grep、fetch 系): merge +3pp / revert -2pp — ベースライン散らばりが大きいため高めの閾値
+   - **generation tasks** (コード生成、要約): merge +2pp / revert -2pp — 従来の SkillsBench 基準
+   - **gate/classifier tasks** (gaming-detector, completion-gate): merge +1pp / revert -1pp — 判定の安定性が本質、小さな delta でも累積効果大
+   - holdout 明文化: eval と improvement で同じ holdout を使わない (overfitting 防止)。`scripts/eval/split_holdout.py` の train (70%) / holdout (30%) を維持し、holdout は merge 判定専用とする
+   - **ceiling aware**: baseline >= 0.9 の場合、delta 閾値を緩める (+1pp で merge 可)。既に天井付近では統計的差が小さくなる
+   - task_category の宣言: skill は `skill-inventory.md` で `task_category: retrieval|generation|gate` を必須化 (未指定は generation 扱い、safe default)
+   - 根拠: SkillsBench (7,308 runs) の ±2pp ノイズマージンは generation task 基準。retrieval/gate は別分布 (Autogenesis T3 Codex 格下げ)
 9. **スキル修正後は必ずベースラインテスト** — 修正前にスキルなし性能を測定し、修正後も同テストを実行。delta を定量化してから merge 判断
 10. **LLM 自動生成の修正は人間レビュー必須** — SkillsBench で LLM 自己生成スキルは平均 -1.3pp。`skills/*/SKILL.md` および `agents/*.md` の変更は自動マージ条件から除外。`gate_proposal()` が `auto_accept` を返しても、これらのファイル変更は `pending_review` に格下げ
 11. **Brevity Bias 対策** — エージェント定義のドメイン知識セクション（Symptom-Cause-Fix テーブル、コードパターン、failure modes）は簡潔化の対象外。ACE 研究 [Zhang+ 2026] で反復最適化がプロンプトを汎用的に崩壊させる傾向が確認されている。行動指示（tools, permissions, format）のみ簡潔化対象
@@ -242,6 +249,20 @@ PostHog の「weekly traces hour」は個人 harness では不採用。理由:
 43. **Holdout Validation Gate 方向性 (meta-agent Pattern)** — `--evolve` ループで holdout セット概念を導入する方向で検討する。各イテレーションの変更は search セット（改善対象）で評価し、最終的な accept/reject は holdout セット（未見データ）で判定する。search/holdout 比率は 70/30 を目安とする。現時点では skill-audit の A/B ベンチマークで代替するが、将来的に自動化する。根拠: meta-agent (Anthropic 2026) — holdout validation なしでは search accuracy は上がるが汎化しない。**実装状況**: `scripts/eval/split_holdout.py` で reviewer eval tuples の層化サンプリング（train 70% / holdout 30%）が実装済み。出力: `reviewer-eval-train.json` / `reviewer-eval-holdout.json`。evolve ループへの自動接続は未実装（次ステップ: Phase 4 Feedback Loop から split_holdout.py を呼び出し、holdout セットで最終判定する）
 
 44. **タスクカテゴリ別ルーブリック評価 (DR Self-Optimization Pattern)** — `/improve` の Phase 2 (Analyze) で、汎用スコアではなくタスクカテゴリ別の評価基準を生成する。手順: (1) `skill-executions.jsonl` のエントリを `task_type` でグルーピング、(2) カテゴリごとに「良い出力の基準」を 3-5 項目で定義（例: code-review なら「指摘の具体性」「false positive 率」「修正提案の実行可能性」）、(3) 各トレースをカテゴリ別基準で再評価し、カテゴリ間の品質差異を検出。汎用オプティマイザがタスク固有信号を欠くと改善が停滞する（Câmara+ 2026: OpenAI optimizer 0.583 vs GEPA 0.705）。ルーブリックは `/improve` 実行ごとに再生成し、永続化しない（タスク分布の変化に追従するため）
+
+45. **Co-evolution 操作空間制約 (Autogenesis/AFlow Pattern)** — Phase 2.0 candidate 生成時、`resource_targets: ["prompt" | "config" | "strategy"]` を付与する。1 候補内での同時変更は最大 2 resource まで (dotfiles blast radius 対策)。2 resource 同時変更時は `interaction_hypothesis` を必須とする。3 候補の中に少なくとも 1 つは single-resource baseline を含める (ablation 保証)。全 3 要素同時変更の候補は生成禁止。mutation_type (refine/pivot/novel) は lineage 分類であり `resource_targets` と直交して使う。根拠: Autogenesis (arxiv 2604.15034) の SEPL、AFlow / ADAS で prompt + strategy 同時進化が単一次元進化を上回ることが実証。詳細 schema: `references/proposal-schema.md`
+
+47. **Holdout Validation Gate (Empirical Prompt Tuning T2)** — `--evolve` ループの収束判定に holdout シナリオを必須化する。手順: (1) spec の `scenarios: holdout_scenarios` を eval セットから分離保持、(2) improve サイクルの各イテレーションで search セットのみ最適化、(3) convergence 候補時に holdout セットで再評価、(4) holdout pass_rate が search pass_rate と ±5pp 以内なら真の収束、超えたら over-fitting として revert。根拠: arXiv:2211.01910 Holdout Contamination — 評価ケースを最適化ループに混入させると overfitting が発生する。`references/qualitative-signals-spec.md` の Convergence 判定と統合して運用。既存の `split_holdout.py` (Rule 43 実装) と組み合わせる。**実装状況**: spec template (`skills/spec/templates/prompt-as-prd-template.md`) に `scenarios: median/edge_cases/holdout_scenarios` セクション追加済み。`scripts/policy/spec-quality-check.py` が median の存在を advisory でチェック。improve ループから holdout を `split_holdout.py` と連動して分離読み込みする wiring は次サイクルで追加予定 (operator が当面は convergence 候補時に holdout_scenarios 手動実行)
+
+48. **Evaluator Drift 検出 (Empirical Prompt Tuning T2)** — 評価用 LLM のバージョン変更による基準変動を検出する。手順: (1) `session-trace-store.py` が `evaluator_model_version` (`CLAUDE_MODEL_VERSION` / `CLAUDE_MODEL` 環境変数) を毎エントリに記録、(2) `improve-history.jsonl` の各サイクルに `evaluator_model_version` を含める、(3) 同一 version で 5 サイクル以上**連続**した場合、`/improve` 実行時に「Evaluator Drift の可能性あり。異モデルでの smoke test を推奨」と警告、(4) モデル version 変更時はベースラインの再計測を必須化。根拠: Anthropic Agent Evals + mizchi/empirical-prompt-tuning — 評価者 LLM のアップデートは基準そのものを動かす。**実装状況**: `session-trace-store.py` で記録は実装済み。`/improve` Phase 1 の Convergence Check で `improve-history.jsonl` の evaluator_model_version を tail -5 して同一 version 5 連続を検出する wiring は次サイクルで追加予定。検出ロジック (最小):
+
+    ```bash
+    tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl 2>/dev/null \
+      | jq -r '.evaluator_model_version // "unknown"' | sort -u | wc -l
+    # 結果が 1 で 5 件の tail がある場合 → Evaluator Drift 警告
+    ```
+
+46. **Cost-aware Evolution Gate (Autogenesis T5)** — AutoEvolve の各サイクルで cumulative API cost を `runs/YYYY-MM-DD/cycle-cost.json` に記録し、予算閾値で gate 判定する。運用: (1) Phase 1.0 で `scripts/policy/cost-gate.py init <run_dir>` により空の cycle-cost.json を初期化、(2) Codex/Gemini 呼び出しや Phase 2 A/B eval 完了時に `cost-gate.py add` で entry を追記、(3) Phase 2.5 開始前および Phase 3 開始前に `cost-gate.py check` で verdict を確認。閾値 (環境変数 `CYCLE_COST_WARN_USD` / `CYCLE_COST_STOP_USD` で上書き可): warn $5 (コスト逆転リスクの再評価を要求)、stop $10 (サイクルを停止、ユーザー override なしに継続禁止)。cost 取得不能な場合は entry を追加せず pass (null 記録で後から精緻化)。値は暫定で、運用後のログから調整する。根拠: Gemini 指摘 "$1 問題に $10 API 費" (iterative evolution でのコスト逆転)、AlphaLab Convergence-Aware Budgeting
 
 38. **CLI-over-Logs 原則 (Meta-Harness Navigable Logs)** — `/improve` の Analyze フェーズでトレース履歴を探索する際、生ログを逐次読むのではなく、構造化クエリで必要な情報にアクセスする。session-trace-store が提供すべきクエリ: (1) Pareto frontier 一覧（精度 vs コスト）、(2) top-k 候補の一覧、(3) 候補間の diff。ログは JSON 等の machine-readable 形式で階層的に構造化する。根拠: Meta-Harness (Lee+ 2026) 実装 Tips — "Build a small CLI over the logs" + "Log everything in a navigable format"
 39. **評価の Proposer 外部化 (Critic-Refiner 分離強化)** — `/improve` の評価（スコアリング）は Proposer（改善提案者）の外で自動実行する。Proposer が自分の提案を自分で評価すると、確証バイアスで過大評価する。具体的には: (1) `--evolve` ループの A/B テスト実行は Proposer コンテキストの外で行う、(2) スコアリングスクリプトは Proposer が変更不可（Rule 22 の延長）、(3) 結果は FS に書き込み、Proposer は読み取りのみ。根拠: Meta-Harness (Lee+ 2026) — "Automate evaluation outside the proposer" + AutoHarness Critic-Refiner 分離原則

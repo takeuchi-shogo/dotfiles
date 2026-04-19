@@ -4,6 +4,7 @@ description: >
   GTD式の週次レビュー。全 Issue の棚卸し、滞留タスク検出、inbox 処理、優先度見直しを対話形式で実施。週末や週明けに使用。
   Triggers: '週次レビュー', 'weekly-review', '棚卸し', '今週の振り返り', 'weekly review'.
   Do NOT use for: 朝の計画（use /morning）、日報（use /daily-report）、夕方の振り返り（use /timekeeper review）。
+origin: self
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Grep, Glob
 metadata:

@@ -4,6 +4,7 @@ description: >
   画像を GitHub PR に埋め込む。agent-browser CLI または gh CLI でコメント経由アップロードし、永続 URL を PR 本文に挿入。
   Triggers: 'PR に画像', '画像アップロード', 'スクショを PR に', 'embed image in PR', 'PR image'.
   Do NOT use for: 画像生成（use /nano-banana）、スクリーンショット取得のみ（use agent-browser CLI）。
+origin: self
 allowed-tools: Bash, Read, Write, Edit
 user-invocable: true
 disable-model-invocation: true

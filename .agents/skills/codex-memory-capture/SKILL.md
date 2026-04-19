@@ -1,6 +1,7 @@
 ---
 name: codex-memory-capture
 description: Lightweight durable memory workflow for Codex. Use when a repo-specific rule repeats, a user corrects the agent, a validation nuance is discovered, or a harness-level failure should be remembered across future sessions.
+platforms: [agents, codex]
 ---
 
 # Codex Memory Capture

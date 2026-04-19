@@ -5,6 +5,7 @@ description: >
   AgentShield でエージェント設定のセキュリティ監査を実行する。CLAUDE.md、hooks、skills の安全性を検証。
   Triggers: 'security-scan', 'AgentShield', 'エージェント監査', 'agent security', '設定の安全性'.
   Do NOT use for: コードのセキュリティレビュー（use /security-review）、コード品質監査（use /audit）。
+origin: self
 ---
 
 # Security Scan (AgentShield)

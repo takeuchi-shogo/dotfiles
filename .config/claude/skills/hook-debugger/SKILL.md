@@ -5,6 +5,7 @@ description: >
   Triggers: 'hook が動かない', 'hook not firing', 'hook error', 'フック デバッグ',
   'hook debug', 'PostToolUse が発火しない', 'PreToolUse が効かない'.
   Do NOT use for hook の新規作成 — use /update-config skill instead.
+origin: self
 allowed-tools: Read, Bash, Grep, Glob
 metadata:
   pattern: runbook

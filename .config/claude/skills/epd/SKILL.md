@@ -1,6 +1,7 @@
 ---
 name: epd
 description: "EPD統合ワークフロー。Spec → Spike → Validate → Implement → Review の一連のフローを実行。Harrison Chase の Builder or Reviewer パラダイムに基づく。大きな機能開発で使用。Triggers: 'EPD', '大きな機能', 'フル開発フロー', '仕様から実装まで', 'end-to-end implementation'. Do NOT use for: 仕様が明確な中規模タスク（use /rpi）、プロトタイプのみ（use /spike）、仕様作成のみ（use /spec）。"
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree, EnterPlanMode, ExitPlanMode
 user-invocable: true
 metadata:

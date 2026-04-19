@@ -6,6 +6,7 @@ description: >
   長時間タスクの中断前やセッション切り替え時に使用。
   Triggers: 'checkpoint', '作業保存', 'セーブ', 'save state', '中断前に', 'handoff', 'running brief', 'ブリーフ更新'.
   Do NOT use for: git commit（use /commit）、日報作成（use /daily-report）、自動チェックポイント（hook が処理）。
+origin: self
 allowed-tools: Bash, Read, Write, Edit, Glob
 metadata:
   pattern: executor

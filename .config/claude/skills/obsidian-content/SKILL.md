@@ -1,6 +1,7 @@
 ---
 name: obsidian-content
 description: "Use when generating content (newsletters, blog posts, tweet threads) from your Obsidian Vault. Searches notes and follows your writing style. Triggers: 'ニュースレター書いて', 'ブログ記事', 'ツイート生成', 'Vault からコンテンツ'. Do NOT use for: ノート検索・整理のみ (use obsidian-knowledge), Vault 初期セットアップ (use obsidian-vault-setup). Markdown syntax/embeds/callouts → defer to obsidian plugin skills."
+origin: self
 metadata:
   pattern: generator
 ---

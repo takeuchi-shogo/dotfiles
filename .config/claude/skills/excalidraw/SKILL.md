@@ -6,6 +6,7 @@ description: >
   Obsidian Excalidraw プラグインでそのまま開ける。
   Triggers: 'Excalidraw', 'ダイアグラム生成', '図を描いて', 'アーキテクチャ図', 'フローチャート', 'マインドマップ'.
   Do NOT use for: スクリーンショット取得 (use agent-browser CLI)、AI画像生成 (use /nano-banana)、Mermaid テキスト図。
+origin: self
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 user-invocable: true
 argument-hint: [description] | --type flowchart|architecture|mindmap|decision-tree

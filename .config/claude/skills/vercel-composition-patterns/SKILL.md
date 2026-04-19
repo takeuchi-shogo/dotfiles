@@ -6,6 +6,7 @@ description: >
   designing reusable APIs. Includes React 19 API changes.
   Triggers: 'compound component', 'render props', 'context provider', 'コンポジション', 'prop 爆発', 'コンポーネント設計パターン', 'component architecture'.
   Do NOT use for: パフォーマンス最適化（use /react-best-practices）、状態管理選定（use /senior-frontend）、UI/UXデザイン（use /frontend-design）。
+origin: external
 license: MIT
 metadata:
   author: vercel

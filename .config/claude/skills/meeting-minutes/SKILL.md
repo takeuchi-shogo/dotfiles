@@ -4,6 +4,7 @@ description: >
   会議の議事録やメモから決定事項・アクション項目を抽出し、GitHub Issues の更新を提案する。承認後に一括反映。定例会議後の処理を自動化。
   Triggers: '議事録', 'meeting-minutes', '会議メモ', 'アクション項目', 'meeting notes'.
   Do NOT use for: 日報作成（use /daily-report）、仕様書作成（use /spec）、Issue の個別操作（use /kanban）。
+origin: self
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Read
 argument-hint: "<meeting notes or file path>"

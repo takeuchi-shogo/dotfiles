@@ -1,6 +1,7 @@
 ---
 name: codex-verification-before-completion
 description: Mandatory verification workflow for Codex. Use before declaring work complete, after edits, before commit or review-ready reports, or whenever you need evidence from build, test, lint, diff, or validation commands.
+platforms: [agents, codex]
 ---
 
 # Codex Verification Before Completion

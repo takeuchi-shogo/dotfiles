@@ -5,6 +5,7 @@ description: >
   Blocks Edit/Write with a confirmation guard so you only add logs, not 'fix' unrelated code.
   Triggers: 'freeze', '編集禁止', 'デバッグモード', 'read-only mode', '修正しないで'.
   Do NOT use for: normal development or review (use /review which has its own Edit guard).
+origin: self
 metadata:
   pattern: guard
 hooks:

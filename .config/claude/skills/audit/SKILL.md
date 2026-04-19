@@ -9,6 +9,7 @@ description: >
   'コードの健全性', 'codebase health'.
   Do NOT use for: 直近の差分レビュー (use /review)、ドキュメント鮮度チェック (use /check-health)、
   AI ワークフロー監査 (use /ai-workflow-audit)。
+origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline

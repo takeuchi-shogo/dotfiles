@@ -1,6 +1,7 @@
 ---
 name: absorb
 description: "外部記事・論文・リポジトリの知見を現在のセットアップに統合する。ギャップ分析→選別→統合プラン生成。記事を貼って「活かしたい」「考えて」と言われたときに使用。Triggers: '活かしたい', '取り込みたい', '考えて', 'absorb', '統合して', 'この記事', 'integrate'. Do NOT use for: 単純な記事要約（直接回答で十分）、リサーチ（use /research）、ノート保存（use /note or /digest）。"
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch
 user-invocable: true
 metadata:

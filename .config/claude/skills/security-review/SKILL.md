@@ -5,6 +5,7 @@ description: >
   Run OWASP Top 10 security review on recent code changes. 直近のコード変更に対するセキュリティレビュー。
   Triggers: 'security-review', 'セキュリティレビュー', 'OWASP', 'セキュリティチェック', 'vulnerability check'.
   Do NOT use for: エージェント設定の監査（use /security-scan）、コード品質レビュー（use /review）。
+origin: self
 ---
 
 # Security Review

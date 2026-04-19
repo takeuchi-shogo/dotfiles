@@ -11,6 +11,7 @@ description: >
   'ロールプレイ', '対話練習'.
   Do NOT use for: 選択肢のトレードオフ比較（use /debate）、記事の理解度チェック（use /deep-read）、
   要件のブレスト（use superpowers:brainstorming）、タスク計画（use /timekeeper plan）。
+origin: self
 argument-hint: session | update | decision | roleplay
 allowed-tools: Read, Write, Edit, Glob, AskUserQuestion
 metadata:

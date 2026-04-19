@@ -5,6 +5,7 @@ description: >
   OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.4 by default.
   Triggers: 'codex', 'codex exec', 'codex resume', 'Codex で', 'gpt-5.4 で分析'.
   Do NOT use for: コードレビュー（use /codex-review）、デバッグ（use debugger agent）、リサーチ（use /gemini or /research）。
+origin: self
 metadata:
   pattern: tool-wrapper
 ---

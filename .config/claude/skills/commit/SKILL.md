@@ -6,6 +6,7 @@ description: >
   conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。
   Triggers: 'commit', 'コミット', 'コミットして', 'save changes', 'git commit'.
   Do NOT use for: PR 作成（use /pull-request）、チェックポイント保存（use /checkpoint）。
+origin: self
 ---
 
 # Smart Git Commit

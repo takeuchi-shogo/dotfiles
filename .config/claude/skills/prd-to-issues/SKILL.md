@@ -7,6 +7,7 @@ description: >
   'タスク分解', 'PRD からタスク', 'Kanban', 'tracer bullet'.
   Do NOT use for: 単一 Issue 作成（use /create-issue）、仕様策定（use /spec）、
   実装込みフロー（use /epd）。
+origin: self
 allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
 metadata:
   pattern: decomposition

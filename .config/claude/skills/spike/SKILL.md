@@ -6,6 +6,7 @@ description: >
   'spike', '実験', 'feasibility', 'これって可能？', 'quick test'.
   Do NOT use when spec is clear and ready for production — use /rpi or /epd instead.
   テスト・lint 不要。
+origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, EnterWorktree
 user-invocable: true
 metadata:

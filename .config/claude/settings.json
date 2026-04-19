@@ -661,6 +661,16 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/measure-instruction-budget.py 2>> $HOME/.claude/logs/precompact-errors.log || true",
+            "timeout": 10,
+            "statusMessage": "Measuring instruction budget..."
+          }
+        ]
       }
     ],
     "PostCompact": [

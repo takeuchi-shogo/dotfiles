@@ -7,6 +7,7 @@ description: >
   persona で指定した視点からの評価を実施。
   Triggers: 'challenge', 'もっと良い方法', 'エレガントに', 'prove it', '本当にこれでいい？', '別のアプローチ', 'ペルソナ評価', 'この人の視点で'.
   Do NOT use for: 通常のコードレビュー（use /review）、プランのストレステスト（use /grill-interview）、思考の深掘り（use /think）。
+origin: self
 ---
 
 # Challenge Mode

@@ -1,6 +1,7 @@
 ---
 name: dotfiles-config-validation
 description: Validation guide for this dotfiles repository. Use when editing shell, window manager, Claude, Codex, README, or symlink-managed files in this repo and you need the smallest relevant validation command.
+platforms: [agents, codex]
 ---
 
 # Dotfiles Config Validation

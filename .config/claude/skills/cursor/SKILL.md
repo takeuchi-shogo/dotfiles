@@ -6,6 +6,7 @@ description: >
   Triggers: 'cursor', 'Cursor で', 'cursor agent', 'Cloud Agent で', 'agent -p'.
   Do NOT use for: 1Mコンテキスト分析（use /gemini）、深い推論レビュー（use /codex）、
   Claude で十分な軽量タスク（use Agent tool directly）。
+origin: self
 metadata:
   pattern: tool-wrapper
 ---

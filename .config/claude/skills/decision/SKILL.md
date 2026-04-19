@@ -5,6 +5,7 @@ description: >
   references/decision-journal.md に追記 + Obsidian Daily Note に同期。
   Triggers: '/decision', '決定記録', 'decision journal', '判断を記録', 'ADR lite'.
   Do NOT use for: アーキテクチャ決定記録（docs/adr/ に直接書く）、思考の壁打ち（use /think）。
+origin: self
 allowed-tools: Read, Edit, Write, AskUserQuestion, Bash(date *)
 metadata:
   pattern: collector+writer

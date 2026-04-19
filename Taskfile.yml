@@ -119,3 +119,28 @@ tasks:
     desc: Run the repo-local Codex janitor workflow runner
     cmds:
       - python3 ~/dotfiles/tools/codex-janitor/runner.py {{.CLI_ARGS}}
+
+  skills:drift-check:
+    desc: Detect drift between skills-lock.json provenance and upstream HEAD
+    cmds:
+      - bash ~/dotfiles/scripts/runtime/skill-drift-check.sh {{.CLI_ARGS}}
+
+  skills:verify:
+    desc: Verify installed external skills against computedHash in skills-lock.json
+    cmds:
+      - bash ~/dotfiles/scripts/runtime/skill-hash-verify.sh
+
+  skills:rollback:
+    desc: 'Roll back skills-lock.json to a previous snapshot (usage: task skills:rollback -- --to=TIMESTAMP)'
+    cmds:
+      - bash ~/dotfiles/scripts/runtime/skill-rollback.sh {{.CLI_ARGS}}
+
+  skills:install-gh:
+    desc: 'Experimental wrapper over `gh skill install` (requires gh CLI v2.90+)'
+    cmds:
+      - bash ~/dotfiles/scripts/experimental/gh-skill-wrapper.sh install {{.CLI_ARGS}}
+
+  skills:search-gh:
+    desc: 'Experimental wrapper over `gh skill search` (requires gh CLI v2.90+)'
+    cmds:
+      - bash ~/dotfiles/scripts/experimental/gh-skill-wrapper.sh search {{.CLI_ARGS}}
