@@ -39,3 +39,4 @@ dotfiles の CLAUDE.md は `<important if>` 条件タグを 6 セクションに
 - [Important-If Conditional Tags Analysis](../../research/2026-03-19-important-if-conditional-tags-analysis.md) — `<important if>` タグによる指示遵守率向上と指示バジェットの制約
 - [Context and Impact Analysis](../../research/2026-03-25-context-and-impact-analysis.md) — 5層コンテキスト収集・Temporal Decay・Ensemble Quality Gate を含む包括的パイプライン
 - [Evaluating AGENTS.md Analysis](../../research/2026-03-18-evaluating-agentsmd-analysis.md) — ETH Zurich による大規模実証。LLM 生成 vs 人間記述のコンテキストファイル性能比較
+- [Harnesses Are Everything (2026-04)](../../research/2026-04-19-harness-everything-absorb-analysis.md) — **instruction budget の真の総量** = CLAUDE.md 本文 + hook 注入 + description + MCP tool 定義。Stanford "Lost in the Middle" 研究が裏付け: 2000 トークン超で指示遵守率 20-30% 低下。**Progressive Disclosure** (lean .md → references → rules) で常時露出を最小化し、dumb zone を回避する。

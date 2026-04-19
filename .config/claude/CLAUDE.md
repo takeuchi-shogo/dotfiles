@@ -53,6 +53,7 @@
 
 <important if="you are modifying hooks, scripts, settings.json, or lint configuration files">
 - Harness contract: `docs/agent-harness-contract.md`。Hook が formatter/policy/completion gate/session を自動実行する
+- Harness Stability: `references/harness-stability.md`。hooks/skills/agents の削除は30日評価後。
 - IMPORTANT: `.eslintrc*`, `biome.json`, `.prettierrc*` 等の lint config は保護対象。設定ではなくコードを直す
 - IMPORTANT: `git commit --no-verify` は絶対に禁止。違反すると hook 体系が無効化される
 - コード変更は Codex Review Gate（codex-reviewer + code-reviewer 並列）を受ける。初回から高品質なコードを書くこと
@@ -123,6 +124,7 @@
 - **判断をゲート化する**: review/gate は suggestion ではなく pass/block 判定を出す（completion-gate, codex-reviewer）
 - **批評を成果物にする**: criticism は会話の副産物ではなく pre-mortem/review/retrospective の 1st-class artifact
 - **失敗 → capability gap → durable artifact**: "try harder" ではなく "what capability is missing, how to make it legible and enforceable"
+- **CLI-first discovery**: 訓練外 CLI は `--help` で引数・サブコマンドを確認してから使う。発見順: CLI → Skills → MCP
 
 </core_principles>
 

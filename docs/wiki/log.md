@@ -8,6 +8,13 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-19] ingest | Harnesses are everything
+
+- ソース: Baseten blog (unverified) 記事、元記事タイトル "Harnesses are everything. Here's how to optimize yours."
+- 判定: Gap 1 (総量 instruction budget 指標), Partial 3 (Human-written/CLI-discovery/Harness Commit), Already 5 (Skills PD, R.P.I, MCP 選別, Parallel fan-out, Sequential pipeline)
+- 取り込み: 6 タスク全採択 (Q1 Harness Commit 弱化, Q2 Human-written 方針, Q3 CLI PD, M1 instruction budget 計測, M2 dead-weight scan, L1 reviewer calibration)
+- 実装完了: Wave 1-3 全て完了、後処理中
+
 ## [2026-04-19] ingest | Top 67 Claude Skills (polydao)
 
 - ソース: X/Twitter 経由の polydao 記事 "Top 67 Claude Skills That Turn a $20 Subscription Into a Full Dev Team"
