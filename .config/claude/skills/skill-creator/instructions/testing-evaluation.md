@@ -110,6 +110,31 @@ Once all runs are done:
 
 1. **Grade each run** — spawn a grader subagent (or grade inline) that reads `agents/grader.md` and evaluates each assertion against the outputs. Save results to `grading.json` in each run directory. The grading.json expectations array must use the fields `text`, `passed`, and `evidence` (not `name`/`met`/`details` or other variants) — the viewer depends on these exact field names. For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
 
+   **Dual-Axis Evaluation (mizchi/empirical-prompt-tuning)**: In addition to assertion pass/fail, the grader MUST populate these fields in `grading.json`:
+
+   ```json
+   {
+     "with_skill": {
+       "assertion_results": [...],
+       "quality_score": 4,
+       "checklist_pass_rate": 0.83,
+       "tool_uses": {
+         "total_count": 12,
+         "precision": 0.75,
+         "by_tool": {"Read": 5, "Grep": 3, "Edit": 4}
+       },
+       "qualitative_signals": {
+         "ambiguity": [{"location": "step 3", "description": "...", "severity": "high"}],
+         "retry": [{"tool": "Grep", "count": 3, "reason": "..."}],
+         "failure_reason": {"category": "prompt_unclear|model_limitation|env_issue|none", "detail": "..."}
+       },
+       "evaluator_model_version": "claude-opus-4-7"
+     }
+   }
+   ```
+
+   Additionally, append the same payload as one line to `~/.claude/agent-memory/qualitative-signals/qualitative_signals.jsonl` (redact secrets first). Schema: `references/qualitative-signals-spec.md`. Purpose: detect Reward Hacking (arXiv:2403.03023) by requiring Precision of Tool Use alongside tool_count, and enable Convergence detection via ambiguity-gone-to-zero + ±10-15% metric stability over 2 consecutive iterations.
+
 2. **Aggregate into benchmark** — run the aggregation script from the skill-creator directory:
 
    ```bash

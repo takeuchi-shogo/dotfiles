@@ -43,6 +43,28 @@ _AMBIGUOUS_CRITERIA = re.compile(
     r"うまく動く|正しく処理|適切に処理|問題なく|works correctly|handles properly"
 )
 
+# Scenario section detection — empirical-prompt-tuning T3.
+# Advisory: median が未記載だと baseline が組めない (mizchi/empirical-prompt-tuning)
+_SCENARIOS_SECTION_RE = re.compile(r"^##\s+Scenarios\s*$", re.MULTILINE)
+_SCENARIO_MEDIAN_RE = re.compile(r"^###\s+median\s*$", re.MULTILINE | re.IGNORECASE)
+
+
+def _check_scenarios(content: str) -> list[str]:
+    """Advisory: Scenarios + median を確認 (empirical-prompt-tuning T3)."""
+    findings: list[str] = []
+    if not _SCENARIOS_SECTION_RE.search(content):
+        findings.append(
+            "⚠️ 推奨セクション '## Scenarios' が見つかりません"
+            "（median/edge_cases/holdout_scenarios で baseline を構成してください）"
+        )
+        return findings
+    if not _SCENARIO_MEDIAN_RE.search(content):
+        findings.append(
+            "⚠️ '### median' シナリオが未記載です"
+            "（baseline に最低 1 つの中央値シナリオが必要）"
+        )
+    return findings
+
 
 def _check_qualitative(content: str) -> list[str]:
     findings = []
@@ -111,6 +133,7 @@ def main() -> None:
     findings.extend(_check_qualitative(content))
     findings.extend(_check_required_sections(content))
     findings.extend(_check_ambiguous_criteria(content))
+    findings.extend(_check_scenarios(content))
 
     if not findings:
         output_passthrough(data)

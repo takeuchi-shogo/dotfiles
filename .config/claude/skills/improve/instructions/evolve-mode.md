@@ -29,6 +29,12 @@
 4. **Builder**: Proposer の提案を **worktree 上で** 実装（`autoevolve/*` ブランチ）
 5. **検証**: `skill-audit` の A/B パイプライン（`run_eval.sh` → `compare.sh` → `aggregate.py`）→ `gate_proposal()` 判定
    - checklist 付き eval の場合: `checklist_pass_rate` を主要メトリクスとして使用
+   - **Dual-Axis 必須** (mizchi/empirical-prompt-tuning): 定量指標 (pass_rate, tool_count, tool_precision, duration_ms) と定性シグナル (ambiguity_count, retry_count, failure_category) の両方を grader 出力に含める
+   - grader は各 eval 実行後に以下を `grading.json` に書き込む:
+     - `tool_uses`: {total_count, precision, by_tool} — Precision of Tool Use は Reward Hacking 対策 (arXiv:2403.03023)
+     - `qualitative_signals`: {ambiguity, retry, failure_reason} — schema は `references/qualitative-signals-spec.md`
+     - `evaluator_model_version`: grader に使った LLM モデル ID (Evaluator Drift 検出)
+   - `qualitative_signals` 省略時は aggregate.py が後方互換で pass_rate/quality_score のみ記録
 5b. **Verdict 記録**: 検証結果を `emit_proposal_verdict()` で記録:
     ```python
     from session_events import emit_proposal_verdict

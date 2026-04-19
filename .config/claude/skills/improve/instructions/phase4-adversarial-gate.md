@@ -9,6 +9,36 @@
 提案者（Sonnet）とは別のモデル（Codex）が攻撃者として振る舞うことで、
 単一視点の盲点を構造的に排除する。
 
+## Blind Review 契約 (Self-preference Bias 対策)
+
+> 出典: mizchi/empirical-prompt-tuning + Anthropic Agent Evals 公式手法
+> 背景: 同モデルファミリーの evaluator は甘くなる (Self-preference Bias)。
+> session_id を切り替えるだけでは memory 由来のバイアスが残存する。
+
+以下の契約を必ず守る。違反した場合はレビュー結果を破棄して再実行する:
+
+1. **異モデル必須**: Proposer と Adversarial Gate は異なるモデルファミリーを使用する。
+   - Proposer: Sonnet (autoevolve-core)
+   - Gate: Codex (gpt-5.4) — **同一 Sonnet family での自己批評は禁止**
+   - Gate を Claude 系列で動かす必要がある場合は、少なくとも異なる世代 (Opus など) を使用する
+
+2. **Local Memory Disable**: Codex 起動時に以下の環境変数を明示的に設定する:
+   ```bash
+   CODEX_MEMORY_DISABLED=1 \
+   CLAUDE_PROJECT_MEMORY_DISABLED=1 \
+   codex exec --skip-git-repo-check -m gpt-5.4 ...
+   ```
+   Proposer が書き込んだ memory / learnings を Gate が読まないようにする。
+
+   **注**: 上記環境変数は Codex CLI 側で対応している場合のみ有効。未対応の場合は以下を fallback として実施する: (a) prompt に `AGENT_MEMORY.md` や CLAUDE.md プロジェクト memory を含めない、(b) Gate に渡す入力を `proposals.jsonl` + `coverage-matrix` のみに限定する (Input 純化 — Blind Review 契約 #3 と一体運用)、(c) Codex CLI が将来サポートした時点で env var 方式に切り替える。
+
+3. **入力の純化**: Gate に渡すのは `proposals.jsonl` と `coverage-matrix` のみ。
+   Proposer の思考ログや中間成果物を渡さない。
+
+4. **Evaluator モデル version 記録**: Gate 実行結果に `gate_model_version` を必須記録する。
+   同一モデル version が 5 サイクル以上連続した場合、Evaluator Drift の可能性を警告する
+   (mizchi 記事 + `references/improve-policy.md` Rule 48 参照)。
+
 ## Codex 実行
 
 `codex exec` を使用して以下のプロンプトを実行する:

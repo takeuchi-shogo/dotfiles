@@ -81,6 +81,36 @@ def collect_eval_data(
         if checklist_pass_rate is not None:
             entry["checklist_pass_rate"] = round(checklist_pass_rate, 4)
 
+        # Tool-use metrics — Reward Hacking 対策で Precision of Tool Use を併用
+        # Source: mizchi/empirical-prompt-tuning, arXiv:2403.03023
+        tool_uses = config_grading.get("tool_uses") or {}
+        if isinstance(tool_uses, dict):
+            total_count = tool_uses.get("total_count")
+            precision = tool_uses.get("precision")
+            if isinstance(total_count, int):
+                entry["tool_count"] = total_count
+            if isinstance(precision, (int, float)):
+                entry["tool_precision"] = round(float(precision), 4)
+
+        # Qualitative signals — ambiguity/retry/failure_reason
+        # Schema: references/qualitative-signals-spec.md
+        # Only populate fields if qualitative_signals is explicitly present
+        # (backwards-compatible with legacy grading.json).
+        signals = config_grading.get("qualitative_signals")
+        if isinstance(signals, dict):
+            amb = signals.get("ambiguity") or []
+            retry = signals.get("retry") or []
+            entry["ambiguity_count"] = len(amb) if isinstance(amb, list) else 0
+            entry["retry_count"] = len(retry) if isinstance(retry, list) else 0
+            fr = signals.get("failure_reason") or {}
+            if isinstance(fr, dict):
+                entry["failure_category"] = fr.get("category", "none")
+
+        # Evaluator drift — record grader model version if present
+        evaluator_version = config_grading.get("evaluator_model_version")
+        if evaluator_version:
+            entry["evaluator_model_version"] = evaluator_version
+
         result[config_name] = entry
 
     return result

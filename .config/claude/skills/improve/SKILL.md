@@ -71,6 +71,19 @@ tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl 2>/dev/null | jq -r
 - 5件未満: スキップ（データ蓄積中）
 - 5件の平均 > 0.30: 通常通り Phase 2 へ進む
 
+#### Dual-Axis 安定性チェック (mizchi/empirical-prompt-tuning)
+
+adoption_rate に加え、以下の定量・定性シグナルの安定性を 2 iteration 連続で確認:
+
+- **tool_uses.total_count**: ±10-15% の範囲で安定
+- **tool_uses.precision**: 0.70 以上を維持
+- **ambiguity_count**: 新規の曖昧さが 0 件 (2 iteration 連続)
+- **holdout シナリオの pass_rate**: train シナリオと乖離 ≤ 5pp
+
+上記を全て満たすと **真の収束**。いずれかが不安定なら改善継続。
+データソース: `~/.claude/agent-memory/qualitative-signals/qualitative_signals.jsonl`
+Schema: `references/qualitative-signals-spec.md`
+
 4. **前回ラン状態の読み込み** — `~/.claude/agent-memory/improvement-backlog.md` と最新の `runs/*/winning-direction.md` を Read。存在しない場合はスキップ（初回実行時）。Phase 3 の autoevolve-core プロンプトに注入する。
 
 ## Phase 2: ANALYZE — Coverage Matrix + Codex Deep
