@@ -36,6 +36,15 @@ alwaysApply: true
 - **最小インパクト**: 必要な箇所だけ触る。無関係な差分を広げない
 - **検索してから実装**: 既存の解決策がないか確認してからコードを書く
 
+## Karpathy 4 原則 (LLM failure modes への対抗)
+
+LLM が陥りがちな 4 つの失敗 (仮定・過度な複雑化・無関係な編集・曖昧なゴール) に対抗する行動原則。非自明なタスクで適用する。
+
+- **Think Before Coding**: 仮定を明示化する。複数解釈があれば列挙して選ばせる。不明点で停止する。沈黙して推測しない
+- **Simplicity First**: 要件外の機能ゼロ。単一用途のコードは抽象化しない。200 行で書けたものが 50 行で済むなら書き直す
+- **Surgical Changes**: scope 外のコード・コメント・整形を「改善」しない。既存スタイルに match させる。削除していいのは自分の変更が引き起こした orphan のみ
+- **Goal-Driven Execution**: "add X" を "write test → make pass → verify" に変換する。成功基準を verifiable に定義してから実装する
+
 ## Editing Defaults
 
 - 変更は既存の命名規則・構成・formatter に従う
