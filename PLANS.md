@@ -21,10 +21,18 @@
 ## Required Sections
 
 ```md
+---
+success_criteria: "1行で書ける検証可能な完了条件（任意、completion-gate が Ralph Loop で参照する）"
+---
+
 # <Task title>
 
 ## Goal
 - 何を変えるか
+
+## Success Criteria
+- 完了したと言える verifiable な条件（テスト・コマンド・観測可能な結果）
+- 「make it work」ではなく「これが通れば完了」の形で書く
 
 ## Scope
 - 触るファイル、触らないファイル
@@ -65,6 +73,7 @@
 - 重要な方針変更は `Decision Log` に残す
 - 中断前は checkpoint と plan の両方を最新化する
 - 並列で別 task を進めるときは worktree で filesystem を分離する
+- frontmatter に `success_criteria:` を 1 行で書くと `.config/claude/scripts/policy/completion-gate.py` が Ralph Loop 継続時に参照する (任意)。本文の `## Success Criteria` は required、frontmatter は optional な補助索引。
 
 ## Agent Notes
 
