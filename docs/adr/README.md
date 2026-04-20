@@ -18,3 +18,4 @@ Nygard 形式に従い、各 ADR は不変。状態変更は新しい ADR で Su
 | 0003 | マルチモデルオーケストレーション | Accepted |
 | 0004 | リンター設定保護 | Accepted |
 | 0005 | AutoEvolve 4 層ループ | Accepted |
+| 0006 | Hook 採用判断の 3 分類 | Accepted |
