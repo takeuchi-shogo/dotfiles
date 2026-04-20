@@ -240,10 +240,18 @@ MEMORY.md にはポインタ + 1行サマリのみ追記する。詳細は分析
 | M | ユーザーに確認後、同一セッションで実行 |
 | L | プラン保存 → 新セッションで `/rpi` or 手動実行 |
 
-## Phase 5.5-5.7: 後処理 [Sonnet BG に委譲]
+## Phase 5.5-5.7: 後処理
 
-Phase 5 の実行判断後、以下の後処理を `Agent(model: "sonnet", run_in_background: true)` にまとめて委譲する。
-ユーザーへの確認が必要な項目（Wiki Update, Obsidian Bridge）は **Phase 5 で Opus がまとめて確認** してから委譲する。
+Phase 5 の実行判断後、以下の後処理を **並列実行** する。委譲先は処理内容で分ける:
+
+| 処理 | 実行者 | 理由 |
+|------|--------|------|
+| Wiki INDEX 更新 | Sonnet BG (`Agent(model: "sonnet", run_in_background: true)`) | 単純なファイル編集 |
+| Wiki Log 追記 | Sonnet BG (Wiki Update と同じ agent に統合可) | 単純な append |
+| **Obsidian Bridge** | **Opus 自身が main session で `Skill` tool 呼び出し** | subagent からの skill ネスト呼び出しは stall する (実測: 600s no progress) |
+| MEMORY.md ポインタ追記 | Opus 自身が Edit | MEMORY.md は常時コンテキスト、Opus の方が状態を正確に把握 |
+
+ユーザーへの確認が必要な項目（Wiki Update, Obsidian Bridge）は **Phase 5 で Opus がまとめて確認** してから実行する。
 
 ### Opus がユーザーに確認する内容（Phase 5 の末尾で一括確認）
 
@@ -254,21 +262,25 @@ Phase 5 の実行判断後、以下の後処理を `Agent(model: "sonnet", run_i
 (Wiki Log は自動追記します)
 ```
 
-### Sonnet BG への委譲内容
+### 処理ごとの実行詳細
 
-確認結果に応じて、承認された項目のみ Sonnet BG に委譲する:
+確認結果に応じて、承認された項目のみ実行する:
 
-**Wiki Update（承認時のみ）:**
+**Wiki Update（承認時のみ、Sonnet BG）:**
 - `docs/wiki/` が存在する場合、INDEX 更新 + 関連概念の追加/更新
+- 同じ Sonnet BG agent に Wiki Log 追記も統合して委譲する（1 agent で完結）
 
-**Obsidian Bridge（承認時のみ）:**
+**Obsidian Bridge（承認時のみ、Opus 自身が main session で実行）:**
 - 分析レポートを `/digest` 互換の Literature Note 形式に変換
-- **Sonnet BG に `obsidian:obsidian-cli` または `obsidian:obsidian-markdown` skill の呼び出しを委譲**し、Vault の `05-Literature/lit-{author}-{title-slug}.md` に保存する
+- **Opus が `Skill` tool で `obsidian:obsidian-markdown` または `obsidian:obsidian-cli` を直接呼び出す**
+- 保存先: Vault の `05-Literature/lit-{author}-{title-slug}.md`
 - frontmatter: created, tags (type/literature, topic/...), source (title, author, url, type)
 - セクション: Key Takeaways, Summary, My Thoughts, Action Items, Related Notes
+- **重要 (stall 防止)**: subagent (Sonnet BG / general-purpose) から `Skill` tool を呼ぶと skill ネスト呼び出しが timeout する (実測: 600s no progress で fail)。**必ず Opus main session で `Skill` tool を直接呼ぶこと**
+- **フォールバック**: skill が利用不能なら `Write` tool で Vault パスに直接書き込み (frontmatter + セクション構造を保持)
 - **NG**: `mcp__obsidian__write_note` を直接呼ぶこと。obsidian-skills plugin が提供する skill 経由が正規ルート。MCP 直接呼びは `mcp-audit.py` の VeriGrey Tool Filter で soft block される（absorb の SKILL.md に `mcp-tools: obsidian` が宣言されていないため）。さらに PostHog "Meet agents at their abstraction level" 原則の観点からも、低レベル MCP より skill abstraction を使うべき
 
-**Wiki Log（自動・確認不要）:**
+**Wiki Log（自動・確認不要、Sonnet BG）:**
 - `docs/wiki/log.md` に ingest エントリを追記
 
 ```markdown
@@ -300,6 +312,7 @@ Phase 5 の実行判断後、以下の後処理を `Agent(model: "sonnet", run_i
 | **Already と判定して深掘りを止める** | **仕組みの存在 ≠ 記事の知見で強化不要。Pass 2 + Phase 2.5 で必ず検証する** |
 | **Phase 2.5 (Refine) をスキップする** | **スキップ不可。Opus の判断バイアスを補正するために Codex + Gemini の並列批評は必須** |
 | **Opus が Extract や探索を自分でやる** | **定型作業は Haiku/Sonnet に委譲する。Opus は判断・統合・ユーザー対話に集中** |
+| **subagent (Sonnet BG / general-purpose) から `Skill` tool で obsidian skill を呼び出す** | **実測で 600s no progress stall (2026-04-19)。skill ネスト呼び出しは Opus main session で実行する。Phase 5.6 Obsidian Bridge は Opus 直接実行が原則** |
 
 ## Chaining
 
