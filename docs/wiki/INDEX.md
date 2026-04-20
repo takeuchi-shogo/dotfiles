@@ -95,6 +95,7 @@
 - [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定。UX Diff Scoring (ui-observer snapshot baseline比較) と /validate UX Score Gate を Wave 2 に追加 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [PostHog Agent-First Rules — Friction to Eval Loop](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — エージェントを実ユーザーとして扱い、trace 観測から eval ループへ接続する原則。Friction→Eval Loop ポリシーを improve-policy.md に統合
 - [Empirical Prompt Tuning (mizchi, 2026-04-19)](../research/2026-04-19-empirical-prompt-tuning-absorb-analysis.md) — プロンプト品質を「バイアスを排したサードパーティエージェントによる反復評価」で改善する 5 手法。dotfiles では tool_uses 接続・Convergence holdout・spec scenarios・blind 評価契約として統合予定 → プラン: [../plans/active/2026-04-19-empirical-prompt-tuning-plan.md](../plans/active/2026-04-19-empirical-prompt-tuning-plan.md)
+- [Andrej Karpathy Skills (forrestchang, 2026-04-20)](../research/2026-04-20-karpathy-skills-absorb-analysis.md) — Karpathy X post の LLM failure 4 パターン (仮定・過度な複雑化・無関係な編集・曖昧ゴール) への対抗 4 原則を dotfiles に統合。配布 contract 修正・PLANS.md↔completion-gate 連携・Codex 側配布・Hook Philosophy ADR (0006) → プラン: [../plans/active/2026-04-20-karpathy-absorb-plan.md](../plans/active/2026-04-20-karpathy-absorb-plan.md)
 
 ### routing — ルーティング・モデル選択
 

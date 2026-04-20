@@ -8,6 +8,14 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-20] ingest | Andrej Karpathy Skills
+
+- ソース: https://github.com/forrestchang/andrej-karpathy-skills/tree/main
+- 判定: Gap 4, Already (強化不要) 3, Already (強化可能) 1
+- 取り込み: A CURSOR.md 配布 contract 修正 + global.mdc に 4 原則, B PLANS.md Success Criteria required, C AGENTS.md / .codex/AGENTS.md に Karpathy ポインタ, D Hook Philosophy ADR (0006)
+- 分析: docs/research/2026-04-20-karpathy-skills-absorb-analysis.md
+- プラン: docs/plans/active/2026-04-20-karpathy-absorb-plan.md
+
 ## [2026-04-19] ingest | Empirical Prompt Tuning (mizchi)
 
 - ソース: https://github.com/mizchi/chezmoi-dotfiles/blob/main/dot_claude/skills/empirical-prompt-tuning/SKILL.md
