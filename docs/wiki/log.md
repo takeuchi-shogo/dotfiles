@@ -8,6 +8,14 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-19] ingest | Empirical Prompt Tuning (mizchi)
+
+- ソース: https://github.com/mizchi/chezmoi-dotfiles/blob/main/dot_claude/skills/empirical-prompt-tuning/SKILL.md
+- 判定: Gap 1, Partial 2, Already 強化 2, 棄却 1
+- 取り込み: T1 tool_uses+qualitative_signals 接続, T2 Convergence holdout+evaluator drift, T3 spec scenarios, T4 blind memory分離+異モデル契約
+- 分析: docs/research/2026-04-19-empirical-prompt-tuning-absorb-analysis.md
+- プラン: docs/plans/active/2026-04-19-empirical-prompt-tuning-plan.md
+
 ## [2026-04-19] ingest | Harnesses are everything
 
 - ソース: Baseten blog (unverified) 記事、元記事タイトル "Harnesses are everything. Here's how to optimize yours."

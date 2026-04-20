@@ -94,6 +94,7 @@
 - [Eval-Driven Hill-Climbing](../research/2026-04-09-better-harness-eval-hill-climbing-analysis.md) — ハーネスの自律的改善手法。Eval を ML の訓練データに見立て、data sourcing → experiment design → optimization → review のパイプラインで hill-climb する。
 - [Universal Verifier](../research/2026-04-10-universal-verifier-cua-analysis.md) — CUA検証の4設計原則（非重複ルーブリック、プロセス/アウトカム分離、controllability帰属、分割統治コンテキスト）。偽陽性率 0.01-0.08 を達成。controllability帰属・Two-pass verification・動的ルーブリック生成を統合予定。UX Diff Scoring (ui-observer snapshot baseline比較) と /validate UX Score Gate を Wave 2 に追加 → 参照: [spec-driven-usable-validation](../research/2026-04-11-spec-driven-usable-validation-analysis.md)
 - [PostHog Agent-First Rules — Friction to Eval Loop](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — エージェントを実ユーザーとして扱い、trace 観測から eval ループへ接続する原則。Friction→Eval Loop ポリシーを improve-policy.md に統合
+- [Empirical Prompt Tuning (mizchi, 2026-04-19)](../research/2026-04-19-empirical-prompt-tuning-absorb-analysis.md) — プロンプト品質を「バイアスを排したサードパーティエージェントによる反復評価」で改善する 5 手法。dotfiles では tool_uses 接続・Convergence holdout・spec scenarios・blind 評価契約として統合予定 → プラン: [../plans/active/2026-04-19-empirical-prompt-tuning-plan.md](../plans/active/2026-04-19-empirical-prompt-tuning-plan.md)
 
 ### routing — ルーティング・モデル選択
 
