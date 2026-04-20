@@ -26,3 +26,16 @@
 - 複数の情報を統合した判断
 - プランの策定・修正
 - 委譲先への指示が説明コストに見合わない単純作業 (1-2 回の Grep/Read 等)
+
+## Design Principles
+
+### End-to-End Completion > Per-Call Efficiency
+
+**短くても完走する pipeline > 全 stage を最適化して途中で止まる pipeline**。
+
+委譲・並列化の設計判断では、個別 call の効率 (model 選定・コンテキストサイズ・トークン削減) より「end-to-end で commit/PR/verify までユーザーが attestable な成果物に到達するか」を優先する。
+
+- **bad**: 各 stage に最適 model を割り当てたが、stage 間 handoff で context を失い、最後の stage で詰まって commit に至らない
+- **good**: 全 stage を Sonnet で済ませても、stage 間 anchor (resume-anchor-contract / HANDOFF.md / Success Criteria) を維持して commit + PR まで完走する
+- **判断ヒント**: 委譲先の選定で迷ったら、「失敗した場合に main session が修復できるか」を問う。修復できないなら model upgrade よりも anchor の強化を先にする
+- **由来**: 「How I got banned from GitHub due to my harness pipeline」(2026-04) — 13-stage pipeline は per-stage 最適化されていたが attestation 喪失で BAN に至った事例の翻訳
