@@ -50,3 +50,31 @@
 
 既存 JSONL は必須フィールド欠落しうる。Reader は graceful degradation
 (カテゴリマップから推定)。Writer は新規書き込みから段階的に付与。
+
+## Session-Independent Durable State
+
+session memory (会話 context) と長期 state の境界。複数セッション跨ぎで参照される state は session memory に置かず、外部 store に逃がす。
+
+| 種別 | 置き場 | 寿命 | 例 |
+|------|--------|------|-----|
+| **session memory** | LLM context window | 揮発 (Compact/Clear で消失) | 現在の作業内容、TaskList、直近の Read 結果 |
+| **session-bound persistent** | `~/.claude/agent-memory/**/*.jsonl` | 上表の retention に従う | event/learning/proposal/summary |
+| **session-independent durable** | MCP state, 外部 DB, git-tracked files | 永続 | resume anchor (HANDOFF/Plan), プロジェクト spec, ADR |
+
+### MCP state vs session memory の判断基準
+
+state を session memory に置いてよい条件:
+- 現在のセッション内でのみ参照される
+- 中断・compact で失っても再構築コストが低い
+- ユーザー対話で都度確認可能
+
+外部 store (MCP / ファイル) に逃がすべき条件:
+- 複数セッション・複数 agent 跨ぎで参照される
+- 失うと再収集コストが大きい (= learning や spec)
+- 機械的 (hook/gate/CI) に参照される必要がある
+
+**判断ヒント**: 「次のセッションがこの state を必要とするか？」を問う。Yes なら必ず外部 store。
+
+### 由来
+
+「How I got banned from GitHub due to my harness pipeline」(2026-04) — session-independent state を session memory に置いて compact で失った事例の翻訳。AutoEvolve learnings はこの原則で永続化されている。
