@@ -419,6 +419,17 @@
         ]
       },
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/plan-implement-bridge.py",
+            "timeout": 5,
+            "statusMessage": "Plan bridge..."
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
