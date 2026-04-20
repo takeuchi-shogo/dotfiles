@@ -18,6 +18,8 @@
 - 進行中の plan は必要に応じて `docs/plans/active/` に置く
 - design を分けるときは `...-design.md` を隣に置いてよい
 
+→ 詳細: [resume anchor contract](.config/claude/references/resume-anchor-contract.md) (Plan / HANDOFF / RUNNING_BRIEF の wiring)
+
 ## Required Sections
 
 ```md

@@ -147,6 +147,10 @@ print(f'Checkpoint saved: {path}')
 
 4. Edit で `RUNNING_BRIEF.md` を更新し、変更内容をユーザーに報告
 
+### Resume Anchor との関係
+
+3 つの anchor (Plan / HANDOFF / RUNNING_BRIEF) の wiring 全体図は [`references/resume-anchor-contract.md`](../../references/resume-anchor-contract.md) を参照。
+
 ### HANDOFF.md との棲み分け
 
 | | HANDOFF.md | RUNNING_BRIEF.md |
