@@ -6,6 +6,7 @@
 - 曖昧、または複数ステップのタスクは plan を作ってから編集する。
 - 完了を宣言する前に、変更範囲に最も近い build/test/lint/validation を実行する。
 - diff が自明でない場合は `codex review --uncommitted` を使って追加確認する。
+- 非自明なコード変更では repo root の `CLAUDE.md` に定義された Karpathy 4 原則 (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) に従う。Claude 固有の hook / slash command / plugin 前提はそのまま実行せず、原則本文だけ採用する。
 
 ## Runtime Defaults
 - `personality` は persistent default として最小限に保つ。文体、長さ、出力形式、表現トーンはそのタスクの依頼か skill で上書きする。

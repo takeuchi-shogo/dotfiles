@@ -24,6 +24,7 @@
 - パッケージマネージャや実行コマンドは、各プロジェクトですでに使われているものに合わせる。
 - フォーマッタ・リンター・テストがある場合は、変更範囲に応じて実行して確認する。
 - テキスト検索は `rg`、ファイル一覧は `rg --files` を優先する。
+- 非自明なコード変更では root `CLAUDE.md` の Karpathy 4 原則 (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) に従う。Claude 固有 skill/hook は使わず、原則本文を読んで判断する。
 
 ## Where To Look
 - 全体構成と基本コマンド: `README.md`, `Taskfile.yml`, `PLANS.md`
