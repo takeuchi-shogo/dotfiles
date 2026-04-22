@@ -73,3 +73,6 @@ codex-best-practice
 # Temporary files
 tmp/
 .dmux/
+
+# Playwright MCP runtime artifacts (console logs, page snapshots)
+.playwright-mcp/
