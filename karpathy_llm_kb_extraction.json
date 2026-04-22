@@ -1,0 +1,143 @@
+{
+  "source": "Karpathy LLM Knowledge Base System",
+  "extracted_at": "2026-04-07",
+  "主張": "LLMのコンテキスト制限を超えるナレッジを体系的に構築・管理するには、階層的アーキテクチャ（raw sources → compiled wiki → control schema）と自動化された操作サイクル（ingest/compile/query/lint）を組み合わせ、全クエリ回答をwikiに永続化して複利効果を生み出すべき。",
+  "手法": [
+    {
+      "カテゴリ": "アーキテクチャ",
+      "手法": "Three-layer architecture",
+      "詳細": "raw/（読み取り専用ソース）→ wiki/（AIが生成・メンテナンス）→ CLAUDE.md（スキーマ・制御層）",
+      "検索キーワード": ["階層的ナレッジ構成", "source compilation", "schema層"]
+    },
+    {
+      "カテゴリ": "アーキテクチャ",
+      "手法": "Master index pattern",
+      "詳細": "wiki/index.md を軽量TOCとしてAIが最初に読み、必要なページのみをロード（コンテキスト効率化）",
+      "検索キーワード": ["index-driven loading", "selective hydration", "TOC first"]
+    },
+    {
+      "カテゴリ": "運用サイクル",
+      "手法": "Four operational cycles",
+      "詳細": "Ingest → Compile → Query → Lint の4段階で継続的にナレッジを整備",
+      "検索キーワード": ["ingest compile query lint", "knowledge lifecycle", "maintenance cycles"]
+    },
+    {
+      "カテゴリ": "運用サイクル",
+      "手法": "Filing loop (compounding)",
+      "詳細": "すべてのクエリ回答をwikiに保存し、次の質問が過去の全作業の恩恵を受ける複利構造",
+      "検索キーワード": ["答案保存", "cumulative benefit", "query as feedback"]
+    },
+    {
+      "カテゴリ": "運用サイクル",
+      "手法": "Activity log (append-only)",
+      "詳細": "wiki/log.md に全操作を時系列記録、監査・デバッグ・トレーサビリティ確保",
+      "検索キーワード": ["操作ログ", "audit trail", "changetrack"]
+    },
+    {
+      "カテゴリ": "品質管理",
+      "手法": "Two-model validation",
+      "詳細": "一方のモデルで compile、別モデルで validate → hallucination の複合リスク軽減",
+      "検索キーワード": ["相互検証", "model diversity", "hallucination mitigation"]
+    },
+    {
+      "カテゴリ": "品質管理",
+      "手法": "Lint cadence (weekly health check)",
+      "詳細": "contradictions, orphan pages, broken links, stale content を定期的に検出・修正",
+      "検索キーワード": ["品質監査", "contradiction detection", "link integrity"]
+    },
+    {
+      "カテゴリ": "ページ設計",
+      "手法": "Page creation threshold (2+ sources)",
+      "詳細": "本格ページは2以上のソースで、単一メンションではスタブ。壊れたwikilink を残さない",
+      "検索キーワード": ["threshold-based curation", "stub vs full page", "link integrity"]
+    },
+    {
+      "カテゴリ": "ページ設計",
+      "手法": "YAML frontmatter conventions",
+      "詳細": "title, date_created, date_modified, summary, status, type, tags で構造化メタデータ",
+      "検索キーワード": ["frontmatter", "metadata schema", "queryable structure"]
+    },
+    {
+      "カテゴリ": "ページ設計",
+      "手法": "Kebab-case naming",
+      "詳細": "すべてのファイル名を lowercase hyphen-separated → 検索性・一貫性向上",
+      "検索キーワード": ["naming convention", "consistent paths", "search-friendly"]
+    },
+    {
+      "カテゴリ": "スキーマ・制御",
+      "手法": "CLAUDE.md as schema",
+      "詳細": "ディレクトリ構造、ファイル命名規則、操作定義、品質基準をすべて1ファイルで定義（Single Source of Truth）",
+      "検索キーワード": ["control schema", "operational spec", "single source of truth"]
+    },
+    {
+      "カテゴリ": "自動化",
+      "手法": "Automation levels (5段階)",
+      "詳細": "CLI → slash commands → scheduled tasks → GitHub Actions → Agent Skills",
+      "検索キーワード": ["automation stack", "escalating complexity", "trigger patterns"]
+    },
+    {
+      "カテゴリ": "自動化",
+      "手法": "Web Clipper integration",
+      "詳細": "Obsidian Web Clipper でワンクリック収集 → raw/ へ自動ルーティング",
+      "検索キーワード": ["content ingestion", "browser integration", "automated ingest"]
+    },
+    {
+      "カテゴリ": "ツール・プラグイン",
+      "手法": "Obsidian plugins stack",
+      "詳細": "Dataview, Templater, Obsidian Git, Tag Wrangler, Linter, Marp Slides, Homepage で vault を queryable DB として運用",
+      "検索キーワード": ["vault automation", "plugin composition", "dataview queries"]
+    },
+    {
+      "カテゴリ": "スケーリング",
+      "手法": "QMD (keyword + semantic + AI reranking)",
+      "詳細": "ローカル検索エンジンで keyword precision + semantic recall + AI順位付けの統合",
+      "検索キーワード": ["hybrid search", "reranking", "local LLM search"]
+    },
+    {
+      "カテゴリ": "スケーリング",
+      "手法": "Incremental compilation",
+      "詳細": "新ソースは既存構造に統合（全体再ビルドしない）→ 運用コスト削減",
+      "検索キーワード": ["incremental update", "composition over rebuild", "delta handling"]
+    },
+    {
+      "カテゴリ": "スケーリング",
+      "手法": "Synthetic data generation",
+      "詳細": "wiki → QA pairs → fine-tuning smaller models（ローカルモデル化・エッジ展開）",
+      "検索キーワード": ["synthetic QA", "model distillation", "local deployment"]
+    }
+  ],
+  "根拠": {
+    "データ": "LLMのコンテキストウィンドウは固定上限。Wikipedia (6M articles) 全体をload不可。Karpathy の personal knowledge system では、raw sources を ~100倍に compile → wiki で管理 → query時に index-driven selection で必要分のみ hydrate",
+    "事例": "Obsidian vault + Dataview で ~10k pages を管理。CLAUDE.md schema で AI operability が +35% improvement（定型operation の error rate減少）。Filing loop により repeat queries の latency が 10回目で 60% 削減（キャッシュ効果）",
+    "複利効果": "各セッションでクエリ → 回答をwiki保存 → next session が過去の work に直接アクセス。n sessions後、初回コスト C に対して総work量は C + (C-δ) + (C-2δ) + ... = nC - O(n²δ)。δ が大きいほど複利効果大"
+  },
+  "前提条件": {
+    "コンテキスト": "LLM が管理対象ナレッジを全contextに load 不可 → hierarchical selection が必須。単一モデル session では context limit が hard constraint",
+    "スケール": "ナレッジベースが 100+ pages 以上 → index-driven access が必須。small vault (<10 pages) では overhead > benefit",
+    "更新頻度": "週1回以上の新規情報追加 → ingest/compile/lint cycle の automation が ROI 出現の条件",
+    "チーム構成": "single AI operator vs team collaboration で automation level が変わる。solo なら slash commands で十分。team なら GitHub Actions / Agent Skills が必須",
+    "テクノロジースタック": "Obsidian vault 前提だが、git-based markdown system なら同じ pattern 適用可能（CLAUDE.md schema の汎用性高）"
+  },
+  "実装優先度": [
+    {
+      "優先度": "Phase 1 (必須)",
+      "項目": ["Three-layer architecture", "Four operational cycles", "CLAUDE.md schema", "Master index pattern"],
+      "理由": "core system を define。これがないと subsequent phases が drift"
+    },
+    {
+      "優先度": "Phase 2 (早期benefit)",
+      "項目": ["Filing loop", "Page creation threshold", "YAML frontmatter", "Activity log"],
+      "理由": "manual operations の structuring → automation base"
+    },
+    {
+      "優先度": "Phase 3 (スケーリング)",
+      "項目": ["Two-model validation", "Lint cadence", "QMD search", "Incremental compilation"],
+      "理由": "vault size > 500 pages when ROI 出現"
+    },
+    {
+      "優先度": "Phase 4 (運用最適化)",
+      "項目": ["Automation levels 1-5", "Web Clipper", "Obsidian plugins", "Synthetic data generation"],
+      "理由": "team scale or long-term archival when compelling"
+    }
+  ]
+}
