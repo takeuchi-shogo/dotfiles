@@ -520,3 +520,16 @@
 - 分析: docs/research/2026-04-21-obsidian-claudecode-absorb-analysis.md
 - プラン: docs/plans/active/2026-04-21-obsidian-claudecode-absorb-plan.md
 - 特記: Codex 批評で「新コマンド量産ではなく decision loop 接続と削除運用完成を優先」と judgment を補正。Gemini で Karpathy 3層パラダイム、Constitutional AI 規範的フレーミング、IFScale 上限など周辺知識を補完。
+
+## [2026-04-24] ingest | AlphaSignal Harness Engineering
+
+- ソース: AlphaSignal "A Closer Look at Harness Engineering from Top AI Companies" (2026-04)
+- 判定: Gap 1 (4 軸分類), Partial 5 (Map not Manual / Strict Dependency Flow / Agent-written Linter / Evaluator 分離 / Meta-harness 他), Already 強化 2 (Reasoning Sandwich, dead-weight 吸収)
+- 重複度: 2026-04-19 harness-everything-absorb と高 (独自 contribution 3 点のみ)
+- 取り込み: 既存 plan docs/plans/active/2026-04-19-harness-everything-absorb-plan.md の M2 に subtask merge
+  - M2-A: Reasoning Sandwich 手動チェックリスト pin (model-routing.md、LangChain +13.7pt data)
+  - M2-B: dead-weight-scan に superseded_by_model タグ (Opus 4.7 self-verification 吸収追跡、最優先)
+  - M2-C: ADR-0006 に ThoughtWorks 4 軸分類 Appendix (3 分類と直交)
+- 実装済: M2-A, M2-C。保留: M2-B (dead-weight-scan.py 本体実装時に組み込み)
+- 分析: docs/research/2026-04-24-harness-engineering-absorb-analysis.md
+- 特記: Codex 批評で Gap (3) Strict Dependency Flow を Partial に降格、最優先は B (Opus 4.7 吸収時間圧) と判定。Gemini 補完は 15 tool uses / 15 分で empty return、外部 independent replication は未検証。Wiki/Obsidian 後処理は subagent permission denied で main session 実行。

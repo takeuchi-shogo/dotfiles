@@ -16,6 +16,7 @@
 - [批評を成果物に (Criticism as Artifact)](concepts/criticism-as-artifact.md) — pre-mortem / review / retrospective の批評を 1st-class artifact として扱う原則。CREAO AI-First 記事 + Karpathy 4 原則から導出
 - [Drafts Lifecycle (Graduation Mechanism)](concepts/_drafts/README.md) — agent→human authorship 昇格をディレクトリ分離で実装。Karpathy Modified Second Brain pattern (2026-04) から採用
 - [Harness Pipeline BAN article (2026-04-21)](../research/2026-04-21-harness-pipeline-absorb-analysis.md) — GitHub BAN 事例から導出: reproduce-first attestation before polish、resume anchor contract、plan→implement bridge hook。Gap 2 低優先、7 タスク採択
+- [AlphaSignal Harness Engineering (2026-04-24)](../research/2026-04-24-harness-engineering-absorb-analysis.md) — OpenAI/Anthropic/ThoughtWorks 横断。2026-04-19 harness-everything と高重複。独自 contribution 3 点採択 (Reasoning Sandwich 手動チェックリスト / dead-weight-scan superseded_by_model タグ / ADR-0006 ThoughtWorks 4 軸分類 Appendix)、既存 plan M2 に subtask merge
 
 ### agent — エージェント設計
 

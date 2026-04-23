@@ -44,3 +44,19 @@ last_reviewed: 2026-04-23
 - **good**: 全 stage を Sonnet で済ませても、stage 間 anchor (resume-anchor-contract / HANDOFF.md / Success Criteria) を維持して commit + PR まで完走する
 - **判断ヒント**: 委譲先の選定で迷ったら、「失敗した場合に main session が修復できるか」を問う。修復できないなら model upgrade よりも anchor の強化を先にする
 - **由来**: 「How I got banned from GitHub due to my harness pipeline」(2026-04) — 13-stage pipeline は per-stage 最適化されていたが attestation 喪失で BAN に至った事例の翻訳
+
+## Stage 別 Reasoning Budget 推奨 (任意チェックリスト)
+
+出典: LangChain Terminal Bench 2.0 (GPT-5.2-Codex, 2026-04)。
+- 全段 max reasoning: **53.9%**
+- Reasoning Sandwich (plan=high, build=reduced, verify=high): **66.5%** (+13.7pt)
+
+| Stage | 推奨 reasoning effort | 理由 |
+|-------|----------------------|------|
+| Plan / Spec | high | 全体構造・失敗モード抽出に深い推論が要る |
+| Build / Implement | medium | 決定後の生成は深い推論が過剰 (53.9% の罠) |
+| Verify / Review | high | エッジケース検出・批評に深い推論が効く |
+
+**使い方**: Codex Spec/Plan Gate は `-c reasoning_effort=high`、Review Gate は `-c reasoning_effort=high`、Implement は medium 以下で十分。強制ではなく任意の参考。自動配分 (stage-aware routing) は運用複雑性が増えるため採用しない。
+
+**由来**: `docs/research/2026-04-24-harness-engineering-absorb-analysis.md` (AlphaSignal Harness Engineering absorb)

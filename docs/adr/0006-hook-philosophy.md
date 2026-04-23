@@ -78,6 +78,30 @@ commit メッセージまたは PR 説明で明示し、分類に応じた実装
 - 既存 hook の挙動は変更しない。本 ADR は判断枠組みを事後整理するのみ
 - Cursor / Codex 側でも「root `CLAUDE.md` の Karpathy 原則は Human Judgment 分類」として同じ扱いをする
 
+## Appendix: ThoughtWorks 4 軸分類との関係 (2026-04-24 追加)
+
+Birgitta Böckeler (ThoughtWorks) は harness controls を 2 軸で分類する:
+
+- **Guide (before) vs Sensor (after)**: agent が動く前の制約か、動いた後の観測か
+- **Computational (deterministic) vs Inferential (LLM-based)**: 機械判定か意味判定か
+
+本 ADR の 3 分類は「hook を追加すべきか」の採用基準であり、4 軸分類は「どんな種類の制御か」の設計語彙で、**直交する**。両方を併用できる。
+
+### マッピング例
+
+| 本 ADR の 3 分類 | 4 軸象限 | 例 |
+|-----------------|----------|-----|
+| Deterministic Block | Computational × Guide/Sensor | `protect-linter-config.py` (Guide / PreToolUse)、`golden-check.py` (Sensor / PostToolUse) |
+| Semantic Advisory | Inferential × Guide/Sensor | `codex-reviewer` (Sensor / post-change)、`suggest-gemini.py` (Guide / pre-delegation) |
+| Human Judgment | (4 軸外) | Karpathy 4 原則、instruction 埋め込み |
+
+### 使いどころ
+
+- **抜け漏れ監査**: 4 軸分類で全体を俯瞰し、「Computational Guide が 0 個になっていないか」「Inferential Sensor に頼りすぎていないか」を確認
+- **個別 hook 採用判断**: 本 ADR の 3 分類を使う (Deterministic Block / Semantic Advisory / Human Judgment のどれか)
+
+**由来**: AlphaSignal "A Closer Look at Harness Engineering from Top AI Companies" (2026-04)、`docs/research/2026-04-24-harness-engineering-absorb-analysis.md`
+
 ## References
 
 - `CLAUDE.md` (project) — Karpathy 4 原則本体
@@ -86,3 +110,4 @@ commit メッセージまたは PR 説明で明示し、分類に応じた実装
 - `.config/claude/references/harness-debt-register.md` — hook staleness 監査
 - ADR-0001 (Hook 4 層分離) — hook 層別の役割
 - ADR-0004 (リンター設定保護) — Deterministic Block の代表例
+- `docs/research/2026-04-24-harness-engineering-absorb-analysis.md` — ThoughtWorks 4 軸分類の出典
