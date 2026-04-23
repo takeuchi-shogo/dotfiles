@@ -15,6 +15,7 @@
 - [AutoHarness](concepts/autoharness.md) — LLM 自身にハーネスを生成・最適化させるアプローチ
 - [批評を成果物に (Criticism as Artifact)](concepts/criticism-as-artifact.md) — pre-mortem / review / retrospective の批評を 1st-class artifact として扱う原則。CREAO AI-First 記事 + Karpathy 4 原則から導出
 - [Drafts Lifecycle (Graduation Mechanism)](concepts/_drafts/README.md) — agent→human authorship 昇格をディレクトリ分離で実装。Karpathy Modified Second Brain pattern (2026-04) から採用
+- [Harness Pipeline BAN article (2026-04-21)](../research/2026-04-21-harness-pipeline-absorb-analysis.md) — GitHub BAN 事例から導出: reproduce-first attestation before polish、resume anchor contract、plan→implement bridge hook。Gap 2 低優先、7 タスク採択
 
 ### agent — エージェント設計
 
@@ -35,6 +36,8 @@
 - [Claude Code アーキテクチャ](concepts/claude-code-architecture.md) — 内部設計とサブエージェント・スキルシステム
 - [コンテキストエンジニアリング](concepts/context-engineering.md) — CLAUDE.md・条件付きタグ・指示バジェットの最適化
 - [プロンプト・ワークフロー実践](../research/2026-04-09-30-claude-prompts-analysis.md) — 実務検証済み30プロンプト。Self-Correction Loop・DELIBERATELY SKIPPING・Voice Guide・Repurpose の統合知見
+- **Thin CLAUDE.md / Thick rules 原則 (ADR-0007 予定)** — CLAUDE.md は IFScale 制約内に保ち、詳細ルールを `rules/` や `references/` に分離する設計。Obsidian × Claude Code 分析 (2026-04-21) で ADR 化予定 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
+- **cwd-aware routing matrix** — 作業ディレクトリ (dotfiles / repo / tmp 等) に応じてモデル・スキル・フックを自動切替する経路表。Context Design 5層の Execution 層に対応 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md), [context-design-absorb-analysis](../research/2026-04-17-context-design-absorb-analysis.md)
 
 ### memory — メモリ・コンテキスト
 
@@ -113,3 +116,5 @@
 
 - [Hermes を個人アナリストとして 3 週間運用](../research/2026-04-14-hermes-personal-analyst-analysis.md) — Setup > Model 思想と月$5-10のコストで研究・投資・営業アナリストを構築する手法。Already 強化不要 5 / Already 強化可能 2 / Gap 小 1 / N/A 2。morning-briefing 情報源拡張 + MCP→Skill ヒント hook を実装
 - [Hermes Fleet 共有メモリ分析](../research/2026-04-17-hermes-fleet-shared-memory-analysis.md) — Qdrant+Ollama+mem0+Stop hook で自己ホスト共有メモリを構築。Gap 3, Partial 3, Already 4, N/A 1
+- **Build to Delete wiring (AutoEvolve との接続)** — ハーネス・フック・スクリプトを設計時から「何が改善されれば不要か」を明記し、AutoEvolve の廃止サイクルに接続する運用方針。"Build to Delete" 原則の実装化 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
+- **規範的フレーミング (Constitutional AI 根拠)** — 「〇〇を禁止する」より「〇〇を推奨する」形式で指示を書くことで Constitutional AI の規範遵守率を高める原則。Gemini 補完で得られた知見 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)

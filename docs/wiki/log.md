@@ -492,3 +492,22 @@
 - 戦略: Pruning-First。93 skills → 95 に限定、記事のマーケティング文脈 (67 全部入れろ) に踊らされない
 - 分析レポート: [2026-04-19-top67-claude-skills-analysis.md](../research/2026-04-19-top67-claude-skills-analysis.md)
 - 統合プラン: [2026-04-19-top67-skills-integration-plan.md](../plans/pending/2026-04-19-top67-skills-integration-plan.md)
+
+## [2026-04-21] ingest | Harness Pipeline BAN article
+
+- Source: "How I got banned from GitHub due to my harness pipeline" (user-pasted text, no URL)
+- Analysis: docs/research/2026-04-21-harness-pipeline-absorb-analysis.md
+- Plan: docs/plans/active/2026-04-21-harness-pipeline-absorb-plan.md
+- Judgment: Gap 2 (低優先), Partial 5, Already 6 (1 reclassified to Partial per Codex), N/A 2
+- Accepted: 7 tasks — fix-issue reproduce-first (P1), resume anchor contract (B), plan→implement bridge hook (C), model-routing end-to-end principle (D+#12), MCP state guidance (#2), load-bearing (#8)
+- Rejected: 13-stage full copy, GitHub mass PR automation, git-push velocity hook, CLA flow, expert amplification codification (Stanford HAI 2026 contradicts)
+- Key translation: "attestation is scarce" → "reproduce-first attestation before polish"
+
+## [2026-04-21] ingest | Obsidian × Claude Code (akira_papa_AI)
+
+- ソース: https://qiita.com/akira_papa_AI/items/4ac1edc7e93604b0199a
+- 判定: Gap 2個 (Obsidian Inbox triage / 1コマンド1タスク codify), Partial 2個 (cwd-aware / 禁止より推奨), N/A 2個 (Daily Note / Sprint Sync), Already 7個 (5 強化可 + 2 強化不要)
+- 取り込み: 5 タスク (A1 cwd routing matrix, A2 weekly-review Obsidian 統合, B1 Build to Delete wiring, C1 Thin+Thick ADR-0007, C2 skill-writing-principles 三節)
+- 分析: docs/research/2026-04-21-obsidian-claudecode-absorb-analysis.md
+- プラン: docs/plans/active/2026-04-21-obsidian-claudecode-absorb-plan.md
+- 特記: Codex 批評で「新コマンド量産ではなく decision loop 接続と削除運用完成を優先」と judgment を補正。Gemini で Karpathy 3層パラダイム、Constitutional AI 規範的フレーミング、IFScale 上限など周辺知識を補完。

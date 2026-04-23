@@ -1,12 +1,12 @@
 ---
 name: weekly-review
 description: >
-  GTD式の週次レビュー。全 Issue の棚卸し、滞留タスク検出、inbox 処理、優先度見直しを対話形式で実施。週末や週明けに使用。
+  GTD式の週次レビュー。GitHub Issue + Obsidian 00-Inbox/ + vault-maintenance report の棚卸し、滞留タスク検出、優先度見直しを対話形式で実施。週末や週明けに使用。
   Triggers: '週次レビュー', 'weekly-review', '棚卸し', '今週の振り返り', 'weekly review'.
   Do NOT use for: 朝の計画（use /morning）、日報（use /daily-report）、夕方の振り返り（use /timekeeper review）。
 origin: self
 disable-model-invocation: true
-allowed-tools: Bash(gh *), Read, Grep, Glob
+allowed-tools: Bash(gh *), Bash(ls *), Bash(cat *), Read, Grep, Glob
 metadata:
   pattern: generator
 ---
@@ -92,6 +92,69 @@ inbox ラベルのある Issue を1件ずつ確認:
 ```
 
 各 Issue について判断を求め、選択に応じてラベル変更・ステータス更新を実行。
+
+### Phase 2.5: Obsidian Inbox + vault-maintenance report 処理
+
+GitHub Issue inbox とは別に、Obsidian Vault 側の Inbox と保守レポートも決定ループに吸い上げる。Codex 2026-04-21 批評「report が誰の inbox に入り、いつ裁かれるか」指摘を反映。
+
+#### 2.5.1 Vault `00-Inbox/` の triage
+
+```bash
+# Vault パス検出 (環境変数 or 既定パス)
+VAULT_PATH="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
+
+# 未処理 Inbox ノート一覧
+ls -lt "$VAULT_PATH/00-Inbox/" 2>/dev/null | head -20
+```
+
+各ノートを 1 件ずつ確認:
+
+```
+## Obsidian Inbox 処理 (N件)
+
+### 00-Inbox/2026-04-18-idea-xxx.md
+  作成: 3日前 / 最初の行: "..."
+
+  → どうしますか？
+  1. Literature Note 化（05-Literature/ に移動）
+  2. Permanent Note 化（02-Permanent/ に昇格）
+  3. 次のアクションに変換（GitHub Issue 化 or TODO 追加）
+  4. Someday（Inbox 内で `tag: someday` 付与）
+  5. 削除
+```
+
+選択に応じて移動 or アーカイブを提案（実行はユーザー承認後）。
+
+#### 2.5.2 vault-maintenance report の吸収
+
+```bash
+# 直近の vault-maintenance.sh report を確認
+ls -lt "$VAULT_PATH/00-Inbox/vault-maintenance-"*.md 2>/dev/null | head -3
+```
+
+最新 report を読み、以下の 4 項目それぞれを決定ループへ:
+
+```
+## Vault 保守 report (YYYY-MM-DD)
+
+### 孤立ノート (N件)
+  → リンク追加 / アーカイブ / 削除 を判断
+
+### リンク切れ (N件)
+  → 修正 / 削除 を判断
+
+### Stale Seed (N件)
+  → 展開 / アーカイブ を判断
+
+### 重複候補 (N件)
+  → マージ / 個別化 を判断
+```
+
+**重要 (Codex 指摘)**: report を読んで終わりにせず、各項目を Horizon 1 decisions（来週の具体アクション）に変換する。変換できない項目は「Someday」か「削除候補」に分類。
+
+#### 2.5.3 統合後の分類
+
+Phase 2.5 の結果は Phase 6「来週の計画」で Horizon 1 タスクとして組み込む。
 
 ### Phase 3: 進行中タスクの確認
 
