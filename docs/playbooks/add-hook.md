@@ -32,10 +32,12 @@ last_reviewed: 2026-04-23
 
 | ディレクトリ | 用途 | 例 |
 |---|---|---|
-| `scripts/policy/` | 制約・検証・警告 | completion-gate.py, file-proliferation-guard.py |
-| `scripts/runtime/` | 実行時補助・bootstrap | env-bootstrap.py, error-rate-monitor.py |
-| `scripts/learner/` | データ収集・学習 | session-learner.py, failure-clusterer.py |
-| `scripts/lifecycle/` | 定期実行・cleanup | dead-weight-scan.py, doc-status-audit.py |
+| `.config/claude/scripts/policy/` | hook で呼ぶ制約・検証・警告 | completion-gate.py, file-proliferation-guard.py, claudemd-size-check.py |
+| `.config/claude/scripts/runtime/` | hook で呼ぶ実行時補助・bootstrap | env-bootstrap.py, error-rate-monitor.py |
+| `.config/claude/scripts/learner/` | hook で呼ぶデータ収集・学習 | session-learner.py, failure-clusterer.py |
+| `scripts/lifecycle/` | CLI で直接実行する定期処理 | dead-weight-scan.py, doc-status-audit.py |
+
+**重要**: hook から呼ぶ script は `.config/claude/scripts/` 配下に置く（`~/.claude/scripts/` symlink 経由で settings.json から `$HOME/.claude/scripts/...` 参照）。CLI 単独実行の lifecycle スクリプトはリポジトリ直下 `scripts/lifecycle/` に置く（symlink なし）。
 
 **判定**: 「制約か観測か学習か掃除か」の 4 択。
 
