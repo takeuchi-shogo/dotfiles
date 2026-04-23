@@ -415,17 +415,11 @@
             "command": "$HOME/dotfiles/tools/claude-hooks/target/release/claude-hooks post-edit",
             "timeout": 30,
             "statusMessage": "Format + check..."
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/plan-implement-bridge.py",
-            "timeout": 5,
-            "statusMessage": "Plan bridge..."
+            "command": "python3 $HOME/.claude/scripts/policy/claudemd-size-check.py",
+            "timeout": 5
           }
         ]
       },
@@ -672,16 +666,6 @@
             "timeout": 15
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/policy/measure-instruction-budget.py 2>> $HOME/.claude/logs/precompact-errors.log || true",
-            "timeout": 10,
-            "statusMessage": "Measuring instruction budget..."
-          }
-        ]
       }
     ],
     "PostCompact": [
@@ -760,6 +744,6 @@
       ]
     }
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "plansDirectory": "./tmp/plans"
 }
