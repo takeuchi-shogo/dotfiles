@@ -33,14 +33,15 @@ REFERENCES_BUDGET = 8192
 
 def is_target(path: str) -> tuple[int | None, str | None]:
     """Return (budget_bytes, label) if path is in scope, else (None, None)."""
+    name = Path(path).name
     p = path.replace("\\", "/")
-    if p.endswith("/CLAUDE.md") or p.endswith("CLAUDE.md"):
+    if name == "CLAUDE.md":
         return 4096, "CLAUDE.md"
-    if p.endswith("/.codex/AGENTS.md"):
+    if name == "AGENTS.md" and "/.codex/" in p:
         return 4096, ".codex/AGENTS.md"
-    if p.endswith("/AGENTS.md"):
+    if name == "AGENTS.md":
         return 4096, "AGENTS.md"
-    if "/references/" in p and p.endswith(".md"):
+    if "/references/" in p and name.endswith(".md"):
         return REFERENCES_BUDGET, "references"
     return None, None
 
