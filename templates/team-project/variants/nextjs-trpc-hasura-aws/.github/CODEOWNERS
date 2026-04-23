@@ -1,0 +1,21 @@
+# CODEOWNERS — Next.js + tRPC + Hasura + AWS variant
+
+*                                       @{{DEFAULT_OWNER_GH}}
+
+apps/web/                               @{{FE_OWNER_GH}} @{{FE_BACKUP_GH}}
+apps/web/src/server/trpc/               @{{BE_OWNER_GH}} @{{FE_OWNER_GH}}
+hasura/                                 @{{DB_OWNER_GH}} @{{BE_OWNER_GH}}
+hasura/metadata/                        @{{DB_OWNER_GH}} @{{BE_OWNER_GH}} @{{SEC_OWNER_GH}}
+infra/terraform/                        @{{INFRA_OWNER_GH}} @{{INFRA_BACKUP_GH}}
+
+# High-Risk
+apps/web/src/server/trpc/routers/auth.ts      @{{SEC_OWNER_GH}} @{{BE_OWNER_GH}}
+apps/web/src/server/trpc/routers/billing.ts   @{{SEC_OWNER_GH}} @{{BE_OWNER_GH}}
+apps/web/src/app/api/webhooks/                @{{SEC_OWNER_GH}} @{{BE_OWNER_GH}}
+
+docs/                                   @{{DOC_OWNER_GH}}
+docs/zones/OWNERSHIP.md                 @{{DEFAULT_OWNER_GH}} @{{SEC_OWNER_GH}}
+docs/security/                          @{{SEC_OWNER_GH}}
+CLAUDE.md                               @{{DEFAULT_OWNER_GH}}
+.github/CODEOWNERS                      @{{DEFAULT_OWNER_GH}} @{{SEC_OWNER_GH}}
+.github/workflows/                      @{{INFRA_OWNER_GH}}

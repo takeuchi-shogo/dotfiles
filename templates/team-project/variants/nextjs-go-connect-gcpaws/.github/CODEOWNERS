@@ -1,0 +1,22 @@
+# CODEOWNERS — Next.js + Go + Connect RPC + GCP/AWS variant
+
+*                               @{{DEFAULT_OWNER_GH}}
+
+apps/web/                       @{{FE_OWNER_GH}} @{{FE_BACKUP_GH}}
+apps/api/                       @{{BE_OWNER_GH}} @{{BE_BACKUP_GH}}
+proto/                          @{{BE_OWNER_GH}} @{{FE_OWNER_GH}}
+infra/terraform/                @{{INFRA_OWNER_GH}} @{{INFRA_BACKUP_GH}}
+migrations/                     @{{DB_OWNER_GH}} @{{DB_BACKUP_GH}}
+
+# High-Risk
+apps/api/auth/                  @{{SEC_OWNER_GH}} @{{BE_OWNER_GH}}
+apps/web/src/auth/              @{{SEC_OWNER_GH}} @{{FE_OWNER_GH}}
+apps/api/billing/               @{{SEC_OWNER_GH}} @{{BE_OWNER_GH}}
+apps/web/src/billing/           @{{SEC_OWNER_GH}} @{{FE_OWNER_GH}}
+
+docs/                           @{{DOC_OWNER_GH}}
+docs/zones/OWNERSHIP.md         @{{DEFAULT_OWNER_GH}} @{{SEC_OWNER_GH}}
+docs/security/                  @{{SEC_OWNER_GH}}
+CLAUDE.md                       @{{DEFAULT_OWNER_GH}}
+.github/CODEOWNERS              @{{DEFAULT_OWNER_GH}} @{{SEC_OWNER_GH}}
+.github/workflows/              @{{INFRA_OWNER_GH}}
