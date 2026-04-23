@@ -291,6 +291,28 @@ fork_context=false（Clean）で起動する場合、子エージェントには
 
 > **注意**: Inherit モードでは親のコンテキスト長が子のプロンプトトークンに加算される。長いセッションでは Clean モードの方がトークン効率が高い。
 
+### Deep Frying anti-pattern
+
+> 出典: Onyx DeepResearch チーム (Akshay Pachaar 2026-04) — 単一 Crew 内で「gather → analyze → write」を逐次タスクとして回すと、各ステージが前ステージの出力を再解釈し、最終出力は source material から逸脱する。この劣化をチーム内で **Deep Frying** と呼ぶ。
+
+典型症状:
+
+- Fact が段階を経るごとに reinterpret され、元の主張と乖離する
+- 矛盾（contradiction）が smooth されて検出されなくなる
+- 引用が再解釈され、どのソースに由来するか追跡不能になる
+
+**回避策**:
+
+1. **Clean モード** で段階を分離する。親のコンテキストを継承せず、前段の構造化出力だけを受け取る
+2. **Handoff Packet** 形式で引き継ぐ。暗黙の前提ではなく、明示的な artifact (ファイルパス・diff・ソース付き要約) のみを渡す
+3. **Aggregator を独立タスクにする**。`/research` Step 4 Aggregate のように集約自体を 1 つの独立契約として分離し、再解釈ではなく構造化統合を行う
+
+**dotfiles で既に適用済みの例**:
+
+- `/research` の Step 1-5 分離（Reconnaissance → Plan → Execute → Aggregate → Polish）
+- Pattern 2 Async の self-contained report 化（親が結果を再解釈せず、ユーザー直接報告）
+- Depth-1 ルール（再帰委譲で劣化が増幅するのを防ぐ）
+
 ---
 
 ## Worktree = 隔離されたランタイム環境
@@ -1016,9 +1038,21 @@ Sequential 原則を採用する 3 ステップ:
 
 | 契約 | 説明 | ツール制限 | 例 |
 |---|---|---|---|
+| **Plan-only** | プラン生成のみ。tool 実行・ファイル変更禁止。plan artifact だけを返す | Read, Glob, Grep のみ（Bash/Write/Edit/Agent 禁止） | /spec, /rpi Plan phase（opt-in） |
 | **Analyze-only** | 分析・報告のみ。ファイル変更禁止 | Read, Bash, Glob, Grep のみ | code-reviewer, security-reviewer, test-analyzer |
 | **Implement** | 指定スコープ内のみ変更可 | Read, Write, Edit, Bash, Glob, Grep | build-fixer, debugger, test-engineer |
 | **Orchestrate** | タスク分解・委譲・統合。直接実装しない | 全ツール（Agent 含む） | triage-router, autoevolve-core |
+
+### Plan-only 契約の目的
+
+> 出典: Onyx DeepResearch pipeline (Akshay Pachaar 2026-04) — planner はツールアクセスを持たず、「プラン」だけを返す。プランナーが tool を使えると、plan 段階と実行段階の境界が曖昧になり、中途半端な実行結果がプランに混ざる。
+
+Analyze-only との違いは **Bash を持たない** こと。Plan-only は検証コマンドも打てない純粋な計画生成専用。/spec, /rpi, /epd の Plan phase で opt-in 適用することで、プランナーが早すぎる実行に滑り込むのを防ぐ。
+
+**適用判断**:
+
+- 適用する: 仕様が曖昧で「計画を練る」こと自体が目的の場面（Deep Interview 後の /spec、L 規模の /rpi Plan phase）
+- 適用しない: プラン生成中に既存コードの動作確認が必要な場面（Analyze-only で Bash を許可する）
 
 ### 契約の実現方法
 

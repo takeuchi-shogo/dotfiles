@@ -12,6 +12,17 @@ metadata:
 
 外部の記事・論文・リポジトリの知見を分析し、現在のセットアップに取り込む統合プランを生成する。
 
+## Philosophy: Thoroughness over Helpfulness
+
+記事の主張を helpful に取り込まない。網羅的な検証の上で取捨選択する。
+
+- 既存仕組みの存在確認だけで Already と判定しない (Pass 2 + Phase 2.5 で強化可能性を検証する)
+- 取捨選択は **Pruning-First** — 新規追加より既存強化を優先する
+- ベンチマーク数値や「best X」主張は単独の採用根拠にしない (評価バイアス前提で読む)
+- 記事著者のベンダーバイアス（自社製品優位の前提）を常に想定する
+
+> 出典: Onyx DeepResearch 設計哲学 "Prefer being thorough over being helpful"（Akshay Pachaar 2026-04）を /absorb 文脈に翻訳。
+
 ## Trigger
 
 - 記事 URL やテキストを貼って「活かしたい」「考えて」「取り込みたい」と言われたとき

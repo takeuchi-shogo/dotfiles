@@ -120,3 +120,11 @@
 - [Hermes Fleet 共有メモリ分析](../research/2026-04-17-hermes-fleet-shared-memory-analysis.md) — Qdrant+Ollama+mem0+Stop hook で自己ホスト共有メモリを構築。Gap 3, Partial 3, Already 4, N/A 1
 - **Build to Delete wiring (AutoEvolve との接続)** — ハーネス・フック・スクリプトを設計時から「何が改善されれば不要か」を明記し、AutoEvolve の廃止サイクルに接続する運用方針。"Build to Delete" 原則の実装化 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
 - **規範的フレーミング (Constitutional AI 根拠)** — 「〇〇を禁止する」より「〇〇を推奨する」形式で指示を書くことで Constitutional AI の規範遵守率を高める原則。Gemini 補完で得られた知見 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
+
+### research — リサーチ設計
+
+- **Deep Researcher (Onyx+CrewAI+Voxtral, 2026-04-24)** — Akshay Pachaar による深層リサーチエージェント設計。Partial 6, Already 3 強化, N/A 2 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)
+- **Query Variant Axis** — 単一クエリの複数バリアント (synonym / broader / narrower / temporal / domain) を軸として多角的に検索することで coverage を高める手法。research/SKILL.md に統合 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)
+- **Thoroughness Philosophy** — リサーチ・absorb 共通の「徹底性」哲学。速報より網羅、shallow より deep dive、citation 付きエビデンスを優先する運用原則。research/SKILL.md + absorb/SKILL.md に統合 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)
+- **Plan-only 契約 (Subagent Delegation)** — サブエージェントに「実装ではなくプランのみ出力」を命じ、human/orchestrator が承認後に実装フェーズへ移行する委譲パターン。subagent-delegation-guide.md に統合 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)
+- **Deep Frying anti-pattern** — リサーチエージェントが citation・reflection を重ねすぎてコンテキストを過消費する失敗モード。「揚げすぎ」に例えた命名。on-demand reflection + thoroughness gate で防止 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)

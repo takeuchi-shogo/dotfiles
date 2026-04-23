@@ -8,6 +8,16 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-04-24] ingest | Deep Researcher (Onyx+CrewAI+Voxtral) by Akshay Pachaar
+
+- ソース: 記事 (Onyx + CrewAI + Voxtral 設計原則)
+- 分析: docs/research/2026-04-24-deep-researcher-absorb-analysis.md
+- 判定: Partial 6, Already 3 強化, N/A 2
+- 取り込み:
+  - research/SKILL.md: Query Variant Axis / on-demand reflection+LLM selection / citation merge / thoroughness philosophy
+  - absorb/SKILL.md: thoroughness philosophy
+  - subagent-delegation-guide.md: Plan-only 契約 / Deep Frying anti-pattern
+
 ## [2026-04-20] ingest | Andrej Karpathy Skills
 
 - ソース: https://github.com/forrestchang/andrej-karpathy-skills/tree/main
