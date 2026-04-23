@@ -49,8 +49,9 @@ REFERENCE_ROOTS = [
     REPO_ROOT / "docs" / "research" / "_index.md",
 ]
 
-FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+FRONTMATTER_RE = re.compile(r"^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n", re.DOTALL)
 _REF_PATTERN_CACHE: dict[str, re.Pattern] = {}
+_ROOTS_CACHE: dict[Path, str] = {}
 
 
 def parse_frontmatter(text: str) -> tuple[dict[str, str] | None, int]:
@@ -92,14 +93,22 @@ def is_referenced(target: Path, roots: list[Path]) -> bool:
         return False
     pattern = _REF_PATTERN_CACHE.get(stem)
     if pattern is None:
-        pattern = re.compile(r"\b" + re.escape(stem) + r"\b")
+        # Unicode-safe ASCII word boundary: avoid `\b` which misfires on
+        # Japanese adjacency (documented gotcha in project MEMORY.md).
+        pattern = re.compile(
+            r"(?<![a-zA-Z0-9_])" + re.escape(stem) + r"(?![a-zA-Z0-9_])"
+        )
         _REF_PATTERN_CACHE[stem] = pattern
     for root in roots:
-        try:
-            if pattern.search(root.read_text(errors="ignore")):
-                return True
-        except (IOError, OSError, UnicodeDecodeError):
-            continue
+        content = _ROOTS_CACHE.get(root)
+        if content is None:
+            try:
+                content = root.read_text(errors="ignore")
+            except (IOError, OSError, UnicodeDecodeError):
+                content = ""
+            _ROOTS_CACHE[root] = content
+        if content and pattern.search(content):
+            return True
     return False
 
 
@@ -115,8 +124,9 @@ def infer_status(path: Path, mtime: datetime, roots: list[Path]) -> str:
     age_days = (datetime.now() - mtime).days
     referenced = is_referenced(path, roots)
     if in_references:
-        # MEMORY/CLAUDE.md から参照 + 30日以内の更新 → active
-        if referenced and age_days <= 30:
+        # references/ 配下は基本 reference だが、参照あり + AGE_THRESHOLD_DAYS (90日)
+        # 以内の更新があれば active に昇格（schema spec と整合）
+        if referenced and age_days <= AGE_THRESHOLD_DAYS:
             return "active"
         return "reference"
     if referenced and age_days <= AGE_THRESHOLD_DAYS:
@@ -129,21 +139,59 @@ def infer_status(path: Path, mtime: datetime, roots: list[Path]) -> str:
 
 
 def write_frontmatter(path: Path, status: str, today: str) -> None:
+    """Atomically inject status + last_reviewed into frontmatter.
+
+    Uses line-based parsing to preserve nested YAML (lists, `-` suffixes).
+    Writes via tempfile + os.replace for crash-safety."""
+    import os as _os
+    import tempfile
+
     text = path.read_text(encoding="utf-8")
     fields, end = parse_frontmatter(text)
+    inject = f"status: {status}\nlast_reviewed: {today}\n"
+
     if fields is None:
-        new_fm = f"---\nstatus: {status}\nlast_reviewed: {today}\n---\n\n"
-        path.write_text(new_fm + text, encoding="utf-8")
+        new_content = f"---\n{inject}---\n\n" + text
+    elif "status" in fields:
         return
-    if "status" in fields:
-        return
-    # Inject status + last_reviewed into existing frontmatter
-    before = text[:end]
-    after = text[end:]
-    # Remove trailing --- from `before`, append new fields, re-close
-    fm_body = before.rstrip().rstrip("-").rstrip()
-    new_fm = fm_body + f"\nstatus: {status}\nlast_reviewed: {today}\n---\n"
-    path.write_text(new_fm + after, encoding="utf-8")
+    else:
+        # Find the closing `---` line and insert new fields just before it.
+        before = text[:end]
+        after = text[end:]
+        lines = before.splitlines(keepends=True)
+        close_idx = len(lines) - 1
+        while close_idx >= 0 and not lines[close_idx].lstrip().startswith("---"):
+            close_idx -= 1
+        if close_idx < 0:
+            # Malformed frontmatter — skip rather than corrupt the file.
+            return
+        new_content = (
+            "".join(lines[:close_idx]) + inject + "".join(lines[close_idx:]) + after
+        )
+
+    fd, tmp_path = tempfile.mkstemp(
+        dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp"
+    )
+    wrote = False
+    try:
+        with _os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(new_content)
+        _os.replace(tmp_path, str(path))
+        wrote = True
+    finally:
+        if not wrote:
+            # Best-effort cleanup; log if removal fails so nothing is silently lost.
+            try:
+                _os.unlink(tmp_path)
+            except FileNotFoundError:
+                # Already removed (e.g., by concurrent cleanup) — fine.
+                pass
+            except OSError as cleanup_err:
+                print(
+                    f"[doc-status-audit] warning: could not remove temp file "
+                    f"{tmp_path}: {cleanup_err}",
+                    file=sys.stderr,
+                )
 
 
 def scan(
@@ -224,6 +272,23 @@ def main() -> int:
 
     dirs = args.dir if args.dir else DEFAULT_DIRS
     dirs = [d if d.is_absolute() else (REPO_ROOT / d) for d in dirs]
+
+    # Allowlist: --dir must resolve under DEFAULT_DIRS to prevent arbitrary
+    # frontmatter writes to external markdown files.
+    allowed = [d.resolve() for d in DEFAULT_DIRS]
+    for d in dirs:
+        resolved = d.resolve()
+        if not any(
+            resolved == a or a in resolved.parents or resolved in a.parents
+            for a in allowed
+        ):
+            print(
+                f"[doc-status-audit] refusing to scan {d}: "
+                f"outside allowlist (docs/research, docs/plans, "
+                f".config/claude/references)",
+                file=sys.stderr,
+            )
+            return 2
 
     roots = collect_memory_roots()
     results = scan(dirs, args.fix, roots)
