@@ -107,6 +107,36 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - **Dominant かつ 5D に Poor あり** → 品質に関わらず使われている = 代替不在の信号。最優先で改善
 - **Dominant + Unused の共存** → Expert Collapse の決定的証拠。Unused スキル側の description/trigger 不備を真っ先に疑う
 
+### Step 0.7: Composition Depth Check
+
+ADR-0008 の compound / molecule / atom レイヤリングに対応した静的解析。skill 間の呼び出し関係の深さを計測し、Skill Graphs 2.0 が指摘した **compound ceiling (8-10 molecules 超で成功率 ~43%)** を超えそうな skill を検出する。
+
+#### 手順
+
+1. 対象スキルの SKILL.md を読み、以下のパターンを抽出する:
+   - `Skill(skill: "...")` の明示的呼び出し
+   - 「次に `/xxx` を実行する」「`/xxx` を呼ぶ」等の自然言語フレーズ
+   - `Agent(subagent_type: "...")` の subagent 呼び出し
+   - `Bash(command: "... skill ...")` での間接呼び出し（低信頼）
+2. 抽出された呼び出し先をノード、呼び出し関係をエッジとして dependency graph を組む
+3. 対象スキルを起点とした **最大 composition depth**（到達可能な最長パス）を数える
+4. 結果を audit report Summary テーブルの **CompDepth** 列に記録する
+
+#### 判定閾値
+
+| depth | 分類 | アクション |
+|-------|------|-----------|
+| 1-2 | atom / simple molecule | 問題なし |
+| 3-5 | complex molecule | 問題なし |
+| 6-8 | compound | 注意。Success Criteria と Phase 境界が明確か確認 |
+| 9+ | **over-ceiling** | $0.9^9 \approx 39\%$ 以下の成功率が想定される。分解 or 人間 drive 化を推奨 |
+
+#### 補足
+
+- 呼び出し先が存在しない skill (依存先が retire 済み) を検出したら「stale reference」として report に出す
+- composition depth は「SKILL.md 上に記述された依存」のみ計測する。runtime でユーザーが手動チェインする場合は別物
+- depth 9+ の skill は ADR-0008 の「compound は 1 本ずつ drive」原則に特に強く従うべき
+
 ### Step 1: Select target skills
 
 Ask the user which batch to audit, or accept a custom skill list. Default to both batches if unspecified.

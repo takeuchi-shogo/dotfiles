@@ -77,6 +77,17 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
 - 並列で別 task を進めるときは worktree で filesystem を分離する
 - frontmatter に `success_criteria:` を 1 行で書くと `.config/claude/scripts/policy/completion-gate.py` が Ralph Loop 継続時に参照する (任意)。本文の `## Success Criteria` は required、frontmatter は optional な補助索引。
 
+## Compound Plan Ceiling
+
+Skill Graphs 2.0 ([docs/research/2026-04-23-skill-graphs-2.0-absorb-analysis.md](docs/research/2026-04-23-skill-graphs-2.0-absorb-analysis.md)) の実証と $0.9^n$ の指数減衰モデルから、compound skill / plan の Success Criteria は **≤ 8 molecules (step)** を推奨する。9 step 以上は以下のいずれかを選ぶ:
+
+- Phase 境界で plan を分割し、`docs/plans/active/<topic>-phase-N.md` に別ファイル化する
+- subagent に autonomous 実行を委譲し、Coordinator (人間) の `understanding` 負荷を減らす
+- drive 責任の層を下げる (compound → complex molecule に再分類する)
+
+根拠と drive 責任のレイヤリングは [docs/adr/0008-coordinator-vs-human-ram.md](docs/adr/0008-coordinator-vs-human-ram.md) を参照。
+`.config/claude/skills/skill-audit/SKILL.md` の Step 0.7 が静的解析で composition depth を計測する。
+
 ## Agent Notes
 
 - Codex:
