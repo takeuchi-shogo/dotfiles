@@ -28,6 +28,8 @@
   - Codex の short-term checkpoint surface
 - `~/.codex/memories/`
   - Codex の durable memory surface
+- `~/.codex/memories_extensions/chronicle/`
+  - Chronicle が生成する画面由来 memory surface。未暗号化のローカル生成 state として扱う
 - `~/.codex/skills/`, `~/.agents/skills/`
   - Codex skill discovery の compatibility surface
 - `~/.claude/session-state/`, `~/.claude/agent-memory/`
@@ -129,6 +131,7 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
   - review / verification / search-first skills
   - checkpoint-resume skill
   - memory-capture skill
+  - Codex memories / Chronicle configuration (`[features].memories`, `[memories]`)
   - subagent runtime (`[agents]` - `max_threads`, `max_depth`)
   - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher / validation mapper)
   - subagent operation playbook (`docs/playbooks/codex-subagent-usage.md`)
@@ -152,6 +155,8 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
 - memory
   - repo ごとの stable learnings は `~/.codex/memories/<slug>-memory.md` と `~/.codex/memories/<slug>-learnings.jsonl` に残す
   - 一時的なログや transient failure は durable memory に昇格させない
+  - Chronicle memory は画面由来の hint として扱い、判断前に一次情報を読む
+  - `~/.codex/memories_extensions/chronicle/` は未暗号化 state なので、共有・同期・バックアップ前に内容を確認する
 
 ## Rules
 

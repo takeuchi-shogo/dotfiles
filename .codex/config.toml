@@ -43,9 +43,16 @@ model_reasoning_summary = "detailed"
 sandbox_mode = "workspace-write"
 
 [features]
+memories = true               # Codex memories を明示有効化。Chronicle は Codex app 側で opt-in
 shell_snapshot = true        # 環境スナップショット（beta）
 undo = true                  # per-turn git ghost snapshots を有効化
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
+
+[memories]
+use_memories = true
+generate_memories = true
+no_memories_if_mcp_or_web_search = true
+consolidation_model = "gpt-5.4-mini"
 
 [mcp_servers.context7]
 command = "npx"
