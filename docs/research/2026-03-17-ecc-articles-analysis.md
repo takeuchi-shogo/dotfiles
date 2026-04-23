@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # ECC (Everything Claude Code) 3部作 分析レポート
 
 **日付**: 2026-03-17

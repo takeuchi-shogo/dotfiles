@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # AI System Design Checklist
 
 Source: "The AI Engineer's System Design Interview Guide" (Lamhot Siagian, 2026)

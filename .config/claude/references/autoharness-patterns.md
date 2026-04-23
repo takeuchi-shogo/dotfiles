@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # AutoHarness パターンカタログ
 
 > Source: Lou et al. "AutoHarness: improving LLM agents by automatically synthesizing a code harness" (arXiv:2603.03329, 2026)

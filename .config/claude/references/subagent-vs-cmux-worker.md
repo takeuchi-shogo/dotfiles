@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # サブエージェント vs cmux Worker 比較
 
 ## 特性比較

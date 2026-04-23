@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Injection Rule Taxonomy
 
 > AgentWatcher (arXiv:2604.01194) の 10 種攻撃ルール + 4 種ベナインルールに基づく。

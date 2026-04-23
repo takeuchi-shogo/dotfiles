@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Chain of Thought Monitorability: 深層調査レポート
 
 **対象論文**: "Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety"

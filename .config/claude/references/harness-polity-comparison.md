@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # ハーネス政体比較: Claude Code vs Codex
 
 > 出典: wquguru/harness-books — 「殊途同归，还是各表一枝」

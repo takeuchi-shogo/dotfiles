@@ -19,10 +19,10 @@ Before implementing:
 
 **Minimum code that solves the problem. Nothing speculative.**
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
+- No features beyond what was asked — implement exactly the requested scope; surface extensions as a separate proposal.
+- No abstractions for single-use code — inline first; extract only when 3+ call sites exist (Rule of 3).
+- No "flexibility" or "configurability" that wasn't requested — hardcode first; add parameters only when asked.
+- No error handling for impossible scenarios — handle errors at system boundaries (I/O, user input, external APIs); trust internal contracts.
 - If you write 200 lines and it could be 50, rewrite it.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
@@ -33,15 +33,15 @@ Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, sim
 
 When editing existing code:
 
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
+- Don't "improve" adjacent code, comments, or formatting — leave neighbors untouched; mention observations in the final report.
+- Don't refactor things that aren't broken — make the minimum change that satisfies the request.
 - Match existing style, even if you'd do it differently.
 - If you notice unrelated dead code, mention it - don't delete it.
 
 When your changes create orphans:
 
 - Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+- Don't remove pre-existing dead code unless asked — flag it in the report so the user can decide.
 
 The test: Every changed line should trace directly to the user's request.
 

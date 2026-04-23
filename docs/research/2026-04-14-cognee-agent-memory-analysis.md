@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Build Agents that never forget — 分析レポート
 
 - **日付**: 2026-04-14

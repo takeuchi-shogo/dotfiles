@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Error Fix Guides
 
 error-to-codex.py が参照するエラーパターン → 修正手順マッピング。

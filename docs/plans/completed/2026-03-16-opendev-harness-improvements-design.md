@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # OpenDev 論文ベースのハーネス改善設計
 
 **日付**: 2026-03-16

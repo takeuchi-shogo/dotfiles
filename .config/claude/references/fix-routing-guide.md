@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Fix Routing Guide — レビューコメント修正の振り分け
 
 レビューコメント（GitHub PR コメント、Codex レビュー指摘、ユーザー補完コメント）を受け取った後、

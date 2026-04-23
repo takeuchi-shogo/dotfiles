@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # ACE: Agentic Context Engineering 論文分析
 
 - **論文**: Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models

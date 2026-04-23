@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go Idioms Checklist
 
 権威ソース: Effective Go, Go Code Review Comments, Google Go Style Guide, Uber Go Style Guide, 100 Go Mistakes, Learn Go with Tests

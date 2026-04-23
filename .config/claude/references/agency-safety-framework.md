@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agency Safety Framework
 
 > Bengio の Scientist AI 論文 (arXiv:2502.15657) の Agency 3本柱モデルに基づく。

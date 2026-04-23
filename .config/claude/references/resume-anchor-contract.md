@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Resume Anchor Contract
 
 **目的**: セッション中断・compact・複数セッション跨ぎでも作業を確実に再開するための「anchor」の規約。

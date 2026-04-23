@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Research チェックリスト
 
 `/rpi` の Research フェーズ（Phase 1）の詳細チェック項目。

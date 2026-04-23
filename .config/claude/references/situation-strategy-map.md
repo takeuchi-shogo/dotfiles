@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # 状況→戦略マップ
 
 > `/improve` が候補を提案し、人間が承認して追記する。最大 50 エントリ。

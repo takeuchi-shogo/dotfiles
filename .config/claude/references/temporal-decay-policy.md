@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Temporal Decay Policy
 
 > Source: context-and-impact リポジトリの Temporal Decay 知見に基づく

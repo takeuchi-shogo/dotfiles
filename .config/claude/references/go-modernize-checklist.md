@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go Modernize Checklist
 
 Go 1.21〜1.26 のバージョン別移行ガイド。`go.mod` の `go` ディレクティブを確認し、対象バージョンの項目を適用する。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # RL-Inspired Optimization Guide
 
 Policy Gradient の数学的概念を AutoEvolve ハーネスの

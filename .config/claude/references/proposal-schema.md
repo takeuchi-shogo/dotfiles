@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Proposal Schema (autoevolve)
 
 AutoEvolve Phase 2.5 が書き出す `runs/YYYY-MM-DD/proposals.jsonl` の完全 schema。

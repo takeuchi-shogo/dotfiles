@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Wrapper vs Raw Primitive — Harness Control Plane
 
 > このドキュメントは harness の**思想**を明文化するためのもの。新規 skill/tool/wrapper を追加するときの判断基準。

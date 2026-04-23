@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # cwd/path Routing Matrix
 
 **目的**: cwd（カレントワーキングディレクトリ）の種類に応じて、どの rules/skills/agents を読む or 読まないかを明示する。記事「Obsidian × Claude Code」(akira_papa_AI, 2026-03) の「パススコープ限定ルール」概念を dotfiles 環境に適合させた運用ガイド。

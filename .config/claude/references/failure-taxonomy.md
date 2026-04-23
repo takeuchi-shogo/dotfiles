@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Failure Taxonomy
 
 LLM エージェントの失敗モードを体系的に定義する。

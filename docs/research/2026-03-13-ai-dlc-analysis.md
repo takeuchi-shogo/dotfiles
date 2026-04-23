@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AI-DLC（AI-Driven Development Life Cycle）調査レポート
 
 - **調査日**: 2026-03-13

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Model Expertise Map
 
 > HACRL (arXiv:2603.02604) の Exponential IS に基づく。

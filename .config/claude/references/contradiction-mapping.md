@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Contradiction Mapping — 矛盾検出と解決
 
 > 知識ベース内の矛盾する知見を検出・解決するフレームワーク。

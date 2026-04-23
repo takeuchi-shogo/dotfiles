@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Routing & Capability Observability — Closed Loop
 
 **Date**: 2026-04-11

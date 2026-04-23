@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Skill Invocation Patterns
 
 > 出典: Garry Tan "Thin Harness, Fat Skills" 原則 1 + 10（Recipes, Not Orders / Same Process, Different World）

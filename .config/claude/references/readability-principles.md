@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Readability Principles Reference
 
 munetoshi 氏のコード可読性シリーズ（全8セッション）および

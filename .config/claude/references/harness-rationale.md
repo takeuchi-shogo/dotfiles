@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Harness Engineering Rationale
 
 ハーネス設計の定量的根拠と設計分類。

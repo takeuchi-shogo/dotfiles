@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Qualitative Signals Spec
 
 > eval 実行で記録する定性シグナル (ambiguity / retry / failure_reason) のスキーマ定義。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Cross-Model Insight Registry
 
 HACRL (Heterogeneous Agent Collaborative RL) の双方向知識転移に基づき、各モデルが発見した reusable insight を蓄積する。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AI Evals フレームワーク × dotfiles リポジトリ 分析レポート
 
 **調査日**: 2026-03-12

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Error Analysis Methodology
 
 LLM パイプラインの失敗モードをボトムアップで帰納的に発見する手法。

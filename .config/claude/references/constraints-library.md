@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # 制約ライブラリ（Constraints Library）
 
 Cursor の Self-Driving Codebase 研究で「制約は指示より効果的」と実証された。

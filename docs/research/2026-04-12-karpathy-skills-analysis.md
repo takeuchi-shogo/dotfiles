@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Andrej Karpathy Skills — 分析レポート
 
 - **日付**: 2026-04-12

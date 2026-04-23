@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Structured Output ガイド
 
 Claude API で構造化出力を確実に得るための Architect-level パターン集。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Task Decomposition Guide
 
 タスクの粒度を最適化するためのガイドライン。

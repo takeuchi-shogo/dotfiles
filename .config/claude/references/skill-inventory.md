@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Claude Skill Inventory
 
 Claude Code の skill を、常用すべき core と必要時だけ使う optional に分ける。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AlphaEvolve 知見の AutoEvolve 統合プラン
 
 > Source: [AlphaEvolve Analysis](../research/2026-04-07-alphaevolve-autoevolve-analysis.md)

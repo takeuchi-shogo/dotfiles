@@ -503,6 +503,15 @@
 - Rejected: 13-stage full copy, GitHub mass PR automation, git-push velocity hook, CLA flow, expert amplification codification (Stanford HAI 2026 contradicts)
 - Key translation: "attestation is scarce" → "reproduce-first attestation before polish"
 
+## [2026-04-23] ingest | AGENTS.md Patterns (Augment/Zhenylenko)
+
+- ソース: "A good AGENTS.md is a model upgrade. A bad one is worse than no docs at all." by Slava Zhenylenko (Augment)
+- 判定: Gap 3 (search-result sprawl, token-based size limit, stale doc retirement), Partial 2 (pair don't/do, real code examples), Already 4 (progressive disclosure, procedural workflows, decision tables, reference limit)
+- 棄却: module-level AGENTS.md 追加 (Codex 批評: sprawl 増大で逆効果)
+- 取り込み: 7 タスク採択 (P1 search-result sprawl 監査 + AGENTS.md 圧縮 / P2 don't+do 強化 + stale doc retirement / P3 token size limit + workflow playbooks + decision-tables-index)
+- レポート: docs/research/2026-04-23-agents-md-patterns-absorb-analysis.md
+- プラン: docs/plans/active/2026-04-23-agents-md-absorb-plan.md
+
 ## [2026-04-21] ingest | Obsidian × Claude Code (akira_papa_AI)
 
 - ソース: https://qiita.com/akira_papa_AI/items/4ac1edc7e93604b0199a

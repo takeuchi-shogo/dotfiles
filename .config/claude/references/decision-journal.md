@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Decision Journal — 軽量決定ログ
 
 > 日常の設計・ワークフロー決定を記録し、結果を追跡する。

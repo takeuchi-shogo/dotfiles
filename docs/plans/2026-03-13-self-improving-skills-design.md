@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Self-Improving Skills 設計
 
 cognee-skills の Observe → Inspect → Amend → Evaluate ループを、

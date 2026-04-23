@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # ツールシーケンスパターン
 
 > `/analyze-tacit-knowledge` が抽出し、5 回以上出現パターンのみ記録する。

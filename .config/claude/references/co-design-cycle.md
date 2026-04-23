@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Extreme Co-Design Cycle
 
 > NVIDIA "Open Data for AI" の Extreme Co-Design パターンを、

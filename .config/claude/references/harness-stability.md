@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Harness Stability Policy
 
 ## 原則: 30日評価なしに捨てない

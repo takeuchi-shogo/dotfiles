@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # ベンチマーク次元定義
 
 > Setup Health Benchmark の6次元の定義、計算方法、閾値。

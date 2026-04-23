@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Letta AI: "Why Memory Isn't a Plugin (It's the Harness)" — Analysis
 
 - **source**: Letta AI (MemGPT) "Why memory isn't a plugin (it's the harness)"

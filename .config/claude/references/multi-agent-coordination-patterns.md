@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Multi-Agent Coordination Patterns
 
 > 出典: Anthropic "Multi-agent coordination patterns: Five approaches and when to use them" (Cara Phillips et al., 2026-04-10)

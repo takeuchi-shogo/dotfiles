@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Resource Bounds（リソース制限定数一覧）
 
 全 hook の閾値と定数を一元管理。変更時はこのファイルと対応する Rust ソースの両方を更新すること。

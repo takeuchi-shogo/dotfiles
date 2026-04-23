@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Theory of Code Space: 深層調査レポート
 
 **対象論文**: "Theory of Code Space: Do Code Agents Understand Software Architecture?"

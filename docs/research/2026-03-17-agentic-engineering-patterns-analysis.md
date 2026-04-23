@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Simon Willison "Agentic Engineering Patterns" 深掘り調査レポート
 
 **調査日**: 2026-03-17

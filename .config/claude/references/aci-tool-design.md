@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # ACI (Agent-Computer Interface) ツール設計原則
 
 > API は人間向けに設計されている。Agent 向けのインターフェースは別の設計原則が必要。

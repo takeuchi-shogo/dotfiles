@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # "The New Software: CLI, Skills & Vertical Models" — 統合分析
 
 **分析日**: 2026-04-11

@@ -3,8 +3,9 @@ date: 2026-04-07
 topic: Karpathy LLM Knowledge Base System - Adoption, Constraints, Alternatives
 related_gist: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
 analysis_scope: 3 deep dives (adoption cases, trade-offs, alternatives)
+status: active
+last_reviewed: 2026-04-23
 ---
-
 # Karpathy LLM Knowledge Base Pattern: 深掘り分析
 
 ## 前置: 既存分析の継承

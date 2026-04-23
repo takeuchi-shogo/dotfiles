@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Project Context MCP Server Template
 
 プロジェクト固有のコンテキストを Claude Code に提供する MCP サーバーのテンプレート。

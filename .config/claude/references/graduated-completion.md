@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Graduated Completion パターン
 
 > Stripe Minions の知見: 「部分的に正しい成果でも価値を届ける」

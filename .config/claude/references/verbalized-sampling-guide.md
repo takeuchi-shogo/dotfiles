@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Verbalized Sampling (VS) ガイド
 
 > 出典: Zhang, Yu, Shi et al. 2025 "Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity" (arXiv:2510.01171)

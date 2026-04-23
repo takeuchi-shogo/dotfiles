@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Rust Review Checklist
 
 Rust 固有のレビュー観点。`code-reviewer` が `.rs` の変更をレビューする際に参照する。

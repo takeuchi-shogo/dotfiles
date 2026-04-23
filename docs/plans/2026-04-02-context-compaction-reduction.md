@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Plan: コンテキスト圧縮の頻度を削減する
 
 ## Context

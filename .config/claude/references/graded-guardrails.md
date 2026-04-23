@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Graded Guardrails 設計ドキュメント
 
 > Bengio 論文の「有害確率が閾値を超えたら拒否」に倣い、binary 判定から confidence-weighted judgment への移行を設計する。

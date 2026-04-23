@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # CLI Discovery Policy
 
 ## 発見順序

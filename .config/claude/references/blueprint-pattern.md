@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Blueprint パターン
 
 Stripe の Minions システムに着想を得た、タスク種別ごとのワークフロー DAG 定義。

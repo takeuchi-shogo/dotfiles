@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Change Surface Matrix
 
 harness 関連ファイルを変更する際に、併せて確認すべきファイルと最低限の検証コマンド。

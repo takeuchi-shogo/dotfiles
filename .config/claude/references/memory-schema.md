@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Memory Schema (short reference)
 
 `~/.claude/agent-memory/**/*.jsonl` の型・保持期間。詳細: [`docs/specs/2026-04-17-memory-schema-retention.md`](../../../docs/specs/2026-04-17-memory-schema-retention.md)。AutoEvolve 固有 artifact は [`autoevolve-artifacts.md`](./autoevolve-artifacts.md) 参照。

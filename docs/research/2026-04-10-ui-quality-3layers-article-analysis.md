@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Claude Code の SKILL.md に「品質3層定義」を書いたら、40画面のデザインが破綻しなくなった — 分析レポート
 
 ## Meta

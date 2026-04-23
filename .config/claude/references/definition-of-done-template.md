@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Definition of Done Template
 
 > M/L 規模タスクの Plan 段階で binary pass/fail 基準を事前定義する。

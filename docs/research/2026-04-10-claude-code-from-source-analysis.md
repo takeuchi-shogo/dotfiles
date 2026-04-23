@@ -10,8 +10,9 @@ related:
   - 2026-04-02-cc-7-layer-memory-architecture-analysis.md
   - 2026-04-05-claude-code-kairos-mode-analysis.md
 integration_status: selective (Tier 1/2 統合済み、Tier 3 記録のみ)
+status: active
+last_reviewed: 2026-04-23
 ---
-
 # Claude Code from Source — 全18章リバースエンジニアリング分析
 
 ## 1. Executive Summary

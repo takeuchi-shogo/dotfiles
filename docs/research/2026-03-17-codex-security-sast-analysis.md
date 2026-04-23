@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Why Codex Security Doesn’t Include a SAST Report 深掘り調査
 
 **調査日**: 2026-03-17  

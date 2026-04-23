@@ -5,8 +5,9 @@ authors: Corby Rosset, Pratyusha Sharma, Andrew Zhao, Ahmed Awadallah (Microsoft
 date_analyzed: 2026-04-10
 type: paper
 tags: [cua, verification, evaluation, failure-taxonomy, scaffolding]
+status: active
+last_reviewed: 2026-04-23
 ---
-
 # Universal Verifier 論文分析レポート
 
 ## 主張

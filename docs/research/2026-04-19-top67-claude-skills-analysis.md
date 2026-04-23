@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Top 67 Claude Skills 記事 — Absorb 分析
 
 **Date:** 2026-04-19

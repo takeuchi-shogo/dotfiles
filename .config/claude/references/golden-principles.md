@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Golden Principles（自動検証用）
 
 rules/ はエージェント向けの指示。このファイルは hooks による自動検証用のパターン集。

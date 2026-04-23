@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Anthropic "Lessons from Building Claude Code: How We Use Skills" 分析レポート
 
 **日付:** 2026-03-18

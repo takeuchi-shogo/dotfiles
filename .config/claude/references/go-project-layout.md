@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go Project Layout Guide
 
 プロジェクトの規模と種類に合わせて構造をサイズ調整する。100行の CLI に DI レイヤーは不要。

@@ -2,8 +2,9 @@
 created: 2026-04-11
 source: https://zenn.dev/pepabo/articles/claude-code-failure-learning-loop
 type: absorb-analysis
+status: active
+last_reviewed: 2026-04-23
 ---
-
 # pepabo「Claude Code 失敗学習ループ」吸収分析
 
 ## Source

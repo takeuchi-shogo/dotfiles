@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Architecture Overview: Harness 4-Layer + AutoEvolve
 
 Claude Code ハーネスの4層 hook アーキテクチャと AutoEvolve 自己改善ループの全体構造。

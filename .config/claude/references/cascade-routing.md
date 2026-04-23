@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Cascade Routing — Promotion Gate Convention
 
 > **Online cascade**: 安いモデルで試行 → 品質判定 → 昇格 (expensive model へ) または停止。

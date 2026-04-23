@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Mixture of Experts Explained — 分析レポート
 
 **記事**: "Mixture of Experts Explained" (Amit Shekhar / Outcome School)

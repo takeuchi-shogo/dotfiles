@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Convention Pinning Guide
 
 > Schwartz (Harvard) の "Vibe Physics" プロジェクト (2026-03) で頻発した問題:

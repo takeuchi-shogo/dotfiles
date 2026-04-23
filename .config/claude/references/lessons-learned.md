@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Lessons Learned — 1行 Gotcha 集
 
 > セッション中に「壊れた→直した」パターンを発見したら、1行で追記する。

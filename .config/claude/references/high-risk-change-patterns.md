@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # High-Risk Change Patterns
 
 > 高リスク変更のパターン定義。PostToolUse hook (`change-surface-advisor.py`) が参照し、

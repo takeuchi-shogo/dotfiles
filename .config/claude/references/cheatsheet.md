@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Claude Code クイックリファレンス
 
 ## スラッシュコマンド一覧

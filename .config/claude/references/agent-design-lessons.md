@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Lessons from Building Claude Code: Seeing like an Agent
 
 出典: Anthropic Thariq (@trq212) — 2026年2月

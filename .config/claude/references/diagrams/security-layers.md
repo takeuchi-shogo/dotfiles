@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Security Layers: Hook Chain + MCP Audit
 
 入力から実行までのセキュリティ hook チェーンと MCP 監査パスを示す。

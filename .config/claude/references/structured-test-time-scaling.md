@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Structured Test-Time Scaling Theory
 
 > Source: Tu (2026) "Hierarchical MAS Theory"

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # NotebookLM + Claude Code + Obsidian 統合ワークフロー調査レポート
 
 **調査日**: 2026-03-16

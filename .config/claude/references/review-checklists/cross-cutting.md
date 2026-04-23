@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Cross-Cutting Review Checklist
 
 言語非依存の共通レビュー観点。`code-reviewer` が**全ての変更**に対して適用する。

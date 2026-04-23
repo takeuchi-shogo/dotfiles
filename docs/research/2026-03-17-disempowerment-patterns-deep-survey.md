@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Who's in Charge? — LLM 利用における Disempowerment パターンの深掘り調査
 
 > **論文**: Sharma, M., McCain, M., Douglas, R., Duvenaud, D. (2026). "Who's in Charge? Disempowerment Patterns in Real-World LLM Usage." arXiv:2601.19062

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Context Constitution — コンテキスト管理の原則体系
 
 > メモリはプラグインではない。メモリはハーネスそのものである。

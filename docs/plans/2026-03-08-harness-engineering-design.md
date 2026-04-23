@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Harness Engineering 導入設計
 
 ## 概要

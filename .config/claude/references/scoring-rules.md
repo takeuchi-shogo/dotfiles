@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Importance Scoring Rules
 
 ## スコアリングルール

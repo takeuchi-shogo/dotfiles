@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # レビュー次元定義
 
 > code-reviewer / codex-reviewer が出力する Review Scores の5次元を定義する。

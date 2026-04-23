@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Skill Conflict Resolution & Negative Routing
 
 > 出典: Garry Tan "Thin Harness, Fat Skills" 原則 5 (Resolver) への補強

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # ハーネスエンジニアリング 10原則チェックリスト
 
 > 出典: wquguru/harness-books Book 1 Ch9 + dotfiles core_principles との突き合わせ

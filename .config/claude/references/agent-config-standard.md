@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent Config 標準化リファレンス
 
 ## 現状: 分散定義

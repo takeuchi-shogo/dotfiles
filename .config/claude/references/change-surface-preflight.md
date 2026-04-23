@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Change Surface Preflight Map
 
 > 変更対象の種別（change surface）に応じた事前検証ルール。

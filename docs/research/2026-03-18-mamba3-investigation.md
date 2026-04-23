@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Mamba-3: Improved Sequence Modeling Using State Space Principles — 調査レポート
 
 > **調査日**: 2026-03-18

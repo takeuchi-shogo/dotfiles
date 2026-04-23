@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # /init-project スキル設計
 
 **Date**: 2026-03-12

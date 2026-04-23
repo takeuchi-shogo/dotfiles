@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Adversarial Evaluation Criteria
 
 > design-reviewer の 4 次元主観的品質評価を Code/API/Documentation に拡張。

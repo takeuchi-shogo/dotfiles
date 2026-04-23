@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Auto-Accept Policy
 
 Plan 承認後、低リスクな変更を確認なしで実行するための判定基準。

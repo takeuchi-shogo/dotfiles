@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # RACA 知見統合プラン
 
 > Source: "RACA: Research Assistant Coding Agent for Ph.D. Students" ブログ記事

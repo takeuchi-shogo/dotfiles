@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Scientist AI: 超知能エージェントの壊滅的リスクと安全な代替パス
 
 - **論文**: "Superintelligent Agents Pose Catastrophic Risks: Can Scientist AI Offer a Safer Path?"

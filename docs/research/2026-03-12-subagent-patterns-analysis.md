@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Three Sub-Agent Patterns Analysis — dotfiles リポジトリ照合レポート
 
 > **原文**: "Three sub-agent patterns you need for your agentic system"

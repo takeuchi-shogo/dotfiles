@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AutoEvolve — Claude Code 自律改善システム
 
 **日付**: 2026-03-08

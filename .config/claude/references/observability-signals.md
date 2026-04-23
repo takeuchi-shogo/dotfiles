@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Observability Signals
 
 > エージェント実行の観測信号とアクション定義。

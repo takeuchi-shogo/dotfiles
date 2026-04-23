@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Dead Weight Scan Protocol
 
 > 「何をやめられるか？」を定期的に問う棚卸しチェックリスト。

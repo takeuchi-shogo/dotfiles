@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent Execution Profiles
 
 > Qoder Experts Mode の知見: Expert = 独立ハーネス。プロンプト差し替えではなくツールセット・制約・コンテキストが役割別。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent Orchestration Map
 
 Claude Code エージェントシステムの全体構造と委譲フローを俯瞰する。

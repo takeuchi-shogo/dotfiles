@@ -38,6 +38,7 @@
 - [プロンプト・ワークフロー実践](../research/2026-04-09-30-claude-prompts-analysis.md) — 実務検証済み30プロンプト。Self-Correction Loop・DELIBERATELY SKIPPING・Voice Guide・Repurpose の統合知見
 - **Thin CLAUDE.md / Thick rules 原則 (ADR-0007 予定)** — CLAUDE.md は IFScale 制約内に保ち、詳細ルールを `rules/` や `references/` に分離する設計。Obsidian × Claude Code 分析 (2026-04-21) で ADR 化予定 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
 - **cwd-aware routing matrix** — 作業ディレクトリ (dotfiles / repo / tmp 等) に応じてモデル・スキル・フックを自動切替する経路表。Context Design 5層の Execution 層に対応 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md), [context-design-absorb-analysis](../research/2026-04-17-context-design-absorb-analysis.md)
+- [AGENTS.md Patterns (Augment AuggieBench)](../research/2026-04-23-agents-md-patterns-absorb-analysis.md) — AuggieBench 実測: good AGENTS.md = Haiku→Opus 相当、bad は no docs より悪化。7 パターン + search-result sprawl 対策
 
 ### memory — メモリ・コンテキスト
 

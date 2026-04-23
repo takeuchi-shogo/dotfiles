@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Lint Category Map (Factory.ai 7-Category Framework)
 
 `harness-rationale.md` の旧4分類を拡張し、Agent-Native コード品質を7カテゴリで体系化する。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # RACA: Research Assistant Coding Agent — ハーネス統合分析
 
 - **ソース**: ブログ記事 "RACA: Research Assistant Coding Agent for Ph.D. Students"

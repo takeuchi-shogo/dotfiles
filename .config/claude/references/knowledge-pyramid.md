@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Knowledge Pyramid — 4層昇格パイプライン
 
 > Spark 記事の知識ピラミッド概念を AutoEvolve の知識管理に統合する。

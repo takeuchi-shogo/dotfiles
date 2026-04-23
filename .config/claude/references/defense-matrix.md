@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Defense Matrix — 多層防御の責任分担
 
 > 梶川 (TechBowl) の5エージェント体制 + Anthropic の Generator+Evaluator 分離に基づく。

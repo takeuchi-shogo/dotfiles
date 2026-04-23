@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Harness Debt Register
 
 ハーネス自体の技術的負債を追跡する。Bouchard の "harness debt" 概念に基づく。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Trust Verification Policy
 
 > 「信頼は検証の関数であり、能力の関数ではない」

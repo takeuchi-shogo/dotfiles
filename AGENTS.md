@@ -28,91 +28,39 @@
 
 ## Where To Look
 - 全体構成と基本コマンド: `README.md`, `Taskfile.yml`, `PLANS.md`
-- Claude Code 設定: `.config/claude/`
-- Codex 設定: `.codex/`
-- MCP 定義: `.mcp.json`
+- Claude Code 設定: `.config/claude/`、Codex 設定: `.codex/`、MCP 定義: `.mcp.json`
 - playbook: `docs/playbooks/`
-- ツール別の補足:
-  - WezTerm: `.config/wezterm/README.md`
-  - AeroSpace: `.config/aerospace/README.md`
-  - Karabiner: `.config/karabiner/README.md`
-  - zsh: `.config/zsh/README.md`
+- 決定一覧 (どの表をどこで使うか): `.config/claude/references/decision-tables-index.md`
+- ツール別: WezTerm `.config/wezterm/README.md`、AeroSpace `.config/aerospace/README.md`、Karabiner `.config/karabiner/README.md`、zsh `.config/zsh/README.md`
 
 ## CLI Tools
-
-このリポジトリに含まれる CLI ツール一覧。`--json` フラグでエージェント向け構造化出力に対応。
-
-### osa (OpenTelemetry Session Analyzer)
-
-Claude Code のセッションログを解析し、ツール呼び出し統計・トークン使用量・ボトルネックを表示する。
-
-```shell
-# セッション一覧を表示
-osa list
-osa list --project dotfiles
-osa list --json                  # JSON output for agents
-
-# 直近セッションの統計を表示
-osa analyze
-osa analyze --last 5 --json      # JSON output for agents
-
-# OTLP エンドポイントにエクスポート
-osa export <session-file> --otlp http://localhost:4318
-```
-
-### validate_*.sh (.bin/)
-
-dotfiles の検証スクリプト。`task validate` から一括実行可能。
-
-```shell
-task validate-configs       # config/script の構文チェック
-task validate-symlinks      # managed symlink の検証
-task validate-readmes       # README のローカルリンク検証
-```
+- 主要 CLI (`osa`, `validate_*.sh`) の使い方詳細: `.config/claude/references/agents-md-cli-tools.md`
+- `--json` フラグで agent 向け構造化出力に対応するツールあり
 
 ## Codex Skills
-- project-local skills は `.agents/skills/` に置く。
-- selected skill は compatibility のため `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する。
-- まず使う候補:
-  - `$codex-search-first`: 実装前の既存資産調査
-  - `$ai-workflow-audit`: harness 改善や repo 横断共有で、skill / memory / script の昇格先を決める
-  - `$openai-frontend-prompt-workflow`: GPT-5.4 frontend prompt template の再利用、公式 guidance の運用化、不足情報の聞き返し
-  - `$frontend-skill`: visually strong な landing page / app / dashboard を実装するときの art direction と hard rules
-  - `$github-review-workflow`: PR comments と GitHub Actions CI の振り分けと処理
-  - `$artifact-workflow`: doc / pdf / slides / screenshot の振り分けと成果物 workflow
-  - `$codex-verification-before-completion`: 完了前の実コマンド検証
-  - `$dotfiles-config-validation`: dotfiles 向け validation コマンド選定
-  - `$codex-checkpoint-resume`: 長時間タスクの checkpoint と再開補助
-  - `$codex-memory-capture`: repo 固有 learnings の durable 保存
-  - `$codex-session-hygiene`: compact / resume / handoff を含む長時間タスクの整流
-- Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提の記述をそのまま実行せず、文書として必要部分だけ採用する。
+- project-local skills は `.agents/skills/`、selected skill は compatibility のため `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する
+- 主な候補: `$codex-search-first` (実装前調査) / `$ai-workflow-audit` (harness 改善・横展開判断) / `$openai-frontend-prompt-workflow` (GPT-5.4 frontend prompt) / `$frontend-skill` (visually strong UI) / `$github-review-workflow` (PR / CI) / `$artifact-workflow` (doc/pdf/slides) / `$codex-verification-before-completion` / `$dotfiles-config-validation` / `$codex-checkpoint-resume` / `$codex-memory-capture` / `$codex-session-hygiene`
+- Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提をそのまま実行せず、文書として必要部分だけ採用する
 
 ## Frontend UI Work
-- visually strong な landing page / app / dashboard を作るときは、実装前に `$openai-frontend-prompt-workflow` で surface、product context、visual direction、real copy、CTA を揃える。
-- 実装時は `$frontend-skill` を前面に出し、最初に visual thesis、content plan、interaction thesis を書く。
-- 新しい Codex セッションで UI 実装を始めるなら、可能なら low/medium reasoning の profile を使う。既存 session では prompt 内で low/medium reasoning を明示する。
-- landing page は full-bleed hero、brand first、no hero cards、one job per section を基本にする。
-- app / dashboard は workspace-first、utility copy、calm surface hierarchy を基本にし、hero-heavy な marketing structure を混ぜない。
-- UI 実装の完了前には Playwright で desktop / mobile を確認し、overlap、first viewport の hierarchy、navigation、key flow を直す。
+- visually strong な landing page / app / dashboard を作るときは、実装前に `$openai-frontend-prompt-workflow` で surface、product context、visual direction、real copy、CTA を揃える
+- 実装時は `$frontend-skill` を前面に出し、最初に visual thesis、content plan、interaction thesis を書く
+- 新しい Codex セッションで UI 実装を始めるなら、可能なら low/medium reasoning の profile を使う。既存 session では prompt 内で low/medium reasoning を明示する
+- landing page は full-bleed hero、brand first、no hero cards、one job per section を基本にする
+- app / dashboard は workspace-first、utility copy、calm surface hierarchy を基本にし、hero-heavy な marketing structure を混ぜない
+- UI 実装の完了前には Playwright で desktop / mobile を確認し、overlap、first viewport の hierarchy、navigation、key flow を直す
 
 ## Mandatory Skill Usage
-- 実装前の調査が必要なら `$codex-search-first`
-- harness 改善、workflow 設計、他 repo への横展開判断は `$ai-workflow-audit`
-- 完了前の検証コマンド選定は `$dotfiles-config-validation`
-- 30 分以上、handoff、resume、compact が絡む作業は `$codex-checkpoint-resume`
-- 同じ長時間タスクで thread 継続や再開判断が必要なら `$codex-session-hygiene`
-- 繰り返し出た repo 固有ルールを残すときは `$codex-memory-capture`
+- 実装前の調査: `$codex-search-first`
+- harness 改善・workflow 設計・他 repo への横展開判断: `$ai-workflow-audit`
+- 完了前の検証コマンド選定: `$dotfiles-config-validation`
+- 30 分以上 / handoff / resume / compact が絡む作業: `$codex-checkpoint-resume`
+- 同じ長時間タスクで thread 継続や再開判断: `$codex-session-hygiene`
+- 繰り返し出た repo 固有ルールを残す: `$codex-memory-capture`
 
 ## Useful Commands
-- `task symlink`: symlink を再作成
-- `task install`: 初回セットアップ
-- `task brew`: Brewfile からパッケージを導入
-- `task restart-wm`: window manager 関連を再起動
-- `task validate`: dotfiles の主要 validation をまとめて実行
-- `task validate-configs`: config/script の構文チェック
-- `task validate-readmes`: README のローカルリンク検証
-- `task validate-symlinks`: managed symlink の検証
-- `task update`: Homebrew とパッケージを更新
+- `task symlink` / `task install` / `task brew` / `task restart-wm` / `task update`
+- `task validate` (主要 validation 一括) / `task validate-configs` / `task validate-readmes` / `task validate-symlinks`
 
 ## Change Validation
 - 変更した設定に対応する README やスクリプトを先に確認してから編集する。
@@ -147,3 +95,5 @@ task validate-readmes       # README のローカルリンク検証
 - `docs/playbooks/claude-config-changes.md`
 - `docs/playbooks/symlink-management.md`
 - `docs/playbooks/worktree-based-tasking.md`
+- `docs/playbooks/stale-doc-retirement.md` (新 pattern 導入時の旧 doc 降格手順)
+- `docs/playbooks/add-hook.md` / `create-skill.md` / `add-agent.md` (numbered 6-step workflows)

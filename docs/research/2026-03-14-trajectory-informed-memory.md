@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Trajectory-Informed Memory Generation for Self-Improving Agent Systems
 
 > **論文**: Fang et al. (IBM Research), arXiv:2603.10600, 2026-03-11

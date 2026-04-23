@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Injection Rules Checklist
 
 > AgentWatcher (arXiv:2604.01194) の 10 種ルール分類に基づくセキュリティレビュー用チェックリスト。

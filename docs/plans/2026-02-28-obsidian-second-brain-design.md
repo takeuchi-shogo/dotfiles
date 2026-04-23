@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Obsidian + Claude Code「AI第二の脳」設計ドキュメント
 
 ## 概要

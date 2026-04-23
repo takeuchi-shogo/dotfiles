@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Claude Code 内部アーキテクチャ分析
 
 **日付**: 2026-04-01

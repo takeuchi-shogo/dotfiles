@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # TELOS → AutoEvolve Outcome Mapping
 
 TELOS 目標と AutoEvolve 改善方向の接続を定義する。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Compact Instructions — コンテキスト圧縮ガイド
 
 > PreCompact / コンテキスト圧縮時に参照する保留優先度と制約。

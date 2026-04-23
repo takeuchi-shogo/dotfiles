@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Claude Code 7層メモリモデル
 
 > 出典: "How Anthropic Built 7 Layers of Memory" (2026-04) — CC 内部アーキテクチャのリバースエンジニアリング

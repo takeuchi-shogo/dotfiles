@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Stage Transition Rules
 
 > ステージ遷移の Exit Criteria と Gate を定義する。

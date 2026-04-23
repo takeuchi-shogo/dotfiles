@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Cross-File Fix Workflow
 
 cross-file-reviewer の FIX モードで使用する修正ワークフロー。

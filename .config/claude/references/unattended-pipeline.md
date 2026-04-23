@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Unattended Pipeline (Stripe Minions パターン)
 
 > Stripe の Minions: Slack でタスク受信 → devbox 起動(10秒) → Blueprint 実行 → PR 作成 → 通知。

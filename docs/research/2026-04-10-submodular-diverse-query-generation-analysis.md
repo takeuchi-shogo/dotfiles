@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Submodular Optimization for Diverse Query Generation in DeepResearch — 分析レポート
 
 > Source: https://jina.ai/news/submodular-optimization-for-diverse-query-generation-in-deepresearch/

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Session Pool Guide
 
 並列セッション（Agent tool / autonomous / worktree）の運用ガイドライン。

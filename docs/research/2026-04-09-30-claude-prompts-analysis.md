@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # 30 Claude Prompts, Workflows & Automations — 分析レポート
 
 > Source: "30 Claude Prompts, Workflows & Automations I Use Every Single Day" (@eng_khairallah1)

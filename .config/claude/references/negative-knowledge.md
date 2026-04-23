@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Negative Knowledge Playbook
 
 「やるな」知識の構造化ストア。session-learner が自動追記、/improve が参照する。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Output Modes — 認知モード定義
 
 出力の認知モードを定義するリファレンス。persona（口調）とは直交する軸で、出力の冗長度・推論深さを制御する。

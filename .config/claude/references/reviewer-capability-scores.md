@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Reviewer Capability Scores
 
 > HACRL (arXiv:2603.02604) の知見に基づく。

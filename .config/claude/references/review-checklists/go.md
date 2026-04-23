@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go Review Checklist
 
 Go 固有のレビュー観点。`code-reviewer` が `.go` の変更をレビューする際に参照する。

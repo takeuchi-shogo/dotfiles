@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AutoEvolve 改善ポリシー
 
 > このファイルは karpathy/autoresearch の program.md に相当する概念的ガイドである。

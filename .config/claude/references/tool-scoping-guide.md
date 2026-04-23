@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Tool Scoping Guide — タスクスコープ別ツールサブセット
 
 > Stripe Minions パターン: 500 ツールプールから各タスクタイプに必要最小限のツールのみを付与する。

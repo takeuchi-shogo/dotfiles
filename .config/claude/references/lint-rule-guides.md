@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Lint Rule Guides
 
 auto-format.js が lint エラー検出時に WHY/FIX コンテキストを注入するための

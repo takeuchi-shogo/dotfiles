@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Claude Code Harness Blueprint 分析レポート
 
 > 記事: "How I built harness for my agent using Claude Code leaks"

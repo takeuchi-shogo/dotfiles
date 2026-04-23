@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Hook Snapshot Security
 
 > Claude Code 本体 Ch12 "Extensibility — Skills and Hooks" の `captureHooksConfigSnapshot()` と

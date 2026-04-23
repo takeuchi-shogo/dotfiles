@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Governance Map — ガバナンス俯瞰図
 
 > Constitution 的一元管理: 全ガバナンス hooks のカテゴリマッピングと累積リスク概念。

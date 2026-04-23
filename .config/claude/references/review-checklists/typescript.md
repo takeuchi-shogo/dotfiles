@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # TypeScript Review Checklist
 
 TypeScript/JavaScript 固有のレビュー観点。`code-reviewer` が `.ts/.tsx/.js/.jsx` の変更をレビューする際に参照する。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent Routing: Triage-Router Decision Flow
 
 ユーザータスク入力から専門エージェントへのルーティングフロー。hooks による自動推奨と triage-router による分類を示す。

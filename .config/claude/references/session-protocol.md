@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Session Protocol
 
 セッション境界を明確にし、マルチセッション開発の一貫性を保つプロトコル。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # ClawVault 着想による Claude Code 設定改善 — 設計書
 
 **日付**: 2026-03-10

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Iterative Degradation Awareness
 
 SlopCodeBench (Orlanski et al., 2026) が実証した、エージェントの反復的コード品質劣化に関する知見。

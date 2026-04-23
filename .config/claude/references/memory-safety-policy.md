@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Memory Safety Policy
 
 > Bengio の Scientist AI 論文の「永続的内部状態が situational awareness を生む」知見に基づく。

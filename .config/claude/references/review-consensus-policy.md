@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Review Consensus Policy
 
 > 論文 "Can AI Agents Agree?" (arXiv:2603.01213) の知見に基づく。

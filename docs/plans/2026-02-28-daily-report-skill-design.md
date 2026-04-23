@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Daily Report Skill 設計書
 
 ## 概要

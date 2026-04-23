@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Context Compaction Policy
 
 > Opus 4.6 の auto-compaction に依存しつつ、品質劣化を検知するポリシー。

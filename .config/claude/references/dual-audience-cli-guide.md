@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Dual-Audience CLI Design Guide
 
 CLI を人間とAIエージェントの両方から使えるように設計するための7原則。

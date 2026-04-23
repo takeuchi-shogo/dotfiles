@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Skill Design Patterns
 
 5つの設計パターンで SKILL.md の内部ロジックを構造化する。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Better Harness: Eval-Driven Hill-Climbing 分析レポート
 
 > Source: "Better Harness: A Recipe for Harness Hill-Climbing with Evals" (LangChain/Z.ai, 2026)

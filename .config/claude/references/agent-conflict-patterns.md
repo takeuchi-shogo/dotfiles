@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent Conflict Patterns
 
 並列エージェント実行時に発生しうる矛盾パターンと、Opus（コーディネーター層）が結果統合時に検証すべきチェックリスト。

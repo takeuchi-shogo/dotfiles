@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go CI Pipeline Guide
 
 GitHub Actions での Go プロジェクト CI/CD パイプライン設定ガイド。

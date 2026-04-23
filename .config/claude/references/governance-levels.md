@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Governance Levels — 4段階自律性
 
 > AutoEvolve の自律性レベルを4段階で定義する。

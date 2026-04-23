@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Agent-Native Code Design Guide
 
 エージェントが効率的にコードベースを理解・修正できるよう設計する5原則。

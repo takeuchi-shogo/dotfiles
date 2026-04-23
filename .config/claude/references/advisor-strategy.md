@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Advisor Strategy リファレンス
 
 > 出典: Anthropic "The Advisor Strategy" (2026-04-09)

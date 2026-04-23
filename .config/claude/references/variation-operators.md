@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Variation Operators — 段階的戦略切替ガイド
 
 > EvoX メタ進化 (arXiv:2602.23413) の適応的変異選択に基づく。

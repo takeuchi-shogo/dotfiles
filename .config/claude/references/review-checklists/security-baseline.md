@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Security Baseline チェックリスト
 
 AI-DLC SECURITY-01〜15 ベース。`security-reviewer` のプロンプトに注入して使用。

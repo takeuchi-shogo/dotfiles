@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Cascade Parse Strategy
 
 サブエージェント/外部ツールの出力パースにおけるカスケードリトライ戦略。

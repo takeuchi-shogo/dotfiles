@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # AutoEvolve Artifacts (short reference)
 
 AutoEvolve ループが生成・消費する artifact 一覧。詳細 schema は各ファイルの出典を参照。

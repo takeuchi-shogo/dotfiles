@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Brownfield 分析テンプレート
 
 既存コードベースへの変更時に使用する体系的分析手順。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Context Lifecycle: Token Budget Management
 
 セッション開始からコンテキスト圧縮・委譲・完了までのライフサイクルを示す。

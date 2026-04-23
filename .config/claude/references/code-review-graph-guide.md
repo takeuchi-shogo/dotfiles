@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # code-review-graph MCP ガイド
 
 Tree-sitter ベースの構造グラフを MCP 経由で提供するツール。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # E2E テストツール選定ガイド
 
 ## 推奨ツール: agent-browser CLI

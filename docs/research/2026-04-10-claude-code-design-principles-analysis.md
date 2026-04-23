@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Claude Code from Source - 設計原則の周辺知識補完分析
 
 > 記事: https://claude-code-from-source.com/ — Claude Code リバースエンジニアリング、18章の設計原則解説

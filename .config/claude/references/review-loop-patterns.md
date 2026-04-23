@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Review Loop Patterns
 
 反復レビューループ、定期スコアリング、ラベル駆動パイプラインの実装パターン集。

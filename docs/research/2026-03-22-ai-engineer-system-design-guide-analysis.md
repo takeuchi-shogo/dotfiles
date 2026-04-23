@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # AI Engineer System Design Interview Guide 分析
 
 **書籍**: The AI Engineer's System Design Interview Guide (Volume 1)

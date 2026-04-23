@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # 入力検証 Archetype
 
 > repair-routing.md からの修復先。このドメインで繰り返しミスが発生した場合に参照・更新する。

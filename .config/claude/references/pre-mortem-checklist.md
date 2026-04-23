@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Pre-mortem Checklist
 
 > 出典: CREAO AI-First 統合 (2026-04-14) — 「批評を成果物にする」原理の具体化。

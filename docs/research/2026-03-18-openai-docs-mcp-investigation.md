@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # OpenAI Docs MCP 調査
 
 **調査日**: 2026-03-18  

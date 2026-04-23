@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Evaluator Calibration Guide
 
 LLM ジャッジ（レビューアー）の信頼性を定量的に校正する手法ガイド。

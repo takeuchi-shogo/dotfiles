@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # MCP Toolshed - サーバーカタログ
 
 利用可能な MCP サーバーの用途別分類と、プロジェクト種別ごとの推奨セット。

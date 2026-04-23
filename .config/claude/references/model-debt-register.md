@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Model Debt Register
 
 > 現在 model-specific なハーネスルールを **debt (負債)** として登録し、各エントリに削除条件を明示する。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # The Great Convergence — 分析レポート
 
 **日付**: 2026-04-09

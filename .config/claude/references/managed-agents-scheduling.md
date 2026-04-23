@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Managed Agents Scheduling — 移行検討リファレンス
 
 ## 現在のスケジュール実行基盤

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Workflow Decision Tree: S/M/L Task Size Routing
 
 タスク規模の多因子判定と、規模ごとの必須ワークフロー段階の分岐を示す。

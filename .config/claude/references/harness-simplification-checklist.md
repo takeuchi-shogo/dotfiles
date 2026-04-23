@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Harness Simplification Checklist
 
 > Build to Delete 原則を実運用に落とすための定期チェックリスト。

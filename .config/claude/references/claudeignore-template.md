@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # .claudeignore テンプレート
 
 document-factory (mode: constitution) が新プロジェクトの `.claudeignore` を生成する際のベース。

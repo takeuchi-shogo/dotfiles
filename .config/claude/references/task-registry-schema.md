@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # タスクレジストリ スキーマ
 
 Async/Scheduled サブエージェントの成果物を追跡する軽量レジストリ。

@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # 開発方法論ガイド: SDD / BDD / TDD
 
 3つの方法論の使い分けと組み合わせパターン。

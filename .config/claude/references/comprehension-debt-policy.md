@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Comprehension Debt Policy
 
 AI 生成コードの「理解債務」を防ぐためのポリシー。

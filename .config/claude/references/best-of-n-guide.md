@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Best-of-N 並列実行ガイド
 
 N 個の worktree で同一プロンプトを並列実行し、テスト結果を比較して最良を選択する。

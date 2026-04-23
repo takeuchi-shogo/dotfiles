@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # 12 Claude Patterns 分析レポート
 
 **ソース**: "12 things Claude can do for you that you've never tried" (@sharbel)

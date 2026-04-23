@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # CREAO AI-First Strategy 記事分析レポート
 
 **日付**: 2026-04-14

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # CORAL: Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery
 
 - **Paper**: arXiv:2604.01658

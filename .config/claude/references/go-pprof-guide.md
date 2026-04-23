@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Go pprof Profiling Guide
 
 計測してから最適化する。pprof で根拠を持って改善する。

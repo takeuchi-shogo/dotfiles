@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Obsidian + Claude Code is the new meta — 分析レポート
 
 > 日付: 2026-04-09

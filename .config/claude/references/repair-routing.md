@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Repair Routing Table
 
 > 失敗・問題発生時に「何を直すか」を判定するためのルーティングテーブル。

@@ -1,3 +1,8 @@
+---
+status: active
+last_reviewed: 2026-04-23
+---
+
 # Research Index — 外部知見統合索引
 
 > MEMORY.md から外出しした索引。実装はコードベースに反映済み。

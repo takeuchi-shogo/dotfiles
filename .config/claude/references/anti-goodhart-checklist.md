@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-04-23
+---
+
 # Anti-Goodhart チェックリスト
 
 eval hill-climbing がメトリクスハック（Goodhart's Law）に陥っていないかを確認するためのガイド。
