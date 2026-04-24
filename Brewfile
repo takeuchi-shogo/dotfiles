@@ -4,31 +4,19 @@ tap "k1LoW/tap"
 tap "nikitabobko/tap"
 
 # CLI tools
-brew "git"        # バージョン管理
-brew "neovim"     # テキストエディタ (AstroNvim)
-brew "sheldon"    # zsh プラグインマネージャ
-brew "starship"   # クロスシェルプロンプト
-brew "fzf"        # ファジーファインダー
-# brew "sketchybar" # macOS ステータスバー (Ice に移行、設定は .config/sketchybar/ に保持)
-brew "lua"        # Neovim スクリプト
-brew "ripgrep"    # 高速 grep (rg)
-brew "bat"        # cat 上位互換 (シンタックスハイライト)
-brew "eza"        # ls 上位互換 (アイコン/Git 表示)
-brew "zoxide"     # cd 上位互換 (学習型ディレクトリジャンプ)
-brew "atuin"      # history 上位互換 (DB 管理/同期)
-brew "git-delta"  # git diff 上位互換 (シンタックスハイライト)
-brew "dust"       # du 上位互換 (ツリー表示)
-brew "yazi"       # ターミナルファイルマネージャー
-brew "fd"         # 高速 find
-brew "tree-sitter-cli" # Tree-sitter パーサ CLI (Neovim)
-brew "grep"       # GNU grep (macOS 標準より高機能)
-brew "gh"         # GitHub CLI
-brew "mise"       # ランタイムバージョンマネージャ (asdf 互換)
-brew "uv"         # Python パッケージマネージャ (uvx で code-review-graph 等を実行)
-brew "borders"    # ウィンドウ枠線ハイライト
-brew "nb"         # ターミナルノート管理 CLI
-brew "direnv"     # ディレクトリ別環境変数マネージャ
-brew "k1LoW/tap/mo" # Markdown ビューア
+# Phase B1 Tier 1 (fzf, lua, ripgrep, bat, eza, zoxide, git-delta, dust, yazi, fd,
+# tree-sitter-cli, grep, gh, neovim) は nix/home/default.nix に移動済み。
+# 残存分は brew-retain (tap-only) / bootstrap (後続) / tier2-tooling。
+brew "git"        # tier2-tooling (gitconfig symlink 要注意、B1 後期で移植)
+brew "sheldon"    # bootstrap (Phase B1 最後に移植)
+brew "starship"   # bootstrap (同上)
+brew "atuin"      # tier2-tooling
+brew "mise"       # bootstrap — binary は nix へ移植予定 (D5: runtime 管理は mise 維持)
+brew "uv"         # tier2-tooling
+brew "borders"    # brew-retain (FelixKratz/formulae tap-only、nix-darwin.homebrew.brews で宣言)
+brew "nb"         # tier2-tooling
+brew "direnv"     # bootstrap
+brew "k1LoW/tap/mo" # brew-retain (k1LoW tap-only)
 
 # GUI apps
 cask "wezterm"            # GPU アクセラレーテッドターミナル

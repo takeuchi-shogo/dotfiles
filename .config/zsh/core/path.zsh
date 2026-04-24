@@ -1,5 +1,14 @@
 # PATH settings
 export PATH="/opt/homebrew/bin:$PATH"
+
+# Nix home-manager per-user profile. Phase B1 Step 2:
+# brew 先頭順序を保持したまま末尾に追加。Phase B2 で順序再設計。
+if [ -d "/etc/profiles/per-user/$USER/bin" ]; then
+  export PATH="$PATH:/etc/profiles/per-user/$USER/bin"
+fi
+if [ -d "/run/current-system/sw/bin" ]; then
+  export PATH="$PATH:/run/current-system/sw/bin"
+fi
 export PATH="/usr/local/opt/php@8.0/bin:$PATH"
 export PATH="/usr/local/opt/php@8.0/sbin:$PATH"
 export PATH="$PATH:$GOPATH/bin"
