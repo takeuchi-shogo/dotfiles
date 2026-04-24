@@ -21,6 +21,33 @@ tasks:
     cmds:
       - brew bundle --file=~/dotfiles/Brewfile
 
+  nix:switch:
+    desc: 'Apply nix-darwin configuration (usage: task nix:switch PROFILE=private)'
+    vars:
+      PROFILE: '{{.PROFILE | default "private"}}'
+    cmds:
+      - darwin-rebuild switch --flake ~/dotfiles/nix#{{.PROFILE}}
+
+  nix:rollback:
+    desc: Roll back to previous nix-darwin generation
+    cmds:
+      - darwin-rebuild --rollback
+
+  nix:check:
+    desc: Validate nix flake (evaluation + structure)
+    cmds:
+      - nix flake check ~/dotfiles/nix
+
+  nix:list-generations:
+    desc: List nix-darwin generations (for rollback targeting)
+    cmds:
+      - darwin-rebuild --list-generations
+
+  nix:explain:
+    desc: Dry-run Determinate Systems Installer to preview system changes
+    cmds:
+      - 'echo "Run this manually (requires sudo): curl -fsSL https://install.determinate.systems/nix | sh -s -- install --explain"'
+
   restart-wm:
     desc: Restart window manager services (AeroSpace)
     cmds:
