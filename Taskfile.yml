@@ -48,6 +48,13 @@ tasks:
     cmds:
       - 'echo "Run this manually (requires sudo): curl -fsSL https://install.determinate.systems/nix | sh -s -- install --explain"'
 
+  nix:snapshot:
+    desc: 'Capture /etc/* shell profile snapshot (usage: task nix:snapshot PHASE=pre | task nix:snapshot PHASE=post)'
+    vars:
+      PHASE: '{{.PHASE | default "pre"}}'
+    cmds:
+      - ~/dotfiles/nix/scripts/snapshot.sh {{.PHASE}}
+
   restart-wm:
     desc: Restart window manager services (AeroSpace)
     cmds:

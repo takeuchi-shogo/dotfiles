@@ -24,18 +24,10 @@ nix/
 
 1. **Pre-install snapshot** (Phase 0+A Step 2):
    ```sh
-   # docs/plans/active/2026-04-24-phase-0a-pre-install-snapshot.txt に保存
-   for f in /etc/zshenv /etc/zshrc /etc/bashrc /etc/zprofile /etc/zsh/zshrc /etc/zsh/zshenv /etc/synthetic.conf; do
-     echo "=== $f ==="; sudo cat "$f" 2>/dev/null || echo "(not present)"
-   done
-   ls -la /etc/profile.d/ 2>/dev/null
-   echo $PATH
-   readlink ~/.zshrc ~/.zshenv ~/.zprofile ~/.bashrc 2>/dev/null
-   sw_vers -productVersion
-   xcode-select -p 2>&1; xcrun --show-sdk-path 2>&1
-   diskutil apfs list | grep -i nix || echo "NO_NIX_VOLUME"
+   task nix:snapshot PHASE=pre
+   # → docs/plans/active/2026-04-24-phase-0a-pre-install-snapshot.txt
    ```
-   Xcode CLT 欠如の場合は `xcode-select --install` を先に実行。
+   Xcode CLT 欠如の場合は `xcode-select --install` を先に実行。snapshot.sh の詳細: [`nix/scripts/snapshot.sh`](./scripts/snapshot.sh)
 
 2. **Installer dry-run** (Step 3 前半):
    ```sh
@@ -46,8 +38,9 @@ nix/
 3. **Nix インストール** (Step 3 後半):
    ```sh
    curl -fsSL https://install.determinate.systems/nix | sh -s -- install
+   task nix:snapshot PHASE=post
+   # → docs/plans/active/2026-04-24-phase-0a-post-install-snapshot.txt
    ```
-   直後に Step 2 と同じコマンドで `docs/plans/active/2026-04-24-phase-0a-post-install-snapshot.txt` を取得。
 
 4. **Apply nix-darwin**:
    ```sh
