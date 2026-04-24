@@ -1,11 +1,5 @@
 { config, pkgs, ... }:
 
-let
-  # Determinate + sudo + Apple Silicon 組み合わせで一部 pkg の checkPhase が hang する
-  # (direnv: test/.envrc loop、他: +HELLO echo で停止)。upstream CI ではテスト済みなので
-  # end-user build ではスキップして支障なし。
-  noCheck = pkg: pkg.overrideAttrs (_: { doCheck = false; });
-in
 {
   home.username = "takeuchishougo";
   home.homeDirectory = "/Users/takeuchishougo";
@@ -15,6 +9,9 @@ in
 
   # Tier 1 CLI (Phase B1 Step 3). Name mapping: delta=git-delta,
   # gnugrep=grep, dust derivation is du-dust, tree-sitter=tree-sitter-cli.
+  # Bootstrap (git, sheldon, starship, mise, direnv) は Phase B1.5 に先送り:
+  # overrideAttrs で cache が無効化される + 一部 pkg の checkPhase が Determinate
+  # 環境で真にハング (direnv の make test-zsh が sleep 状態で 20 分無反応)。
   home.packages = with pkgs; [
     bat
     delta
@@ -34,13 +31,6 @@ in
     tree-sitter
     yazi
     zoxide
-  ] ++ map noCheck [
-    # Bootstrap (Phase B1 Step 7) — checkPhase 無効化
-    git
-    sheldon
-    starship
-    mise
-    direnv
   ];
 
   # Phase 0+A: D6 (mkOutOfStoreSymlink) 実証用 fixture。
