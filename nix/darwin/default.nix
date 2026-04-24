@@ -23,4 +23,35 @@
   nix.enable = false;
 
   nixpkgs.config.allowUnfree = true;
+
+  # Phase B1 Step 5+6: GUI cask / tap-only formula を宣言的に管理。
+  # brew CLI は引き続き install 実行に使用。onActivation.cleanup = "none" で
+  # 既存 formula/cask を勝手に uninstall しない (Codex Consider-#4 準拠)。
+  homebrew = {
+    enable = true;
+    onActivation.cleanup = "none";
+
+    taps = [
+      "FelixKratz/formulae"   # borders
+      "k1LoW/tap"             # mo
+      "nikitabobko/tap"       # aerospace
+    ];
+
+    brews = [
+      "borders"   # FelixKratz/formulae tap
+      "mo"        # k1LoW tap
+    ];
+
+    casks = [
+      "wezterm"
+      "ghostty"
+      "aerospace"             # nikitabobko/tap
+      "hammerspoon"
+      "karabiner-elements"
+      "sf-symbols"
+      "macskk"
+      "jordanbaird-ice"
+      "raycast"
+    ];
+  };
 }
