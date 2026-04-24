@@ -10,11 +10,8 @@ tap "nikitabobko/tap"
 brew "git"        # tier2-tooling (gitconfig symlink 要注意、B1 後期で移植)
 brew "sheldon"    # bootstrap (Phase B1 最後に移植)
 brew "starship"   # bootstrap (同上)
-brew "atuin"      # tier2-tooling
 brew "mise"       # bootstrap — binary は nix へ移植予定 (D5: runtime 管理は mise 維持)
-brew "uv"         # tier2-tooling
 brew "borders"    # brew-retain (FelixKratz/formulae tap-only、nix-darwin.homebrew.brews で宣言)
-brew "nb"         # tier2-tooling
 brew "direnv"     # bootstrap
 brew "k1LoW/tap/mo" # brew-retain (k1LoW tap-only)
 
