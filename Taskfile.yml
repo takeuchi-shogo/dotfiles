@@ -21,17 +21,26 @@ tasks:
     cmds:
       - brew bundle --file=~/dotfiles/Brewfile
 
-  nix:switch:
-    desc: 'Apply nix-darwin configuration (usage: task nix:switch PROFILE=private)'
+  nix:bootstrap:
+    desc: 'First-time apply (darwin-rebuild not yet installed). Usage: task nix:bootstrap PROFILE=private'
     vars:
       PROFILE: '{{.PROFILE | default "private"}}'
     cmds:
-      - darwin-rebuild switch --flake ~/dotfiles/nix#{{.PROFILE}}
+      # Recent nix-darwin requires root for system activation.
+      # HOME fallback warning (/var/root) is benign — nix daemon handles user profile correctly.
+      - sudo nix run github:nix-darwin/nix-darwin#darwin-rebuild -- switch --flake ~/dotfiles/nix#{{.PROFILE}}
+
+  nix:switch:
+    desc: 'Apply nix-darwin configuration (after bootstrap). Usage: task nix:switch PROFILE=private'
+    vars:
+      PROFILE: '{{.PROFILE | default "private"}}'
+    cmds:
+      - sudo /run/current-system/sw/bin/darwin-rebuild switch --flake ~/dotfiles/nix#{{.PROFILE}}
 
   nix:rollback:
     desc: Roll back to previous nix-darwin generation
     cmds:
-      - darwin-rebuild --rollback
+      - sudo /run/current-system/sw/bin/darwin-rebuild --rollback
 
   nix:check:
     desc: Validate nix flake (evaluation + structure)
@@ -41,7 +50,7 @@ tasks:
   nix:list-generations:
     desc: List nix-darwin generations (for rollback targeting)
     cmds:
-      - darwin-rebuild --list-generations
+      - sudo /run/current-system/sw/bin/darwin-rebuild --list-generations
 
   nix:explain:
     desc: Dry-run Determinate Systems Installer to preview system changes

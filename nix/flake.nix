@@ -4,10 +4,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
+    # nix-darwin release branches are strictly pinned to matching nixpkgs YY.MM.
+    # nixpkgs-unstable (currently 26.05) pairs only with nix-darwin master.
+    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
+    home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 

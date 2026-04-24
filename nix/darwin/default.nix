@@ -11,7 +11,16 @@
 
   system.primaryUser = "takeuchishougo";
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  # nix-darwin master + home-manager master では、home-manager 側の home.homeDirectory が
+  # ここの users.users.<name>.home を source にする。未宣言だと null 扱いで eval 失敗。
+  users.users.takeuchishougo = {
+    name = "takeuchishougo";
+    home = "/Users/takeuchishougo";
+  };
+
+  # Determinate Nix が daemon/設定を管理するため、nix-darwin 側の nix management は無効化。
+  # nix.settings.* (experimental-features 等) は Determinate 側の config で制御する。
+  nix.enable = false;
 
   nixpkgs.config.allowUnfree = true;
 }

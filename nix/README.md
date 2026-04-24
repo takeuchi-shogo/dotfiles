@@ -42,7 +42,13 @@ nix/
    # → docs/plans/active/2026-04-24-phase-0a-post-install-snapshot.txt
    ```
 
-4. **Apply nix-darwin**:
+4. **Bootstrap** (初回のみ — `darwin-rebuild` がまだ存在しないため):
+   ```sh
+   task nix:bootstrap PROFILE=private
+   ```
+   これが成功すると `darwin-rebuild` が system profile に入る。以降は下の `task nix:switch` で済む。
+
+5. **Apply nix-darwin** (2 回目以降):
    ```sh
    task nix:switch PROFILE=private
    ```
