@@ -7,7 +7,24 @@
   # HM release 文字列 enum。system.stateVersion (integer) とは別物。
   home.stateVersion = "25.11";
 
-  home.packages = [ pkgs.hello ];
+  # Tier 1 CLI (Phase B1 Step 3). Name mapping: delta=git-delta,
+  # gnugrep=grep, dust derivation is du-dust, tree-sitter=tree-sitter-cli.
+  home.packages = with pkgs; [
+    bat
+    delta
+    dust
+    eza
+    fd
+    fzf
+    gh
+    gnugrep
+    lua
+    neovim
+    ripgrep
+    tree-sitter
+    yazi
+    zoxide
+  ];
 
   # Phase 0+A: D6 (mkOutOfStoreSymlink) 実証用 fixture。
   # Phase B2 着手前に削除する (B2 plan で計画済み)。
