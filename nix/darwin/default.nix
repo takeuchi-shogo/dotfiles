@@ -38,6 +38,16 @@
     ];
 
     brews = [
+      # Bootstrap tools (Phase B1.5: brew-retain per docs/plans/active/2026-04-25-phase-b1.5-plan.md)
+      # direnv checkPhase hangs under Determinate Nix + sudo + Apple Silicon, and
+      # overrideAttrs (doCheck=false) invalidates Hydra cache. Keep these in brew
+      # until upstream improves (tracked separately; non-blocking).
+      "git"
+      "sheldon"
+      "starship"
+      "mise"
+      "direnv"
+      # Tap-only formulae
       "borders"   # FelixKratz/formulae tap
       "mo"        # k1LoW tap
     ];
