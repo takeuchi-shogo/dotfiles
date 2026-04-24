@@ -29,11 +29,11 @@
     yazi
     zoxide
     # Bootstrap (Phase B1 Step 7). mise binary のみ — runtime は mise が管理 (D5)
+    # direnv は checkPhase が Determinate + sudo 環境で hang するため brew に残置 (要別途対応)
     git
     sheldon
     starship
     mise
-    direnv
   ];
 
   # Phase 0+A: D6 (mkOutOfStoreSymlink) 実証用 fixture。
