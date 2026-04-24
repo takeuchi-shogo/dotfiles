@@ -719,7 +719,8 @@
     "codex@openai-codex": true,
     "typescript-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
-    "obsidian@obsidian-skills": true
+    "obsidian@obsidian-skills": true,
+    "terraform-skill@antonbabenko-terraform": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -732,6 +733,12 @@
       "source": {
         "source": "github",
         "repo": "kepano/obsidian-skills"
+      }
+    },
+    "antonbabenko-terraform": {
+      "source": {
+        "source": "github",
+        "repo": "antonbabenko/terraform-skill"
       }
     }
   },
