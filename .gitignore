@@ -36,6 +36,7 @@ docs/plans/
 .agent/
 .kiro/
 skills-lock.json
+skills-lock.json.bak-*
 skills-lock-history/
 .skill-eval/
 
