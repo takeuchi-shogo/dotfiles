@@ -1,5 +1,11 @@
 { config, pkgs, ... }:
 
+let
+  # Determinate + sudo + Apple Silicon 組み合わせで一部 pkg の checkPhase が hang する
+  # (direnv: test/.envrc loop、他: +HELLO echo で停止)。upstream CI ではテスト済みなので
+  # end-user build ではスキップして支障なし。
+  noCheck = pkg: pkg.overrideAttrs (_: { doCheck = false; });
+in
 {
   home.username = "takeuchishougo";
   home.homeDirectory = "/Users/takeuchishougo";
@@ -28,12 +34,13 @@
     tree-sitter
     yazi
     zoxide
-    # Bootstrap (Phase B1 Step 7). mise binary のみ — runtime は mise が管理 (D5)
-    # direnv は checkPhase が Determinate + sudo 環境で hang するため brew に残置 (要別途対応)
+  ] ++ map noCheck [
+    # Bootstrap (Phase B1 Step 7) — checkPhase 無効化
     git
     sheldon
     starship
     mise
+    direnv
   ];
 
   # Phase 0+A: D6 (mkOutOfStoreSymlink) 実証用 fixture。
