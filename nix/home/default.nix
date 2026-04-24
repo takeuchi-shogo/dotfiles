@@ -18,7 +18,7 @@
     fzf
     gh
     gnugrep
-    lua
+    lua5_4              # pkgs.lua is 5.2.4; sketchybar/colors.lua uses 5.3+ bitwise ops
     neovim
     ripgrep
     tree-sitter
