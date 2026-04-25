@@ -1,162 +1,146 @@
 ---
 name: improve-codebase-architecture
 description: >
-  コードベースを能動的に探索し、エージェントフレンドリーな改善候補を提案する。
-  浅いモジュール→深いモジュール化、結合度の改善、テスト境界の明確化を診断。
+  コードベースを能動的に探索し、深化候補を診断する。インターフェース/シーム/深さ/
+  局所性の語彙で、削除テスト (deletion test) を判定の核心に置く。
   週次または開発サージ後に実行。
   Triggers: 'アーキテクチャ改善', 'モジュール改善', 'codebase architecture',
-  'deep module', 'エージェントフレンドリー', 'コード構造改善', 'module depth'.
+  'deep module', '削除テスト', 'deepening', 'コード構造改善', 'module depth'.
   Do NOT use for: 機能実装（use /rpi）、リファクタリング実行（use /refactor-session）、
   コード品質監査（use /audit）。
 origin: self
-allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Agent, AskUserQuestion
 metadata:
   pattern: diagnosis
-  origin: mattpocock/skills/improve-codebase-architecture + agent-native-code-design.md
+  origin: mattpocock/skills/improve-codebase-architecture@2026-04-26 + agent-native-code-design.md
 disable-model-invocation: true
 ---
 
-# /improve-codebase-architecture — コードベース構造の改善診断
+# improve-codebase-architecture — コードベース構造の改善診断
 
-コードベースを能動的に探索し、「エージェントが扱いやすい構造」への改善候補を提案する。
+コードベースを能動的に探索し、フリクションのある箇所を「深化候補」として提示する。
+判定の核心は **削除テスト** — 削除して複雑性が散るなら稼いでいる、消えるなら pass-through。
 
-**核心**: エージェントは小さなファイルの群れより、大きなモジュール＋薄いインターフェースを扱いやすい。
-"Deep Modules" — インターフェースは薄く、実装は豊かに。
+## 用語
+
+詳細は [LANGUAGE.md](LANGUAGE.md) を参照。共通語彙 8 つを使う:
+
+- **モジュール (Module)**: インターフェースと実装を持つもの。粒度を問わない
+- **インターフェース (Interface)**: 呼び出し側が知るべき全事実 (型 + 不変条件 + 順序 + エラー + 設定 + 性能特性)
+- **実装 (Implementation)**: モジュールの中身。アダプターと区別する
+- **深さ (Depth)**: インターフェースに対するレバレッジ
+- **シーム (Seam)**: 編集なしで挙動を変えられる場所 (Feathers の用語)
+- **アダプター (Adapter)**: シームに座ってインターフェースを満たす具体物
+- **レバレッジ (Leverage)**: 深さから呼び出し側が得るもの
+- **局所性 (Locality)**: 深さから保守側が得るもの
+
+**必須原則** (詳細は [LANGUAGE.md](LANGUAGE.md)):
+
+- **削除テスト**: 削除して複雑性が消えれば pass-through、N 箇所に散れば稼いでいる
+- **インターフェース = テスト面**: 奥をテストしたいならモジュールの形が間違い
+- **アダプター 1 個 = 仮説、2 個 = 本物のシーム**: 横断して変わらないならシーム不要
 
 ## いつ使うか
 
 - **週次**: `/weekly-review` の後に定期実行
 - **開発サージ後**: 大量のコードが追加された後
-- **エージェントの困りごと**: エージェントがファイル間を行ったり来たりして迷っている場合
-- **新プロジェクト参入時**: コードベースの構造を理解するついでに改善点を洗い出す
+- **エージェントの困りごと**: ファイル間を行ったり来たりして迷っている時
+- **新プロジェクト参入時**: コードベース構造を理解するついでに
 
-## Workflow
+## Process
 
-```
-/improve-codebase-architecture {対象ディレクトリ（省略時はプロジェクトルート）}
-  Step 1: 探索         → ディレクトリ構造・モジュール境界を把握
-  Step 2: 診断         → 5つの観点で問題を検出
-  Step 3: 提案         → 改善候補を優先度付きで提示
-  Step 4: ハンドオフ   → /refactor-session にチェーン（任意）
-```
+### Step 1: 探索
 
-## Step 1: 探索
+- `docs/glossary.md` (ubiquitous-language の出力) と `docs/adr/*.md` を最初に読む (各 ADR は上限 50 行)
+  - 存在しなければサイレントに進む。「作りましょう」は提案しない
+  - **ただし出力先頭に `⚠️ glossary.md 未整備、診断精度低下の可能性` を表示**
+- Agent (subagent_type=Explore) で構造を歩く
+- フリクションのある箇所を有機的に列挙
+- **探索予算: 最大 20 操作** (Read/Grep/Glob 合計)
 
-対象ディレクトリの構造を把握する:
+### Step 2: 診断
 
-1. `Glob` でディレクトリ構造を俯瞰（`**/*.{ts,go,py,rs}` 等）
-2. ファイル数・モジュール数を概算
-3. エントリポイント（main, index, app）を特定
-4. テストファイルの配置パターンを確認
+5 観点を **削除テストを当てる箇所の検出ヒューリスティック** として使う。観点ごとに診断手段が異なる:
 
-**探索予算: 最大 20 回の Read/Grep/Glob 操作。** 全ファイルを読む必要はない。構造の把握が目的。
+| 観点 | 削除テスト | 補助診断 |
+|------|-----------|---------|
+| 1 浅いモジュール (関数 1-5 行委譲、`utils/`/`helpers/` 散在) | Yes | - |
+| 2 テスタビリティ過剰分離 (純粋関数切出 / 呼出側にロジック残存) | Yes | - |
+| 3 概念の分散 (同接頭辞ファイル多ディレクトリ散在) | No (構造) | grep 同名/接頭辞 |
+| 4 Grep 困難な命名 (`export default` 多用、汎用名) | No (静的) | export default / 汎用名 grep |
+| 5 テスト配置 (`__tests__/` 集約、命名対応なし) | No (静的) | ディレクトリ走査 |
 
-## Step 2: 診断（5つの観点）
+**観点 1, 2 は削除テストを適用** — 削除して複雑性が散るなら稼いでいる、消えるなら pass-through。観点 3-5 は静的診断で検出する (削除テストは適用不可)。
 
-### 観点 1: 浅いモジュール（Shallow Modules）
+### Step 3: 候補の提示 (最大 5 件)
 
-> 「インターフェースが実装と同じくらい複雑」なモジュール
+各候補:
 
-検出パターン:
-- 関数が 1-5 行で、単純な委譲やラッパーのみ
-- `utils/`, `helpers/` に小さな関数が散在
-- 1ファイル 1関数 export が大量にある
-
-**改善方向**: 関連する小さな関数を凝集させ、薄いインターフェース＋豊かな実装のモジュールに統合
-
-### 観点 2: テスタビリティのための過度な分離
-
-> 「テストのために分離したが、本当のバグは呼び出し側にある」パターン
-
-検出パターン:
-- 純粋関数を別ファイルに切り出しているが、それを呼ぶ側にロジックが残っている
-- mock が実装よりも複雑
-- テストが内部構造に強く依存している
-
-**改善方向**: テスト境界をモジュールの公開インターフェースに合わせる
-
-### 観点 3: 概念の分散
-
-> 「1つの概念を理解するために N 個のファイルを開く必要がある」
-
-検出パターン:
-- 同じプレフィックスのファイルが複数ディレクトリに散在（`userService`, `userController`, `userModel`）
-- 1 つの変更が 5+ ファイルに波及する
-- 水平スライス型のディレクトリ構造（`services/`, `controllers/`, `models/`）
-
-**改善方向**: 機能単位（feature-based）のディレクトリ構造に再編。`references/agent-native-code-design.md` 原則 3 参照
-
-### 観点 4: Grep 困難な命名
-
-> 「エージェントが grep で見つけられない」
-
-検出パターン:
-- `export default` の多用
-- 汎用的すぎる名前（`handle`, `process`, `data`, `item`）
-- マジックストリング / マジックナンバー
-
-**改善方向**: named export、具体的な命名、定数への抽出。`references/agent-native-code-design.md` 原則 1 参照
-
-### 観点 5: テストの不在・分離
-
-> 「テストがあるのかないのか、エージェントがすぐ判断できない」
-
-検出パターン:
-- テストが `__tests__/` や `test/` に集約され、ソースと離れている
-- テストファイルの命名がソースと対応していない
-- テストカバレッジが不明
-
-**改善方向**: Collocated Tests（ソース隣接配置）。`references/agent-native-code-design.md` 原則 2 参照
-
-## Step 3: 提案
-
-診断結果を以下の形式で提示する:
+- **対象モジュール** (file paths)
+- **問題**: なぜフリクションがあるか (LANGUAGE 語彙で)
+- **解決方向**: 何が変わるか (具体的なインターフェース提案はまだしない)
+- **効果**: レバレッジと局所性、テストがどう改善するか
+- **規模**: S / M / L
 
 ```markdown
 ## コードベース構造レポート
 
 ### スコアカード
-| 観点 | 状態 | 改善候補数 |
-|------|------|-----------|
-| モジュール深度 | ⚠️ | 3 |
-| テスト境界 | ✅ | 0 |
-| 概念の凝集 | ⚠️ | 2 |
-| Grep 容易性 | ✅ | 0 |
-| テスト配置 | ❌ | 5 |
+| 観点 | 状態 | 候補数 |
+|------|------|-------|
+| 浅いモジュール | ⚠️ | 3 |
+| 過剰分離     | ✅ | 0 |
+| 概念分散     | ⚠️ | 2 |
+| Grep         | ✅ | 0 |
+| テスト配置   | ❌ | 5 |
 
-### 改善候補（優先度順）
-
-#### 1. {対象モジュール/ディレクトリ} — {問題の要約}
-- **観点**: {該当する観点}
-- **現状**: {具体的な問題の記述 — ファイルパス付き}
-- **提案**: {具体的な改善案}
-- **効果**: {改善後にエージェントがどう楽になるか}
-- **規模**: S / M / L
-
-#### 2. ...
+### 候補 (削除テスト適用後)
+1. {モジュール} — {問題} / {解決方向} / {効果} / {規模}
 ```
 
-**提案は最大 5 件に絞る。** 全部直そうとしない。最もインパクトの大きい改善から。
+**ADR 衝突は friction が大きい時のみ surface**。
+**Step 4 までインターフェース提案はしない** — grilling 前に形を出さない。
 
-## Step 4: ハンドオフ（任意）
+ユーザーに `AskUserQuestion` で「どれを掘り下げる？」と問う。
 
-ユーザーに `AskUserQuestion` で次のアクションを確認:
+### Step 4: Grilling loop
 
-- **`/refactor-session` にチェーン**: 改善候補を入力にリファクタリングセッションを開始
-- **Issue 化**: `/create-issue` で改善タスクを GitHub Issue に登録
-- **記録のみ**: レポートを保存して終了
+候補が選ばれたら、対話で設計ツリーを下る。4 軸に限定:
+
+- **制約**: 何が固定されているか
+- **依存**: 依存カテゴリ ([DEEPENING.md](DEEPENING.md) の 4 分類) のどれか
+- **シーム後ろの形**: 深くしたモジュールの中身
+- **残るテスト**: インターフェースで何を検証するか
+
+副作用 (inline):
+
+- ドメイン用語が `docs/glossary.md` になければ ubiquitous-language skill 経由で追記提案
+- ユーザーが load-bearing な理由で却下したら **ADR 候補を示し `/decision` skill 起動を提案** (このスキル自身は ADR.md を Write しない)
+- 代替インターフェースを探りたいなら [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md) へ (**デフォルト 1 案、ユーザーが複数案要求した時のみ 3-4 並列**)
+
+### Step 5: ハンドオフ
+
+`AskUserQuestion`:
+
+- `/refactor-session` にチェーン (実行)
+- `/create-issue` で Issue 化
+- 記録のみ
 
 ## Anti-Patterns
 
 | NG | 理由 |
 |----|------|
-| 全ファイルを Read する | 探索予算を超過。構造の把握が目的 |
-| 既存コードを直接編集する | このスキルは診断のみ。実行は `/refactor-session` |
-| 理想的な設計を押し付ける | 既存コードの文脈を尊重。段階的な改善を提案 |
-| 一度に全部直す提案 | 最大 5 件。優先度の高いものから |
+| 全ファイルを Read | 探索予算 (20 操作) 超過 |
+| 直接編集 | このスキルは診断のみ |
+| 理想設計の押し付け | 既存文脈尊重、段階的改善 |
+| 5 件超えの提案 | 焦点喪失 |
+| Step 3 でインターフェース提案 | grilling 前に形を出すな |
+| ADR 衝突を全部 surface | ノイズ、friction が大きい時のみ |
+| component / boundary / API と呼ぶ | 語彙統制違反 ([LANGUAGE.md](LANGUAGE.md) 参照) |
 
 ## Chaining
 
-- **前**: `/weekly-review`（定期実行）or `/audit`（品質監査の補完）
-- **後**: `/refactor-session`（改善実行）or `/create-issue`（タスク登録）
-- **参照**: `references/agent-native-code-design.md`（5原則）
+- **前**: `/weekly-review` (定期) / `/audit` (品質補完)
+- **後**: `/refactor-session` (実行) / `/create-issue` (Issue 化)
+- **サブ**: [DEEPENING.md](DEEPENING.md), [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md), [LANGUAGE.md](LANGUAGE.md)
+- **参照**: `references/agent-native-code-design.md` (5 原則: Grep-able / Collocated / 機能単位 / テスト報酬 / API 境界)
