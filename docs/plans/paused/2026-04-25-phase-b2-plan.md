@@ -1,6 +1,6 @@
 # Phase B2 — symlink.sh → home-manager
 
-Status: planned
+Status: paused (plan ready, implementation deferred to next session per Foundation "new-head-for-big-work")
 Created: 2026-04-25
 Ref: `docs/plans/active/2026-04-24-nix-migration-plan.md` (master)
 Strategy-source: Codex CLI 不可のため、Codex サブエージェント (agentId: aa6228d52e8a8ee27) がコード実体分析 + master plan 整合性確認で推論
@@ -10,17 +10,33 @@ Preceded-by: Phase B1.5 (2026-04-25 completed)
 
 `.bin/symlink.sh` (498 lines, 8 processing blocks) を `home-manager` + `mkOutOfStoreSymlink` に移行。D6 decision で Phase 0+A に mkOutOfStoreSymlink を `.config/zsh-test-nix/` で実証済み。
 
-## Inventory Discovery (2026-04-25 調査)
+## Inventory Discovery (2026-04-25 調査、2026-04-25 B2.0 で訂正)
 
 | 項目 | 実測値 |
 |---|---|
 | symlink.sh 行数 | 498 |
-| dotfiles 内 total files (find 対象) | 14,587 |
+| dotfiles 内 total files (find 対象) | 14,588 |
 | 現 exclude regex パターン数 | 37 (master plan の "26" より増加) |
-| 意図された symlinks (~/ top-level + ~/.config/) | ~40-50 |
-| **意図しない symlinks** (exclude 漏れ) | `~/codex-best-practice/*`, `~/everything-cc/*`, `~/sample-cc-best-practice/*` = 80+ items |
+| 37 exclude 適用後の symlink 候補 (block 7 + blocks 1-6) | **3,192** |
+| 意図された symlinks (custom blocks + 必要な find-pass) | **~573** |
+| **意図しない symlinks** (B2.3 cleanup target) | **~2,573 (82%)** ※下記詳細 |
+
+**意図しない symlinks の内訳**:
+
+| Path (in dotfiles) | ~/ 配下に展開 | symlink 数 |
+|---|---|---|
+| `everything-cc/` | `~/everything-cc/*` | 1,715 |
+| `sample-cc-best-practice/` | `~/sample-cc-best-practice/*` | 318 |
+| `tools/` | `~/tools/*` | 385 |
+| `codex-best-practice/` | `~/codex-best-practice/*` | 101 |
+| `scripts/` | `~/scripts/*` | 39 |
+| `templates/` | `~/templates/*` | 11 |
+| `references/`, `reports/` | `~/references/*`, `~/reports/*` | 4 |
+| `.bin/`, `.github/`, `.dmux/`, `skills-lock-history/` | 各 `~/<name>/*` | 16 |
 
 **Phase B2 は雑多な現状の正規化機会**。意図しない symlink は whitelist 方式で除去可能。
+
+詳細な whitelist 翻訳表は `docs/plans/active/2026-04-25-phase-b2-whitelist.md` (B2.0 deliverable)。
 
 ## Processing Block Analysis
 
@@ -46,19 +62,21 @@ Preceded-by: Phase B1.5 (2026-04-25 completed)
 
 ## Subphase Decomposition
 
-### B2.0 — Prep (着手前必須、master plan 要求)
+### B2.0 — Prep (着手前必須、master plan 要求) — 2026-04-25 完了
 
-- [ ] 37 exclude regex → whitelist 翻訳表 (markdown)
-- [ ] `.bin/list-dotfiles-symlinks.sh` prototype (既存 symlink.sh との差分テスト harness)
-- [ ] Backup: `tar czf ~/backup-symlinks-pre-b2.tar.gz ~/{.claude,.codex,.gemini,.cursor,.hammerspoon,.config/zsh}`
-- [ ] Phase 0+A test fixture (`~/.config/zsh-test-nix`) 削除
-- **DoD**: whitelist が `symlink.sh` の実行結果と 1:1 で一致（セマンティック同等、`~/codex-best-practice/*` 等の unintended symlinks は除く）
+- [x] 37 exclude regex → whitelist 翻訳表: `docs/plans/active/2026-04-25-phase-b2-whitelist.md`
+- [x] `.bin/list-dotfiles-symlinks.sh` prototype (3,192 件を deterministic 出力、duplicates なし)
+- [x] Backup: `~/backup-symlinks-pre-b2.tar.gz` (32M、5,662 entries、47 symlinks 保存)
+- [移動→B2.1] Phase 0+A test fixture (`~/.config/zsh-test-nix`) 削除
+  - 理由: 削除には `nix/home/default.nix` 編集 + `darwin-rebuild switch` (sudo) が必要。B2.0 を「nix 変更なし = sudo 不要」に保ち、B2.1 で block 1-5 nix 化と同じ `darwin-rebuild` に相乗りさせる
+- **DoD**: whitelist 翻訳表 + harness + backup の 3 成果物が揃い、B2.1 着手の前提条件が満たされている (✓ 達成)
 
 ### B2.1 — Static Declarative Symlinks (low risk)
 
 - [ ] `nix/home/default.nix` に block 1-5 (Claude/Codex/Gemini/Cursor/`.hammerspoon`/`.config/zsh`) の `mkOutOfStoreSymlink` 宣言を追加
+- [ ] **Phase 0+A test fixture 削除**: `home.file.".config/zsh-test-nix"` 宣言を `nix/home/default.nix` から除去 (B2.0 から繰り上げ)
 - [ ] `task nix:switch` 実行、B2.0 backup 比較で差分ゼロを確認
-- **DoD**: `claude-code` 起動 OK、`codex --help` 動作、`~/.config/zsh` が sourcing 可能
+- **DoD**: `claude-code` 起動 OK、`codex --help` 動作、`~/.config/zsh` が sourcing 可能、`~/.config/zsh-test-nix` が消えている
 
 ### B2.2 — Skill-Sharing Activation Script (medium risk)
 
@@ -68,10 +86,11 @@ Preceded-by: Phase B1.5 (2026-04-25 completed)
 
 ### B2.3 — Auto-Discovered Dotfile Symlinks (high risk)
 
-- [ ] B2.0 で生成した whitelist (~/ top-level + ~/.config/) を `nix/symlink-list.nix` に変換
+- [ ] B2.0 で生成した whitelist (`docs/plans/active/2026-04-25-phase-b2-whitelist.md`) を `nix/symlink-list.nix` に変換
 - [ ] home-manager で `home.file.<path>.source = mkOutOfStoreSymlink` として展開
-- [ ] **Scope narrowing**: `codex-best-practice/`, `everything-cc/`, `sample-cc-best-practice/` は whitelist から除外 (意図しない symlink 除去)
-- **DoD**: `ls ~ | grep -c '^\.'` が B2.0 backup と同数 ±5 (意図した除去分を許容)
+- [ ] **Scope narrowing**: 8 dirs (`codex-best-practice/`, `everything-cc/`, `sample-cc-best-practice/`, `tools/`, `scripts/`, `templates/`, `references/`, `reports/`) + `.bin/`, `.github/`, `.dmux/`, `skills-lock-history/` は whitelist から除外
+- [ ] B2.3 commit 直前に `rm -rf ~/{everything-cc,sample-cc-best-practice,tools,codex-best-practice,scripts,templates,references,reports,.bin,.github,.dmux,skills-lock-history}` (backup 検証後のみ)
+- **DoD**: `find ~ -maxdepth 4 -type l -lname '*dotfiles*' | wc -l` が B2.0 baseline (3,192) → 約 573 (intended のみ) に減ること
 
 ### B2.4 — Test & Cleanup
 
@@ -117,8 +136,8 @@ darwin-rebuild switch --flake ./nix#private
 
 ## Success Criteria
 
-- [ ] B2.0: whitelist 翻訳表 + test harness + backup 完成
-- [ ] B2.1: static blocks (1-5) 全て home-manager 管理下
+- [x] B2.0: whitelist 翻訳表 + test harness + backup 完成 (2026-04-25)
+- [ ] B2.1: static blocks (1-5) 全て home-manager 管理下、Phase 0+A test fixture 削除
 - [ ] B2.2: skill-sharing が activation script で動作
 - [ ] B2.3: auto-discovered symlinks が whitelist 方式で管理、unintended symlinks 除去
 - [ ] B2.4: `symlink.sh` 削除、全 DoD verified
