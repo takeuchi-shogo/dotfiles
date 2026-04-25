@@ -71,12 +71,15 @@ Preceded-by: Phase B1.5 (2026-04-25 completed)
   - 理由: 削除には `nix/home/default.nix` 編集 + `darwin-rebuild switch` (sudo) が必要。B2.0 を「nix 変更なし = sudo 不要」に保ち、B2.1 で block 1-5 nix 化と同じ `darwin-rebuild` に相乗りさせる
 - **DoD**: whitelist 翻訳表 + harness + backup の 3 成果物が揃い、B2.1 着手の前提条件が満たされている (✓ 達成)
 
-### B2.1 — Static Declarative Symlinks (low risk)
+### B2.1 — Static Declarative Symlinks (low risk) — 2026-04-26 完了
 
-- [ ] `nix/home/default.nix` に block 1-5 (Claude/Codex/Gemini/Cursor/`.hammerspoon`/`.config/zsh`) の `mkOutOfStoreSymlink` 宣言を追加
-- [ ] **Phase 0+A test fixture 削除**: `home.file.".config/zsh-test-nix"` 宣言を `nix/home/default.nix` から除去 (B2.0 から繰り上げ)
-- [ ] `task nix:switch` 実行、B2.0 backup 比較で差分ゼロを確認
-- **DoD**: `claude-code` 起動 OK、`codex --help` 動作、`~/.config/zsh` が sourcing 可能、`~/.config/zsh-test-nix` が消えている
+- [x] `nix/home/default.nix` に block 1-5 (Claude/Codex/Gemini/Cursor/`.hammerspoon`/`.config/zsh`) の `mkOutOfStoreSymlink` 宣言を追加 (commit 518a7f6)
+- [x] **Phase 0+A test fixture 削除**: `home.file.".config/zsh-test-nix"` 宣言を除去
+- [x] `task nix:switch PROFILE=private` 実行成功 (system 7→8)
+- [x] Pre-flight: 19 既存 symlink を `rm` してから switch (conflict 回避)
+- [x] **DoD 達成**: 19 paths 全て home-manager 管理下、dev loop 経験的検証 (94→95 行が ~/ に即反映)、`~/.config/zsh-test-nix` 削除済み
+
+**Note**: B2.1 後の中間状態として、`~/codex-best-practice/*` 等の **block 7 由来 unintended symlinks は残存**。`.bin/symlink.sh` を手動実行すると home-manager 管理対象と conflict するので **B2.4 で symlink.sh 削除まで実行禁止**。
 
 ### B2.2 — Skill-Sharing Activation Script (medium risk)
 
@@ -137,7 +140,7 @@ darwin-rebuild switch --flake ./nix#private
 ## Success Criteria
 
 - [x] B2.0: whitelist 翻訳表 + test harness + backup 完成 (2026-04-25)
-- [ ] B2.1: static blocks (1-5) 全て home-manager 管理下、Phase 0+A test fixture 削除
+- [x] B2.1: static blocks (1-5) 全て home-manager 管理下、Phase 0+A test fixture 削除 (2026-04-26)
 - [ ] B2.2: skill-sharing が activation script で動作
 - [ ] B2.3: auto-discovered symlinks が whitelist 方式で管理、unintended symlinks 除去
 - [ ] B2.4: `symlink.sh` 削除、全 DoD verified
