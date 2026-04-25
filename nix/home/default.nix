@@ -1,5 +1,9 @@
 { config, pkgs, ... }:
 
+let
+  dotfiles = "${config.home.homeDirectory}/dotfiles";
+  outLink = path: { source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}"; };
+in
 {
   home.username = "takeuchishougo";
   home.homeDirectory = "/Users/takeuchishougo";
@@ -33,11 +37,40 @@
     zoxide
   ];
 
-  # Phase 0+A: D6 (mkOutOfStoreSymlink) 実証用 fixture。
-  # Phase B2 着手前に削除する (B2 plan で計画済み)。
-  home.file.".config/zsh-test-nix" = {
-    source = config.lib.file.mkOutOfStoreSymlink
-      "${config.home.homeDirectory}/dotfiles/nix/test-fixtures/claude-like";
+  # Phase B2.1: symlink.sh の block 1-5 を home-manager に移植 (D6 実証済み)。
+  # mkOutOfStoreSymlink は dotfiles の中身を store にコピーせず、2-hop chain
+  # (~/path → store/home-manager-files/X → dotfiles/X) を作る。dev loop の
+  # live edit (dotfiles 編集 → ~ 即反映) は経験的に検証済み。
+  # Phase 0+A fixture (.config/zsh-test-nix) は本リリースで削除。
+  home.file = {
+    # block 1: directory-level symlinks
+    ".hammerspoon" = outLink ".hammerspoon";
+    ".config/zsh"  = outLink ".config/zsh";
+
+    # block 2: Claude (.config/claude → ~/.claude)
+    ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
+    ".claude/settings.json"        = outLink ".config/claude/settings.json";
+    ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";
+    ".claude/statusline.sh"        = outLink ".config/claude/statusline.sh";
+    ".claude/agents"               = outLink ".config/claude/agents";
+    ".claude/commands"             = outLink ".config/claude/commands";
+    ".claude/scripts"              = outLink ".config/claude/scripts";
+    ".claude/skills"               = outLink ".config/claude/skills";
+
+    # block 3: Codex (.codex → ~/.codex)
+    ".codex/config.toml" = outLink ".codex/config.toml";
+    ".codex/AGENTS.md"   = outLink ".codex/AGENTS.md";
+
+    # block 4: Gemini
+    ".gemini/GEMINI.md" = outLink ".gemini/GEMINI.md";
+
+    # block 5: Cursor
+    ".cursor/hooks.json" = outLink ".cursor/hooks.json";
+    ".cursor/rules"      = outLink ".cursor/rules";
+    ".cursor/skills"     = outLink ".cursor/skills";
+    ".cursor/agents"     = outLink ".cursor/agents";
+    ".cursor/commands"   = outLink ".cursor/commands";
+    ".cursor/hooks"      = outLink ".cursor/hooks";
   };
 
   programs.home-manager.enable = true;
