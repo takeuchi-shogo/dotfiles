@@ -543,3 +543,16 @@
 - 実装済: M2-A, M2-C。保留: M2-B (dead-weight-scan.py 本体実装時に組み込み)
 - 分析: docs/research/2026-04-24-harness-engineering-absorb-analysis.md
 - 特記: Codex 批評で Gap (3) Strict Dependency Flow を Partial に降格、最優先は B (Opus 4.7 吸収時間圧) と判定。Gemini 補完は 15 tool uses / 15 分で empty return、外部 independent replication は未検証。Wiki/Obsidian 後処理は subagent permission denied で main session 実行。
+
+## [2026-04-26] ingest | Workflow Trellis (2x2 step-level workflow framework)
+
+- ソース: https://github.com/gnurio/nurijanian-skills/blob/main/skills/workflow-trellis/SKILL.md (Linus Lee 系統)
+- 判定: Gap 0 / Partial 0 / Already 強化可能 4 / N/A 1 (記事の核は S/M/L 多因子ルーティングに既に内包)
+- 取り込み: 3 件 (S 規模、その場で実装)
+  - A: stage-transition-rules.md に Control Surface Override 段落 (S 規模でも auth/不可逆/master/harness/breaking change なら Gate 強制)
+  - C: observability-signals.md に Attention Allocation Decision Table (interrupt/batch/escalate/hide/shut up × 信号タイプ、Meister 2024 *Neuron* 10 bits/sec を脚注引用)
+  - F: decision-tables-index.md に trellis 4 象限 → mechanism 1 行マッピング (ambient=hook / control surface=Gate / human-led=/think / nobody cares=silent)
+- 棄却: 3 件 (cybernetic loop 三要素は agent-harness-contract.md に内蔵 / 5 driver weight は精緻化過剰、identity は個人 harness で N/A / Obligation Gate は Top 67 absorb で先行実装済)
+- Codex 観察: 当初参照した harness-engineering-details.md は実在せず、強化案 B を棄却。S/M/L が単なる規模ではなく多因子ルーティング (リスク × 影響範囲 × ステークホルダー) として既に機能していることが判明
+- Gemini 副作用: 指示外で docs/research/2026-04-26-workflow-trellis-research.md + memory/reference_workflow_trellis_research.md + MEMORY.md 索引追加。ユーザー判断で全削除
+- レポート: docs/research/2026-04-26-workflow-trellis-absorb-analysis.md

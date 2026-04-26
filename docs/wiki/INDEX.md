@@ -83,6 +83,7 @@
 ### decision — 意思決定
 
 - [失敗できる意思決定](concepts/reversible-decisions.md) — 判断vs決断の区別、撤退条件、反証探索による意思決定フレームワーク
+- **Workflow Trellis 2x2 (2026-04-26)** — Relief Pressure × Control Demand の 2 軸で step を 4 象限 (ambient=hook / control surface=Gate / human-led=/think / nobody cares=silent) に分類する決定フレームワーク。Attention Allocation 5 動詞 (interrupt/batch/escalate/hide/shut up) を observability-signals.md に追加、Control Surface Override (S 規模でも auth/不可逆/harness/breaking change は Gate 強制) を stage-transition-rules.md に追加 → 参照: [2026-04-26-workflow-trellis-absorb-analysis](../research/2026-04-26-workflow-trellis-absorb-analysis.md)
 
 ### coding — コーディング
 

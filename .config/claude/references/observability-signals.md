@@ -49,6 +49,24 @@ last_reviewed: 2026-04-23
 | friction 集中 | 同 friction_class が 3セッション連続 | pre-mortem-checklist トリガ + situation-strategy-map 追加提案 | 5 連続で Plan 必須化 | Low |
 | routing ログ未記録 | (常時) | `emit_event("telemetry", {type: "routing_suggestion", ...})` を追加 | — (実装タスク) | Low |
 
+### Attention Allocation Decision Table
+
+人間の意識的処理は約 10 bits/sec に制限される (Meister 2024, *Neuron* "The Unbearable Slowness of Being")。
+信号は流量に応じて 5 動詞のいずれかで配分する。「全部見せる」は rubber-stamp (見ているふり) を招き、accountability を毀損する。
+
+| 動詞 | 想定信号タイプ | 出力先 | 判定基準 |
+|------|--------------|--------|---------|
+| **interrupt** | CFS、Critical change-surface、Block 級 review verdict | stderr `[BLOCK]` で同期割込 | 続行で被害が拡大、かつ unique な人間判断が必要 |
+| **batch** | friction イベント、failure-clusters、改善提案候補 | `learnings/*.jsonl` 追記、`/improve` で集約処理 | 単発では弱信号、集積で意味が出る |
+| **escalate** | NEEDS_FIX 連続、subagent 失敗連鎖、未回答の AskUserQuestion | `AskUserQuestion` or 上位エージェントへ通知 | 自律解決の試行回数を超過 |
+| **hide** | 接続済 gate の routine pass、deduplicate 済の重複信号 | silent log (記録のみ、UI 露出なし) | 過去 N 件で人が action を取らなかったパターン |
+| **shut up** | 確定的 mechanism (linter/hook) で自動修正完了したもの | 出力しない (no-op) | mechanism で確定論的に処理可能 |
+
+**運用ルール**:
+- 同じ信号タイプを 2 動詞で同時出力しない (interrupt + batch の二重化を禁止)
+- "未接続" 状態は黙認 = 暗黙の `hide` ではない。§3 の Gap として明示する
+- escalation で人間が 3 連続で同一判断 (例: PASS) を返したら、その signal を `hide` 候補に降格する
+
 ## 3. 未接続ギャップ
 
 優先度順。いずれもこの Wave では「推奨」として記述し、実装は含まない。
