@@ -76,6 +76,41 @@ in
     ".cursor/agents"     = outLink ".cursor/agents";
     ".cursor/commands"   = outLink ".cursor/commands";
     ".cursor/hooks"      = outLink ".cursor/hooks";
+
+    # Phase B2.3: auto-discovered (block 7) を whitelist 方式で展開。
+    # symlink.sh の find-walk + 37 exclude regex を「明示的に列挙」に置換。
+    # B2.0 whitelist 翻訳表 (docs/plans/active/2026-04-25-phase-b2-whitelist.md) に基づく。
+
+    # Top-level dotfiles (5)
+    ".cursorignore"     = outLink ".cursorignore";
+    ".tmux.conf"        = outLink ".tmux.conf";
+    ".worktreeinclude"  = outLink ".worktreeinclude";
+    ".zshrc"            = outLink ".zshrc";
+    # NOTE: ~/.gitignore は dotfiles 外 (system 由来 real file)、ここでは管理しない
+
+    # Root config files at ~ (5)
+    "AGENTS.md"     = outLink "AGENTS.md";
+    "Brewfile"      = outLink "Brewfile";
+    "lefthook.yml"  = outLink "lefthook.yml";
+    "llms.txt"      = outLink "llms.txt";
+    "ruff.toml"     = outLink "ruff.toml";
+
+    # .config/<tool> dir-level symlinks (12)
+    ".config/aerospace"   = outLink ".config/aerospace";
+    ".config/borders"     = outLink ".config/borders";
+    ".config/gh"          = outLink ".config/gh";
+    ".config/ghostty"     = outLink ".config/ghostty";
+    ".config/git"         = outLink ".config/git";
+    ".config/karabiner"   = outLink ".config/karabiner";
+    ".config/lazygit"     = outLink ".config/lazygit";
+    ".config/nvim"        = outLink ".config/nvim";
+    ".config/sheldon"     = outLink ".config/sheldon";
+    ".config/sketchybar"  = outLink ".config/sketchybar";
+    ".config/wezterm"     = outLink ".config/wezterm";
+    ".config/zed"         = outLink ".config/zed";
+
+    # .config single-file (1)
+    ".config/starship.toml" = outLink ".config/starship.toml";
   };
 
   # Phase B2.2: skill-sharing を home-manager activation script に移植。
