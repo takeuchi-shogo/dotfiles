@@ -1,8 +1,11 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/dotfiles";
   outLink = path: { source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}"; };
+
+  # nixpkgs 未収載の自前パッケージ。Go 1.26 必須 (buildGo126Module)。
+  ghqr = pkgs.callPackage ../pkgs/ghqr.nix {};
 in
 {
   home.username = "takeuchishougo";
@@ -35,6 +38,8 @@ in
     tree-sitter
     yazi
     zoxide
+    # 自前 derivation: GitHub 設定の best-practices 監査 CLI (microsoft/ghqr)
+    ghqr
   ];
 
   # Phase B2.1: symlink.sh の block 1-5 を home-manager に移植 (D6 実証済み)。
@@ -72,6 +77,53 @@ in
     ".cursor/commands"   = outLink ".cursor/commands";
     ".cursor/hooks"      = outLink ".cursor/hooks";
   };
+
+  # Phase B2.2: skill-sharing を home-manager activation script に移植。
+  # symlink.sh の create_codex_symlinks() 内 share_skill_directory() ループ相当。
+  # python3 helper は frontmatter の `platforms:` 宣言を解析して symlink 対象を決定。
+  # home.file で宣言しないのは skill 数が動的 (現在 4+9=13 件、追加で増減する) かつ
+  # 一部既存 ~/.codex/skills/* は gh skill 等の外部経由 = home-manager 管理外を尊重するため。
+  # ln -sfn で対象 path のみ上書き、既存の不関連 entry には触れない。
+  home.activation.shareSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    PY="${pkgs.python3}/bin/python3"
+    HELPER="${dotfiles}/scripts/lib/skill_platforms.py"
+    CLAUDE_SKILLS="${dotfiles}/.config/claude/skills"
+    AGENTS_SKILLS="${dotfiles}/.agents/skills"
+    CODEX_DIR="${config.home.homeDirectory}/.codex/skills"
+    AGENTS_DIR="${config.home.homeDirectory}/.agents/skills"
+
+    [ -f "$HELPER" ] || { echo "skill_platforms.py not found, skip" >&2; exit 0; }
+
+    $DRY_RUN_CMD mkdir -p "$CODEX_DIR" "$AGENTS_DIR"
+
+    share() {
+      local target="$1" link="$2"
+      [ -d "$target" ] || return 0
+      if [ -L "$link" ]; then
+        [ "$(readlink "$link")" = "$target" ] && return 0
+        $DRY_RUN_CMD ln -sfn "$target" "$link"
+      elif [ -e "$link" ]; then
+        echo "skill-share: $link exists and is not a symlink, skipping" >&2
+        return 0
+      else
+        $DRY_RUN_CMD ln -s "$target" "$link"
+      fi
+    }
+
+    # claude skills → codex + agents
+    "$PY" "$HELPER" --source claude --needs codex 2>/dev/null | while IFS= read -r skill; do
+      [ -z "$skill" ] && continue
+      share "$CLAUDE_SKILLS/$skill" "$CODEX_DIR/$skill"
+      share "$CLAUDE_SKILLS/$skill" "$AGENTS_DIR/$skill"
+    done
+
+    # project (.agents) skills → codex + agents
+    "$PY" "$HELPER" --source agents --needs codex 2>/dev/null | while IFS= read -r skill; do
+      [ -z "$skill" ] && continue
+      share "$AGENTS_SKILLS/$skill" "$CODEX_DIR/$skill"
+      share "$AGENTS_SKILLS/$skill" "$AGENTS_DIR/$skill"
+    done
+  '';
 
   programs.home-manager.enable = true;
 }
