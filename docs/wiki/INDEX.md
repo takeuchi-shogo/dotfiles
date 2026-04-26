@@ -92,6 +92,7 @@
 - [変更面プリフライト](concepts/change-surface-preflight.md) — 変更対象（auth, DB, API等）に応じた自動検証パターン
 - [修復ルーティング](concepts/repair-routing.md) — 失敗時の修復先レイヤー判定（references / rules / skills / hooks）
 - [タスクアーキタイプ](concepts/task-archetype-templates.md) — 反復性の高い SW 開発領域のリファレンスドキュメント体系
+- **Tech-Debt-Skill absorb (2026-04-26)** — ksimback/tech-debt-skill を `/audit` に統合。Orient Gate・Severity×Effort 2軸・Hallucination Defense・Output Contract など 9 点強化（新規スキル作成なし） → 参照: [2026-04-26-tech-debt-skill-absorb-analysis](../research/2026-04-26-tech-debt-skill-absorb-analysis.md)
 
 ### evaluation — 評価・観測
 

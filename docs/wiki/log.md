@@ -556,3 +556,21 @@
 - Codex 観察: 当初参照した harness-engineering-details.md は実在せず、強化案 B を棄却。S/M/L が単なる規模ではなく多因子ルーティング (リスク × 影響範囲 × ステークホルダー) として既に機能していることが判明
 - Gemini 副作用: 指示外で docs/research/2026-04-26-workflow-trellis-research.md + memory/reference_workflow_trellis_research.md + MEMORY.md 索引追加。ユーザー判断で全削除
 - レポート: docs/research/2026-04-26-workflow-trellis-absorb-analysis.md
+
+## [2026-04-26] ingest | Tech-Debt-Skill (ksimback) absorb
+
+- ソース: https://github.com/ksimback/tech-debt-skill
+- 判定: Gap 0 / Partial 6 / Already 4 / N/A 0（Phase 2.5 修正後）
+- 取り込み: 既存 `/audit` を 9 点強化（Pruning-First、新規スキル作成なし）
+  - Orient Gate (境界/flow/invariants/runtime surface mandatory)
+  - Structural Pre-filter Optional (ast-grep/madge/knip/vulture/Semgrep)
+  - /check-health crosswalk
+  - Severity × Effort 2軸 + Quick Wins
+  - Conflict Detection (両論併記)
+  - Hallucination Defense (虚偽 line 検出 + ±10 行閾値)
+  - QUESTIONS.md template 拡張 (Orient Summary / Top 5 / Quick Wins / Conflicts / Non-Findings)
+  - Output Contract (曖昧表現禁止)
+  - Repeat-Run Tracking 軽量版 (git diff ベース)
+- 棄却: 新規 /tech-debt-audit 作成、9 dimensions 独立化、Repeat-run state file、Diplomatic vagueness 哲学節
+- 分析レポート: docs/research/2026-04-26-tech-debt-skill-absorb-analysis.md
+- 強化対象: .config/claude/skills/audit/SKILL.md
