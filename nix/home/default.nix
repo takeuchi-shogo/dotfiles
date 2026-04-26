@@ -109,8 +109,9 @@ in
     ".config/wezterm"     = outLink ".config/wezterm";
     ".config/zed"         = outLink ".config/zed";
 
-    # .config single-file (1)
-    ".config/starship.toml" = outLink ".config/starship.toml";
+    # .config single-file (2)
+    ".config/starship.toml"   = outLink ".config/starship.toml";
+    ".config/rtk/config.toml" = outLink ".config/rtk/config.toml";
   };
 
   # Phase B2.2: skill-sharing を home-manager activation script に移植。
