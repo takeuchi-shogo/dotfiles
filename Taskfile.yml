@@ -6,13 +6,11 @@ includes:
     dir: tools/otel-session-analyzer
 
 tasks:
-  symlink:
-    desc: Create symlinks for dotfiles
-    cmds:
-      - ~/dotfiles/.bin/symlink.sh
+  # Phase B2.4 (2026-04-26): symlink タスクは削除。home-manager (nix:switch) が
+  # symlink を管理する。詳細は docs/plans/completed/2026-04-25-phase-b2-plan.md。
 
   install:
-    desc: Run initial setup (Homebrew, packages, symlinks, etc.)
+    desc: Run initial bootstrap setup (legacy, pre-nix). For nix-managed setup use nix:bootstrap.
     cmds:
       - ~/dotfiles/.bin/init-install.sh
 

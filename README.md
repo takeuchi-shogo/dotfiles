@@ -8,13 +8,21 @@ macOS 向け開発環境の設定ファイル群。
 ## セットアップ
 
 ```bash
-task install            # 初回セットアップ (Homebrew, パッケージ, symlink)
-task symlink            # シンボリックリンクのみ再作成
-task brew               # Brewfile からパッケージインストール
+# 初回 (nix-darwin が未インストール)
+task nix:bootstrap PROFILE=private
+
+# 通常運用 (CLI / Brewfile / dotfiles symlink を一括反映)
+task nix:switch PROFILE=private
+
+# 個別操作
+task brew               # Brewfile からパッケージインストール (legacy)
 task restart-wm         # WM サービスの再起動
 task update             # Homebrew パッケージの更新
 task validate           # 全 dotfiles の検証 (config, README, symlink)
 ```
+
+> Phase B2 (2026-04-26 完了) で symlink 管理は `home-manager` に移行。
+> 詳細は [`nix/README.md`](nix/README.md)。
 
 ## 構成
 
