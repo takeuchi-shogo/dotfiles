@@ -1,6 +1,7 @@
 ---
 name: explain-code
 description: Explain code as a scannable blog post
+origin: self
 disable-model-invocation: true
 ---
 

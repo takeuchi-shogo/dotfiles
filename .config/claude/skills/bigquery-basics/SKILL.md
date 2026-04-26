@@ -7,6 +7,7 @@ description: >-
   resources, or leverage BigQuery's built-in ML capabilities. Also use when
   performing data analysis, ingesting data into BigQuery, or developing AI
   applications on BigQuery.
+origin: external
 ---
 
 # BigQuery Basics

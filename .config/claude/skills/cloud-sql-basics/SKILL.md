@@ -12,6 +12,7 @@ description: >-
 
   Cloud SQL handles backups, high availability, and secure connectivity for
   relational database workloads.
+origin: external
 ---
 
 # Cloud SQL Basics

@@ -4,6 +4,7 @@ description: >-
   Manages Cloud Run services, jobs, and worker pools. Use when you need to deploy applications
   responding to HTTP requests (services), run event-triggered or scheduled tasks (jobs),
   or handle always-on pull-based background processing (worker pools).
+origin: external
 ---
 
 # Cloud Run Basics
