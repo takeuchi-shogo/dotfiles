@@ -147,6 +147,15 @@
 - ソース: arXiv:2604.01658 (MIT, NUS, Stanford 他)
 - 判定: Gap 1個, Partial 3個, Already 5個 (うち強化可能 2個), N/A 1個
 - 取り込み: Consolidate heartbeat導入、attempts構造formalization、蒸留品質因果検証(Wave2)
+
+## [2026-04-27] ingest | Keep your Claude Code context clean with Subagents (aitmpl 系記事)
+
+- ソース: aitmpl 系記事「Keep your Claude Code context clean with Subagents」(URL 不明)
+- 判定: Gap 0個（修正後 N/A 2個）, Partial 1個 (context-timeline)→独自強化, Already 4個 (うち2個強化可能), N/A 2個 (CLAUDE_CODE_FORK_SUBAGENT/, /fork)
+- 取り込み: 3件 (T2 context-monitor.py に subagent event timeline 追加 / T3 observability-signals.md に triage-router 命中率・Plan 差し戻し率・cache hit rate 追記 / T4 references/fork-experiment.md に /fork 限定実験ガイド)
+- 棄却: aitmpl context-timeline 直採用 (第三者テンプレート), CLAUDE_CODE_FORK_SUBAGENT=1 デフォルト採用 (experimental + cleanliness 哲学と矛盾)
+- レポート: docs/research/2026-04-27-subagent-context-fork-absorb-analysis.md
+- 実装: 新セッションで /rpi 経由 (M 規模)
 - プラン: Wave 1実装完了、Wave 2-3は `docs/research/2026-04-08-coral-autonomous-multi-agent-evolution-analysis.md`
 
 ## [2026-04-08] ingest | Environment-Driven Reinforcement Learning
@@ -556,6 +565,17 @@
 - Codex 観察: 当初参照した harness-engineering-details.md は実在せず、強化案 B を棄却。S/M/L が単なる規模ではなく多因子ルーティング (リスク × 影響範囲 × ステークホルダー) として既に機能していることが判明
 - Gemini 副作用: 指示外で docs/research/2026-04-26-workflow-trellis-research.md + memory/reference_workflow_trellis_research.md + MEMORY.md 索引追加。ユーザー判断で全削除
 - レポート: docs/research/2026-04-26-workflow-trellis-absorb-analysis.md
+
+## [2026-04-27] ingest | graphify (safishamsi/graphify)
+
+- ソース: https://github.com/safishamsi/graphify (MIT, Python 3.10+)
+- 判定: Already×4 / Partial×3 / N/A×3 / Gap→YAGNI×1 (vis.js)
+- 取り込み: 3 件採択 (graphify 本体は棄却、CRG と 70% 重複)
+  - T1 paper-analysis に Step 3.5 Concept Relations 追加 (subject/predicate/object トリプル、closed vocabulary 6 種)
+  - T2 三値タグ EXTRACTED/INFERRED/AMBIGUOUS を confidence と直交軸で併記
+  - T3 71.5x benchmark を `codebase-graph-benchmarks.md` に reference 記録
+- 棄却: 本体インストール (Build to Delete 違反)、vis.js (YAGNI)、Whisper (digest で代替)
+- レポート: docs/research/2026-04-27-graphify-absorb-analysis.md
 
 ## [2026-04-26] ingest | Tech-Debt-Skill (ksimback) absorb
 
