@@ -188,6 +188,17 @@ def compute_config_version() -> str:
     return _CONFIG_VERSION_CACHE
 
 
+def _resolve_session_id() -> str:
+    # Cross-category session correlation enabler. Same fallback chain as
+    # error-rate-monitor.py:53 / checkpoint_manager.py:147. pid fallback keeps
+    # entries identifiable within a single process even when env is missing.
+    return (
+        os.environ.get("CLAUDE_SESSION_ID")
+        or os.environ.get("CLAUDE_CONVERSATION_ID")
+        or f"pid-{os.getpid()}"
+    )
+
+
 def emit_event(category: str, data: dict) -> None:
     """セッション中のイベントを一時ファイルに追記する（スコア付き）。
 
@@ -203,6 +214,7 @@ def emit_event(category: str, data: dict) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         entry = {
             "timestamp": _now_iso(),
+            "session_id": _resolve_session_id(),
             "category": category,
             **data,
             "importance": round(importance, 2),
@@ -343,6 +355,7 @@ def append_to_learnings(filename: str, data: dict) -> None:
         path = _get_data_dir() / "learnings" / f"{filename}.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         entry = {"timestamp": _now_iso(), **data}
+        entry.setdefault("session_id", _resolve_session_id())
         entry.setdefault("tier", "raw")
         entry.setdefault("score", 0.0)
         with open(path, "a", encoding="utf-8") as f:
