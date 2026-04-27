@@ -15,11 +15,12 @@
 
   outputs = { self, nixpkgs, nix-darwin, home-manager, ... }:
     let
-      mkDarwin = { system, hostName }:
+      mkDarwin = { system, hostName, hostModule }:
         nix-darwin.lib.darwinSystem {
           inherit system;
           modules = [
             ./darwin
+            hostModule
             home-manager.darwinModules.home-manager
             {
               networking.hostName = hostName;
@@ -32,8 +33,8 @@
     in
     {
       darwinConfigurations = {
-        private = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro"; };
-        work    = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro-work"; };
+        private = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro"; hostModule = ./darwin/private.nix; };
+        work    = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro-work"; hostModule = ./darwin/work.nix; };
       };
 
       devShells = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" ] (system:

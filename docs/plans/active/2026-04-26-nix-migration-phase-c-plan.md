@@ -251,7 +251,8 @@ work プロファイルの `system.defaults` は **Phase C 完了後に新品 wo
 - [x] Codex Plan Gate (REVISE → 本 revision で対応)
 - [x] master plan revision (Phase D / E / F outline 追加)
 - [x] **C0**: 復旧 e2e テスト (1 attribute で `defaults import` 動作確認) — 2026-04-27 完了
-- [ ] **C1**: NSGlobalDomain
+- [x] **C1a**: Multi-host 構造分割 (`private.nix` / `work.nix`、attribute 追加なし) — 2026-04-28 完了、`2026-04-28-nix-migration-phase-c1a-plan.md` 参照。新 generation 作成なし (config 同一性で吸収) という発見あり
+- [ ] **C1b**: NSGlobalDomain attribute 宣言 (C1a 完了後 24h 観察を経て独立 plan、`_HIHideMenuBar` 確認・型正規化仕様確定を含む)
 - [ ] **C2a**: dock 単独
 - [ ] **C2b**: finder 単独
 - [ ] **C3**: trackpad + universal access
@@ -281,6 +282,18 @@ work プロファイルの `system.defaults` は **Phase C 完了後に新品 wo
 3. **backup plist の正確性が rollback 復旧の唯一の真実源** — `${HOME}/backup/phase-c/<domain>-pre-c<n>.plist` が壊れたら復旧不能。Step 0 (Inventory + Backup) で `plutil -lint` 検証を毎回必須化。
 
 これは Codex Plan Gate Critical #1 で既に懸念として挙げられており、本検証で確証された。「Plan 通りの多段フォールバック設計」が機能することの実証でもある。
+
+### C1a (2026-04-28): Multi-host 構造分割で新 generation が作成されない (config 同一性)
+
+`mkDarwin` シグネチャ拡張 + `private.nix` / `work.nix` を空 module で追加したが、`task nix:switch PROFILE=private` 後も current generation は C0 時の gen 12 のまま (新 gen 13 なし)。空 host module は base からの module merge で属性を継承し、出力 config は変化しない。derivation hash 同一性で nix-darwin が「新 generation 不要」と判定した結果。
+
+**含意**:
+
+1. **rollback 検証は本 phase では意味をなさない** — pre/post-c1a state が完全同一のため、Step 3 (Tier 1+Tier 2 rollback) は skip
+2. **Codex HIGH-2 の二重実証** — `nix eval` だけでなく実 switch でも empty work.nix が base 属性を継承することが確認できた
+3. **C1b 以降の振り分け mechanism が機能する根拠** — `private.nix` に attribute を置けば private 限定、`default.nix` に置けば base 全 host、という mechanical な振り分けが実装可能
+
+詳細: `docs/plans/active/2026-04-28-nix-migration-phase-c1a-plan.md` の Surprises & Discoveries 節
 
 ---
 
