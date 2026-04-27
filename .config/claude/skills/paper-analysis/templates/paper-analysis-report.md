@@ -2,9 +2,16 @@
 topic: "{topic}"
 date: {YYYY-MM-DD}
 paper_count: {N}
-steps_executed: [0,1,2,3,4,5,6,7,8,9]
+steps_executed: [0,1,2,3,3.5,4,5,6,7,8,9]
 status: {completed | partial}
 ---
+
+> **Provenance & Confidence 表記**
+>
+> 主張・関係・仮定には `[provenance, conf=NN]` を併記する。
+> - `provenance`: `EXTRACTED` (本文直接) / `INFERRED` (合理推論) / `AMBIGUOUS` (本文では断定不能)
+> - `conf`: 0-100 整数。provenance とは直交軸（出所 vs 確度）
+> - 詳細: `~/.claude/references/provenance-tagging.md`
 
 ## Corpus Overview
 
@@ -28,40 +35,53 @@ status: {completed | partial}
 
 ## Step 2: Contradictions
 
-| # | 主張A (論文) | 主張B (論文) | WHY | 解決可能性 |
-|---|-------------|-------------|-----|-----------|
-| 1 | {claim} ({paper}) | {claim} ({paper}) | {reason} | {resolvable/fundamental} |
+| # | 主張A (論文) | 主張B (論文) | WHY | 解決可能性 | provenance | conf |
+|---|-------------|-------------|-----|-----------|-----------|------|
+| 1 | {claim} ({paper}) | {claim} ({paper}) | {reason} | {resolvable/fundamental} | EXTRACTED | 90 |
 
 ## Step 3: Citation Chains
 
 ### Concept 1: {concept_name}
 
-| 段階 | 論文 | 内容 |
-|------|------|------|
-| 導入 | {paper} | {description} |
-| 批判 | {paper} | {description} |
-| 精緻化 | {paper} | {description} |
-| 現在の合意 | — | {consensus_or_disputed} |
+| 段階 | 論文 | 内容 | provenance | conf |
+|------|------|------|-----------|------|
+| 導入 | {paper} | {description} | EXTRACTED | 95 |
+| 批判 | {paper} | {description} | EXTRACTED | 85 |
+| 精緻化 | {paper} | {description} | INFERRED | 70 |
+| 現在の合意 | — | {consensus_or_disputed} | AMBIGUOUS | 60 |
+
+## Step 3.5: Concept Relations
+
+> 概念ペア間の構造化関係を `(subject, predicate, object)` トリプルで抽出。
+> predicate vocabulary: `cites`, `extends`, `contradicts`, `depends_on`, `refines`, `unifies`
+> 詳細: `references/relation-extraction.md`
+
+| # | A (subject) | predicate | B (object) | provenance | conf | evidence |
+|---|------------|-----------|-----------|-----------|------|----------|
+| 1 | {concept_a} | extends | {concept_b} | EXTRACTED | 90 | {paper} §{section} |
+| 2 | {concept_a} | depends_on | {concept_c} | INFERRED | 75 | {paper} §{section} |
+
+**Skip 条件**: 論文 3 本以下なら本セクションをスキップ可。
 
 ## Step 4: Synthesis
 
 ### Consensus
-{what_the_field_collectively_believes}
+{what_the_field_collectively_believes} `[EXTRACTED, conf=NN]`
 
 ### Contested
-{active_debates_with_evidence}
+{active_debates_with_evidence} `[EXTRACTED, conf=NN]`
 
 ### Unresolved
-{questions_without_sufficient_evidence}
+{questions_without_sufficient_evidence} `[INFERRED, conf=NN]`
 
 ### The Single Most Important Unanswered Question
 {question}
 
 ## Step 5: Research Gaps
 
-| # | 未回答の問い | 存在理由 | 最接近論文 | 必要な手法 |
-|---|------------|---------|-----------|-----------|
-| 1 | {question} | {too_hard/niche/overlooked} | {paper} | {methodology} |
+| # | 未回答の問い | 存在理由 | 最接近論文 | 必要な手法 | provenance | conf |
+|---|------------|---------|-----------|-----------|-----------|------|
+| 1 | {question} | {too_hard/niche/overlooked} | {paper} | {methodology} | INFERRED | 65 |
 
 ## Step 6: Methodology Audit
 
@@ -102,6 +122,6 @@ status: {completed | partial}
 
 ## Step 9: Assumptions
 
-| # | 暗黙の仮定 | 依存論文 | 仮定が誤りなら |
-|---|-----------|---------|--------------|
-| 1 | {assumption} | {papers} | {counterfactual_impact} |
+| # | 暗黙の仮定 | 依存論文 | 仮定が誤りなら | provenance | conf |
+|---|-----------|---------|--------------|-----------|------|
+| 1 | {assumption} | {papers} | {counterfactual_impact} | INFERRED | 70 |

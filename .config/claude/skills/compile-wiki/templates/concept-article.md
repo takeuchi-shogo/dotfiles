@@ -15,6 +15,11 @@ updated: {{DATE}}
 
 {{KEY_INSIGHTS — レポート横断のキーポイント。箇条書き5-10項目}}
 
+> 各キーポイントには `[provenance, conf=NN]` を併記する。
+> - `provenance`: `EXTRACTED` (元レポート直接) / `INFERRED` (合成推論) / `AMBIGUOUS` (元レポート間で対立)
+> - `conf`: 0-100 整数。provenance と直交軸 (出所 vs 確度)
+> - 詳細: `~/.claude/references/provenance-tagging.md`
+
 ## 実践的な適用
 
 {{PRACTICAL_APPLICATION — dotfiles リポジトリや実際の開発での適用例。あれば具体的なファイルパスを含める}}

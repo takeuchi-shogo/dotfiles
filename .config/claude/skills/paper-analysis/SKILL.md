@@ -46,6 +46,7 @@ metadata:
   Step 1: Landscape     → 論文間の関係性マッピング         [Sonnet]
   Step 2: Contradiction → 矛盾検出 + WHY 分析             [Sonnet + Scite]
   Step 3: Citation      → 概念の系譜追跡                  [Scite MCP]
+  Step 3.5: Relations   → 概念ペア間の構造化関係抽出       [Sonnet 並列 → Opus 集約]
   Step 4: Synthesis     → 信じている/争点/未解決 3層統合    [Opus]
   Step 5: Gap Scan      → 未回答問いの特定 + 原因診断      [Opus]
   Step 6: Method Audit  → 手法分類・偏り・弱点             [Sonnet]
@@ -59,6 +60,7 @@ metadata:
 全9ステップを実行する必要はない。ユーザーが特定ステップを指定した場合はそれだけ実行する:
 - `/paper-analysis --steps 1,4,8` — Landscape + Synthesis + So What のみ
 - `/paper-analysis --quick` — Step 0,1,4,8 のみ（クイックモード）
+- `/paper-analysis --graph` — Step 0,1,3,3.5,7 のみ（concept graph 重視モード）
 - `/paper-analysis` — 全ステップ実行（デフォルト）
 
 ## Step 0: Intake — 論文の正規化 [Haiku/Gemini に委譲]
@@ -141,6 +143,39 @@ Scite MCP が利用不可の場合:
 - **現在の合意**: コンセンサスがあるか、まだ争点か
 
 **原典照合ゲート**: 引用関係は論文本文の参照リストで検証可能なもののみ報告。LLM の記憶に基づく引用は `[unverified]` タグを付ける。
+
+## Step 3.5: Concept Relations — 概念ペア関係抽出 [Sonnet 並列 → Opus 集約]
+
+Step 1 (論文間関係) と Step 3 (概念系譜) を補完し、`(subject, predicate, object)` トリプル形式で **概念ペア間の関係** を構造化抽出する。下流の `compile-wiki` で concept graph を構築可能にするための基礎データ。
+
+### 抽出方針
+
+1論文あたり 1 サブエージェント (`Agent(model: "sonnet")`) で並列実行。10 論文 = 10 並列。
+各サブエージェントへの指示と関係タイプ vocabulary は `references/relation-extraction.md` に従う。
+
+### Closed Vocabulary
+
+predicate は 6 種固定: `cites`, `extends`, `contradicts`, `depends_on`, `refines`, `unifies`。詳細は reference 参照。
+
+### Provenance タグ
+
+各関係に `provenance` (EXTRACTED / INFERRED / AMBIGUOUS) と `confidence` (0-100) を併記する。
+provenance は出所、confidence は確度で **直交軸** として扱う (例: `[EXTRACTED, conf=90]`)。
+詳細は `~/.claude/references/provenance-tagging.md` 参照。
+
+### 集約 (Opus)
+
+並列 JSON を Opus が集約:
+- 同一概念のエイリアス統合
+- 同一トリプル重複排除
+- 矛盾する関係の AMBIGUOUS 降格
+- confidence 降順ソート
+
+### 出力
+
+`paper-analysis-report.md` の `Step 3.5: Concept Relations` テーブルに記載。1 論文あたり最大 8 関係。
+
+**Skip 条件**: 論文 3 本以下なら Step 3.5 をスキップしてよい (関係数が少なくグラフ化の意味が薄い)。
 
 ## Step 4: Synthesis — 3層統合 [Opus]
 
