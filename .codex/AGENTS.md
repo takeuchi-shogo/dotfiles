@@ -78,10 +78,39 @@
 - repo 固有 learnings の保存は `$codex-memory-capture`
 
 ## Subagent Usage
-- 7 つの read-only custom agent (`pr_explorer`, `reviewer`, `docs_researcher`, `validation_explorer`, `search_specialist`, `security_auditor`, `debugger`) を親 agent から明示起動して並列委譲する
+- 12 の read-only custom agent (`pr_explorer`, `reviewer`, `docs_researcher`, `validation_explorer`, `search_specialist`, `security_auditor`, `debugger`, `edge_case_hunter`, `silent_failure_hunter`, `comment_analyzer`, `migration_guard`, `cross_file_reviewer`) を親 agent から明示起動して並列委譲する
 - 全 custom agent は read-only。ファイル編集は親 agent。`max_threads = 4`、`max_depth = 1`
+- 用途別の振り分け:
+  - レビュー全般 → `reviewer`
+  - セキュリティ深掘り → `security_auditor`
+  - 境界値・nil パス検出 → `edge_case_hunter`
+  - エラー握り潰し検出 → `silent_failure_hunter`
+  - コメント腐敗検出 → `comment_analyzer`
+  - DB migration / API breaking change → `migration_guard`
+  - 複数ファイルのインターフェース整合性 → `cross_file_reviewer`
+  - 障害切り分け・root cause → `debugger`
 - 詳細 (agent 表 / Branch Review・Repo Exploration・Validation Selection パターン / 注意事項): `.config/claude/references/codex-subagent-reference.md`
 - テンプレートと事例: `docs/playbooks/codex-subagent-usage.md`
+
+## Stable Features (v0.124.0+)
+
+`codex features list` で stable と表示される機能のうち、本セットアップでの活用方針:
+
+| 機能 | 活用方針 |
+|------|---------|
+| `codex_hooks` | `[hooks]` で PostToolUse / PreToolUse / SessionStart / Stop を配備。詳細: `~/.codex/skills/hook-debugger/SKILL.md` |
+| `multi_agent` | `max_threads=4`, `max_depth=1` で並列委譲。subagent 12 種を活用 |
+| `tool_search` | 大量 tool の deferred 化で context 節約。Codex 側で自動 ON |
+| `tool_suggest` | 関連 tool の自動推薦。Codex 側で自動 ON |
+| `skill_mcp_dependency_install` | skill が要求する MCP の自動インストール。skill SKILL.md で `mcp-tools:` 宣言時に発動 |
+| `guardian_approval` | 危険コマンドの追加承認層。`approval_policy = "on-request"` と組み合わせて使う |
+| `unified_exec` | 統一実行レイヤー。並列 shell 実行で活用 |
+| `apply_patch_freeform` | パッチ適用の柔軟化。experimental 扱いだが本 setup では有効化済 |
+| `undo` | per-turn git ghost snapshots。明示的 rollback 不要 |
+| `shell_snapshot` | 環境スナップショット。reproducibility 用 |
+| `memories` | `$codex-memory-capture` で記録。Chronicle は app 側 opt-in |
+
+`under development` / `experimental` / `removed` 機能は本 setup では使わない。新 stable 化があれば AGENTS.md 更新。
 
 ## Change Surface Matrix
 - `.codex/` を変えたら `docs/agent-harness-contract.md`, `PLANS.md`, `.agents/skills/` を確認する
