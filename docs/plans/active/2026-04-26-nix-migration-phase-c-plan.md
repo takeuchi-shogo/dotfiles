@@ -249,14 +249,38 @@ work プロファイルの `system.defaults` は **Phase C 完了後に新品 wo
 
 - [x] Plan 作成 (本ファイル)
 - [x] Codex Plan Gate (REVISE → 本 revision で対応)
-- [ ] master plan revision (Phase D / E / F outline 追加)
-- [ ] **C0**: 復旧 e2e テスト (1 attribute で `defaults import` 動作確認)
+- [x] master plan revision (Phase D / E / F outline 追加)
+- [x] **C0**: 復旧 e2e テスト (1 attribute で `defaults import` 動作確認) — 2026-04-27 完了
 - [ ] **C1**: NSGlobalDomain
 - [ ] **C2a**: dock 単独
 - [ ] **C2b**: finder 単独
 - [ ] **C3**: trackpad + universal access
 - [ ] **C4**: menuextra + screensaver + controlcenter
 - [ ] master plan の Progress 更新 (Phase C 完了マーク)
+
+---
+
+## Surprises & Discoveries
+
+### C0 (2026-04-27): Tier 1 rollback では defaults 値が残る (Pre-mortem #3 実証)
+
+`AppleShowAllExtensions` (NSGlobalDomain) で復旧 e2e テスト実施。重要な実証結果:
+
+| Step | 操作 | AppleShowAllExtensions の状態 | 期待 vs 実測 |
+|------|------|--------------------------------|--------------|
+| pre-c0 | (initial) | absent | — |
+| forward switch | `darwin-rebuild switch` (gen 11→12) | `1` | ✅ |
+| Tier 1 rollback | `darwin-rebuild --rollback` (gen 12→11) | **`1` のまま残存** | ❌ (期待: absent) |
+| Tier 2 recover | `defaults import` + `killall cfprefsd` | absent | ✅ |
+| forward再switch | `darwin-rebuild switch` (gen 11→12) | `1` | ✅ |
+
+**含意 (C1 以降に強制適用)**:
+
+1. **Tier 1 だけでは plist 復旧不可能** — nix-darwin の `--rollback` は generation を前世代に戻すが、すでに `defaults write` で書き込まれた値は OS の plist 上に残存する。これは silent partial state で、表面的には rollback 成功に見えるが実体は残る。
+2. **各 milestone で Tier 2 を必須化** — C1〜C4 では各 Step 2 (動作確認 + rollback テスト) で **Tier 1 rollback 後に必ず Tier 2 (`defaults import`) を実行** し、`assert-defaults.sh ... --absent` (もしくは pre-state 値) で復旧確認すること。
+3. **backup plist の正確性が rollback 復旧の唯一の真実源** — `${HOME}/backup/phase-c/<domain>-pre-c<n>.plist` が壊れたら復旧不能。Step 0 (Inventory + Backup) で `plutil -lint` 検証を毎回必須化。
+
+これは Codex Plan Gate Critical #1 で既に懸念として挙げられており、本検証で確証された。「Plan 通りの多段フォールバック設計」が機能することの実証でもある。
 
 ---
 

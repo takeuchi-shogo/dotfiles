@@ -24,6 +24,11 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  # Phase C0 (2026-04-27): 復旧 e2e テスト用 1 attribute 宣言。
+  # 詳細: docs/plans/active/2026-04-26-nix-migration-phase-c-plan.md
+  # この宣言は C0 検証完了後に C1 (NSGlobalDomain 本番) へ統合する想定。
+  system.defaults.NSGlobalDomain.AppleShowAllExtensions = true;
+
   # Phase B1 Step 5+6: GUI cask / tap-only formula を宣言的に管理。
   # brew CLI は引き続き install 実行に使用。onActivation.cleanup = "none" で
   # 既存 formula/cask を勝手に uninstall しない (Codex Consider-#4 準拠)。
