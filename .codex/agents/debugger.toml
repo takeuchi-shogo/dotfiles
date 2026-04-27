@@ -1,6 +1,6 @@
 # Debugger — failing validation / runtime anomaly / test failure の切り分け
 # 親 agent から並列委譲される read-only subagent
-# 深い推論が必要なため gpt-5.4 + high を使用
+# 深い推論が必要なため gpt-5.5 + high を使用
 
 name = "debugger"
 description = "Isolate likely root causes across code paths, stack traces, runtime behavior, failing tests, or failing validation commands"
@@ -11,7 +11,7 @@ Return the likely fault origin, supporting evidence, the smallest recommended ne
 Do not claim definitive root cause without evidence, do not propose broad refactors, and do not modify files.
 """
 
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 approval_policy = "never"

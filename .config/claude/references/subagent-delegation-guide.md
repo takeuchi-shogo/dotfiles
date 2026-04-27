@@ -893,14 +893,14 @@ Sequential 原則を採用する 3 ステップ:
 
 | モデル能力 | 自律度 | プロンプト戦略 |
 |---|---|---|
-| **高** (Claude Opus/Sonnet, DeepSeek, GPT-5.4) | 高い自律 | ミッション + 制約のみ。手順は指定しない |
+| **高** (Claude Opus/Sonnet, DeepSeek, GPT-5.5) | 高い自律 | ミッション + 制約のみ。手順は指定しない |
 | **中** (Claude Haiku, GPT-4.1-mini) | 中程度 | ステップ概要 + 判断余地。重要な分岐点のみガイド |
 | **低** (小規模 OSS) | 低い自律 | 具体的手順 + テンプレート。判断余地を最小化 |
 
 ### 判断基準
 
 ```
-委譲先モデルは Opus/Sonnet/DeepSeek/GPT-5.4 クラス?
+委譲先モデルは Opus/Sonnet/DeepSeek/GPT-5.5 クラス?
 ├─ Yes → 役割自律を最大化（Sequential 原則）
 └─ No → Haiku/mini クラス?
           ├─ Yes → 手順概要を与え、判断余地は残す
@@ -909,7 +909,7 @@ Sequential 原則を採用する 3 ステップ:
 
 ### dotfiles での実装
 
-- **Codex (GPT-5.4)**: 高自律。codex-reviewer / codex-plan-reviewer は「何を評価するか」のみ指定、手順は自律
+- **Codex (GPT-5.5)**: 高自律。codex-reviewer / codex-plan-reviewer は「何を評価するか」のみ指定、手順は自律
 - **Gemini (1M)**: 高自律。gemini-explore は分析テーマのみ渡す
 - **Claude サブエージェント**: 高自律。専門エージェントにはミッション + 制約のみ
 - **将来の弱モデル委譲時**: 中〜低自律。チェックリスト注入 + 出力テンプレートで構造化

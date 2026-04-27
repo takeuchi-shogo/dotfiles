@@ -1,7 +1,7 @@
 ---
 name: codex-review-issue
 description: >
-  Codex AI (gpt-5.4) を使って GitHub Issue の品質をレビューし、抜け漏れ・曖昧表現・エッジケース見落としを
+  Codex AI (gpt-5.5) を使って GitHub Issue の品質をレビューし、抜け漏れ・曖昧表現・エッジケース見落としを
   検出する。結果を Issue コメントとして投稿可能。
   Use when: 'Issue レビュー', 'Issue チェック', 'review issue', 'Codex で Issue 確認', 'Issue の品質',
   'Issue に抜け漏れがないか', 'Issue をレビューして'.
@@ -17,7 +17,7 @@ metadata:
 
 # Codex Review Issue
 
-GitHub Issue の品質を Codex CLI (gpt-5.4) でレビューし、改善点を検出するスキル。
+GitHub Issue の品質を Codex CLI (gpt-5.5) でレビューし、改善点を検出するスキル。
 
 ## ワークフロー
 
@@ -46,7 +46,7 @@ ISSUE_TITLE="$(gh issue view <N> --json title --jq '.title')"
 ISSUE_BODY="$(gh issue view <N> --json body --jq '.body')"
 
 # プロンプトを組み立てて Codex に渡す
-codex exec --skip-git-repo-check -m gpt-5.4 \
+codex exec --skip-git-repo-check -m gpt-5.5 \
   --config model_reasoning_effort="xhigh" \
   --sandbox read-only \
   "Review the following GitHub Issue for completeness and clarity.

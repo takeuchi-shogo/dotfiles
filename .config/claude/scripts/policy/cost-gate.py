@@ -13,7 +13,7 @@ Artifacts:
 Schema (per-entry list):
     {
       "cycle_id": "YYYY-MM-DD[-HHMM]",
-      "model": "opus-4.7 | sonnet-4.6 | gpt-5.4 | gemini-2.x | ...",
+      "model": "opus-4.7 | sonnet-4.6 | gpt-5.5 | gemini-2.x | ...",
       "input_tokens": int,
       "output_tokens": int,
       "cost_usd": float,

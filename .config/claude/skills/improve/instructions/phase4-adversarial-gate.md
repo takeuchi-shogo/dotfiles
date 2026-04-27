@@ -1,6 +1,6 @@
 # Phase 4: Adversarial Gate (Codex 必須)
 
-> 全提案を Codex (gpt-5.4) で敵対的にレビューし、品質を保証する。
+> 全提案を Codex (gpt-5.5) で敵対的にレビューし、品質を保証する。
 > このフェーズをスキップすることは禁止。Codex の実行に失敗した場合はユーザーに報告して中断する。
 
 ## 目的
@@ -19,14 +19,14 @@
 
 1. **異モデル必須**: Proposer と Adversarial Gate は異なるモデルファミリーを使用する。
    - Proposer: Sonnet (autoevolve-core)
-   - Gate: Codex (gpt-5.4) — **同一 Sonnet family での自己批評は禁止**
+   - Gate: Codex (gpt-5.5) — **同一 Sonnet family での自己批評は禁止**
    - Gate を Claude 系列で動かす必要がある場合は、少なくとも異なる世代 (Opus など) を使用する
 
 2. **Local Memory Disable**: Codex 起動時に以下の環境変数を明示的に設定する:
    ```bash
    CODEX_MEMORY_DISABLED=1 \
    CLAUDE_PROJECT_MEMORY_DISABLED=1 \
-   codex exec --skip-git-repo-check -m gpt-5.4 ...
+   codex exec --skip-git-repo-check -m gpt-5.5 ...
    ```
    Proposer が書き込んだ memory / learnings を Gate が読まないようにする。
 

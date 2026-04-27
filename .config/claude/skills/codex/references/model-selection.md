@@ -2,7 +2,7 @@
 
 | Model | Best For | Reasoning | Speed |
 |-------|---------|-----------|-------|
-| gpt-5.4 (default) | 汎用分析・リファクタリング | High | Standard |
+| gpt-5.5 (default) | 汎用分析・リファクタリング | High | Standard |
 | gpt-5.2-max | 深い推論、複雑な設計 | Max | Slow |
 | gpt-5.2 | バランス型 | High | Standard |
 | gpt-5.2-mini | 単純タスク、コスト節約 | Medium | Fast |

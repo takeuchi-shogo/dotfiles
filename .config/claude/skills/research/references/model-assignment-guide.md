@@ -7,7 +7,7 @@
 | サブタスク性質 | 推奨モデル | 理由 |
 |---------------|-----------|------|
 | 外部リサーチ（Web検索、最新情報） | Gemini CLI | Google Search grounding、1Mコンテキスト |
-| 深い推論・設計分析 | Codex CLI (gpt-5.4) | reasoning effort: high で深い分析 |
+| 深い推論・設計分析 | Codex CLI (gpt-5.5) | reasoning effort: high で深い分析 |
 | コードベース分析 | claude -p | ローカルファイル直接アクセス |
 | 論文要約・文献調査 | Gemini CLI | 1Mコンテキストで長文処理 |
 | 比較分析・トレードオフ | Codex CLI | 構造化推論が得意 |
@@ -20,7 +20,7 @@
 - **弱み**: 過度に楽観的な傾向、指示の細部を見落とす場合あり
 - **コマンド例**: `gemini -p "Research topic" --grounding`
 
-### Codex CLI (gpt-5.4)
+### Codex CLI (gpt-5.5)
 - **強み**: 深い推論、構造化分析、reasoning effort 調整可能
 - **弱み**: 外部検索なし、ローカルファイルアクセスが限定的
 - **コマンド例**: `codex exec "Analyze..." --reasoning-effort high`

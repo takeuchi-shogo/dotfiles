@@ -31,7 +31,7 @@
 
 ## Frontend / UI Work
 - visually strong な landing page、app、dashboard、prototype、game UI を実装する依頼では `$frontend-skill` を使う。
-- GPT-5.4 frontend prompt template、OpenAI frontend guidance の運用化、または UI brief の作成では `$openai-frontend-prompt-workflow` を先に使う。
+- GPT-5.5 frontend prompt template、OpenAI frontend guidance の運用化、または UI brief の作成では `$openai-frontend-prompt-workflow` を先に使う。
 - UI 実装では `profiles.frontend` を推奨する。global default の high reasoning は維持しつつ、frontend 生成では low / medium reasoning を優先する。
 - 実装前に、UI 品質が重要な場合は `visual thesis`、`content plan`、`interaction thesis` を短く定義する。
 - visual reference、real copy、product context があれば優先して使う。欠けている場合は、必要最小限を聞き返すか、仮定を明示する。
@@ -62,7 +62,7 @@
 - Chronicle が生成した markdown は必要に応じて削除・編集して忘れさせる。手動で新規情報を追加する場合は `~/.codex/memories/` ではなく `$codex-memory-capture` か checked-in docs を使う。
 
 ## Security Analysis
-- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.4 -p security "..."`
+- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.5 -p security "..."`
 - 対象: 認証・認可ロジック、暗号化・トークン管理、外部入力処理、依存関係の変更
 - 攻撃ベクトルのマッピング、権限昇格パス、暗号の弱点、レースコンディション、サプライチェーンリスクを分析する
 - findings list や scanner 出力を起点にしすぎず、まず trust boundary、sensitive path、decode/parse/normalize をまたぐ invariant を確認する

@@ -196,7 +196,7 @@ gemini --approval-mode plan \
   > .research/{name}/child_outputs/${i}.md 2>/dev/null &
 
 # Codex サブタスク
-codex exec --skip-git-repo-check -m gpt-5.4 \
+codex exec --skip-git-repo-check -m gpt-5.5 \
   --config model_reasoning_effort="high" \
   --sandbox read-only \
   "$(cat .research/{name}/prompts/${i}.md)" \

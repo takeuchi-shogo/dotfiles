@@ -2,8 +2,8 @@
 name: codex
 description: >
   Use when the user asks to run Codex CLI (codex exec, codex resume) or references
-  OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.4 by default.
-  Triggers: 'codex', 'codex exec', 'codex resume', 'Codex で', 'gpt-5.4 で分析'.
+  OpenAI Codex for code analysis, refactoring, or automated editing. Uses gpt-5.5 by default.
+  Triggers: 'codex', 'codex exec', 'codex resume', 'Codex で', 'gpt-5.5 で分析'.
   Do NOT use for: コードレビュー（use /codex-review）、デバッグ（use debugger agent）、リサーチ（use /gemini or /research）。
 origin: self
 metadata:
@@ -14,7 +14,7 @@ metadata:
 
 ## Running a Task
 
-1. Default to `gpt-5.4` model. Auto-infer reasoning effort from task type (see table below). Inform the user of the auto-selected level and allow override. User can also override model if needed (see Model Options below).
+1. Default to `gpt-5.5` model. Auto-infer reasoning effort from task type (see table below). Inform the user of the auto-selected level and allow override. User can also override model if needed (see Model Options below).
 
 ### Reasoning Effort Auto-Inference
 
@@ -55,12 +55,12 @@ metadata:
 
 | Model          | Best for                                                                  | Context window           | Key features                                      |
 | -------------- | ------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------- |
-| `gpt-5.4` ⭐   | **Codex-optimized model**: Software engineering, agentic coding workflows | 400K input / 128K output | Codex CLI 最適化、高精度コード生成                |
+| `gpt-5.5` ⭐   | **Codex-optimized model**: Software engineering, agentic coding workflows | 400K input / 128K output | Codex CLI 最適化、高精度コード生成                |
 | `gpt-5.2-max`  | **Max model**: Ultra-complex reasoning, deep problem analysis             | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
 | `gpt-5.2`      | **Flagship model**: General-purpose software engineering                  | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
 | `gpt-5.2-mini` | Cost-efficient coding (4x more usage allowance)                           | 400K input / 128K output | Near SOTA performance, $0.25/$2.00                |
 
-**gpt-5.4 Advantages**: Codex CLI に最適化された最新モデル。高精度コード生成、改善されたツール使用、低遅延。セキュリティ分析や深い推論タスクに最適。
+**gpt-5.5 Advantages**: Codex CLI に最適化された最新モデル。高精度コード生成、改善されたツール使用、低遅延。セキュリティ分析や深い推論タスクに最適。
 
 **Reasoning Effort Levels**:
 
@@ -85,13 +85,13 @@ metadata:
 
 ## CLI Version
 
-Requires Codex CLI v0.57.0 or later. The CLI defaults to `gpt-5.4` (config.toml で設定済み). Check version: `codex --version`
+Requires Codex CLI v0.57.0 or later. The CLI defaults to `gpt-5.5` (config.toml で設定済み). Check version: `codex --version`
 
 Use `/model` slash command within a Codex session to switch models, or configure default in `~/.codex/config.toml`.
 
 ## Gotchas
 
-- **model 選択ミス**: `--model` 未指定だと gpt-5.4 がデフォルト。軽量タスクには `o4-mini` を指定してコスト抑制
+- **model 選択ミス**: `--model` 未指定だと gpt-5.5 がデフォルト。軽量タスクには `o4-mini` を指定してコスト抑制
 - **reasoning effort 過不足**: `--reasoning high` はレビュー・設計向き。実装タスクに xhigh を使うとトークン浪費。タスク種別に合わせて medium/high/xhigh を選択
 - **sandbox scope**: `--full-auto` は全ファイル書き込み可能。本番コードには `--suggest` で差分確認を挟む
 - **resume token 消費**: `codex resume` は前回セッションの全コンテキストを再読み込み。長いセッション後の resume はコスト大

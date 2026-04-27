@@ -54,7 +54,7 @@ Codex/Gemini 呼び出しや A/B eval の完了時に、API cost を `cost-gate.
 
 ```bash
 python3 ~/.claude/scripts/policy/cost-gate.py add "$RUN_DIR" \
-  --json '{"model":"gpt-5.4","input_tokens":N,"output_tokens":N,"cost_usd":N.NN}'
+  --json '{"model":"gpt-5.5","input_tokens":N,"output_tokens":N,"cost_usd":N.NN}'
 ```
 
 Phase 2.5 開始前と Phase 3 開始前に `cost-gate.py check` で verdict を確認:
@@ -123,7 +123,7 @@ insights/analysis-YYYY-MM-DD.md と改善候補リスト（evidence_chain 付き
 
 ### Phase 1b: Codex Deep Analysis（必須）
 
-Phase 1a の Coverage Matrix 結果を **Codex (gpt-5.4)** に渡し、分析を深掘りする。
+Phase 1a の Coverage Matrix 結果を **Codex (gpt-5.5)** に渡し、分析を深掘りする。
 `codex exec -m xhigh` を使用。improve-policy Rule 40 に基づき、このステップのスキップは禁止。
 
 検証観点:
@@ -211,7 +211,7 @@ Phase 1 の分析結果から **3つの改善方向性** を候補生成する:
    - 類似なし (novelty_score > 0.8) → `novel`
 6. 親提案がある場合は `parent_id` に記録
 
-Codex (gpt-5.4) に「ROI が最大はどれか」を判定させる:
+Codex (gpt-5.5) に「ROI が最大はどれか」を判定させる:
 
 ```bash
 codex exec -m xhigh "
@@ -372,7 +372,7 @@ proposal:
 
 ### Phase 2.5: Adversarial Gate（Codex 必須）
 
-全提案を Codex (gpt-5.4) に渡し、敵対的レビューを実行する。
+全提案を Codex (gpt-5.5) に渡し、敵対的レビューを実行する。
 詳細手順は `skills/improve/instructions/phase4-adversarial-gate.md` を参照。
 
 5 観点で攻撃:

@@ -12,12 +12,12 @@ last_reviewed: 2026-04-23
 | Agent | Model | 用途 | Sandbox |
 |---|---|---|---|
 | `pr_explorer` | `gpt-5.3-codex-spark` | diff の影響範囲・依存関係マッピング | `read-only` |
-| `reviewer` | `gpt-5.4` | correctness / security / test gap レビュー | `read-only` |
+| `reviewer` | `gpt-5.5` | correctness / security / test gap レビュー | `read-only` |
 | `docs_researcher` | `gpt-5.3-codex-spark` | ドキュメント・config の整合確認 | `read-only` |
 | `validation_explorer` | `gpt-5.3-codex-spark` | dotfiles 変更に対する最小 validation 選定 | `read-only` |
 | `search_specialist` | `gpt-5.3-codex-spark` | search-first 段階の codebase / external source 探索 | `read-only` |
-| `security_auditor` | `gpt-5.4` | auth / secrets / validation / config の security 深掘り | `read-only` |
-| `debugger` | `gpt-5.4` | failing validation / runtime anomaly / test failure の切り分け | `read-only` |
+| `security_auditor` | `gpt-5.5` | auth / secrets / validation / config の security 深掘り | `read-only` |
+| `debugger` | `gpt-5.5` | failing validation / runtime anomaly / test failure の切り分け | `read-only` |
 
 ## 使い方
 

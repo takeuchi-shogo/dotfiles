@@ -14,7 +14,7 @@ disable-model-invocation: true
 # AutoEvolve v2 — Codex-Backed Adversarial Quality Pipeline
 
 蓄積されたセッション学習データを分析し、Claude Code の設定改善提案を生成する。
-**Codex (gpt-5.4) による深掘り分析と敵対的レビューを必須とし、
+**Codex (gpt-5.5) による深掘り分析と敵対的レビューを必須とし、
 Propose → Adversarial ループで提案を精錬してから報告する。**
 
 ## パイプライン全体像
@@ -109,7 +109,7 @@ ANSWERED の場合は具体的な evidence（件数, session_id, ファイル名
 
 ### Phase 2b: Codex Deep Analysis（必須）
 
-Phase 2a の Coverage Matrix 結果を **Codex (gpt-5.4)** に渡し、分析を深掘りする。
+Phase 2a の Coverage Matrix 結果を **Codex (gpt-5.5)** に渡し、分析を深掘りする。
 
 `codex exec` を使用:
 
@@ -182,7 +182,7 @@ proposal:
 
 **詳細: `instructions/phase4-adversarial-gate.md` を Read**
 
-全提案を Codex (gpt-5.4) に渡し、5 観点（原則違反, 考慮漏れ, 証拠の弱さ, Pre-mortem の甘さ, 代替案の欠如）で敵対的レビュー。
+全提案を Codex (gpt-5.5) に渡し、5 観点（原則違反, 考慮漏れ, 証拠の弱さ, Pre-mortem の甘さ, 代替案の欠如）で敵対的レビュー。
 
 各提案に判定を付与:
 - **ROBUST**: 5 観点全てで重大な問題なし → 推奨

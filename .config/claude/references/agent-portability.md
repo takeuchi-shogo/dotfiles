@@ -73,7 +73,7 @@ vendor_overrides:
     model: "claude-sonnet-4-6"
     tools: ["bash_20250124", "text_editor_20250124"]
   openai:
-    model: "gpt-5.4"
+    model: "gpt-5.5"
     tools: ["code_interpreter"]
 ```
 

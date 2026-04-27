@@ -542,7 +542,7 @@ def _compute_proposal_metrics(events: list[dict]) -> dict:
     """Proposal verdict イベントから accept_rate と連続 reject 数を計算する。
 
     autoresearch 記事の知見: accept_rate がエージェントの提案品質を示す。
-    GPT-5.4: 67%, Spark: 17%。連続 reject はドリフトのシグナル。
+    GPT-5.5: 67%, Spark: 17%。連続 reject はドリフトのシグナル。
     """
     proposals = [
         e

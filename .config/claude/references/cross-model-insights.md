@@ -177,7 +177,7 @@ MTI の理論的基盤: Agent = Core (architecture + trained weights) + Shell (s
 
 | 現在のモデル | 推奨切替先 | 理由 |
 |------------|-----------|------|
-| Claude | Codex (gpt-5.4) | 深い推論・設計判断が得意。reasoning_effort: xhigh で集中分析 |
+| Claude | Codex (gpt-5.5) | 深い推論・設計判断が得意。reasoning_effort: xhigh で集中分析 |
 | Claude | Gemini | 1M コンテキストで広い視野。コードベース全体の依存関係を俯瞰 |
 | Codex | Claude | 幅広い実装パターン。Codex の推論が深すぎて実用的でない場合 |
 

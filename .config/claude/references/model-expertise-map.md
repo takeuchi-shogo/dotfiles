@@ -15,7 +15,7 @@ last_reviewed: 2026-04-23
 
 各スコアは 0.0-1.0。タスクドメインと各モデルの得意分野の近さを表す。
 
-| Domain | Claude (Opus) | Codex (gpt-5.4) | Gemini (2.5) |
+| Domain | Claude (Opus) | Codex (gpt-5.5) | Gemini (2.5) |
 |---|---|---|---|
 | System Design | 0.85 | 0.90 | 0.80 |
 | Frontend/React | 0.90 | 0.75 | 0.70 |
@@ -29,7 +29,7 @@ last_reviewed: 2026-04-23
 ### Score Rationale
 
 - **Claude (Opus)**: Frontend/React と Documentation が最も高い。幅広いバランス
-- **Codex (gpt-5.4)**: System Design, Go/Backend, Code Review で最高。深い推論が強み
+- **Codex (gpt-5.5)**: System Design, Go/Backend, Code Review で最高。深い推論が強み
 - **Gemini (2.5)**: Research/Analysis が突出。1M コンテキストによる大規模分析・Google grounding
 
 ---

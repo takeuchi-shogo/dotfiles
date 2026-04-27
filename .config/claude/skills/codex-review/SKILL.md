@@ -26,7 +26,7 @@ git diff --stat
 ### 2. Codex CLI で構造化レビュー
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="xhigh" --sandbox read-only "$(cat <<'PROMPT'
+codex exec --skip-git-repo-check -m gpt-5.5 --config model_reasoning_effort="xhigh" --sandbox read-only "$(cat <<'PROMPT'
 Review the recent git changes. Check these 6 items in order:
 
 1. **Correctness**: Logic errors, off-by-one, null/nil dereference, race conditions
@@ -55,7 +55,7 @@ PROMPT
 ## CHANGELOG 自動生成
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="medium" --sandbox read-only "$(cat <<'PROMPT'
+codex exec --skip-git-repo-check -m gpt-5.5 --config model_reasoning_effort="medium" --sandbox read-only "$(cat <<'PROMPT'
 Generate a CHANGELOG entry for the recent changes.
 Use conventional commits format. Group by: Added, Changed, Fixed, Removed.
 Base on git log output.
@@ -68,7 +68,7 @@ PROMPT
 認証・暗号・入力処理の変更時に使用。`profiles.security`（xhigh + read-only）を利用:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
+codex exec --skip-git-repo-check -m gpt-5.5 -p security "$(cat <<'PROMPT'
 Deep security review of the recent git changes. Analyze:
 
 1. **Threat Model**: Trust boundaries, untrusted inputs, privileged actions, sensitive data paths
@@ -185,7 +185,7 @@ gh pr review <N> --comment --body "$(cat <<'EOF'
 | CONSIDER | src/handler.go | 88 | エラーメッセージが曖昧 |
 ...
 
-_Reviewed by Codex AI (gpt-5.4, reasoning_effort=xhigh)_
+_Reviewed by Codex AI (gpt-5.5, reasoning_effort=xhigh)_
 EOF
 )"
 ```

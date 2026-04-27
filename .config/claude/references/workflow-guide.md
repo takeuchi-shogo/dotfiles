@@ -313,7 +313,7 @@ Plan 承認後の変更実行時は `references/auto-accept-policy.md` の判定
 
 ### 1.5. Codex Gate: Spec/Plan 批評 — M/L 規模のみ
 
-Spec/Plan 作成後、実装前に Codex(gpt-5.4) で批評するゲート。
+Spec/Plan 作成後、実装前に Codex(gpt-5.5) で批評するゲート。
 旧 Risk Analysis を統合し、Spec 批評 + Plan 批評 + リスク分析を1回の Gate で行う。
 
 **設計思想**: Claude(Opus) の「注意の幅」（創造）と Codex の「注意の深さ」（批評）を分離する。

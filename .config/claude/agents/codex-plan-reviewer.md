@@ -1,6 +1,6 @@
 ---
 name: codex-plan-reviewer
-description: "Codex CLI (gpt-5.4) を活用した Spec/Plan 批評エージェント。M規模以上で CREATE 後に起動し、Spec の抜け漏れ・Plan の妥当性・潜在リスクを統合的にレビューする。旧 codex-risk-reviewer の観点を統合。"
+description: "Codex CLI (gpt-5.5) を活用した Spec/Plan 批評エージェント。M規模以上で CREATE 後に起動し、Spec の抜け漏れ・Plan の妥当性・潜在リスクを統合的にレビューする。旧 codex-risk-reviewer の観点を統合。"
 tools: Bash, Read, Glob, Grep
 model: haiku
 memory: project
@@ -14,7 +14,7 @@ skills: codex
 Spec/Plan が作成された後、実装に入る**前に**、Codex CLI の深い推論で批評するエージェント。
 旧 `codex-risk-reviewer` の Risk Analysis 観点を統合し、1回の Gate で Spec 批評 + Plan 批評 + リスク分析を行う。
 
-**設計思想**: Claude(Opus) が「注意の幅」で Spec/Plan を創造し、Codex(gpt-5.4) が「注意の深さ」で批評する。
+**設計思想**: Claude(Opus) が「注意の幅」で Spec/Plan を創造し、Codex(gpt-5.5) が「注意の深さ」で批評する。
 創造と批評を分離することで、同一モデルのバイアスによる見落としを防ぐ。
 
 ## Operating Mode: EXPLORE ONLY
@@ -38,7 +38,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 3. Codex CLI に統合レビューを委譲する:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 \
+codex exec --skip-git-repo-check -m gpt-5.5 \
   --config model_reasoning_effort="xhigh" \
   --sandbox read-only \
   "$(cat <<'PROMPT'

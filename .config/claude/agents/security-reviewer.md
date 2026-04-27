@@ -184,7 +184,7 @@ go-licenses check ./... 2>/dev/null || true
 表面チェックで潜在的な問題を検出した場合、Codex CLI の深い推論で補完する:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 -p security "$(cat <<'PROMPT'
+codex exec --skip-git-repo-check -m gpt-5.5 -p security "$(cat <<'PROMPT'
 Perform a deep security analysis of the recent git changes.
 First run: git diff HEAD~1 HEAD to understand the scope of changes.
 Then focus on:

@@ -45,7 +45,7 @@ last_reviewed: 2026-04-23
 
 **現状のルール**: `agent_delegation` の Codex 行で「設計の壁打ち、リスク分析、セカンドオピニオン、コードレビュー」を Codex に委譲。S 規模以上のコード変更は Codex Review Gate を通す。
 
-**根拠**: 2026-Q1 時点で Codex (gpt-5.4) は Claude Opus 4.6 より「狭く深い」推論特性を示し、レビューで見落としが少ないという実証 (`feedback_codex_reasoning.md`)。
+**根拠**: 2026-Q1 時点で Codex (gpt-5.5) は Claude Opus 4.6 より「狭く深い」推論特性を示し、レビューで見落としが少ないという実証 (`feedback_codex_reasoning.md`)。
 
 **配置**:
 - `.config/claude/CLAUDE.md` `<agent_delegation>`, `<review_policy>` 配下

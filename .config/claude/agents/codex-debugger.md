@@ -28,7 +28,7 @@ This agent operates in **read-only mode**. You analyze errors and provide diagno
 3. Codex CLI に分析を委譲:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 \
+codex exec --skip-git-repo-check -m gpt-5.5 \
   --config model_reasoning_effort="high" \
   --sandbox read-only \
   "Analyze this error and identify the root cause:
