@@ -24,6 +24,8 @@
   - Codex の exec policy surface
 - `.agents/skills/`
   - repo-local workflow and policy surface
+- `docs/workflows/symphony/WORKFLOW.md`
+  - optional Symphony pilot workflow surface for issue-tracker-driven Codex orchestration
 - `tmp/codex-state/`
   - Codex の short-term checkpoint surface
 - `~/.codex/memories/`
@@ -135,6 +137,7 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
   - subagent runtime (`[agents]` - `max_threads`, `max_depth`)
   - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher / validation mapper)
   - subagent operation playbook (`docs/playbooks/codex-subagent-usage.md`)
+  - optional Symphony pilot workflow (`docs/workflows/symphony/WORKFLOW.md`) for tracker-driven Codex runs
 
 ## Runtime Integration Notes
 
