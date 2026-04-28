@@ -31,6 +31,7 @@
 - Claude Code 設定: `.config/claude/`、Codex 設定: `.codex/`、MCP 定義: `.mcp.json`
 - playbook: `docs/playbooks/`
 - 決定一覧 (どの表をどこで使うか): `.config/claude/references/decision-tables-index.md`
+- 進行中 plan の索引: `docs/plans/active/_index.md`
 - ツール別: WezTerm `.config/wezterm/README.md`、AeroSpace `.config/aerospace/README.md`、Karabiner `.config/karabiner/README.md`、zsh `.config/zsh/README.md`
 
 ## CLI Tools

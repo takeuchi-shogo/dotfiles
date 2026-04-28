@@ -23,6 +23,40 @@
 - 並列で別 task を進めるときは worktree を使って branch と filesystem を分離する。
 - main thread は requirements、decision、final output に寄せ、探索ログや試行錯誤は別 thread / subagent / worktree に逃がす。
 
+## Memory Protocol
+
+`~/memory/` を session を跨ぐ persistent state の人間可読層として運用する。`~/.codex/memories/` (Codex app 自動)、`docs/plans/active/` (plan 設計)、`tmp/codex-state/` (構造化 checkpoint) と並走 — 重複承知の補助層。
+
+### Session Start
+1. この AGENTS.md を読む
+2. `~/memory/active-projects.md` を読む (進行中 project の 1 行サマリ)
+3. `~/memory/session-logs/` の直近数日分のログを確認する
+4. 現在のリクエストに関連する `~/memory/projects/<name>.md` があれば読む
+
+### While Working
+- state は readable Markdown で保つ
+- `~/memory/projects/` は long-term project の current state 用。one-off request では作らない
+- 既存 file の更新を新規 file 作成より優先する
+- 作業が project に属する場合、その project file を作業中に更新する
+- session log は履歴。current state は project file に置く
+- 必要な state file が無ければ同じ簡潔な style で作る
+
+### Before Ending a Session / Stopping Points
+- `~/memory/logs/YYYY-MM-DD-session-NNN.md` に session log を書く / 更新する
+- project が変化・完了したら `~/memory/active-projects.md` を更新する
+- durable な学びがあれば該当 project file を作成・更新する
+
+### 既存系との分担
+
+| `~/memory/` path | 既存系 | 使い分け |
+|---|---|---|
+| `active-projects.md` | `dotfiles/docs/plans/active/_index.md` | _index.md が plan 設計の正本、active-projects.md は project 進捗の薄いカード |
+| `projects/<name>.md` | `dotfiles/docs/plans/active/<topic>-plan.md` | plan が設計、project file が current state の memo |
+| `session-logs/` | `~/.codex/memories/rollout_summaries/` | rollout は app 自動生成、session-logs は agent が手で書く要約 |
+| `logs/` | `tmp/codex-state/checkpoints/` | checkpoint は構造化 state、logs は narrative |
+
+一次情報は `~/.codex/memories/` と `docs/plans/active/` 側に残す。`~/memory/` は AGENTS.md 駆動の補助層として扱う。
+
 ## Project Instructions
 - 最も近い `AGENTS.md` を常に優先する。
 - repo に `.agents/skills/` がある場合は、project-local skill を先に使う。
