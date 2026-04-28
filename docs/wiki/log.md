@@ -594,3 +594,14 @@
 - 棄却: 新規 /tech-debt-audit 作成、9 dimensions 独立化、Repeat-run state file、Diplomatic vagueness 哲学節
 - 分析レポート: docs/research/2026-04-26-tech-debt-skill-absorb-analysis.md
 - 強化対象: .config/claude/skills/audit/SKILL.md
+
+## [2026-04-29] ingest | mattpocock/skills (AlphaSignal Skills For Real Engineering)
+
+- ソース: AlphaSignal newsletter / github.com/mattpocock/skills (28K stars 2026-04-27)
+- 判定: Already 12, Already (強化可能) 2, Gap 1, N/A 1
+- 取り込み:
+  - prd-to-issues SKILL.md に HITL/AFK markers (Step 3 ルール5 + Issue テンプレ + Step 4/5 表示)
+  - grill-interview SKILL.md Step 3 に Auto Mode OFF 起動条件を 1 行追記
+- 棄却: K7 TDD 新規 reference (Pruning-First 違反) / S3 Invocation Control 原則 (実害が出るまで保留) / K13 backlog abstraction (GitHub-only 運用継続)
+- 本質: 既に 4/5 chain が origin タグ付きで統合済 (grill-interview/spec/prd-to-issues/improve-codebase-architecture+LANGUAGE.md)。Codex 指摘「skill catalog ではなく discipline (個人 artifact 過度に一般化しない / 狭い process encoding / 更新できない skill は負債化)」は既存仕組みでカバー
+- 分析レポート: docs/research/2026-04-29-mattpocock-skills-absorb-analysis.md
