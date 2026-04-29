@@ -58,31 +58,62 @@ Phase 5: REPORT (+ per-run artifacts + backlog 更新)
 
 5. **Negative Knowledge 参照** — `references/negative-knowledge.md` を Read し、直近の failure パターンを分析候補に追加する。テーブルが空ならスキップ。Phase 3 の提案生成時にこれらのパターンに該当する提案を回避する。
 
-### Convergence Check（自動）
+### Convergence Check（自動 / 多軸 plateau 検出）
 
-`~/.claude/agent-memory/metrics/improve-history.jsonl` の直近5件を確認:
+> 出典: yamadashy "Claude Code Routines" absorb (2026-04-29)。
+> 単軸の adoption_rate だけでは plateau 判定が甘い (accept_rate 横ばい中でも品質は変動しうる)。
+> 3 軸 AND 条件で確定 plateau、1 軸でも警告で advisory を出す段階運用とする。
 
-```bash
-tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl 2>/dev/null | jq -r '.adoption_rate'
+#### 3 軸 plateau 判定条件
+
+```
+(1) accept_rate ≤ 0.30 (直近 10 提案、既存 Rule 2)
+    tail -5 ~/.claude/agent-memory/metrics/improve-history.jsonl | jq -r '.adoption_rate'
+
+(2) holdout pass_rate 直近 3 サイクル横ばい ±0.5pp (Rule 47 split_holdout.py 出力)
+    holdout_delta.pass_rate の絶対値が 0.5pp 以下のサイクルが 3 連続
+
+(3) 全 MDE カテゴリで delta ≤ MDE (Rule 8 の retrieval/generation/gate 別 MDE)
+    aggregate_benchmark.py の delta レポートで全カテゴリが MDE 以下
 ```
 
-- 5件の平均 adoption_rate ≤ 0.30: **CONVERGENCE DETECTED** — プラトー警告を表示:
-  「改善余地が縮小しています。`/audit`, `/refactor-session`, `/improve --deep` を検討してください」
-- 5件未満: スキップ（データ蓄積中）
-- 5件の平均 > 0.30: 通常通り Phase 2 へ進む
+#### 段階運用 (Phase 1 / Phase 2)
 
-#### Dual-Axis 安定性チェック (mizchi/empirical-prompt-tuning)
+| Phase | 条件 | アクション |
+|-------|------|-----------|
+| **Phase 1 (advisory 警告)** | 3 軸のうち **1 軸でも条件充足** | 警告を表示し改善継続を許可 |
+| **Phase 2 (確定 plateau)** | 3 軸 **全て充足** | 「改善余地が縮小しています。`/audit`, `/refactor-session`, `/improve --deep`、または Tournament Mode を検討してください」 |
 
-adoption_rate に加え、以下の定量・定性シグナルの安定性を 2 iteration 連続で確認:
+5 件未満: スキップ (データ蓄積中)。
+
+#### Trajectory Scoring sub-signal (含意)
+
+最終 outcome (accept_rate, holdout pass_rate) だけでなく、**proposal の中間品質**も plateau の sub-signal として参考にする:
+
+- Phase 4 ADVERSARIAL GATE で `VULNERABLE` 比率が連続上昇 → 提案質の低下シグナル
+- 同一 `improvement_vectors` ばかり続いている → 探索狭窄シグナル (vector 偏り)
+
+これらは確定条件ではなく、Phase 1 警告の補強情報として運用する。
+
+#### Dual-Axis 安定性チェック (3 軸の入力データソース)
+
+> 出典: mizchi/empirical-prompt-tuning。Phase 1/2 の判定で参照する信号源。
+
+adoption_rate に加え、以下を holdout pass_rate (条件 2) の評価入力として収集する:
 
 - **tool_uses.total_count**: ±10-15% の範囲で安定
 - **tool_uses.precision**: 0.70 以上を維持
 - **ambiguity_count**: 新規の曖昧さが 0 件 (2 iteration 連続)
 - **holdout シナリオの pass_rate**: train シナリオと乖離 ≤ 5pp
 
-上記を全て満たすと **真の収束**。いずれかが不安定なら改善継続。
 データソース: `~/.claude/agent-memory/qualitative-signals/qualitative_signals.jsonl`
 Schema: `references/qualitative-signals-spec.md`
+
+これら 4 シグナルが全て安定 + 3 軸 plateau 全充足 → **真の収束** (Phase 2 確定 plateau)。
+
+#### 撤退条件
+
+Phase 2 (3 軸 AND 警告) が実データで 0 件しか出ないサイクルが 1 回以上発生 → Phase 1 (1 軸 OR 警告) を維持し、Phase 2 を pending として skill 更新を一時凍結する (新たな分散実測値で再評価)。
 
 4. **前回ラン状態の読み込み** — `~/.claude/agent-memory/improvement-backlog.md` と最新の `runs/*/winning-direction.md` を Read。存在しない場合はスキップ（初回実行時）。Phase 3 の autoevolve-core プロンプトに注入する。
 
@@ -176,7 +207,14 @@ proposal:
     counter_evidence: "ただし W の可能性も排除できない"
   
   rollback_plan: "復旧手順"
+  
+  improvement_vectors:    # 必須。1-3 個。標準 5 軸 (clarity/brevity/accuracy/coverage/consistency) または custom:<tag>
+    - "clarity"
+    - "coverage"
 ```
+
+> **vectors なき提案は PROPOSE 段階でリジェクト**される (improve-policy.md "Improvement Vectors" 参照)。
+> 4 つ以上は粒度過多と判定され、提案を分割するよう求められる。
 
 ## Phase 4: ADVERSARIAL GATE（Codex 必須）
 
@@ -185,9 +223,23 @@ proposal:
 全提案を Codex (gpt-5.5) に渡し、5 観点（原則違反, 考慮漏れ, 証拠の弱さ, Pre-mortem の甘さ, 代替案の欠如）で敵対的レビュー。
 
 各提案に判定を付与:
-- **ROBUST**: 5 観点全てで重大な問題なし → 推奨
-- **VULNERABLE**: 1-2 観点で注意が必要 → REFINE ステップへ
+- **ROBUST**: 5 観点全てで重大な問題なし **かつ** End-to-End Improvement Floor 3 条件 AND を満たす → 推奨
+- **VULNERABLE**: 1-2 観点で注意が必要、または E2E floor 1 条件以上未達 → REFINE ステップへ
 - **FATAL_FLAW**: 致命的な問題 → 即時却下
+
+### End-to-End Improvement Floor (Rule 49)
+
+質的レビュー (Codex 5 観点) と並列で、以下 3 条件 AND を確認する:
+
+```
+(1) holdout pass_rate delta ≥ +1pp (Rule 47 / split_holdout.py 出力で計測)
+(2) regression-suite で新規失敗 0 件 (Regression Gate の出力)
+(3) gaming-detector.py で Goodhart フラグなし (Rule 21 系 / 23 / 29 / 30)
+```
+
+1 つでも条件未達なら ROBUST 不可。レポートに **未達条件を明示** する (例: "ROBUST 不可: holdout delta -0.3pp、E2E floor 条件 (1) 未達")。
+
+> **既存の Regression Gate との関係**: Regression Gate (NeoSigma) は Phase 3 → Phase 4 の **前段** で動く独立 step。Rule 49 はその Regression Gate 結果 + Adversarial 5 観点を統合した最終 ROBUST 判定基準。E2E floor の閾値変更や advisory 降格 (False Positive 3 連続時) は `references/improve-policy.md` Rule 49 末尾を参照。
 
 ### Propose-Adversarial ループ
 
@@ -342,6 +394,17 @@ Phase 5 完了時に `~/.claude/agent-memory/runs/YYYY-MM-DD/` に書き出す:
 - **次ラン優先テーマ**: ROBUST だが未実施の提案、VULNERABLE のまま残った提案
 - **却下された方向性**: FATAL_FLAW + Ideation-Debate 敗退候補（理由付き）
 - **データ不足で保留中**: INSUFFICIENT_DATA カテゴリの追跡項目
+
+### Dashboard 生成 (sparkline)
+
+Phase 5 末尾で `improve-history.jsonl` の直近 N 件 (デフォルト 20) を ASCII sparkline 付き Markdown に変換し、`runs/_dashboard.md` に書き出す:
+
+```bash
+python3 ~/.claude/scripts/benchmark/dashboard_generator.py \
+  --output ~/.claude/agent-memory/runs/_dashboard.md
+```
+
+可視化対象: `adoption_rate` / `cycle_time_hours` / `eval_tuple_count`。データ不足や parse エラー時も exit 0 で完了する (REPORT を阻害しない)。
 
 ## --evolve モード
 

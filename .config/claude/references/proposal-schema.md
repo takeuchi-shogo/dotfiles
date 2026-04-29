@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # Proposal Schema (autoevolve)
@@ -48,6 +48,9 @@ AutoEvolve Phase 2.5 が書き出す `runs/YYYY-MM-DD/proposals.jsonl` の完全
     "hypothesis_refs": ["HYP-YYYY-MM-DD-NNN"]            // T1: hypotheses.jsonl 相互参照
   },
   "rollback_plan": "復旧手順",
+
+  // --- Improvement Vectors (yamadashy Routines absorb 2026-04-29) ---
+  "improvement_vectors": ["clarity"],                     // 1-3 個必須。標準 5 軸 (clarity/brevity/accuracy/coverage/consistency) または custom:<tag>。null は既存エントリ後方互換のみ。詳細: improve-policy.md "Improvement Vectors"
 
   // --- Gate/Outcome ---
   "eval_health": "ok | warning | skipped",

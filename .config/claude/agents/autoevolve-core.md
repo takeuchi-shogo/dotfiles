@@ -489,6 +489,7 @@ Phase 2.5 完了後、各提案を以下の形式で記録する:
   "interaction_hypothesis": null,                   // 2 resource 同時変更時は必須 (1 個のみなら null)
   "eval_health": "ok",                                  // "ok" | "warning" | "skipped" — gaming-detector の判定結果
   "gate_verdict": "ROBUST|VULNERABLE|FATAL_FLAW",  // Phase 2.5 の判定結果
+  "improvement_vectors": ["clarity"],                  // 必須。1-3 個の vector tag。標準 5 軸 (clarity/brevity/accuracy/coverage/consistency) または custom:<tag>。null は既存エントリ後方互換のみ。詳細: improve-policy.md "Improvement Vectors"
   "created_at": "YYYY-MM-DDTHH:MM:SS"
 }
 ```
@@ -522,8 +523,25 @@ git checkout -b autoevolve/$(date +%Y-%m-%d)-{topic}
 # 変更（最大3ファイル）
 # テスト実行
 git add {changed files}
-git commit -m "🤖 autoevolve(IMP-YYYY-MM-DD-NNN): {変更の説明}"
+git commit -m "$(cat <<'EOF'
+🤖 autoevolve(IMP-YYYY-MM-DD-NNN): {変更の説明}
+
+{
+  "improvement_vectors": ["clarity", "brevity"],
+  "holdout_delta": {"pass_rate": "+1.2pp", "eval_tuples": 42},
+  "regression_summary": {"new_failures": 0, "gaming_flags": 0}
+}
+EOF
+)"
 ```
+
+**Footer JSON メタデータ必須 (Rule 50)**:
+
+- `improvement_vectors`: 1-3 個。Improvement Vectors セクションの 5 軸 (clarity/brevity/accuracy/coverage/consistency) または `custom:<tag>`。proposals.jsonl の `improvement_vectors` と一致させる
+- `holdout_delta`: Rule 47 / split_holdout.py で測定した holdout 評価結果。`pass_rate` は符号付き string (`"+1.2pp"` / `"neutral"` / `"-0.5pp"`)、`eval_tuples` は当該カテゴリのタプル数
+- `regression_summary`: Rule 49 E2E floor の入力。`new_failures` は regression-suite の新規失敗数、`gaming_flags` は gaming-detector.py が flag した件数
+
+可読 JSON (minified ではない) で 200-300 token 想定。メタデータが欠落した commit は autoevolve outcome 統計から fallback parsing (commit message プレフィックス `🤖 autoevolve(IMP-...)` ベース) で再構築されるが、新規 commit ではスキップせず必須記載とする。
 
 ### 禁止事項
 

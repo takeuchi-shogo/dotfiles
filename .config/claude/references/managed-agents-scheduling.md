@@ -80,3 +80,101 @@ claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 - `references/managed-agents-hybrid.md` — Hybrid Architecture 全体像
 - `references/unattended-pipeline.md` — 既存の無人実行パイプライン設計
 - `scripts/runtime/` — 現在のスケジュール実行スクリプト群
+
+## Routines Pilot: Daily Health Check
+
+> 出典: yamadashy "Claude Code Routines" absorb (2026-04-29) — Task D。
+> 本セクションは仕様のみ。実機 pilot は別セッションで実施する。
+
+### Pilot 目標
+
+Daily Health Check を local launchd plist から **cloud Routines** に試験移行し、Mac sleep 中断耐性 / コスト / レイテンシを 1 週間並行運転で実測する。Phase 1 (試行) → Phase 2 (評価) → Phase 3 (本移行) の段階運用。
+
+### (a) Cloud Routines 化コマンド例
+
+```bash
+# Routines 作成（2 時間間隔、Daily Health Check 相当）
+claude agents create \
+  --name "daily-health-routines-pilot" \
+  --model claude-sonnet-4-6 \
+  --system-prompt "$(cat scripts/runtime/daily-health-check-prompt.md)"
+
+AGENT_ID="<上記出力の id>"
+
+# 2 時間ごとに実行（既存 launchd は 21:07 だが Mac sleep の影響を排除するため interval 化）
+claude triggers create \
+  --agent-id "$AGENT_ID" \
+  --schedule "0 */2 * * *" \
+  --timezone "Asia/Tokyo"
+
+# 環境制約 (cost cap)
+claude agents config "$AGENT_ID" \
+  --max-cost-per-run "1.0" \
+  --max-runtime-minutes "10"
+```
+
+> **注**: `claude agents` / `claude triggers` の正確な CLI 形は API バージョンに依存する。pilot 開始時に `claude agents --help` で最新仕様を確認すること (CLI-first discovery 原則)。
+
+### (b) 1 週間並行運転時の比較メトリクス
+
+local launchd と cloud Routines を **両方有効**にして 7 日間運転し、以下を記録する:
+
+| メトリクス | local launchd 期待値 | cloud Routines 期待値 | 計測方法 |
+|---|---|---|---|
+| 実行成功率 | ~92% (Mac sleep で miss あり) | ≥ 99% | `runs/routines-pilot-YYYY-MM-DD.md` の 7 日サマリー |
+| P50 遅延 | < 10s | < 30s (cold start 込み) | trigger 時刻と log の time diff |
+| P90 遅延 | < 30s | < 60s | 同上 |
+| P99 遅延 | < 2min (sleep 復帰時) | < 90s | 同上 |
+| コスト/回 | $0 (local API) | $0.10–0.50 | `claude agents usage --since 7d` |
+| 月額概算 | $0 | $30–150 | コスト/回 × 30 日 × 12 回/日 |
+
+判定基準: cloud Routines の実行成功率が +5pp 以上向上し、P90 遅延が 60s 以下なら Phase 3 移行候補。
+
+### (c) ロールバック手順
+
+```bash
+# Cloud Routines 無効化
+claude triggers delete "$AGENT_ID"
+claude agents delete "$AGENT_ID"
+
+# local launchd 再有効化（Phase 1 期間中も実行されているはずなので、確認のみ）
+launchctl list | grep daily-health-check
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude.daily-health-check.plist
+```
+
+部分的失敗時 (Routines 個別実行が timeout 等で失敗): cron を fallback として残し、次回 cron で再実行。Pilot 期間中は **両方稼働** が必須 (片方だけ動いている期間を作らない)。
+
+### (d) 結果記録テンプレート
+
+`runs/routines-pilot-YYYY-MM-DD.md` (新規ファイル) に以下を 7 日間追記する:
+
+```markdown
+# Routines Pilot — Daily Health Check
+
+## 実行ログ
+
+| date | trigger_time | runtime | success | cost_usd | notes |
+|---|---|---|---|---|---|
+| 2026-XX-XX | 09:00 | 12s | ✅ | $0.18 | — |
+| 2026-XX-XX | 11:00 | 13s | ✅ | $0.21 | — |
+| 2026-XX-XX | 13:00 | — | ❌ | — | Routine timeout |
+| ... | ... | ... | ... | ... | ... |
+
+## 並行運転比較サマリー
+
+| 指標 | local launchd | cloud Routines | delta |
+|---|---|---|---|
+| 実行回数 | N | M | — |
+| 成功率 | X% | Y% | +Zpp |
+| P90 遅延 | A秒 | B秒 | +Cs |
+| 累積コスト | $0 | $D | +$D |
+
+## 判定
+
+- Phase 3 移行: Yes / No
+- 理由: ...
+```
+
+### Mac sleep 耐性に関する注記
+
+local cron / launchd は `pmset` の sleep 中断を受ける。`pmset -g | grep wakeonlan` が無効、かつ `caffeinate` が動いていない時間帯は実行 miss が発生する。cloud Routines はこの欠点を解消する一方で、ネットワーク依存 (オフライン時に実行不可) という新規欠点を抱える。本 pilot で local が実行 miss する時間帯と cloud が実行できない時間帯を実測比較する。
