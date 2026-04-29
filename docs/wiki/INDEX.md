@@ -113,6 +113,7 @@
 - [Cascade Routing / Online Cascade](../references/cascade-routing.md) — cheap→judge→escalate の動的ルーティング設計。FrugalGPT 98% コスト削減の実証。静的 tier routing より常に優先する。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
 - [Model Debt Register](../references/model-debt-register.md) — model-specific rule を永続資産ではなく削除条件付き負債として管理する register。Harvey 事例の示唆: モデルアップデートで即座に無効化されるルールは事前に退場戦略を書く。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
 - [Agent Experience (AX)](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md) — AX 時代における SaaS の設計原則。エージェントを主要ユーザーとして捉え、CLI / MCP / Skills インターフェースを人間向け UI と同等以上に優先する。Vertical model 台頭により performance が新たな moat になる
+- [Codex vs Claude Code 役割分担 absorb](../research/2026-04-29-codex-vs-claudecode-role-split-absorb-analysis.md) — Codex Studio 記事。Pruning-First で採用 1 件 (codex-delegation.md に Safety Claim 過信回避)、ベンダーバイアス + 公式裏取り不可で他 11 件棄却
 
 ### tooling — ツール・エコシステム
 

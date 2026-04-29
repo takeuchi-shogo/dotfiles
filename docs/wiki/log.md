@@ -634,3 +634,11 @@
 - 棄却: Out of Scope 100% (過剰)、6法則 ↔ 12原則 crosswalk 新規ファイル (docs 増殖)、50文字未満 ast-grep (観察的相関)
 - 教訓: 100個リバースエンジニアリングという脳筋手法の知見も、大半は既に skill-writing-principles 12原則 + skill-creator + skill-audit に内蔵されていた
 - 分析レポート: `docs/research/2026-04-29-claude-skills-six-laws-absorb-analysis.md`
+
+## [2026-04-29] ingest | Codex vs Claude Code 役割分担 (Codex Studio)
+
+- ソース: 「【保存版】Codex vs Claude Code 数百時間使ってたどり着いた最強の役割分担」(@Codestudiopjbk)
+- 判定: Already 3, Partial 3 (Reject), Gap 3 (Reject), N/A 3
+- 取り込み: 1 件のみ — `.config/claude/rules/codex-delegation.md` に「Safety Claim を過信しない」セクション追記 (trusted profile 運用前提の明示)
+- 棄却理由: Codex Studio = Codex 寄りベンダーバイアス強い (DM 募集アカウント)。E/G/L (tokenizer +35%/Codex 4-23 機能/Anthropic disclosure) は公式 changelog で裏取り不可 (Gemini 補完)。Codex 批評も「採用 0 件が妥当」と判定
+- レポート: docs/research/2026-04-29-codex-vs-claudecode-role-split-absorb-analysis.md
