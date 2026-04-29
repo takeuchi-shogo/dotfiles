@@ -623,3 +623,14 @@
 - 統合プラン: docs/plans/active/2026-04-29-routines-absorb-plan.md
 - Codex 批評: 既存 /absorb + AutoEvolve で土台十分、A+B を gate/report に最小差分追加が最優先
 - Gemini 補完: Reward Hacking / Slop 蓄積 / Goodhart が主要失敗パターン → Anti-Gaming Layer 必要
+
+## [2026-04-29] ingest | Claude Code Skills が "勝手に動く" 6つの設計法則
+
+- ソース: zodchiii氏 X.com (https://x.com/zodchiii/status/2048345453096313005) / 東大Claude Code研究所紹介, 2026-04
+- 判定: Already 6, Partial 1, Gap 1, 棄却 4 (Pruning-First 徹底)
+- 取り込み: 採用 2 件のみ
+  - T1: validation-checklist.md に「3 near-miss negative examples」チェック追加
+  - T2: skill-writing-principles § 7 に「first screen 50行 (trigger/usage/next-read pointers)」原則追記
+- 棄却: Out of Scope 100% (過剰)、6法則 ↔ 12原則 crosswalk 新規ファイル (docs 増殖)、50文字未満 ast-grep (観察的相関)
+- 教訓: 100個リバースエンジニアリングという脳筋手法の知見も、大半は既に skill-writing-principles 12原則 + skill-creator + skill-audit に内蔵されていた
+- 分析レポート: `docs/research/2026-04-29-claude-skills-six-laws-absorb-analysis.md`
