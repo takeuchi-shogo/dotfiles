@@ -642,3 +642,11 @@
 - 取り込み: 1 件のみ — `.config/claude/rules/codex-delegation.md` に「Safety Claim を過信しない」セクション追記 (trusted profile 運用前提の明示)
 - 棄却理由: Codex Studio = Codex 寄りベンダーバイアス強い (DM 募集アカウント)。E/G/L (tokenizer +35%/Codex 4-23 機能/Anthropic disclosure) は公式 changelog で裏取り不可 (Gemini 補完)。Codex 批評も「採用 0 件が妥当」と判定
 - レポート: docs/research/2026-04-29-codex-vs-claudecode-role-split-absorb-analysis.md
+
+## [2026-04-29] ingest | The Self-Healing Agent Harness (CREAO 続編)
+
+- ソース: CREAO CTO Peter Pang, 2026-04-29 推定
+- 判定: Gap 1, Partial 1 (T4-C), Already (強化採用) 3, N/A 5, 棄却 7
+- 取り込み: T1 outcome over trajectory / T2 model-family diversity / T3 drift 再校正条件 / T4-C regression-suite populate (別セッション)
+- 棄却の主軸: CREAO の Engineering Pipeline と Bridge は前作 absorb (2026-04-14) で「multi-tenant 製品の儀式」として N/A 判定済
+- 関連: docs/research/2026-04-29-self-healing-harness-absorb-analysis.md, docs/plans/active/2026-04-29-self-healing-absorb-plan.md

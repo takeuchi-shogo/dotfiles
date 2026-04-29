@@ -17,6 +17,7 @@
 - [Drafts Lifecycle (Graduation Mechanism)](concepts/_drafts/README.md) — agent→human authorship 昇格をディレクトリ分離で実装。Karpathy Modified Second Brain pattern (2026-04) から採用
 - [Harness Pipeline BAN article (2026-04-21)](../research/2026-04-21-harness-pipeline-absorb-analysis.md) — GitHub BAN 事例から導出: reproduce-first attestation before polish、resume anchor contract、plan→implement bridge hook。Gap 2 低優先、7 タスク採択
 - [AlphaSignal Harness Engineering (2026-04-24)](../research/2026-04-24-harness-engineering-absorb-analysis.md) — OpenAI/Anthropic/ThoughtWorks 横断。2026-04-19 harness-everything と高重複。独自 contribution 3 点採択 (Reasoning Sandwich 手動チェックリスト / dead-weight-scan superseded_by_model タグ / ADR-0006 ThoughtWorks 4 軸分類 Appendix)、既存 plan M2 に subtask merge
+- [Self-Healing Agent Harness (CREAO 続編, 2026-04-29)](../research/2026-04-29-self-healing-harness-absorb-analysis.md) — CREAO CTO Peter Pang 続編。Gap 1 / Partial 1 / Already 強化採用 3 / N/A 5 / 棄却 7。採用 4 件: T1 evaluator-calibration-guide.md に「Outcome over Trajectory」原則 / T2 absorb SKILL.md Phase 2.5 に model-family diversity rationale / T3 evaluator-calibration-guide.md に「再校正条件」セクション / T4-C regression-suite.json populate + improve-policy Rule 33 (別セッション)。棄却の主軸: Engineering Pipeline と Bridge は前作 absorb (2026-04-14) で「multi-tenant 製品の儀式」として N/A 判定済 → プラン: [../plans/active/2026-04-29-self-healing-absorb-plan.md](../plans/active/2026-04-29-self-healing-absorb-plan.md)
 
 ### agent — エージェント設計
 

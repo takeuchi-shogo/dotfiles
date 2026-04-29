@@ -133,6 +133,9 @@ Already と判定した各項目について、記事の具体例（失敗事例
 
 **Phase 2 の分析テーブルをユーザーに提示した後、必ず実行する。スキップ不可。**
 
+> **Why Codex + Gemini (model-family diversity)**: Opus による Phase 2 判定は self-preference bias を持つ (Claude artifact を Claude 系だけで裁かない)。Codex (OpenAI) と Gemini (Google) を**異なるモデルファミリ**で並列起動するのは quorum (多数決) のためではなく、**bias mitigation** として位置づける。判定の修正は単純多数決ではなく、Opus が両者の指摘を統合・取捨選択する。
+> 出典: CREAO Self-Healing Agent Harness 記事 (2026-04-29) の Tri-judge panel 設計を /absorb 文脈に翻訳。
+
 Codex と Gemini を **並列** で起動する:
 
 ### Codex: 分析批評

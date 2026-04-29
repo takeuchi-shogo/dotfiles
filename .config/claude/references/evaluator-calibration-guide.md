@@ -8,6 +8,18 @@ last_reviewed: 2026-04-23
 LLM ジャッジ（レビューアー）の信頼性を定量的に校正する手法ガイド。
 hamelsmu/evals-skills の validate-evaluator 手法を内部向けに適応。
 
+## 採点対象: Outcome over Trajectory
+
+ジャッジは **最終成果物と検証証拠** を採点する。reasoning path / trajectory（経路）の説得力は採点しない。
+
+- 良し: 「テストが通った」「型エラーが解消した」「期待された artifact が生成された」
+- NG: 「unnecessary な tool call があったから減点」「経路が冗長だから減点」
+
+エージェントは人間から見て非効率に見える経路でも正しい結果に到達することがある。経路を罰すると、模範的な見た目のために本質を犠牲にする学習圧がかかる。
+
+> 出典: CREAO Self-Healing Agent Harness 記事 (2026-04-29) "Grade the outcome, not the trajectory"。
+> 例外: trajectory 内に副作用 (destructive op、外部送信、secret 漏洩) があれば即 fail。これは outcome の安全性評価に含まれる。
+
 ## 概要
 
 1. 人間ラベル付きデータを train/dev/test に分割
@@ -98,6 +110,19 @@ ci = bootstrap_ci(human_labels, eval_labels, p_obs=0.80)
 - ジャッジプロンプト変更、モデル切替、CI 拡大時に再校正
 - ~100 ラベル例（50 Pass, 50 Fail）を推奨。60 未満は CI が広い
 - TPR 改善は TNR 改善より CI を狭める効果が大きい
+
+### 再校正条件 (Recalibration Triggers)
+
+以下のいずれかが発生したら再校正する:
+
+1. **明示的トリガ**: ジャッジモデル変更、rubric 変更、プロンプト構造変更、scoring scale 変更
+2. **データ分布シフト**: 評価対象タスクのカテゴリ構成が変わった (新 skill、新 reviewer 追加)
+3. **trailing avg からの逸脱**: 直近 N 件の TPR/TNR が trailing average から大きくズレた場合
+   - **±10pp は固定閾値ではなく初期目安**。サンプル数が小さいと自然変動の範囲なので、bootstrap CI の重なりを優先指標にする
+   - sample floor (n ≥ 30/class) を下回るときは alert ではなく観察に留める
+
+> 出典: CREAO Self-Healing Agent Harness の "rubric as bug" framing を内部運用に翻訳。
+> 自動 alert は実装しない (個人 dotfiles では儀式化が dead weight になる)。改善サイクル内で気づいたとき再校正する。
 
 ## Anti-Patterns
 
