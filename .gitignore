@@ -32,6 +32,13 @@ __pycache__/
 # Design/plan docs (session artifacts, not version-controlled)
 docs/plans/
 
+# Session artifacts (audit reports, running briefs)
+# RUNNING_BRIEF.md/HANDOFF.md are updated by /checkpoint skill, QUESTIONS-*.md by /audit skill.
+# Both are personal session state, not version-controlled artifacts.
+RUNNING_BRIEF.md
+HANDOFF.md
+QUESTIONS-*.md
+
 # npx skills artifacts
 .agent/
 .kiro/
