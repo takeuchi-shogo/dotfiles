@@ -605,3 +605,21 @@
 - 棄却: K7 TDD 新規 reference (Pruning-First 違反) / S3 Invocation Control 原則 (実害が出るまで保留) / K13 backlog abstraction (GitHub-only 運用継続)
 - 本質: 既に 4/5 chain が origin タグ付きで統合済 (grill-interview/spec/prd-to-issues/improve-codebase-architecture+LANGUAGE.md)。Codex 指摘「skill catalog ではなく discipline (個人 artifact 過度に一般化しない / 狭い process encoding / 更新できない skill は負債化)」は既存仕組みでカバー
 - 分析レポート: docs/research/2026-04-29-mattpocock-skills-absorb-analysis.md
+
+## [2026-04-29] ingest | OpenAI Symphony / ClawSweeper Orchestration Layer
+
+- ソース: AlphaSignal "How OpenAI Is Setting the Default Orchestration Layer for Coding Agents" (https://github.com/openai/symphony, https://github.com/openclaw/clawsweeper)
+- 判定: Already 11 / Gap 4 (F0+#9+#10+#13+#11) / N/A 棄却 4 (#7 cron / #15 apply cap / #5 app-server 全採用 / #2 GitHub issue cron)
+- 取り込み: 既存 Codex Janitor のハーデニング 3 グループ (F0 既存 Follow-Ups 消化 / #9+#10 snapshot hash + 構造化 evidence record / #13+#11 keep-open bias + token strip)。Codex 批評で #9 が Already→Gap 格上げ、Gemini 警告で snapshot scope を single-run 内に限定
+- 分析: docs/research/2026-04-29-symphony-clawsweeper-absorb-analysis.md
+- プラン: docs/plans/active/2026-04-29-symphony-clawsweeper-absorb-plan.md
+
+## [2026-04-29] ingest | Claude Code の Routines 機能で継続的にパフォーマンスチューニング (yamadashy)
+
+- ソース: https://zenn.dev/yamadashy/articles/claude-code-routines-perf-tuning
+- 判定: Gap 1, Partial 5, Already→Partial 格下げ 2 (#5/#8), Already 0 (修正後)
+- 取り込み: 6 項目全採択 (A Improvement Vectors matrix / B End-to-End Improvement Floor / E 成果属性メタデータ / F Plateau 多軸検出 / C _dashboard.md sparkline / D Routines pilot 仕様化)
+- 分析レポート: docs/research/2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis.md
+- 統合プラン: docs/plans/active/2026-04-29-routines-absorb-plan.md
+- Codex 批評: 既存 /absorb + AutoEvolve で土台十分、A+B を gate/report に最小差分追加が最優先
+- Gemini 補完: Reward Hacking / Slop 蓄積 / Goodhart が主要失敗パターン → Anti-Gaming Layer 必要

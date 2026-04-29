@@ -40,6 +40,7 @@
 - **Thin CLAUDE.md / Thick rules 原則 (ADR-0007 予定)** — CLAUDE.md は IFScale 制約内に保ち、詳細ルールを `rules/` や `references/` に分離する設計。Obsidian × Claude Code 分析 (2026-04-21) で ADR 化予定 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
 - **cwd-aware routing matrix** — 作業ディレクトリ (dotfiles / repo / tmp 等) に応じてモデル・スキル・フックを自動切替する経路表。Context Design 5層の Execution 層に対応 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md), [context-design-absorb-analysis](../research/2026-04-17-context-design-absorb-analysis.md)
 - [AGENTS.md Patterns (Augment AuggieBench)](../research/2026-04-23-agents-md-patterns-absorb-analysis.md) — AuggieBench 実測: good AGENTS.md = Haiku→Opus 相当、bad は no docs より悪化。7 パターン + search-result sprawl 対策
+- **Claude Code Routines × 継続的パフォーマンスチューニング (2026-04-29)** — yamadashy による Claude Code Routines 機能を使った自律的改善ループの実践。Improvement Vectors matrix (impact × effort 2軸)・End-to-End Improvement Floor・Plateau 多軸検出・Anti-Gaming Layer (Reward Hacking / Slop 蓄積 / Goodhart 対策)・`_dashboard.md` sparkline 可視化・Routines pilot 仕様化を採択。Codex 批評: 既存 /absorb + AutoEvolve で土台十分、A+B を gate/report に最小差分追加が最優先。Gemini 補完: Reward Hacking / Slop 蓄積 / Goodhart が主要失敗パターン → Anti-Gaming Layer 必須 → 関連: [複利ループ](concepts/compounding-loop.md), [自己改善エージェント](concepts/self-improving-agents.md), [AutoEvolve](../../.config/claude/references/) → 参照: [2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis](../research/2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis.md)
 
 ### memory — メモリ・コンテキスト
 
@@ -115,6 +116,8 @@
 ### tooling — ツール・エコシステム
 
 - [Codex 統合](concepts/codex-integration.md) — Claude × Codex の分業パターンとプラグインアーキテクチャ
+- **Symphony Pilot** — [docs/playbooks/symphony-pilot.md](../playbooks/symphony-pilot.md) — Linear-bound Codex orchestration。OpenAI Symphony (github.com/openai/symphony) の設計原則を dotfiles Codex ワークフローに適用するパイロット運用 → 参照: [2026-04-29-symphony-clawsweeper-absorb-analysis](../research/2026-04-29-symphony-clawsweeper-absorb-analysis.md)
+- **Codex Janitor** — [docs/playbooks/codex-janitor-workflow.md](../playbooks/codex-janitor-workflow.md) — slop-janitor 派生 refactor loop runner。ClawSweeper (github.com/openclaw/clawsweeper) パターンから導出した、既存 Follow-Ups 消化・snapshot hash 検証・keep-open bias 除去の 3 グループ構成 → 参照: [2026-04-29-symphony-clawsweeper-absorb-analysis](../research/2026-04-29-symphony-clawsweeper-absorb-analysis.md)
 - [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault。Vault 自動メンテナンス・双方向整合性チェック・AI Second Brain 構築パターン。参照: [lit-noah-obsidian-claude-code-meta](../research/2026-04-09-noah-obsidian-claude-code-meta-analysis.md)
 - [ターミナルツーリング](concepts/terminal-tooling.md) — Ghostty + cmux + デュアルオーディエンス CLI
 
