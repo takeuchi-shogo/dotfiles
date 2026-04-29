@@ -22,6 +22,8 @@ model_reasoning_effort = "medium"
 model_reasoning_summary = "auto"
 
 [profiles.review]
+# Token strip: review profile は read-only sandbox。GITHUB_TOKEN/LINEAR_API_KEY を
+# 物理的に unset する場合は wrapper script を介する（実装は別タスク）
 model_reasoning_effort = "xhigh"
 model_reasoning_summary = "detailed"
 sandbox_mode = "read-only"

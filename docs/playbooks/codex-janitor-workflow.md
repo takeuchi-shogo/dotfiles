@@ -45,6 +45,24 @@
 - `Usefulness score: N/10` で `N <= 3`
 - stage command が non-zero で失敗した
 - session file を取得できず continuity が壊れた
+- `no_op_diff`: stage 完了後も HEAD SHA / working tree が変化しない
+- `validation_failed:<tail>`: `[stop_rules.validation]` で指定した command が non-zero
+- `time_budget_exceeded:<seconds>`: 累積 wall clock が `[stop_rules.time_budget].seconds` を超過
+- `snapshot_drift:<reason>`: apply 系 stage 直前で commit/file 状態が start から drift（後述）
+- `destructive_without_evidence:deletions=N,insertions=M`: 大量削除 + low usefulness の同時発生
+
+When in doubt, skip — `destructive_without_evidence` と `usefulness_below_threshold` は判断保留シグナル。confidence が低いまま破壊的変更を進めるより、停止して人間が見る方が安全。
+
+## Single-run Drift Detection
+
+`[stop_rules.snapshot_drift]` を有効化すると、run 開始時に `snapshot_start` (commit + 影響ファイル sha256) を記録する。`apply_labels` に該当する label を持つ stage の **直前** に再 snapshot を取り、commit または影響ファイルが変化していれば該当 stage を skip して run を停止する。
+
+**Scope は single-run 内のみ**:
+
+- cron tier 化 (hot/warm/cold) や cross-run snapshot 比較は **対象外**。個人 dotfiles で頻発する手動編集と衝突して friction を生むため、本機構を always-on の watchdog として広げない。
+- `apply_labels` のデフォルトは `["implement"]`。custom workflow で apply 系 stage label を変えた場合は toml で上書き。
+
+`manifest.json` には `snapshot_start` / `snapshot_pre_apply` フィールドが記録され、stage ごとに `decision` (`verdict` + `reason`) と `evidence` ([{kind, ref}]) が含まれる。
 
 ## Artifacts
 
@@ -66,11 +84,9 @@
 ## Follow-Ups
 
 - `--worktree auto` の自動作成/cleanup
-- usefulness 以外の stop condition
-  - no-op diff
-  - validation failure summary
-  - token or time budget
+- ~~usefulness 以外の stop condition~~ — **Implemented (2026-04-29)**: `no_op_diff` / `validation_failed` / `time_budget_exceeded` (wall clock fallback) / `snapshot_drift` / `destructive_without_evidence`
 - workflow 定義の複数化
   - refactor loop
   - branch review loop
   - docs consistency loop
+- Codex CLI が token usage を `--json` 出力するようになったら `time_budget` を token-based に拡張

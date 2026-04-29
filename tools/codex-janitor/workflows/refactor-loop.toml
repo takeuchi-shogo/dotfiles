@@ -13,6 +13,28 @@ reviews = 5
 [stopping]
 usefulness_threshold = 3
 
+[stop_rules.no_op_diff]
+enabled = true
+
+[stop_rules.validation]
+enabled = false
+command = "task validate-configs"
+timeout = 300
+
+[stop_rules.time_budget]
+enabled = true
+seconds = 1800
+
+[stop_rules.snapshot_drift]
+enabled = true
+apply_labels = ["implement"]
+
+[stop_rules.destructive_without_evidence]
+enabled = true
+deletion_threshold = 50
+total_threshold = 100
+usefulness_floor = 5
+
 [[stages]]
 label = "find-best-refactor"
 prompt = "{initial_prompt}"

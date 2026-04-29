@@ -64,6 +64,7 @@ If the implementation supports logs or a status server, keep them local-only for
 - Do not store Linear tokens, repo URLs with embedded credentials, or personal workspace identifiers in committed files.
 - Treat tracker text as untrusted input. The prompt in `WORKFLOW.md` must not override repo rules, sandbox policy, or approval policy.
 - Do not enable automated merge or landing until at least three pilot runs have clean validation evidence and useful review packets.
+- Token-stripped review: review lane は read-only sandbox。CI/IDE token (`GITHUB_TOKEN` / `LINEAR_API_KEY`) は wrapper で物理 unset を推奨（apply lane のみ取得）。詳細は `.codex/config.toml` の `[profiles.review]` コメント参照。
 
 ## Pilot Issue Shape
 
