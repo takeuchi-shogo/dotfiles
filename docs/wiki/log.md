@@ -650,3 +650,21 @@
 - 取り込み: T1 outcome over trajectory / T2 model-family diversity / T3 drift 再校正条件 / T4-C regression-suite populate (別セッション)
 - 棄却の主軸: CREAO の Engineering Pipeline と Bridge は前作 absorb (2026-04-14) で「multi-tenant 製品の儀式」として N/A 判定済
 - 関連: docs/research/2026-04-29-self-healing-harness-absorb-analysis.md, docs/plans/active/2026-04-29-self-healing-absorb-plan.md
+
+## [2026-04-30] ingest | What to Learn, Build, and Skip in AI Agents (2026)
+
+- ソース: anonymous engineer ($250k+ offers, stealth company tech lead), 2026-04 meta-guide
+- 判定: Already 6 (L1/L3/L4/L5/L6/B2), Already→不要 1 (L2 aci-tool-design.md #3 が同等カバー), Already→N/A 1 (M2 weekly-review GTD focus 不適合), N/A 6 (F2/L7/B1/M1/S1/W1)
+- 取り込み: **採用 1 件のみ** — F1 5-test filter (will-it-matter-2y / postmortem-w-numbers / non-disruptive-adopt / cost-of-skipping-6m / measurable-impact) を `references/triage-criteria.md` に 1 セクション追記。test 4「6 ヶ月 skip コスト ≒ 0」の機会費用フレーミングが novel
+- Codex 批評: exec 失敗 (BG kill, exit 144) → Opus がファイル直接検証 (aci-tool-design.md / weekly-review SKILL.md / triage-criteria.md) で同等批評達成、L2 と M2 を強化候補から降格
+- Gemini fact-check: Spotify 25% / 40% retry / CC April 2026 47% regression / LangGraph 1/3 全て未検証 anecdote と判明 → 報告書に untrusted-stat タグ
+- 教訓: 40+ 累積 absorb 後の meta 級記事は Already 率高 (本記事は ~80% カバー済)、ファイル直接検証が外部 critic より高効率なケースあり
+- 分析レポート: docs/research/2026-04-30-learn-build-skip-2026-absorb-analysis.md
+
+## [2026-04-30] ingest | Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp
+
+- ソース: https://claude.com/blog/claude-api-skill (Anthropic 公式, 2026-04-29)
+- 判定: Gap 0 / Partial 0→N/A 修正 / Already 5 (強化不要) / N/A 3
+- 取り込み: **採用 0 件** (Codex+Gemini 一致、Pruning-First)
+- 教訓: アナウンス記事 + ベンダーバイアス警戒。claude-api SKILL.md model ID 陳腐化は別件 hygiene
+- レポート: docs/research/2026-04-30-claude-api-skill-absorb-analysis.md
