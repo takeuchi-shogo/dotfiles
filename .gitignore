@@ -84,3 +84,6 @@ tmp/
 
 # Playwright MCP runtime artifacts (console logs, page snapshots)
 .playwright-mcp/
+
+# Zed editor prompts library (LMDB DB, app-local, may contain personal prompt history)
+.config/zed/prompts/
