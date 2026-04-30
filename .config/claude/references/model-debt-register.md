@@ -95,6 +95,33 @@ last_reviewed: 2026-04-23
 
 ---
 
+### R-005: Open-weight bulk delegation Watch (Kimi K2.6 class)
+
+**現状のルール**: 採用しない。実行 routing は不変 (Sonnet / Haiku / Codex / Gemini / Cursor / Managed Agents の carve-out 維持)、open-weight bulk worker (Kimi K2.6 class) を delegation 先に追加しない。
+
+**根拠**: 2026-04 時点で open-weight model (Kimi K2.6 ≈ MIT / $0.60/M / 256k context / 65k output) が低コスト bulk worker の niche を主張するが、独立検証が不十分:
+- (a) 公式 SWE-bench Verified は 78.5%、記事の 80.2% は self-correction 込み (Gemini fact-check 2026-04-30)
+- (b) 300 並列 swarm 主張は AutoGen / OpenAI Swarm 独立検証で「300超は state conflict + context 汚染で成功率 20% 以下に急落」と逆エビデンス
+- (c) 主な訴求 source が skool.com 系 AI コース販売 marketing で signal-to-noise 比が低い ("Scam-pattern" by Gemini)
+- (d) per-call cost optimization は dotfiles の "End-to-End Completion > Per-Call Efficiency" 原則 (`model-routing.md`) と衝突
+
+**配置**: このファイルのみ (実装層には未配置 — 採用条件未達のため)。
+
+**Trigger to Activate (採用条件、すべて満たすこと)**:
+- 独立 eval (公式 SWE-bench Pro リーダーボード or Anthropic/Moonshot 以外の中立検証) で Codex/Haiku 比 **cost-adjusted win** が確認できること
+- かつ dotfiles 内 local task (例: `/absorb` Phase 1 抽出、`edge-case-analysis` 並列実行) で 30 日 trial における failure mode が許容範囲内
+- かつ tool-schema retry 率が Anthropic / OpenAI 並 (記事時点では「やや高め」と既知)
+
+**Trigger to Drop Watch (棄却条件)**:
+- 90 日 signal なし (新規 evidence なし) — open-weight bulk worker の niche が消えたと判断
+- または safety / capability 不一致が判明 (例: tool-schema retry 改善せず、license/governance issue)
+
+**レビュー対象四半期**: 2026-Q4
+
+**由来**: `docs/research/2026-04-30-three-model-stack-absorb-analysis.md` (Kimi K2.6 + Opus 4.7 + GPT-5.5 cheat-code 記事 absorb)。Codex 批評で「全棄却バイアス補正」として watch 行追加を推奨、Gemini fact-check で trigger を独立検証必須に厳格化。
+
+---
+
 ## Template (新規追加時)
 
 ```markdown
