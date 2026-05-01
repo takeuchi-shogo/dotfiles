@@ -10,6 +10,13 @@
   // ===================
   // Appearance
   // ===================
+  "proxy": "",
+  "outline_panel": {
+    "dock": "right"
+  },
+  "git_panel": {
+    "dock": "right"
+  },
   "theme": "Catppuccin Mocha",
   "buffer_font_family": "MonaspiceKr Nerd Font Mono",
   "buffer_font_size": 16,
@@ -62,10 +69,12 @@
   "default_dock_anchor": "expanded",
   "project_panel": {
     // ディレクトリの中に一つしかディレクトリがない場合、ネスト構造にしない
+    "dock": "right",
     "auto_fold_dirs": true
   },
   "collaboration_panel": {
     // collaborationは使用しないので非表示
+    "dock": "right",
     "button": false
   },
   "chat_panel": {
@@ -154,7 +163,9 @@
   // ===================
   // AI & Features
   // ===================
-  "agent": {},
+  "agent": {
+    "dock": "left"
+  },
   "features": {
     "edit_prediction_provider": "zed"
   },
