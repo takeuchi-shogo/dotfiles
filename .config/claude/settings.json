@@ -252,18 +252,13 @@
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py",
-            "timeout": 15
+            "command": "(python3 $HOME/.claude/scripts/learner/session-learner.py && python3 $HOME/.claude/scripts/learner/failure-clusterer.py) >> /tmp/claude-learner.log 2>&1 &",
+            "timeout": 5
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/failure-clusterer.py",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/session-trace-store.py",
-            "timeout": 15
+            "command": "python3 $HOME/.claude/scripts/learner/session-trace-store.py >> /tmp/claude-learner.log 2>&1 &",
+            "timeout": 5
           },
           {
             "type": "command",
@@ -272,18 +267,18 @@
           },
           {
             "type": "command",
-            "command": "bash $HOME/.claude/scripts/lifecycle/session-stats.sh",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi'",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null || true",
+            "command": "bash $HOME/.claude/scripts/lifecycle/session-stats.sh >> /tmp/claude-stats.log 2>&1 &",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi' > /dev/null 2>&1 &",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null &",
+            "timeout": 3
           }
         ]
       }
