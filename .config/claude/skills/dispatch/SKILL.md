@@ -161,3 +161,9 @@ scripts/runtime/dispatch-log.sh summary
 ## cmux 外での挙動
 
 cmux 外で実行された場合、全てサブエージェントにフォールバックする。cmux Worker 機能は無効化される。
+
+## Anti-Patterns
+
+- **大規模 fan-out をいきなり全量で回す**: 200-2000 ファイル級の移行を一発で投入すると、共通の失敗パターン (環境前提誤り / API rate limit / 部分的な型差異) を全 Worker が同時にヒットする。先に 3-5 ファイルでパイロット実行し、失敗パターンを潰してから本番展開する。Codex/Gemini Worker でも同じ。
+
+> 出典: Boris Tip 22 absorb (2026-04-30) — 「いきなり全量で回さない、まず数ファイルで失敗パターンを洗い出してから全体に展開」
