@@ -54,6 +54,8 @@ Read-only analysis. Do NOT modify any files.
 
 reverse が欠落している場合、緩和策ではなく **BLOCKED** を明示する。修正方針の提案は可だが、出力上の Recommendation は Block を維持する。
 
+reverse スクリプトが物理的に不可能なケース (削除済みデータの復元等) では BLOCK 維持のままステークホルダー判断にエスカレートする。1M rows 等の閾値は経験則 — 真の制約は lock duration、テーブル特性と downtime 予算で個別判断する。
+
 > 出典: 30-subagents-2026 absorb (T2)
 
 ## Output Format

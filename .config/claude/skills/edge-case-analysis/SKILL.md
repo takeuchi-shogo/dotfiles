@@ -120,7 +120,7 @@ metadata:
 
 ### 補足: 15 軸チェックリスト (汎用)
 
-データフロー追跡で漏れた axis がないかを最後に突き合わせる。null check 単独はリジェクト — 必ず具体シナリオを書く。
+Step 4 (フィールド組み合わせ) と直交。Step 4 完了後の generic safeguard として横断検査する。**例示的チェックリストであり完全ではない** — race conditions / integer overflow / charset / cancellation timeout 等は別途検討する。null check 単独はリジェクト — 必ず具体シナリオを書く。
 
 `empty / max / off-by-one / slow network / offline / concurrent users / permissions / i18n (RTL, 長名, emoji) / timezone / DST / leap year / currency rounding / partial failures / retries / stale cache`
 
