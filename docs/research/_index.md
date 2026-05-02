@@ -25,6 +25,7 @@ last_reviewed: 2026-04-23
 - Skill Eval Loop — Wave1実装済み: per-skill score attribution + スケール統一、Wave2-3: `docs/plans/2026-04-09-skill-eval-improvement-plan.md`
 - Managed Agents — Hybrid Architecture + Agent Config標準化 + Scheduling移行 + ポータビリティ → `references/managed-agents-*.md`
 - **Tan: Thin Harness, Fat Skills 10原則 (2026-04-12)** — Codex 批評で #1 Parameterized Skill は frontmatter 仕様化却下 (thin harness 形式主義リスク) + #5 Resolver を過小評価から昇格 (negative routing 不足)。採用: `skill-invocation-patterns.md` 新設 (improve/absorb/research 事例集) + `skill-writing-principles.md` 原則 1 に Invert Test 追加 + `skill-conflict-resolution.md` 新設 (衝突時優先度・読まない条件・規模ガード)。Gemini 総評「70% 既実装」— 原則 8 自己スコアリングが OK Learning Loop に相当 → `docs/research/2026-04-12-tan-thin-harness-fat-skills-analysis.md`
+- **Cursor Continually Improving Agent Harness (2026-04-30)** — Cursor 公式 (Heule & Katz) の継続改善実践 6 章 + 11 手法。直近 5 本目の harness-engineering 記事吸収で **採用 0 件** (Pruning-First 完徹)。N/A 7 件 (大量ユーザー前提 #2/#3/#4/#6、IDE 固有 #1、checkpoint 代替 #10、明示棄却済 #6) + Already 強化不要 4 件 (#5 failure-taxonomy 21 FM で吸収 / #7 R-002 役割分離 / #9 cross-model-insights 2026-03-25 既記載 / #11 31 agents)。Codex stdout 失敗→Opus 直接ファイル精読で 4 件を強化可能→強化不要に格下げ。Gemini の表層的推奨 3 件 (Tool error taxonomy / LM-based satisfaction / Context Rot) も実ファイル精読で全棄却。教訓: 累積 5 本目で採用率 6→3→1→4→0 の飽和 / Watch 行 mechanism (R-NNN) を使う選択肢はあったがユーザー判断で 0 件採用 → `docs/research/2026-04-30-cursor-harness-absorb-analysis.md`
 
 ### エージェント設計
 
