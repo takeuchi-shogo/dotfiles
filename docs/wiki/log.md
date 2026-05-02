@@ -668,3 +668,11 @@
 - 取り込み: **採用 0 件** (Codex+Gemini 一致、Pruning-First)
 - 教訓: アナウンス記事 + ベンダーバイアス警戒。claude-api SKILL.md model ID 陳腐化は別件 hygiene
 - レポート: docs/research/2026-04-30-claude-api-skill-absorb-analysis.md
+
+## [2026-05-02] ingest | 30 Claude Code Sub-Agents I Actually Use in 2026
+
+- ソース: anonymous Medium 系記事 (テキスト貼り付け、URL なし)
+- 判定: Gap 0 / Partial 5 / Already 7 / N/A 15 / not_found 3 (deep-dive で Self-Rejection Rule pattern + Subagent Count Ceiling を Gap 発見)
+- 取り込み: T2 migration-guard.md に forward+reverse BLOCK rule + Postgres-specific hard blockers / T3 edge-case-analysis SKILL.md に 15 軸補足チェックリスト / T5 agent-design-lessons.md に Self-Rejection Rule Pattern セクション / メタ Subagent Count Ceiling セクション (Gemini 50+ degradation 9/10→5/10、dotfiles 33 個で残り 17)
+- 棄却 26 件: business team agent 15 個 (Sales/Marketing/CS/Ops/Finance) は個人 dotfiles で out_of_scope、code-reviewer / counterargument / decision-log / daily-plan は既存仕組みで実質カバー
+- 関連レポート: docs/research/2026-05-02-30-subagents-2026-absorb-analysis.md

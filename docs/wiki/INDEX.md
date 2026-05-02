@@ -32,6 +32,8 @@
 - **Sequential Protocol** — Dochkina 2026 で Orchestrator-Subagent を 14% 上回る実測あり。役割を動的に自動選択する逐次プロトコル。移行シグナル (coordinator context > 70%、情報損失の繰り返し) が定義されたら `references/agent-orchestration-map.md` に明記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 - **Coordinator Context Budget** — Orchestrator-Subagent パターンにおける並列サブエージェント件数の閾値管理。5 並列: safe、5-10: 警戒・summary 層検討、10+: 強制 summary 層 or Agent Teams 切替。Wave 1 Task 2 で `references/subagent-delegation-guide.md` に追記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 - **Generator-Verifier Reward Hacking** — Verifier が Generator の出力を形式的に pass させてしまう失敗モード。ralph-loop の盲点。N サイクル毎の人間監査 + Verifier 基準の periodic update で検知・防止。Wave 2 Task 4 で `references/review-consensus-policy.md` に "Reward Hacking Mitigation" セクション追加予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
+- **Self-Rejection Rule Pattern** — agent が自己出力を pass させやすい構造的バイアスを reject ルールで反転させるパターン (例: migration-guard の forward+reverse BLOCK)。30 sub-agents (2026-05-02) absorb で抽出 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
+- **Subagent Count Ceiling (50+ degradation)** — サブエージェント総数 50+ で description trigger 衝突・選択精度劣化 (Gemini 観測 9/10→5/10)。dotfiles 現状 33 個で残り余裕 17。新規追加時は count budget を意識 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
 
 ### claude-code — Claude Code
 

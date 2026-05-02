@@ -43,6 +43,19 @@ Read-only analysis. Do NOT modify any files.
 4. **リスク評価**: 各 breaking change を Critical / Warning / Info に分類
 5. **緩和策提案**: rollback plan、段階的移行、feature flag 等を提案
 
+## Hard Blockers (Forward+Reverse Required)
+
+以下の変更は **forward + reverse スクリプト両方** が揃うまで `Recommendation: Block` を返す:
+
+- カラム削除（deprecation 期間なし）
+- 大規模テーブル（>1M rows）への non-concurrent index 追加
+- ホットテーブルへの NOT NULL 制約追加（既存 NULL 値の backfill なし）
+- カラム rename（two-step deploy: 新カラム追加 → アプリ移行 → 旧削除 が分離されていない）
+
+reverse が欠落している場合、緩和策ではなく **BLOCKED** を明示する。修正方針の提案は可だが、出力上の Recommendation は Block を維持する。
+
+> 出典: 30-subagents-2026 absorb (T2)
+
 ## Output Format
 
 ```

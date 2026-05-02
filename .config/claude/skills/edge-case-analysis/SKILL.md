@@ -118,6 +118,14 @@ metadata:
 - 境界値（enum の直後の値、最大長）
 - 組み合わせの端（全部 nil、全部あり、片方だけ）
 
+### 補足: 15 軸チェックリスト (汎用)
+
+データフロー追跡で漏れた axis がないかを最後に突き合わせる。null check 単独はリジェクト — 必ず具体シナリオを書く。
+
+`empty / max / off-by-one / slow network / offline / concurrent users / permissions / i18n (RTL, 長名, emoji) / timezone / DST / leap year / currency rounding / partial failures / retries / stale cache`
+
+> 出典: 30-subagents-2026 absorb (T3)。記事の `edge-cases` agent は probability×severity ranking を使うが、本スキルは Step 4 マトリックスの「組み合わせの端」とほぼ等価のためチェックリストとしてのみ採用。
+
 ## Step 5: Test Plan
 
 Step 4 のマトリックスに対して、既存テストでカバーされてるパターンを突き合わせる。
