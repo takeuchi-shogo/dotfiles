@@ -31,10 +31,15 @@ pre-commit:
 commit-msg:
   commands:
     conventional-commit:
+      # 許可絵文字: gitmoji 公式 + /commit skill の絵文字表に揃える
+      # ✨ feat / 🐛 fix / 📝 docs / ♻️ refactor / 🔧 chore / 🚀 ci / ⬆️ deps
+      # 🔒 security / ✅ test / 🏗️ build / 🗑️ remove / 🎨 style / ⚡ perf
+      # 🔥 fix(削除) / 💥 feat(破壊的) / 🚑 fix(critical) / 💄 style(UI) / 🏷️ feat(types)
       run: |
         MSG=$(head -1 {1})
-        if ! echo "$MSG" | grep -qE '^(✨|🐛|📝|♻️|🔧|🚀|⬆️|🔒|✅|🏗️|🗑️|🎨|⚡) (feat|fix|docs|refactor|chore|ci|perf|security|test|build|revert|style|perf)(\(.+\))?: .+'; then
+        if ! echo "$MSG" | grep -qE '^(✨|🐛|📝|♻️|🔧|🚀|⬆️|🔒|✅|🏗️|🗑️|🎨|⚡|🔥|💥|🚑|💄|🏷️) (feat|fix|docs|refactor|chore|ci|perf|security|test|build|revert|style|perf)(\(.+\))?: .+'; then
           echo "❌ Commit message must follow: <emoji> <type>(<scope>): <description>"
           echo "   Example: ✨ feat: add new feature"
+          echo "   許可絵文字: ✨ 🐛 📝 ♻️ 🔧 🚀 ⬆️ 🔒 ✅ 🏗️ 🗑️ 🎨 ⚡ 🔥 💥 🚑 💄 🏷️"
           exit 1
         fi
