@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 SESSION_STATE_DIR = Path(os.path.expanduser("~/.claude/session-state"))
+SESSION_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 def _get_session_id() -> str:
@@ -57,6 +59,13 @@ def _snapshot_harness_status() -> list[str]:
 def main() -> None:
     session_id = _get_session_id()
     if not session_id:
+        print("[harness-snapshot] no session_id, snapshot skipped", file=sys.stderr)
+        return
+    if not SESSION_ID_PATTERN.fullmatch(session_id):
+        print(
+            "[harness-snapshot] invalid session_id format, snapshot skipped",
+            file=sys.stderr,
+        )
         return
 
     SESSION_STATE_DIR.mkdir(parents=True, exist_ok=True)
