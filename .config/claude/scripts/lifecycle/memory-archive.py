@@ -5,7 +5,8 @@ Claude Code のハード上限は 200行/25KB。180行で proactive にアーカ
 サイレント切り捨てを防ぐ。
 
 手動実行: python3 ~/.claude/scripts/lifecycle/memory-archive.py
-/improve や /memory-status から呼び出し可能。
+旧 /improve / /memory-status skill は廃止済み。
+現在は手動または scripts/learner からの呼び出しのみ。
 """
 
 from __future__ import annotations

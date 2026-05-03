@@ -94,7 +94,7 @@ last_reviewed: 2026-04-23
 パターンは合成可能。よくある組み合わせ:
 
 - **Inversion + Generator**: 要件収集 → テンプレート出力 (例: /spec, /timekeeper)
-- **Pipeline + Reviewer**: 多段処理の最終ステップで品質チェック (例: /epd)
+- **Pipeline + Reviewer**: 多段処理の最終ステップで品質チェック (例: /audit)
 - **Tool Wrapper + Reviewer**: 規約ロード → 規約に基づくレビュー (例: /review + review-checklists/)
 - **Pipeline + Inversion**: 多段処理の初期ステップでインタビュー (例: /skill-creator, /init-project)
 

@@ -166,7 +166,7 @@ AI-DLC の Unit of Work 概念に基づく。
 > 出典: Anthropic "Harness Design for Long-Running Apps" (2026-03) — DAW 構築で 3 ラウンドの Build→QA で残存バグが収束
 
 数時間規模の長時間タスクでは、Build → QA → Build → QA の反復ループで品質を収束させる。
-`/epd` の Build→Review に相当するが、自動化された反復を前提とする。
+通常の Build→Review に相当するが、自動化された反復を前提とする。
 
 ```
 Build Round 1 → QA Round 1（残存バグ一覧）
@@ -917,15 +917,6 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 | `/spec`     | Prompt-as-PRD 生成（構造化プロンプトとして仕様を記述） |
 | `/spike`    | プロトタイプファースト開発（worktree 隔離 → validate） |
 | `/validate` | Product Validation（acceptance criteria 照合）         |
-| `/epd`      | 統合ワークフロー（Spec → Spike → Build → Review）      |
-
-### EPD フルフロー
-
-```
-Spec → Spike → Validate → Decide → Build(/rpi) → Review(3軸) → Commit
-                              ↑                        ↓
-                              └──── Pivot ─────────────┘
-```
 
 ### レビュー3軸
 
@@ -939,8 +930,8 @@ Spec → Spike → Validate → Decide → Build(/rpi) → Review(3軸) → Comm
 
 | シナリオ                 | 推奨コマンド         |
 | ------------------------ | -------------------- |
-| 不確実なアイデアの検証   | `/epd`（フルフロー） |
-| 仕様が明確な機能開発     | `/rpi`（従来通り）   |
+| 不確実なアイデアの検証   | `/spike` → `/validate` → `/rpi` |
+| 仕様が明確な機能開発     | `/rpi`               |
 | 素早いプロトタイプだけ   | `/spike`             |
 | 仕様書だけ作りたい       | `/spec`              |
 | 実装後の仕様適合チェック | `/validate`          |

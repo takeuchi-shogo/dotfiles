@@ -1047,7 +1047,7 @@ Sequential 原則を採用する 3 ステップ:
 
 > 出典: Onyx DeepResearch pipeline (Akshay Pachaar 2026-04) — planner はツールアクセスを持たず、「プラン」だけを返す。プランナーが tool を使えると、plan 段階と実行段階の境界が曖昧になり、中途半端な実行結果がプランに混ざる。
 
-Analyze-only との違いは **Bash を持たない** こと。Plan-only は検証コマンドも打てない純粋な計画生成専用。/spec, /rpi, /epd の Plan phase で opt-in 適用することで、プランナーが早すぎる実行に滑り込むのを防ぐ。
+Analyze-only との違いは **Bash を持たない** こと。Plan-only は検証コマンドも打てない純粋な計画生成専用。/spec, /rpi の Plan phase で opt-in 適用することで、プランナーが早すぎる実行に滑り込むのを防ぐ。
 
 **適用判断**:
 
