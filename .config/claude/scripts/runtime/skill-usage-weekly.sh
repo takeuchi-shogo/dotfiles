@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
-# 毎週月曜: 過去 30 日で使用 0 回の skill を Inbox に投函
+# 週次 skill 使用レポート (catch-up: 月-水 まで実行可、その日のレポートあれば skip)
 
 set -euo pipefail
 
 LOG=/tmp/skill-usage-weekly.log
 INBOX="$HOME/Documents/Obsidian Vault/Inbox"
 TODAY="$(date +%Y%m%d)"
+DOW="$(date +%u)"  # 1=Mon, 7=Sun
 REPORT="$INBOX/skill-usage-weekly-${TODAY}.md"
 
-[ -d "$INBOX" ] || { echo "[$(date -Iseconds)] Inbox not found, skip" >> "$LOG"; exit 0; }
+# Idempotent: その日のレポートあれば skip (LaunchAgent 多重発火対策)
+[ -f "$REPORT" ] && exit 0
+
+# Catch-up window: Mon-Wed のみ。月曜スリープで飛んでも火水で拾う
+[ "$DOW" -gt 3 ] && exit 0
+
+# 今週のレポートが既にあれば skip (火水 catch-up が月曜と重複しないように)
+if find "$INBOX" -name 'skill-usage-weekly-*.md' -mtime -7 2>/dev/null | grep -q .; then
+  echo "[$(date -Iseconds)] this week's report exists, skip" >> "$LOG"
+  exit 0
+fi
+
+[ -d "$INBOX" ] || { echo "[$(date -Iseconds)] Inbox not accessible, skip" >> "$LOG"; exit 0; }
 
 {
   echo "# Skill Usage Weekly Report"
@@ -43,18 +56,18 @@ skills_dir = Path.home() / '.claude/skills'
 all_skills = sorted([p.name for p in skills_dir.iterdir() if p.is_dir()])
 unused = [s for s in all_skills if counter.get(s, 0) == 0]
 
-print(f'## Summary')
+print('## Summary')
 print()
 print(f'- Total skills: {len(all_skills)}')
 print(f'- Used (≥1 call in 30d): {len(all_skills) - len(unused)}')
 print(f'- Unused: {len(unused)}')
 print()
-print(f'## Unused skills (retire candidates)')
+print('## Unused skills (retire candidates)')
 print()
 for s in unused:
     print(f'- [ ] {s}')
 print()
-print(f'## Top 10 by usage')
+print('## Top 10 by usage')
 print()
 print('| skill | calls |')
 print('|---|---|')
@@ -63,4 +76,4 @@ for s, n in counter.most_common(10):
 PY
 } > "$REPORT" 2>>"$LOG"
 
-echo "[$(date -Iseconds)] weekly report -> $REPORT" >> "$LOG"
+echo "[$(date -Iseconds)] weekly report -> $REPORT (DOW=$DOW)" >> "$LOG"

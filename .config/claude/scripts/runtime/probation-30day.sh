@@ -1,17 +1,44 @@
 #!/usr/bin/env bash
-# Probation 6 skill の 30 日後使用統計 (2026-06-02 限定 one-shot)
-# Probation 開始: 2026-05-03 (commit 8775fd8)
-# 評価日: 2026-06-02
+# Probation 6 skill の 30 日後使用統計
+# Catch-up window: 2026-06-02 〜 2026-06-08 (PC スリープ対策)
+# Done marker で重複実行を防止
 
 set -euo pipefail
 
-TARGET_DATE="20260602"
-TODAY="$(date +%Y%m%d)"
-
-[ "$TODAY" != "$TARGET_DATE" ] && exit 0
-
+WINDOW_START=20260602
+WINDOW_END=20260608
+STATE_DIR="$HOME/.claude/state/skill-health"
+DONE_MARKER="$STATE_DIR/probation-30day.done"
 LOG=/tmp/probation-30day.log
 INBOX="$HOME/Documents/Obsidian Vault/Inbox"
+TODAY="$(date +%Y%m%d)"
+
+[ -f "$DONE_MARKER" ] && exit 0
+[ "$TODAY" -lt "$WINDOW_START" ] && exit 0
+
+mkdir -p "$STATE_DIR"
+
+if [ "$TODAY" -gt "$WINDOW_END" ]; then
+  # Window 過ぎても未実行 → 警告だけ Inbox に出して mark
+  if [ -d "$INBOX" ]; then
+    cat > "$INBOX/probation-30day-MISSED-${TODAY}.md" <<EOF
+# Probation 30-day Re-evaluation: MISSED
+
+PC offline during window 2026-06-02 〜 2026-06-08.
+手動で評価してください: \`/skill-audit\` または
+
+\`\`\`bash
+bash $HOME/.claude/scripts/runtime/probation-30day.sh --force
+\`\`\`
+EOF
+  fi
+  touch "$DONE_MARKER"
+  echo "[$(date -Iseconds)] window missed, marked done" >> "$LOG"
+  exit 0
+fi
+
+[ -d "$INBOX" ] || { echo "[$(date -Iseconds)] Inbox not accessible, skip" >> "$LOG"; exit 0; }
+
 REPORT="$INBOX/probation-30day-${TODAY}.md"
 
 {
@@ -60,4 +87,5 @@ PY
   echo "- KEEP は probation 解除"
 } > "$REPORT" 2>>"$LOG"
 
+touch "$DONE_MARKER"
 echo "[$(date -Iseconds)] probation report -> $REPORT" >> "$LOG"
