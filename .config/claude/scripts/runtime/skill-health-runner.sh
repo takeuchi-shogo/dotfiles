@@ -7,3 +7,4 @@ set -uo pipefail
 bash "$HOME/.claude/scripts/runtime/probation-30day.sh" || true
 bash "$HOME/.claude/scripts/runtime/skill-usage-weekly.sh" || true
 bash "$HOME/.claude/scripts/runtime/skill-count-alert.sh" || true
+bash "$HOME/.claude/scripts/runtime/tmp-plans-cleanup.sh" || true
