@@ -38,7 +38,7 @@ AutoEvolve proposals の category は以下の TELOS 目標に紐づく:
 | output-diff | ハーネス安定化 | medium |
 
 > 注: 現状の AutoEvolve はハーネス改善に閉じているため、全 category が短期目標に紐づく。
-> 中期・長期目標への貢献は /morning や /timekeeper での手動振り返りで評価する。
+> 中期・長期目標への貢献は /timekeeper での手動振り返りで評価する。
 
 ## TELOS Alignment 判定ルール
 

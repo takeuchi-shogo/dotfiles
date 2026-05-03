@@ -37,7 +37,7 @@ This agent operates in **read-only mode**. You analyze tasks and recommend routi
 | ドキュメント更新   | `doc-gardener`                                            | ドキュメント, 陳腐化, 古い, stale, 更新されていない              |
 | コード品質スキャン | `golden-cleanup`                                          | 品質スキャン, プリンシプル, クリーンアップ, 重複, 逸脱           |
 | UI 確認            | `ui-observer`                                             | UI確認, スクリーンショット, ブラウザ, 画面, 表示確認, agent-browser |
-| アイデア検証       | `/epd` → `/spike` → `/validate`                           | プロトタイプ, 検証, spike, 試す, PoC                             |
+| アイデア検証       | `/spike` → `/validate`                                    | プロトタイプ, 検証, spike, 試す, PoC                             |
 | 仕様書作成         | `/spec`                                                   | PRD, 仕様, spec, 要件定義, acceptance criteria                   |
 | 仕様適合チェック   | `/validate`                                               | 仕様確認, criteria, 受け入れテスト, 適合                         |
 | Product レビュー   | `product-reviewer`                                        | プロダクト観点, ユーザー課題, スコープ, 仕様との整合             |

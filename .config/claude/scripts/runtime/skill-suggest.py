@@ -19,10 +19,6 @@ SKILL_MAP: dict[str, list[str]] = {
     ".html": ["/frontend-design", "/web-design-guidelines"],
     ".svelte": ["/frontend-design"],
     ".vue": ["/frontend-design"],
-    # Backend Go
-    ".go": ["/senior-backend"],
-    # Backend TypeScript
-    ".ts": ["/senior-backend"],
     # Proto
     ".proto": ["/buf-protobuf"],
     # GraphQL

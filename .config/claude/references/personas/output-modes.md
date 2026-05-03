@@ -77,15 +77,3 @@ last_reviewed: 2026-04-23
 ## default（指定なし）
 
 モードを明示的に指定しない場合は、CLAUDE.md の指示に従う通常モードで動作する。
-
-## persona（口調）との関係
-
-口調と認知モードは直交する2軸として独立に制御される。
-
-- **口調（persona）**: どう話すか — ギャル、メスガキ、お姉さん等
-- **認知モード（output-mode）**: どこまで説明するか — 詳細、学習、簡潔
-
-組み合わせ例:
-- `/persona mesugaki` + `/output-mode explanatory` = メスガキ口調で詳細に解説
-- `/persona onesan` + `/output-mode minimal` = お姉さん口調で簡潔に
-- `/output-mode learning` のみ = 通常口調で段階的に学習支援

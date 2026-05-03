@@ -408,7 +408,7 @@ Review → verdict 判定
 
 - 3回で PASS にならない場合はユーザーにエスカレーション
 - 再レビューで新規指摘ゼロなら PASS に昇格
-- `/codex-review` は手動で個別に使うスキル。自動レビューフローでは `/review` スキルの Agent 並列起動に統一する
+- 自動レビューフローでは `/review` スキルの Agent 並列起動に統一する。Codex 観点のレビューは `codex-reviewer` agent を使用
 
 ### 5. Verify（検証）
 
@@ -710,7 +710,7 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 - 機密情報（token, password, secret）は絶対に保存しない
 - 重複記録を避ける。既存のメモリを確認してから書く
 - 間違っていた記録は速やかに更新・削除する
-- `/memory-status` でメモリの健全性を確認できる
+- メモリの健全性は MEMORY.md と `~/.claude/projects/*/memory/` を直接 Read で確認
 - **Snapshot 制限**: MEMORY.md はセッション開始時に読み込まれる静的スナップショット。セッション中に memory を更新しても、その変更は次のセッションまで system prompt に反映されない。checkpoint/handoff 時は、後続セッションが必要とする情報を plan や checkpoint ファイルにも書くこと
 - **Retrieval Budget**: メモリ/参照の検索は取得数 3 件前後が最適。取得数が閾値を超えると注意が分散し性能が低下する（非単調パターン）。根拠: MemCollab (arXiv:2603.23234) — p=3 で全ベンチマーク最高性能、p>5 で一貫して低下。セッション中に大量の memory/reference を読み込む場合は、タスクカテゴリに最も関連する 3 件に絞ること
 

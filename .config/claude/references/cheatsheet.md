@@ -39,9 +39,7 @@ last_reviewed: 2026-04-23
 
 | コマンド | 説明 | 使用例 |
 |---|---|---|
-| `/persona` | ペルソナ切り替え | `/persona senior-architect` |
 | `/onboarding` | 初期プロファイル設定 | `/onboarding` |
-| `/profile-drip` | 1日1問でプロファイルを漸進的に構築 | `/profile-drip` |
 | `/security-review` | セキュリティ観点のコードレビュー | `/security-review` |
 | `/autonomous` | 自律実行モード（worktree 並列） | `/autonomous タスクリスト` |
 | `/recall` | メモリから過去の知見を検索 | `/recall hook 設計` |
