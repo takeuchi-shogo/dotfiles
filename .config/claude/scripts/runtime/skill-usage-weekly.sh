@@ -4,7 +4,7 @@
 set -euo pipefail
 
 LOG=/tmp/skill-usage-weekly.log
-INBOX="$HOME/Documents/Obsidian Vault/Inbox"
+INBOX="$HOME/Documents/Obsidian Vault/00-Inbox"
 TODAY="$(date +%Y%m%d)"
 DOW="$(date +%u)"  # 1=Mon, 7=Sun
 REPORT="$INBOX/skill-usage-weekly-${TODAY}.md"

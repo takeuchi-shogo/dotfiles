@@ -5,7 +5,7 @@ set -euo pipefail
 
 THRESHOLD=110
 LOG=/tmp/skill-count-alert.log
-INBOX="$HOME/Documents/Obsidian Vault/Inbox"
+INBOX="$HOME/Documents/Obsidian Vault/00-Inbox"
 TODAY="$(date +%Y%m%d)"
 DOW="$(date +%u)"
 ALERT="$INBOX/skill-count-alert-${TODAY}.md"

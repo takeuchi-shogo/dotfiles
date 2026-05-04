@@ -10,7 +10,7 @@ WINDOW_END=20260608
 STATE_DIR="$HOME/.claude/state/skill-health"
 DONE_MARKER="$STATE_DIR/probation-30day.done"
 LOG=/tmp/probation-30day.log
-INBOX="$HOME/Documents/Obsidian Vault/Inbox"
+INBOX="$HOME/Documents/Obsidian Vault/00-Inbox"
 TODAY="$(date +%Y%m%d)"
 
 [ -f "$DONE_MARKER" ] && exit 0
