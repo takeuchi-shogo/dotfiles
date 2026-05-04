@@ -23,6 +23,7 @@ fi
 COUNT=$(find -L "$HOME/.claude/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
 
 if [ "$COUNT" -gt "$THRESHOLD" ]; then
+  mkdir -p "$INBOX" 2>/dev/null
   if [ -d "$INBOX" ]; then
     {
       echo "# Skill Count Alert"

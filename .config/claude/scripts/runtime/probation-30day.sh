@@ -37,7 +37,7 @@ EOF
   exit 0
 fi
 
-[ -d "$INBOX" ] || { echo "[$(date -Iseconds)] Inbox not accessible, skip" >> "$LOG"; exit 0; }
+mkdir -p "$INBOX" 2>/dev/null || { echo "[$(date -Iseconds)] mkdir Inbox failed, skip" >> "$LOG"; exit 0; }
 
 REPORT="$INBOX/probation-30day-${TODAY}.md"
 

@@ -21,7 +21,7 @@ if find "$INBOX" -name 'skill-usage-weekly-*.md' -mtime -7 2>/dev/null | grep -q
   exit 0
 fi
 
-[ -d "$INBOX" ] || { echo "[$(date -Iseconds)] Inbox not accessible, skip" >> "$LOG"; exit 0; }
+mkdir -p "$INBOX" 2>/dev/null || { echo "[$(date -Iseconds)] mkdir Inbox failed, skip" >> "$LOG"; exit 0; }
 
 {
   echo "# Skill Usage Weekly Report"
