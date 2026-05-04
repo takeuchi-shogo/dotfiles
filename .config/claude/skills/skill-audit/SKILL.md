@@ -107,6 +107,8 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - **Dominant かつ 5D に Poor あり** → 品質に関わらず使われている = 代替不在の信号。最優先で改善
 - **Dominant + Unused の共存** → Expert Collapse の決定的証拠。Unused スキル側の description/trigger 不備を真っ先に疑う
 
+> 削減目標値・description 上限ガイド・運用ポリシーは [`docs/specs/2026-05-04-skill-tier-pruning.md`](../../../../docs/specs/2026-05-04-skill-tier-pruning.md) を参照。
+
 ### Step 0.7: Composition Depth Check
 
 ADR-0008 の compound / molecule / atom レイヤリングに対応した静的解析。skill 間の呼び出し関係の深さを計測し、Skill Graphs 2.0 が指摘した **compound ceiling (8-10 molecules 超で成功率 ~43%)** を超えそうな skill を検出する。
