@@ -13,10 +13,16 @@ Eliminates 3-5 exploratory turns.
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+# Leading version-like token, e.g. "v25.9.0" -> "25.9.0", "java 14 2020" -> "14".
+# `{0,2}` covers single-integer versions (Java 14) and full semver alike.
+_VERSION_TOKEN_RE = re.compile(r"\d+(?:\.\d+){0,2}")
 
 
 def _run(cmd: list[str], timeout: int = 5) -> str:
@@ -33,9 +39,15 @@ def _run(cmd: list[str], timeout: int = 5) -> str:
         return ""
 
 
+def _short_version(raw: str) -> str:
+    """Extract the leading semver-like token; fall back to the first line."""
+    first_line = raw.split("\n", 1)[0]
+    m = _VERSION_TOKEN_RE.search(first_line)
+    return m.group(0) if m else first_line
+
+
 def _detect_runtimes() -> dict[str, str]:
-    """Detect available language runtimes and their versions."""
-    runtimes: dict[str, str] = {}
+    """Detect available language runtimes and their versions in parallel."""
     checks = [
         ("node", ["node", "--version"]),
         ("python", ["python3", "--version"]),
@@ -44,11 +56,16 @@ def _detect_runtimes() -> dict[str, str]:
         ("ruby", ["ruby", "--version"]),
         ("java", ["java", "--version"]),
     ]
-    for name, cmd in checks:
-        if shutil.which(cmd[0]):
-            ver = _run(cmd)
-            if ver:
-                runtimes[name] = ver.split("\n")[0]
+    available = [(name, cmd) for name, cmd in checks if shutil.which(cmd[0])]
+    if not available:
+        return {}
+    runtimes: dict[str, str] = {}
+    with ThreadPoolExecutor(max_workers=len(available)) as ex:
+        futures = {name: ex.submit(_run, cmd) for name, cmd in available}
+        for name, fut in futures.items():
+            raw = fut.result()
+            if raw:
+                runtimes[name] = _short_version(raw)
     return runtimes
 
 
@@ -86,15 +103,6 @@ def _detect_project_markers(cwd: str) -> list[str]:
     return markers
 
 
-def _get_top_level_dirs(cwd: str, limit: int = 15) -> list[str]:
-    """List top-level directory entries."""
-    try:
-        entries = sorted(os.listdir(cwd))
-        return entries[:limit]
-    except OSError:
-        return []
-
-
 def build_snapshot() -> str:
     """Build the environment snapshot string."""
     cwd = os.getcwd()
@@ -120,11 +128,6 @@ def build_snapshot() -> str:
     markers = _detect_project_markers(cwd)
     if markers:
         lines.append(f"Project markers: {', '.join(markers)}")
-
-    # Top-level structure
-    top = _get_top_level_dirs(cwd)
-    if top:
-        lines.append(f"Top-level: {', '.join(top)}")
 
     lines.append("[/Environment Snapshot]")
     return "\n".join(lines)
