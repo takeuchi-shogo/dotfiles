@@ -292,7 +292,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 - セクション: Key Takeaways, Summary, My Thoughts, Action Items, Related Notes
 - **重要 (stall 防止)**: subagent (Sonnet BG / general-purpose) から `Skill` tool を呼ぶと skill ネスト呼び出しが timeout する (実測: 600s no progress で fail)。**必ず Opus main session で `Skill` tool を直接呼ぶこと**
 - **フォールバック**: skill が利用不能なら `Write` tool で Vault パスに直接書き込み (frontmatter + セクション構造を保持)
-- **NG**: `mcp__obsidian__write_note` を直接呼ぶこと。obsidian-skills plugin が提供する skill 経由が正規ルート。MCP 直接呼びは `mcp-audit.py` の VeriGrey Tool Filter で soft block される（absorb の SKILL.md に `mcp-tools: obsidian` が宣言されていないため）。さらに PostHog "Meet agents at their abstraction level" 原則の観点からも、低レベル MCP より skill abstraction を使うべき
+- **NG**: `mcp__obsidian__write_note` を直接呼ぶこと。obsidian-skills plugin が提供する skill 経由が正規ルート。MCP 直接呼びは `mcp-audit.py` の VeriGrey Tool Filter で **enforcement される (`sys.exit(2)` による hard block、soft warning ではない)**。absorb の SKILL.md に `mcp-tools: obsidian` が宣言されていないため scope violation 扱い。さらに PostHog "Meet agents at their abstraction level" 原則の観点からも、低レベル MCP より skill abstraction を使うべき
 
 **Wiki Log（自動・確認不要、Sonnet BG）:**
 - `docs/wiki/log.md` に ingest エントリを追記

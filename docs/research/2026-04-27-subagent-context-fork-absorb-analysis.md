@@ -2,6 +2,10 @@
 source: "Keep your Claude Code context clean with Subagents (aitmpl 系記事)"
 date: 2026-04-27
 status: analyzed
+reaffirmed:
+  - date: 2026-05-04
+    by: "/absorb (Distribution vs Escalation, 2026-05-02)"
+    decision: "Forked subagent (CLAUDE_CODE_FORK_SUBAGENT=1) は意図的非採用を再確認。partial 判定ではなく N/A / intentional non-adoption。理由: context cleanliness 哲学（subagent は要約のみ親に返すのが原則）と逆方向であり、現行設計と整合しない。Distribution vs Escalation 記事もこのトレードオフを認めている。"
 ---
 
 # Subagent Context Fork absorb 分析

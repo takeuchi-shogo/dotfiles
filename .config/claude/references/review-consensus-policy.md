@@ -413,6 +413,29 @@ diff を抜き取り検査してください。
 
 ---
 
+## 9. Advisor Stop Signal との関係
+
+Advisor (`references/advisor-strategy.md`) の `stop` response type は本ポリシーの BLOCK と同等の severity を持つが、判定経路が異なる:
+
+| Advisor response | Review verdict 相当 | アクション |
+|---|---|---|
+| `plan` | （影響なし） | Executor が plan を採用するか判断 |
+| `correction` | NEEDS_FIX 相当 | Executor が修正後に再 verify |
+| **`stop`** | **BLOCK 相当** | Executor は作業中断 → 親 escalation |
+
+### 判定経路の違い
+
+| 経路 | 性質 | 失敗モード |
+|---|---|---|
+| Review Gate (本ポリシー) | 複数レビューアーの **合意ベース** verdict（§3 Convergence Stall, §6 SCVC, §7 Capability-Weighted） | レビューアー間の矛盾 / verbosity bias |
+| Advisor stop signal | **シングルパス**の単一 advisor 判定（`advisor-strategy.md` § 1 回性の意味） | Executor のフレーミングバイアス |
+
+両者は併用可能だが**独立**。Advisor stop は同一 call 内で iteration/debate しないため、Convergence Stall や Reward Hacking Mitigation の対象にならない。逆に Review Gate は Advisor の `max_uses` 上限とは無関係。
+
+> 出典: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02) absorb / `docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md`
+
+---
+
 ## References
 
 - arXiv:2603.01213 "Can AI Agents Agree?" (Berdoz et al., 2026)

@@ -34,6 +34,7 @@
 - **Generator-Verifier Reward Hacking** — Verifier が Generator の出力を形式的に pass させてしまう失敗モード。ralph-loop の盲点。N サイクル毎の人間監査 + Verifier 基準の periodic update で検知・防止。Wave 2 Task 4 で `references/review-consensus-policy.md` に "Reward Hacking Mitigation" セクション追加予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 - **Self-Rejection Rule Pattern** — agent が自己出力を pass させやすい構造的バイアスを reject ルールで反転させるパターン (例: migration-guard の forward+reverse BLOCK)。30 sub-agents (2026-05-02) absorb で抽出 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
 - **Subagent Count Ceiling (50+ degradation)** — サブエージェント総数 50+ で description trigger 衝突・選択精度劣化 (Gemini 観測 9/10→5/10)。dotfiles 現状 33 個で残り余裕 17。新規追加時は count budget を意識 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
+- **Distribution vs Escalation pattern** — サブエージェント (work distributor) と アドバイザー (one-shot consultant) の使い分け原則。Drive 主体逆転 (Top-Down vs Bottom-Up) で委譲方向を判定し、Subagent Return Contract (re-flooding 防止) と Advisor one-shot per decision (no iteration / no debate) を組み合わせる → 参照: [2026-05-04-distribution-vs-escalation-absorb-analysis](../research/2026-05-04-distribution-vs-escalation-absorb-analysis.md)
 
 ### claude-code — Claude Code
 

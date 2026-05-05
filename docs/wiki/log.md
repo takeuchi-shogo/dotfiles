@@ -676,3 +676,22 @@
 - 取り込み: T2 migration-guard.md に forward+reverse BLOCK rule + Postgres-specific hard blockers / T3 edge-case-analysis SKILL.md に 15 軸補足チェックリスト / T5 agent-design-lessons.md に Self-Rejection Rule Pattern セクション / メタ Subagent Count Ceiling セクション (Gemini 50+ degradation 9/10→5/10、dotfiles 33 個で残り 17)
 - 棄却 26 件: business team agent 15 個 (Sales/Marketing/CS/Ops/Finance) は個人 dotfiles で out_of_scope、code-reviewer / counterargument / decision-log / daily-plan は既存仕組みで実質カバー
 - 関連レポート: docs/research/2026-05-02-30-subagents-2026-absorb-analysis.md
+
+## [2026-05-04] ingest | I tracked 430 hours of Claude Code usage. 73% was wasted on these 9 patterns
+
+- ソース: anonymous X post + Telegram funnel (https://t.me/+_ZWrQN7GuDA3ZDEy、URL なし、テキスト貼り付け)
+- 判定: Gap 1 (Pattern 5 skill loading 12,283 token tax) / Partial 2 (8 早期停止 / 9 SessionStart) / Already 5 / 保留 1 (4 Cache TTL)
+- 取り込み 5 件: T1 (M, 最優先) skill Tier 分類で常時 description tax 半減 (12,283→~6,000) / T1.5 (S) dotfiles/CLAUDE.md project 再検討 / T2 (S) SessionStart hook 監査 / T3 (S) Cache TTL 実態確認調査 / T4 (XS) MEMORY references 流入経路確認
+- 棄却 3: Pattern 1 (CLAUDE.md user) Pruning-First / Pattern 6 (MCP) settings.json 0 個で最小 / Pattern 7 (Thinking) DISABLE_ADAPTIVE_THINKING=1 設定済
+- 教訓: 14+13+11+10+7+6+5+4+3=73% engineered 数字。Telegram 集客で信頼度低。判断は記事数値ではなく当 setup 実測 (107 skill 12,283 token tax) ベース。Codex critique で Opus 過大評価寄りバイアスを 4 件補正 (Pattern 5 Gap 格上げ、Pattern 4 保留、Pattern 1/6 棄却)
+- 関連レポート: docs/research/2026-05-04-claude-code-overhead-9patterns-absorb-analysis.md
+
+## [2026-05-04] ingest | Distribution vs Escalation: Subagents or Advisors
+
+- ソース: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02, author unknown)
+- 判定: Gap 0 / Partial 3 (#3 Advisor 索引接続, #5 Drive 主体逆転表, #7 lifecycle registry) / Already 6 / N/A 1 (Forked subagent 再確認)
+- 取り込み: A1 (decision-tables-index Advisor 行 + Drive 主体逆転表) / A2 (advisor-strategy one-shot per decision + review-consensus §9) / A3 (subagent-delegation Return Contract) / B1 (mcp-audit soft→enforcement 修正) / B2 (fork-analysis reaffirmed footnote)
+- 分離: B3 (lifecycle registry coverage) は別 plan
+- Hallucination Risk: advisor_20260301 / Anthropic blog 4/9 / UC Berkeley advisor 論文 が確認不可、specific tool names / 数値は採用せず pattern のみ採用
+- 分析レポート: docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md
+

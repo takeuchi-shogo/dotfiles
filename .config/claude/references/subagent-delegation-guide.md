@@ -153,6 +153,26 @@ context 逼迫を回避する中間層の挿入。サブエージェント群の
 - 親が受け取るのは「統合しやすい構造化サマリ」のみ
 - ただし summary 層自身が「発見の情報損失」を起こす。重要情報は明示的に原文保持を指示する
 
+### Return Contract（戻り値サイズ契約）
+
+サブエージェントの目的は **context 隔離 + 圧縮された結果の還流** である。返却が大きすぎると、isolation の利点が消えて「親 context の再汚染（re-flooding）」が発生する。
+
+| 役割 | 推奨返却サイズ | 親 context への影響 |
+|---|---|---|
+| Explore（探索） | ≤ 750 tokens の構造化要約 | 既知パターン。冒頭の §概要 で明文化 |
+| 実装系 (Implementer / Build) | ≤ 1,500 tokens（diff 概要 + 検証ログ要約） | 大きい diff は path + 行範囲のみ、本体は file system に残す |
+| Review / Critic | ≤ 1,200 tokens（finding テーブル + verdict） | 全文引用は禁止。file:line 参照 + 1-2 行抜粋まで |
+| Advisor (`references/advisor-strategy.md`) | 400-700 tokens | Role-Specific 制約により厳守 |
+
+#### Re-Flooding 防止のルール
+
+1. **詳細結果はファイルシステムに残す** — 親に渡すのは要約だけ。原文・log・全 diff は `tmp/` または `docs/` に保存し、path だけ報告する
+2. **複数 subagent を並列起動した場合の合算上限** — 並列 N 体 × 各上限 < 親の残 context budget。超えたら summary 層を挟む（上述 § Summary 層パターン）
+3. **想定超過時は親に sync 確認を返す** — 「想定 750 tokens に対し 2,000 tokens 必要、要約か全量か？」のような確認を 1 round 投げる
+4. **再帰的引用を避ける** — subagent が他 subagent の出力を全文引用すると指数増。要約引用 + 元 path のみ
+
+> 出典: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02) — "running many subagents that each return detailed results can re-flood the context you were trying to keep clean."
+
 ### Evolution シグナル（別パターンへの移行）
 
 以下が継続的に観測されたら、Orchestrator-Subagent から別パターンへの移行を検討（`references/multi-agent-coordination-patterns.md § Pattern 2 Evolution シグナル` も参照）:

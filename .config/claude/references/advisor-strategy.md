@@ -35,8 +35,20 @@ Advisor 役割には以下の制約を適用する:
 |------|-----|------|
 | **max_tokens** | 400-700 | 戦略的指針に特化。詳細な実装指示は Executor の責務 |
 | **max_uses** | 3 / task | advisor 依存の防止。Anthropic 推奨値 |
+| **iteration / debate** | per decision 1 回 / no debate | advisor は提示→Executor 判断のシングルパス。同一 call 内では追加質問・反論・iteration を行わない |
 | **tools** | なし | Advisor はツール呼び出しを行わない。判断と助言のみ |
 | **user-facing output** | なし | Advisor の出力は Executor のみが消費する |
+
+### 1 回性の意味（One-Shot Per Decision）
+
+Advisor の助言は **シングルパス**である。これは max_uses=3/task と独立した制約:
+
+- 1 つの相談につき 1 回の応答（call 内 iteration なし）
+- 反論 / 追加質問 / debate は同一 call 内では行わない
+- Executor が再考が必要と判断した場合は、**新しい相談として max_uses 上限まで別の call を発行する**
+- 効果: advisor が議論で右往左往するのを防ぎ、Executor の主体性を維持する
+
+> 出典: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02) — "advisor is one-shot, no iteration, no debate. If the advisor is wrong on a specific point, the executor's only recourse is another advisor call to reconcile, which burns more of the max_uses budget."
 
 ## 中間相談プロトコル
 
