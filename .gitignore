@@ -20,7 +20,9 @@ CLAUDE.local.md
 
 # Claude reviewer persona (contains personal data)
 .config/claude/agents/reviewer-*.md
-.config/claude/data/
+.config/claude/data/*
+# 例外: 公開 OK な設定データ
+!.config/claude/data/trusted-domains.json
 __pycache__/
 .worktrees/
 

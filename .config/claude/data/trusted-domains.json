@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "purpose": "WebFetch で full markdown が通過することを観測確認した curated ドメイン。一般記事サイト (Zenn/Qiita/note/Wikipedia) や user-controlled host (github.io / raw.githubusercontent.com 任意 path) は trusted ではない。",
+    "observation_pinned": "Claude Code v2.1.126",
+    "last_reviewed": "2026-05-06",
+    "source_doc": ".config/claude/references/web-fetch-policy.md",
+    "transcription_policy": "本ファイルが本体。CLAUDE.md / MEMORY.md には転記しない (IFScale 違反回避)。",
+    "exclusion_rationale": {
+      "github.com": "user-controlled サブドメイン (user.github.io 等) を含むため除外。GitHub は gh CLI 経由を推奨",
+      "raw.githubusercontent.com": "任意 user repo の任意 path が trusted 扱いになる risk があるため除外。skill 内で個別 URL を hardcoded する場合のみ WebFetch 使用"
+    }
+  },
+  "trusted_domains": [
+    "docs.aws.amazon.com",
+    "react.dev",
+    "kubernetes.io",
+    "developer.mozilla.org",
+    "alphaxiv.org",
+    "docs.python.org",
+    "go.dev",
+    "pkg.go.dev",
+    "doc.rust-lang.org",
+    "nodejs.org",
+    "nextjs.org",
+    "vercel.com",
+    "cloud.google.com",
+    "developers.cloudflare.com"
+  ],
+  "non_trusted_examples": [
+    "zenn.dev",
+    "qiita.com",
+    "note.com",
+    "en.wikipedia.org",
+    "ja.wikipedia.org",
+    "github.com",
+    "raw.githubusercontent.com"
+  ]
+}
