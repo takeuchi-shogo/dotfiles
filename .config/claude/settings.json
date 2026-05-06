@@ -665,6 +665,17 @@
             "statusMessage": "Observing..."
           }
         ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/webfetch-truncation-detector.py",
+            "timeout": 5,
+            "statusMessage": "WebFetch truncation check..."
+          }
+        ]
       }
     ],
     "PreCompact": [

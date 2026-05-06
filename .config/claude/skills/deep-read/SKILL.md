@@ -19,7 +19,7 @@ metadata:
 ## Phase 0 — 記事の取得と分析
 
 1. **入力を判定する**:
-   - URL が渡された場合 → WebFetch で記事を取得
+   - URL が渡された場合 → 取得経路は `references/web-fetch-policy.md` に従う (trusted 外ドメインは `curl + defuddle` で full markdown 取得)
    - テキストが貼られた場合 → そのまま使用
 2. **記事を分析し、内部メモを作成する**（ユーザーには見せない）:
    - 主張（Thesis）: 記事の中心的な主張は何か

@@ -209,7 +209,7 @@ variant 並列は **Step 3 Execute 内のサブタスクプロンプト** で表
 
 - **MCP ツール**: brave-search, context7, scite（インストール済みの場合）
 - **Scite MCP**: 学術文献検索・Smart Citations・引用グラフ分析。学術トピックのサブタスクで積極的に使用
-- **WebFetch/WebSearch**: 標準ツール
+- **WebFetch/WebSearch**: 標準ツール (URL 取得経路は `references/web-fetch-policy.md` に従う — trusted 外ドメインはサイレント truncation 回避のため `curl + defuddle` 推奨)
 
 ### マルチモデル並列実行
 

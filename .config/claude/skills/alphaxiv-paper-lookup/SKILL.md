@@ -39,7 +39,7 @@ arxiv 論文の構造化レポートを alphaxiv.org から取得する。
 WebFetch: https://alphaxiv.org/overview/{PAPER_ID}.md
 ```
 
-これが **第一選択**。AI 生成の構造化分析レポートが返る。
+これが **第一選択**。AI 生成の構造化分析レポートが返る。alphaxiv.org は trusted_domains に登録済 — full markdown が通過する。一般 URL の取得経路は `references/web-fetch-policy.md` に従う。
 
 ## Step 3: フォールバック（必要な場合のみ）
 

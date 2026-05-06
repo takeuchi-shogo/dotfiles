@@ -68,7 +68,7 @@ Score each axis 0–2. Refer to the rubric in the `tech-article-reproducibility`
 6. Expected output shown
 7. Handling of errors
 8. Project prerequisites stated
-9. Link health (actually verify with WebFetch)
+9. Link health (actually verify with WebFetch — note: 取得経路は `references/web-fetch-policy.md` に従う、trusted 外ドメインは `obsidian:defuddle` 推奨)
 10. Author-specific knowledge stated
 
 ## Tasks

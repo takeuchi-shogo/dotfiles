@@ -58,11 +58,48 @@ metadata:
 
 ## Phase 1: Extract（要点抽出） [Haiku / Gemini に委譲]
 
+### Phase 1.0: 取得経路の決定 (gate)
+
+`/absorb` は引用 faithfulness が要件のため、**Haiku 内部要約による silent truncation を許容しない**。URL が渡された場合、最初に取得経路を決定する:
+
+1. **C1 用途オーバーライドが優先**: `/absorb` は本質的に「原文引用が必要」な分析であるため、`web-fetch-policy.md` の **C1 オーバーライド** が trusted/non-trusted 判定に**先行**する。trusted ドメインであっても **`obsidian:defuddle` 経由で full markdown 取得**する (Haiku copyright filter ~125 字の引用制限を回避するため)
+2. C1 オーバーライドが適用されない例外的な要約用途のみ、trusted 判定に進む:
+   - URL のドメインを `.config/claude/data/trusted-domains.json` (`trusted_domains`) と照合
+   - **trusted の場合**: `Agent(model: "haiku")` で WebFetch + 構造化抽出 OK
+   - **trusted 外の場合 (Zenn/Qiita/note/blog/Wikipedia 等)**: WebFetch 禁止
+3. **trusted 外で C1 がない場合のフォールバック**: 以下のいずれか
+   - `obsidian:defuddle` skill (curl + defuddle で full markdown 取得)
+   - Jina Reader (`https://r.jina.ai/<url>`)
+   - Gemini grounding (`/gemini` skill, 1M コンテキスト)
+4. 経路選択の根拠は `references/web-fetch-policy.md` の decision table + 用途別オーバーライド (C1/C2) に従う
+
+Phase 1 出力 JSON に **`fetch_metadata`** を含める:
+
+```json
+{
+  "fetch_metadata": {
+    "url": "https://...",
+    "domain": "...",
+    "trusted": true,
+    "route": "webfetch | defuddle | jina | gemini",
+    "received_bytes": 12345,
+    "visible_chars": 6789
+  },
+  "主張": "...",
+  "手法": [...],
+  "根拠": "...",
+  "前提条件": "..."
+}
+```
+
+### Phase 1.1: 構造化抽出 [委譲]
+
 **委譲先の選択:**
-- URL / テキスト → `Agent(model: "haiku")` で WebFetch + 構造化抽出
+- URL (trusted) / テキスト → `Agent(model: "haiku")` で WebFetch + 構造化抽出
+- URL (non-trusted) → Sonnet で `obsidian:defuddle` 取得 + 構造化抽出 (Haiku は要約圧縮があるため不可)
 - リポジトリ全体 → Gemini（1M コンテキストが必要）
 
-**Haiku / Gemini への指示内容:**
+**委譲先への指示内容:**
 
 > 以下のソースから構造化抽出を行い、JSON で返してください:
 > - **主張**: 記事が提唱していること（1-3文）
@@ -327,6 +364,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 | **Phase 2.5 (Refine) をスキップする** | **スキップ不可。Opus の判断バイアスを補正するために Codex + Gemini の並列批評は必須** |
 | **Opus が Extract や探索を自分でやる** | **定型作業は Haiku/Sonnet に委譲する。Opus は判断・統合・ユーザー対話に集中** |
 | **subagent (Sonnet BG / general-purpose) から `Skill` tool で obsidian skill を呼び出す** | **実測で 600s no progress stall (2026-04-19)。skill ネスト呼び出しは Opus main session で実行する。Phase 5.6 Obsidian Bridge は Opus 直接実行が原則** |
+| **trusted 外ドメイン (Zenn/Qiita/note/Wikipedia 等) で WebFetch を直接使う** | **Claude Code v2.1.126 の WebFetch は内部 Haiku 要約 + 100k chars truncation がある (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。引用 faithfulness が壊れるため `obsidian:defuddle` / Jina Reader / Gemini grounding に切替。詳細: `references/web-fetch-policy.md`** |
 
 ## Chaining
 

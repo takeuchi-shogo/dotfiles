@@ -12,7 +12,7 @@ last_reviewed: 2026-04-23
 | モデル | 得意領域 | 委譲タスク例 | 起動方法 |
 |--------|----------|-------------|----------|
 | **Sonnet** | 高速実装・定型作業 | ファイル探索、コード実装、テスト作成、URL取得+要約、定型レビュー | `Agent(model: "sonnet")` |
-| **Haiku** | 軽量な情報取得 | WebFetch+要約、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
+| **Haiku** | 軽量な情報取得 | WebFetch (生 markdown 取得まで、要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
 | **Codex** | 異視点の深い推論 | 設計の壁打ち、リスク分析、セカンドオピニオン、コードレビュー | cmux Worker or `/dispatch` |
 | **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
 | **Cursor** | マルチモデル・Cloud Agent | モデル比較、非同期長時間タスク、Cursor インデックス活用 | `/cursor` skill |
@@ -60,3 +60,7 @@ last_reviewed: 2026-04-23
 **使い方**: Codex Spec/Plan Gate は `-c reasoning_effort=high`、Review Gate は `-c reasoning_effort=high`、Implement は medium 以下で十分。強制ではなく任意の参考。自動配分 (stage-aware routing) は運用複雑性が増えるため採用しない。
 
 **由来**: `docs/research/2026-04-24-harness-engineering-absorb-analysis.md` (AlphaSignal Harness Engineering absorb)
+
+## WebFetch 委譲注記 (Haiku 内部要約対策)
+
+Claude Code v2.1.126 で `WebFetch` は内部 Haiku 要約 + 100k chars truncation を観測 (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。Haiku 委譲時は二重圧縮 (Haiku 内部要約 → 委譲先要約) を回避するため、**生取得段階に限定**し要約は呼び出し側で行う。経路選択は `references/web-fetch-policy.md` に従う。

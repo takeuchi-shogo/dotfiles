@@ -135,7 +135,17 @@ go-licenses check ./... 2>/dev/null || true
 - Base64 エンコードされた隠しコメント
 - ホモグリフ（キリル文字によるラテン文字偽装）
 
-#### 4d. コンテキストブリッジング攻撃検出 (VeriGrey)
+#### 4d. Web fetch via Haiku 要約層 (Indirect Injection Surface)
+
+> 出典: `docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md` (Claude Code v2.1.126 観測)。
+
+`WebFetch` の内部 Haiku 要約層は web 経由 prompt injection の表面となる可能性がある (Opus 到達前に Haiku で injection が発火し得る)。`WebFetch` tool_use を含むコード変更レビュー時は以下を考慮する:
+
+- **取得元 URL の信頼性**: `data/trusted-domains.json` 内か。trusted 外で原文引用や code/table が要件なら `obsidian:defuddle` / Jina Reader / Gemini grounding に切替済か (`references/web-fetch-policy.md`)
+- **user-controlled URL**: URL 自体に prompt injection ペイロードが埋め込まれる SSRF + injection 複合攻撃。fetch 先の domain validation だけで安心せず、URL pattern (path/query) も走査する
+- **WebFetch 結果の subagent 転記**: 「External Content Contamination」(`references/subagent-delegation-guide.md`) の禁則は WebFetch でも適用。内部 Haiku 要約後の出力にも injection が残存しうる
+
+#### 4e. コンテキストブリッジング攻撃検出 (VeriGrey)
 
 > arXiv:2603.17639 の知見。MCP サーバー応答やスキル定義に埋め込まれた
 > 間接インジェクションの中で最も危険なパターン。

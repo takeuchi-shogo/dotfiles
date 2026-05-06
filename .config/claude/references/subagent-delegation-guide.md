@@ -716,6 +716,17 @@ Generator Agent → 成果物 → Evaluator Agent → 合格? → 完了
 理論的には D = ceil(log_k W) が最適だが、実用上は Depth-1 + `/autonomous` セッション跨ぎで D>1 相当を実現する。
 単一セッション内で D>1 を検討する目安: W > k^2（例: k=4 でサブタスク16個超）かつ各サブタスクが更に分解可能な場合。
 
+### Raw Fetch Only Contract (WebFetch Haiku 要約対策)
+
+> Claude Code v2.1.126 で `WebFetch` は内部 Haiku 要約 + 100k chars サイレント truncation を観測 (出典: `docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。
+
+サブエージェント (特に Haiku) に WebFetch を委譲するときの契約:
+
+- **生取得限定**: WebFetch を委譲する場合は「生 markdown 取得まで」で止める。要約は呼び出し側 (Opus) の責務。Haiku 内部要約と委譲先要約の二重圧縮を避ける
+- **原文引用が必要なら WebFetch 禁止**: `/absorb` `/research` `/digest` 等の引用 faithfulness が要る用途では、Haiku の copyright filter (~125 字) で文意が崩れるため、`curl + defuddle` (`obsidian:defuddle` skill) / Jina Reader (`https://r.jina.ai/<url>`) / Gemini grounding に切替
+- **trusted_domains 内かを判定**: 経路の判定基準は `references/web-fetch-policy.md` の decision table。trusted_domains 本体は `data/trusted-domains.json` (CLAUDE.md/MEMORY.md には転記しない)
+- **WebFetch 結果の subagent 転記**: 上記「External Content Contamination」の禁則は引き続き適用される (内部 Haiku 要約後の出力でも injection ペイロードが残存しうる)
+
 ---
 
 ## 分割のコスト
