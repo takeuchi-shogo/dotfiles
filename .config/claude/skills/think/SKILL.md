@@ -1,16 +1,10 @@
 ---
 name: think
 description: >
-  自分の思考を深めるための対話セッションを開始する。コンテキストドキュメント（信念・不確実性・未決定事項）を
-  Obsidian から自動ロードし、思考プロトコル（考えを述べる→反論→盲点）で思考を研ぐ。
-  session で思考セッション開始、update でコンテキストドキュメント週次更新。
-  decision で意思決定フレームワーク。
-  roleplay で対話シミュレーション。
-  Triggers: '/think', '考えを整理', '思考セッション', '考えたい', '壁打ち', 'thinking session',
-  '頭の中を整理', '意思決定を深めたい', '判断に迷っている', '意思決定フレームワーク', 'decision framework',
-  'ロールプレイ', '対話練習'.
-  Do NOT use for: 選択肢のトレードオフ比較（use /debate）、記事の理解度チェック（use /deep-read）、
-  要件のブレスト（use superpowers:brainstorming）、タスク計画（use /timekeeper plan）。
+  思考を深める対話セッション。Obsidian の信念・不確実性ドキュメントを自動ロード、思考プロトコル
+  (述べる→反論→盲点) で研ぐ。session/update/decision/roleplay。
+  Triggers: '/think', '考えを整理', '壁打ち', '判断に迷う', 'decision framework'.
+  Not for: トレードオフ比較 (/debate)、要件ブレスト (brainstorming)、タスク計画 (/timekeeper)。
 origin: self
 argument-hint: session | update | decision | roleplay
 allowed-tools: Read, Write, Edit, Glob, AskUserQuestion

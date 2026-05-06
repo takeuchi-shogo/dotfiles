@@ -1,16 +1,9 @@
 ---
 name: buf-protobuf
 description: >
-  Buf エコシステム（Buf CLI, BSR, Bufstream）を活用した Protocol Buffers 開発の包括ガイド。
-  Protobuf スキーマ設計、コード生成、リンティング、破壊的変更検出、Bufstream（Kafka互換メッセージキュー）の
-  構築・デプロイ・設定を支援。Use when working with .proto files, buf.yaml, buf.gen.yaml,
-  bufstream.yaml, Kafka streaming with schema enforcement, Protobuf code generation,
-  gRPC/ConnectRPC API design, or Buf Schema Registry integration.
-  Triggers: 'protobuf', 'proto file', 'buf lint', 'buf generate', 'buf breaking',
-  'bufstream', 'BSR', 'schema registry', 'Kafka replacement', 'gRPC schema',
-  'protovalidate', 'Iceberg integration', 'proto validation'.
-  Do NOT use for general Kafka administration without Buf/Protobuf context —
-  use senior-backend instead.
+  Buf エコシステム (Buf CLI / BSR / Bufstream) で Protobuf スキーマ設計・コード生成・breaking detection、
+  gRPC/ConnectRPC、Kafka 互換ストリームを扱う。Triggers: '.proto', 'buf lint/generate/breaking',
+  'bufstream', 'BSR', 'protovalidate'. Not for: Buf 文脈なしの Kafka 運用。
 origin: self
 metadata:
   pattern: tool-wrapper
