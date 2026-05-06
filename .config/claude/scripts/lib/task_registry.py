@@ -45,8 +45,13 @@ def register(
     output_path: str | None = None,
     agent_id: str | None = None,
     cron_id: str | None = None,
+    metadata: dict | None = None,
 ) -> str:
-    """新しいタスクをレジストリに登録し、ID を返す。"""
+    """新しいタスクをレジストリに登録し、ID を返す。
+
+    metadata は任意拡張点。parent_id（親タスク id）、query、token_usage
+    など schema 必須でない構造化情報を格納する。
+    """
     entry_id = _next_id()
     entry = {
         "id": entry_id,
@@ -62,6 +67,8 @@ def register(
         entry["agent_id"] = agent_id
     if cron_id:
         entry["cron_id"] = cron_id
+    if metadata:
+        entry["metadata"] = metadata
 
     REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(REGISTRY_PATH, "a") as f:
@@ -74,6 +81,7 @@ def update_status(
     status: str,
     output_path: str | None = None,
     error: str | None = None,
+    metadata: dict | None = None,
 ) -> None:
     """既存エントリのステータスを更新（同じ id で新しい行を追記）。
 
@@ -97,6 +105,8 @@ def update_status(
         update["output_path"] = output_path
     if error:
         update["error"] = error
+    if metadata:
+        update["metadata"] = metadata
 
     with open(REGISTRY_PATH, "a") as f:
         f.write(json.dumps(update, ensure_ascii=False) + "\n")

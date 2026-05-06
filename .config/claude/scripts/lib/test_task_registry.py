@@ -10,11 +10,11 @@ tmpdir = tempfile.mkdtemp()
 os.environ["TASK_REGISTRY_PATH"] = str(Path(tmpdir) / "test-registry.jsonl")
 
 # テスト対象をインポート（環境変数設定後）
-import importlib
-import task_registry
+import importlib  # noqa: E402
+import task_registry  # noqa: E402
 
 importlib.reload(task_registry)
-from task_registry import (
+from task_registry import (  # noqa: E402
     register,
     update_status,
     get_latest,
@@ -55,6 +55,29 @@ def test_list_active():
     assert id3 not in active_ids
 
 
+def test_metadata_roundtrip():
+    """metadata は register と update_status の両方で保存される。"""
+    parent_id = register("async", "research", "親タスク")
+    child_id = register(
+        "sync",
+        "research",
+        "子タスク",
+        metadata={"parent_id": parent_id, "query": "test"},
+    )
+    result = get_latest(child_id)
+    assert result["metadata"]["parent_id"] == parent_id
+    assert result["metadata"]["query"] == "test"
+
+    update_status(
+        child_id,
+        "completed",
+        metadata={"token_usage": 1234, "duration_ms": 5678},
+    )
+    final = get_latest(child_id)
+    assert final["metadata"]["token_usage"] == 1234
+    assert final["metadata"]["duration_ms"] == 5678
+
+
 if __name__ == "__main__":
     test_register_and_get()
     print("PASS: test_register_and_get")
@@ -62,4 +85,6 @@ if __name__ == "__main__":
     print("PASS: test_update_status")
     test_list_active()
     print("PASS: test_list_active")
+    test_metadata_roundtrip()
+    print("PASS: test_metadata_roundtrip")
     print("All tests passed!")

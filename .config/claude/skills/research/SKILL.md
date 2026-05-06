@@ -36,6 +36,37 @@ metadata:
 4. **Aggregate** — 結果を集約
 5. **Polish** — チャプター毎に精査、最終レポート生成
 
+## Lifecycle Registry
+
+セッション開始時に `task_registry.register()` でタスクを登録し、Polish 完了時に
+`update_status()` で完了状態と成果物パスを記録する。
+
+**Trigger 条件**: 単発 query は登録不要。サブタスクが 2 件以上（並列実行）の場合のみ登録。
+理由: schema 規約（task-registry-schema.md）の「短寿命の Sync subagent は registry に書かない」。
+
+**Step 2 Plan 完了時に register**:
+```bash
+TASK_ID=$(python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from task_registry import register
+print(register('async', 'research', '<topic>', metadata={'subtask_count': N, 'angles': '<csv>'}))
+")
+```
+
+**Step 5 Polish 完了時に update_status**:
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from task_registry import update_status
+update_status('$TASK_ID', 'completed',
+    output_path='<report path>',
+    metadata={'duration_ms': N, 'subtask_count': N})
+"
+```
+
+エラーで中断した場合は `update_status('$TASK_ID', 'failed', error='<msg>')` を呼ぶ。
+metadata の任意拡張規約は `references/task-registry-schema.md` 参照。
+
 ## Step 1: Reconnaissance
 
 トピックについて軽く調査し、以下を特定する:
