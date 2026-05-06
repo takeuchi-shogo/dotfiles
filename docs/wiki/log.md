@@ -695,3 +695,10 @@
 - Hallucination Risk: advisor_20260301 / Anthropic blog 4/9 / UC Berkeley advisor 論文 が確認不可、specific tool names / 数値は採用せず pattern のみ採用
 - 分析レポート: docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md
 
+## [2026-05-06] ingest | I Tried 100+ Claude Code Skills. These 6 Are The Best
+
+- ソース: anonymous AI agency operator 記事 (real estate / HVAC / coaches / marketing 業界向け automation 販売バイアス)
+- 判定: Already 4 (Skill Creator, Superpowers, Frontend Design + 当初 Context Mode)、Partial 3 (GSD, /ultrareview, Claude Mem)、Codex 修正で Context Mode → Partial 要実験に降格
+- Phase 2.5 Refine: Codex で `/ultra-review` → 公式名 `/ultrareview` 確認、Pro/Max 3 free 期間 2026-05-05 終了 (今日から有料)、最大の罠 = MEMORY.md を semantic layer で置換
+- 取り込み 5 タスク (3 件は今セッション実装済): T1 Codex Review Gate に Independent Reproduction Standard 追加 / T2 task skills:eval-e2e 化 / T3 post-compact-verify.js に reinjection selector (P1 Active Plans + P2 Recently Edited) / T4 checkpoint 強化 (skip) / T5 Claude Mem vector spike (リスク annotation 付き、別セッション推奨)
+- 詳細: docs/research/2026-05-06-100-skills-best6-absorb-analysis.md

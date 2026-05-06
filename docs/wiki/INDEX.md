@@ -72,6 +72,7 @@
 - [スキル競合解決](concepts/skill-conflict-resolution.md) — Negative Routing（Do NOT use for 明示）・衝突優先度（supersedes → priority → specificity）・規模ガード。/skill-audit conflict-scan との連携
 - [mattpocock-skills-absorb (2026-04-29)](../research/2026-04-29-mattpocock-skills-absorb-analysis.md) — 28K stars 5-skill chain の dotfiles 統合分析。4/5 既統合、Pruning-First で 2 件のみ採用 (prd-to-issues HITL/AFK markers + grill-interview Auto Mode 警告)
 - [Claude Skills 6法則 absorb (2026-04-29)](../research/2026-04-29-claude-skills-six-laws-absorb-analysis.md) — zodchiii 100個Skillリバースエンジニアリング、採用 2 件 (near-miss negative + first screen 50行)
+- [100+ Claude Skills Best 6 (2026-05-06)](../research/2026-05-06-100-skills-best6-absorb-analysis.md) — Codex で `/ultrareview` 公式機能と確認、Pro/Max free 期間 2026-05-05 終了。最優先採用: Codex Review Gate に Independent Reproduction Standard 追加
 
 ### security — セキュリティ
 
