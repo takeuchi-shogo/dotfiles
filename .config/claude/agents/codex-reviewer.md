@@ -62,6 +62,18 @@ Check these 6 items in order:
 6. **Tests**: Missing edge cases, flaky patterns, inadequate coverage
 7. **Plan Alignment**: Does the implementation match the plan's intent? Any scope drift, missing tasks, or unplanned additions?
 
+## Independent Reproduction Standard (mandatory before MUST/CONSIDER)
+
+This standard applies to findings across ALL 7 check items above (Correctness through Plan Alignment).
+
+Before reporting any MUST or CONSIDER finding, verify it meets ALL of the following:
+
+- **Reproducible from diff alone**: Can the bug be demonstrated by reading the diff without trusting comments, commit messages, or PR descriptions?
+- **Concrete failure path**: Can you state a specific input or call sequence that triggers the bug? (e.g. "if `cfg.host == nil` and `mode == strict`, line 42 panics")
+- **Not a style preference**: Is this an actual defect, not a taste-based suggestion?
+
+If a finding fails any of these checks, downgrade it to ASK (with the question explicit) or remove it. Do NOT pad the report with unverified suspicions — the goal is high-signal review, not exhaustive nitpicking.
+
 Output format — one line per finding:
 [MUST/CONSIDER/NIT/ASK/FYI/PLAN] file:line - description
 

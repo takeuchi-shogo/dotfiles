@@ -11,6 +11,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 
 const SESSION_STATE_DIR =
 	process.env.CLAUDE_SESSION_STATE_DIR ||
@@ -20,6 +21,8 @@ const COMPACTION_COUNTER_FILE = path.join(
 	SESSION_STATE_DIR,
 	"compaction-counter.json",
 );
+
+const RECENTLY_EDITED_LIMIT = 8;
 
 // ── 1. Read compaction counter ──────────────────────────────────
 
@@ -58,20 +61,58 @@ function findActivePlans() {
 	return plans;
 }
 
+// ── 2b. Find recently edited files (re-injection selector) ──────
+//
+// Re-injection policy: tool 出力を全部戻すのではなく、「次の発話で必要になる
+// 高確率のシグナル」だけを優先注入する。git の作業ツリーに残っている変更ファイル
+// は、compaction 直後でも「直前まで触っていた」可能性が高い。
+
+function findRecentlyEditedFiles() {
+	try {
+		const out = execSync("git diff --name-only HEAD 2>/dev/null", {
+			encoding: "utf-8",
+			timeout: 5000,
+		});
+		const files = out
+			.split("\n")
+			.map((s) => s.trim())
+			.filter((s) => s.length > 0);
+		return files.slice(0, RECENTLY_EDITED_LIMIT);
+	} catch {
+		return [];
+	}
+}
+
 // ── 3. Build verification output ────────────────────────────────
 
 const count = getCompactionCount();
 const activePlans = findActivePlans();
+const recentlyEdited = findRecentlyEditedFiles();
 const output = [];
 
 output.push(`[PostCompact] Compaction #${count} completed.`);
 
-// Plan re-grounding
+// Re-injection Priority (P3 selector policy)
+if (activePlans.length > 0 || recentlyEdited.length > 0) {
+	output.push("");
+	output.push("## Re-injection Priority (highest first)");
+}
+
+// P1: Active plans
 if (activePlans.length > 0) {
 	output.push("");
-	output.push("## Active Plans (re-ground after compaction):");
+	output.push("### P1 Active Plans (re-ground after compaction):");
 	for (const plan of activePlans) {
 		output.push(`- Read \`${plan}\` to restore task context`);
+	}
+}
+
+// P2: Recently edited working-tree files
+if (recentlyEdited.length > 0) {
+	output.push("");
+	output.push("### P2 Recently Edited Files (working tree, uncommitted):");
+	for (const file of recentlyEdited) {
+		output.push(`- \`${file}\``);
 	}
 }
 
