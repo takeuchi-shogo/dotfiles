@@ -107,6 +107,7 @@ last_reviewed: 2026-04-23
 - Submodular Diversity — 生成後多様性選択層 + 計測基盤 + /research Aggregate強化、7タスク3Wave — `docs/plans/2026-04-10-submodular-diversity-integration.md`
 - Universal Verifier (CUA検証) — controllability帰属 + 動的ルーブリック + Two-pass verification + scoring uncontrollable + AutoEvolve構造レビュー、6タスク3Wave — `docs/plans/2026-04-10-universal-verifier-integration.md`
 - その他: Ultimate Guide, OTel, AI System Design, MiniMax 等 — `docs/research/` 配下の analysis.md 参照
+- WebFetch Haiku 要約 (sherry/Zenn 2026-05-04) — WebFetch は内部 Haiku 要約あり、3 条件 (markdown対応/trusted domain/<100k chars) 外はサイレント truncate。8/8 採用 (web-fetch-policy.md + telemetry hook + 委譲契約改訂 + absorb gate 化 + security 接続)。L 規模 14 ファイル → `docs/plans/2026-05-06-webfetch-policy-plan.md`、レポート: `docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`
 
 ---
 

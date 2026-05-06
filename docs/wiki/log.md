@@ -702,3 +702,35 @@
 - Phase 2.5 Refine: Codex で `/ultra-review` → 公式名 `/ultrareview` 確認、Pro/Max 3 free 期間 2026-05-05 終了 (今日から有料)、最大の罠 = MEMORY.md を semantic layer で置換
 - 取り込み 5 タスク (3 件は今セッション実装済): T1 Codex Review Gate に Independent Reproduction Standard 追加 / T2 task skills:eval-e2e 化 / T3 post-compact-verify.js に reinjection selector (P1 Active Plans + P2 Recently Edited) / T4 checkpoint 強化 (skip) / T5 Claude Mem vector spike (リスク annotation 付き、別セッション推奨)
 - 詳細: docs/research/2026-05-06-100-skills-best6-absorb-analysis.md
+
+## [2026-05-06] ingest | Your Claude Code's WebFetch Isn't Actually Reading the Web Properly
+
+- ソース: sherry/Zenn 2026-05-04 (https://zenn.dev/zhizhiarv/articles/claude-code-webfetch-haiku-summary)
+- 主張: Claude Code の WebFetch は内部で Haiku が要約、3 条件 (Content-Type: text/markdown + 80+ trusted domains + <100k chars) 外はサイレント truncate。表示の "204.4KB" は受信バイト、実際 LLM が読むのは要約後コンテンツ。
+- 判定: Phase 2 初版で Gap 4/Partial 5 → Phase 2.5 (Codex+Gemini 並列批評) で Gap 4 → Already 拡張に格下げ (friction-events 1 schema + 外部 JSON + 1 行参照で吸収可能)、新規 Gap 3 追加 (引用 faithfulness vs Copyright filter 125字 / HTML→md lossy / Haiku 要約層の prompt injection 表面)
+- 取り込み 8/8 採用 (ユーザー判断 `a`):
+  - A1 references/web-fetch-policy.md (URL pattern → 経路 decision table) 新規 + 7 skill (absorb/research/deep-read/digest/web-design-guidelines/alphaxiv/tech-article-reproducibility) から 1 行参照
+  - A2 PostToolUse hook `scripts/runtime/webfetch-truncation-detector.py` で `webfetch_truncation_suspect` event を friction-events.jsonl に記録
+  - A3 references/model-routing.md と subagent-delegation-guide.md の「Haiku WebFetch 委譲」契約を「生 markdown 取得まで」に限定、要約は呼び出し側責務 (二重圧縮の根本遮断)
+  - B1 当プロジェクトで 1 度実測 (Wikipedia/Zenn/Qiita/AWS docs で受信バイト vs 可視文字数 vs 元記事) — policy 化前の根拠確保
+  - B2 absorb SKILL.md Phase 1 を gate 化 (trusted 外で curl+defuddle/Gemini grounding に強制切替) + 引用 faithfulness 警告
+  - C1/C2 web-fetch-policy.md 内に「原文引用必要時」「code/table 重視記事」のオーバーライド明記
+  - C3 security-reviewer agent に「Haiku 要約層の prompt injection 表面」観点追加
+- 棄却: trusted_domains リスト本体を CLAUDE.md/MEMORY.md 転記 (IFScale 違反) / 各 skill に 3 行手順分散 (DRY 違反)
+- 規模: L (14 ファイル変更、新規 2 + 修正 12)、推奨実行: 新セッション + `/rpi docs/plans/2026-05-06-webfetch-policy-plan.md`
+- 観測前提: Claude Code v2.1.126 リバースエンジニアリング由来 (observation_pinned)、Anthropic 公式は Haiku 介在を直接記述していない (Gemini 確認、コミュニティで 100KB truncation 自体は再現多数)
+- Gemini 追加発見: Jina Reader (`r.jina.ai/<url>`) / 15 分キャッシュ / JS 非対応 / Cline は MCP+Playwright でフルブラウザ
+- 関連レポート: docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md / 統合プラン: docs/plans/2026-05-06-webfetch-policy-plan.md
+
+## [2026-05-07] ingest | Warp oz-skills (15 skill) absorb
+
+- ソース: https://github.com/warpdotdev/oz-skills (MIT, 2026)
+- 判定: Already 1 / Already 強化可能 4 / Partial 6 / Gap 0 / N/A 4
+- 取り込み (6件すべて rubric 移植, 新 skill 追加なし):
+  - T1: references/ci-fix-policy.md (permissions/pull_request_target/flaky rerun 3 hard rule)
+  - T2: skills/check-health/SKILL.md Step 3.8 user-facing change drift rubric
+  - T3: agents/design-reviewer.md WCAG POUR + severity + manual testing
+  - T4: commands/pull-request.md Step 0 Pre-PR Chain Check
+  - T5: references/scheduling-decision-table.md
+  - T6: references/agent-browser-server-lifecycle.md
+- 分析レポート: docs/research/2026-05-07-warp-oz-skills-absorb-analysis.md
