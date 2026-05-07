@@ -117,19 +117,23 @@ def _get_cwd() -> Path:
     return Path(os.getcwd())
 
 
+HANDOFF_CANDIDATES = ("HANDOFF.md", "tmp/HANDOFF.md")
+
+
 def _read_handoff_tail(cwd: Path) -> str | None:
-    handoff = cwd / "HANDOFF.md"
-    if not handoff.is_file():
-        return None
-    try:
-        text = handoff.read_text(encoding="utf-8", errors="ignore")
-    except OSError as exc:
-        _log("handoff_read", exc)
-        return None
-    stripped = text.strip()
-    if not stripped:
-        return None
-    return stripped[-QUERY_TAIL_CHARS:]
+    for relative in HANDOFF_CANDIDATES:
+        handoff = cwd / relative
+        if not handoff.is_file():
+            continue
+        try:
+            text = handoff.read_text(encoding="utf-8", errors="ignore")
+        except OSError as exc:
+            _log("handoff_read", exc)
+            continue
+        stripped = text.strip()
+        if stripped:
+            return stripped[-QUERY_TAIL_CHARS:]
+    return None
 
 
 def _run_query(query: str, node_bin: str) -> list[dict] | None:
