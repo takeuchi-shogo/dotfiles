@@ -1,41 +1,18 @@
 ---
-status: active
-last_reviewed: 2026-05-08
-revision_history:
-  - 2026-04-23: last reviewed (active 期)
-  - 2026-05-03: deprecated (5 サイクル連続 false-positive、認知負荷が改善ループの価値を上回ったと判定)
-  - 2026-05-08: revived (deprecation 理由を再調査。errors.jsonl producer がリポジトリ内に不在であることが grep + commit de016cf 解析で判明し、false-positive の根本は producer 不在による偽シグナルだったと結論。データソース方針を改訂して再起動)
+status: deprecated
+deprecated_at: 2026-05-03
+deprecation_reason: "/improve skill retire (5 サイクル連続 false-positive、認知負荷が改善ループの価値を上回った)"
+last_reviewed: 2026-04-23
 ---
 
-# AutoEvolve 改善ポリシー
+# AutoEvolve 改善ポリシー (deprecated 2026-05-03)
 
-> **History**: 2026-05-03 deprecated → 2026-05-08 revived。
-> deprecation 当時に挙がっていた「errors.jsonl 16d 停止」は、実は **producer がリポジトリ内に存在していなかった** ことが原因（commit de016cf で Python writer 削除、Rust 上位互換は実体なし）。test fixture を実データと誤認した分析が偽シグナルを量産していた。
+> **DEPRECATED**: /improve skill は 2026-05-03 に retire 済み。本ドキュメントは過去設計の保管。
+> 再開する場合は scripts/learner/ の整合性確認 + observability producer dead 問題 (errors.jsonl 16d/friction 25d 停止) の根本対処が前段。
 >
-> 改訂方針: errors.jsonl を主入力から外し、`quality.jsonl` / `patterns.jsonl` / `friction-events.jsonl` / `session-metrics.jsonl` の 4 ソースで運用する。errors は producer 復活後に再採用する。
->
-> このファイルは karpathy/autoresearch の program.md に相当する概念的ガイド。
-> AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義する。
-> ユーザーがこのファイルを編集することで、改善の方向性を操作できる。
-
-## データソース方針 (2026-05-08 改訂)
-
-- **主入力**: `quality.jsonl` / `patterns.jsonl` / `friction-events.jsonl` / `session-metrics.jsonl`
-- **オプション入力**: `errors.jsonl` — producer 健全性 (24h 以内の mtime + 実セッション由来の record、test fixture でないこと) を確認できる場合のみ採用。健全性が確認できない場合は主入力から除外する
-- **errors-only 提案カテゴリ** (FM-008 系のエラーパターン抽出など) は errors 健全時のみ生成。それ以外のサイクルでは skip 表示
-
-## /improve フラグ仕様 (2026-05-08 追加)
-
-```
-/improve [--evolve] [--single-change|--multi-change] [--dry-run] [ultrathink]
-```
-
-- `--evolve`: イテレーティブループ起動 (Rule 16-20 の制約下、worktree 隔離必須)。デフォルト off
-- `--single-change` (default) / `--multi-change`: 1 サイクルあたりの変更箇所数。単一変更が原則 (Rule 20)
-- `--dry-run`: 提案生成のみ、ファイル変更なし。コマンド側 Step 4 で適用を skip
-- `ultrathink`: 推論深度の引き上げ (Proposer / Evaluator の両フェーズで)
-
-フラグはセッション全体で有効。Step 2 で autoevolve-core に渡されたフラグは Step 5 (Improve フェーズ) でも保持される。
+> このファイルは karpathy/autoresearch の program.md に相当する概念的ガイドであった。
+> AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義していた。
+> ユーザーがこのファイルを編集することで、改善の方向性を操作できた。
 
 ## システムパイプライン
 
