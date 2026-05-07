@@ -1,134 +1,131 @@
 ---
-allowed-tools: Bash(cat *), Bash(wc *), Bash(ls *), Bash(jq *), Bash(head *)
-description: AutoEvolve 改善サイクルをオンデマンドで実行し、蓄積データから改善提案を生成する
+allowed-tools: Bash(ls *), Bash(wc *)
+argument-hint: "[--max-cycles=N] [--no-iterate]"
+description: skill / docs / code を並列点検し、整理候補を反復サイクルで「懸念なくなるまで」処理する
 ---
 
-# AutoEvolve Improvement Cycle
+# /improve — Tidy Orchestrator
 
-蓄積されたセッションデータを分析し、改善提案を生成する。
+skill / ドキュメント / コードを横断点検し、整理候補をユーザー承認 → 該当 skill へ委譲 → 再走査するサイクルを反復する。**提案ゼロのサイクル** で自然収束。
 
-## Step 1: データ可用性チェック
+## スコープ
 
-セッションメトリクスの件数を確認する:
+- **対象**: skill 整合性、ドキュメント鮮度、直近変更の品質、コード全体の健全性
+- **対象外**:
+  - セッションデータの自動学習・履歴蓄積 (autoevolve 系 producer の責務、本コマンドからは参照しない)
+  - 機械学習による自動提案生成
+  - ユーザー承認なしの自動変更
 
-!`wc -l ~/.claude/agent-memory/metrics/session-metrics.jsonl 2>/dev/null || echo "0"`
+`/improve` は **薄いオーケストレーター**。実際の検出・修正は専門 skill に委譲する。
 
-### 判定ルール
+## 引数 (`$ARGUMENTS`)
 
-- **3セッション未満**: 「データが少なすぎます（N セッション）。もう少し使ってから再実行してください。」と報告して**終了**
-- **3セッション以上**: Step 2 に進む
+- `--max-cycles=N` (default: `10`) — 反復上限。到達時はユーザーに継続可否を確認
+- `--no-iterate` — 1 サイクルだけ実行して終了 (Phase E/F skip)
 
-データファイルの存在確認:
+引数なしの場合は default 動作。
 
-!`ls -la ~/.claude/agent-memory/learnings/*.jsonl 2>/dev/null || echo "learnings ファイルなし"`
-!`ls -la ~/.claude/agent-memory/metrics/*.jsonl 2>/dev/null || echo "metrics ファイルなし"`
+## サイクル定義
 
-## Step 2: AutoLearn 分析
+### Phase A. 並列点検
 
-`autoevolve-core` エージェントをサブエージェントとして起動し、Analyze + Garden フェーズを実行させる:
+以下 4 つを **並列で** 起動 (subagents または slash command 委譲):
 
-- `learnings/errors.jsonl` — エラーパターンの頻度分析
-- `learnings/quality.jsonl` — 品質違反パターンの分析
-- `learnings/patterns.jsonl` — 成功パターンの集計
-- `metrics/session-metrics.jsonl` — プロジェクト別の統計
+| 委譲先 | 検出対象 |
+|---|---|
+| `skill-audit` | skill description 衝突、health degradation |
+| `check-health` | ドキュメント鮮度、参照整合性、コード乖離 |
+| `simplify` | 直近変更の重複・冗長・非効率 |
+| `audit` | コードベース全体の品質 (security / arch / perf / tests) |
 
-autoevolve-core エージェントに以下を指示する:
+各処理は read-only。書き込みは Phase D まで行わない。
 
-> `~/.claude/agent-memory/` のデータを分析し（Analyze フェーズ）、知識ベースを整理し（Garden フェーズ）、`insights/analysis-YYYY-MM-DD.md` にレポートを生成してください。繰り返しエラー、頻出品質違反、プロジェクト別統計、改善提案、重複排除、昇格候補を含めてください。
+### Phase B. 統合
 
-## Step 3: 統合レポート表示
+各結果から整理候補リストを統合する:
 
-Step 2 の結果を以下の形式でユーザーに表示する:
+- 重複排除 (BM25/trigram 類似度 > 0.85 で同一視)
+- 優先度付与: `high` / `medium` / `low` (各 skill の severity を引き継ぐ)
+- 各候補に **委譲先** を割当 (例: skill 修正 → `skill-creator`、参照修復 → 直接 Edit)
+- 出力フォーマット:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  AutoEvolve 改善レポート
+  /improve サイクル N — 整理候補
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 繰り返しエラー トップ5
+[high]
+  1. <候補要約> — 検出元: skill-audit / 委譲先: skill-creator
+  2. ...
 
-| # | エラー | 回数 | 関連コマンド |
-|---|--------|------|-------------|
-| 1 | ...    | ...  | ...         |
+[medium]
+  ...
 
-## 頻出品質違反
-
-| ルール | 回数 | 主なファイル |
-|--------|------|-------------|
-| ...    | ...  | ...         |
-
-## プロジェクト別の傾向
-
-| プロジェクト | セッション数 | エラー傾向 | 品質傾向 |
-|-------------|-------------|-----------|---------|
-| ...         | ...         | ...       | ...     |
-
-## 昇格候補
-
-### MEMORY.md への追記提案
-- [ ] ...
-
-### スキル/ルール化の提案
-- [ ] ...
-
-### error-fix-guides への追加提案
-- [ ] ...
-
-## 知識ベース ヘルスチェック
-- learnings サイズ: ...
-- insights レポート数: ...
-- MEMORY.md 行数: .../200
+[low]
+  ...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Step 4: 承認と実行
+### Phase C. 承認
 
-ユーザーに改善提案を提示し、承認を求める:
+ユーザーに提示:
 
-1. 各提案に番号を振る
-2. 「承認する提案の番号を入力してください（例: 1,3,5 / all / none）」と聞く
-3. 承認された提案のみ実行する:
-   - **MEMORY.md 追記**: 該当プロジェクトの MEMORY.md にエントリを追加
-   - **ルール追加**: `.config/claude/rules/` に新規ルールファイルを作成
-   - **スキル改善**: 該当スキルファイルを編集
-   - **error-fix-guides 追加**: `references/error-fix-guides.md` にエントリを追加
-4. 実行結果を報告する
+> 承認する候補の番号を入力してください (例: `1,3,5` / `all` / `high` / `none` / `quit`)
 
-## Step 5: AutoEvolve 設定改善提案（オプション）
+- `all`: 全候補
+- `high` / `medium` / `low`: 優先度フィルタ
+- `quit`: サイクル即時終了 (Phase D-F skip)
+- `none`: このサイクルは何もせず Phase E へ
 
-Step 4 の実行完了後、ユーザーに以下を確認する:
+### Phase D. 委譲実行
 
-> 「設定の自動改善提案も生成しますか？（autoevolve-core の Improve フェーズを起動）」
+承認された候補を 1 件ずつ該当委譲先で実行する:
 
-### ユーザーが承認した場合
+- `skill-creator` に渡す場合: 「<skill 名> を <検出内容> に従って修正してください」と委任
+- 直接 Edit する場合: 影響範囲を提示 → ユーザー確認 → Edit
+- 各実行後に成否を表示 (✓ / ✗ + 理由)
 
-`autoevolve-core` エージェントをサブエージェントとして起動し、Improve フェーズを指示する:
+委譲先で **新たな質問** が必要になった場合は、その時点でユーザーに確認 (人間 in-the-loop 維持)。
 
-> `references/improve-policy.md` を読み込み、今回の分析結果（insights/analysis-YYYY-MM-DD.md）を基に設定の自動改善を実行してください。
->
-> 制約:
->
-> - `autoevolve/*` ブランチを作成して作業する
-> - 変更は最大 3 ファイルまで
-> - 変更後にテストを実行し、パスすることを確認する
-> - 完了後、diff と変更レポートを提示する
+### Phase E. 再走査
 
-### autoevolve-core 完了後
+`--no-iterate` 指定時はここで終了。それ以外は Phase A を再実行する。
 
-1. autoevolve-core エージェントが提示した diff とレポートをユーザーに表示する
-2. ユーザーに以下の選択肢を提示する:
-   - **承認**: `autoevolve/*` ブランチを master にマージする
-   - **修正**: 指摘箇所を修正してから再度提示する
-   - **却下**: ブランチを削除し、変更を破棄する
-3. 選択に応じて実行し、結果を報告する
+### Phase F. 判定
 
-### ユーザーが拒否した場合
+| 条件 | アクション |
+|---|---|
+| 提案ゼロ | **収束**。サイクル N で終了、サマリ表示 |
+| 残候補あり & サイクル < max-cycles | 次サイクルへ (Phase A から) |
+| サイクル >= max-cycles | 「上限 N 到達。続けますか? (y/n)」 |
+| ユーザーが quit | 即時終了 |
 
-Step 5 の結果をもって改善サイクルを完了する。
+## 終了サマリ
 
-## 重要な注意事項
+実行完了時に表示:
 
-- MEMORY.md やルール/スキルへの変更はユーザー承認なしに絶対に行わない
-- 分析データ（learnings/）は読み取り専用 — 変更しない
-- 出力（insights/）への書き込みのみ自動で行う
-- データが不十分な場合は無理に分析せず、素直に報告する
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  /improve 終了サマリ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  実行サイクル数: N
+  終了理由: 収束 / max-cycles / quit
+  処理候補: 適用 X / skip Y / 失敗 Z
+  影響ファイル: ...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+## 重要事項
+
+- **ユーザー承認なしの自動変更を絶対に行わない** (Phase C を skip しない)
+- **読み取り専用のシグナル** (autoevolve の learnings/) は参照しない (consumer 責務分離)
+- **委譲先で完結する** — 本コマンドは検出と承認フローだけを担い、修正ロジックは専門 skill に任せる
+- **収束しない場合の暴走防止** — max-cycles と人間 in-the-loop が二重ガード
+
+## 認知負荷の最小化
+
+retire の経緯 (元 autoevolve 版が「認知負荷 > 価値」で 2026-05-03 retire) を踏まえ:
+
+- 1 サイクルあたりのユーザー対話は **承認 1 回** に集約
+- 候補が多すぎる場合 (> 20) は high のみ提示、medium/low は次サイクル送り
+- 委譲先で詳細質問が必要な場合のみ追加対話
