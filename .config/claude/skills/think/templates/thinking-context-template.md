@@ -33,3 +33,12 @@ tags:
 
 <!-- 具体的なアウトプット。「〜を完成させる」「〜を公開する」等 -->
 -
+
+## 5. 最近読んでいるもの・考えていること
+
+<!-- 月次手動更新。CLAUDE.md root には書かない。
+     形式: `- {title}: {one-line takeaway}` を 3-5 件。
+     用途: /think session で agent が文脈把握に使う補助情報。
+     contradiction check (Step 4) の照合対象は Section 2「信じていること（仮説）」のみ。
+     機密情報・公開不可なメモは含めないこと（LLM prompt に流入する）。 -->
+-
