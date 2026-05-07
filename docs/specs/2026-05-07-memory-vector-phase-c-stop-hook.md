@@ -1,7 +1,8 @@
 ---
 title: Memory Vector Hint - Phase C (Stop hook で memory write 検知 → 増分 reindex)
-status: draft
+status: complete
 created: 2026-05-07
+implemented: 2026-05-08
 parent_spec: docs/specs/2026-05-06-memory-vector-hint-spike.md
 references:
   - docs/specs/2026-05-06-memory-vector-redactor-phase-a.md     # Phase A: redactor wrapper (S, complete)
@@ -93,7 +94,8 @@ const emb = await embed(clean.slice(0, 2000));
 
 ### R2. Reindex script
 
-- `.config/claude/scripts/runtime/memory-vec-reindex.ts` を新規追加
+- `~/.claude/skill-data/memory-vec/reindex.ts` を新規追加
+  (node_modules と同じ dir に置くことで ESM resolver が依存を解決できる)
 - spike.ts の cmdIndex 関数のロジックをそのまま流用 (DROP+CREATE+全件 embed)
 - 各 file body を embed する直前に Phase A wrapper (`redact_for_embedding`) を通す
 - 完了時に `Path(DB_PATH).touch()` 相当で mtime 更新 (Node では `utimesSync`)
@@ -109,15 +111,15 @@ const emb = await embed(clean.slice(0, 2000));
 
 ### R4. 依存関係
 
-- Phase A wrapper (memory_redactor.py) が `~/.claude/skill-data/memory-vec/lib/memory_redactor.py` または等価 path に配置されている必要がある
-- Reindex.ts が import path を解決できる前提
-- ※worktree 内 (`tmp/spike-memory-vec/memory_redactor.py`) は spike 専用で本実装からは見えない → **本実装で別 path にコピーする (R4.1)**
+- Phase A wrapper (memory_redactor.py) が `~/.claude/skill-data/memory-vec/lib/memory_redactor.py` に恒久化されている必要がある
+- `~/.claude/skill-data/memory-vec/` で `pnpm install` 済み (`@xenova/transformers`, `sqlite-vec`)
+- pnpm 10+ の build script policy: `package.json` の `pnpm.onlyBuiltDependencies` に `sharp`, `onnxruntime-node` を明示する必要あり (sharp の native binding がないと @xenova/transformers が die する)
 
 #### R4.1. wrapper の配置
 
 - `~/.claude/skill-data/memory-vec/lib/memory_redactor.py` に Phase A wrapper をコピー (恒久化)
 - このファイルは `~/.claude/skill-data/` 配下なので git 管理外、削除で完全戻し可
-- 元の `.config/claude/scripts/lib/redactor.py` への sys.path 解決は本実装で再調整 (worktree 前提が消える)
+- 元の `.config/claude/scripts/lib/redactor.py` への sys.path 解決は `Path.home() / ".claude" / "scripts" / "lib"` で行う (worktree 前提なし)
 
 ## Constraints
 
