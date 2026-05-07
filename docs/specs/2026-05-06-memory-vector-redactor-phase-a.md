@@ -1,7 +1,8 @@
 ---
 title: Memory Vector Hint - Phase A (redactor pre-processing layer)
-status: draft
+status: complete
 created: 2026-05-06
+implemented: 2026-05-06
 parent_spec: docs/specs/2026-05-06-memory-vector-hint-spike.md
 references:
   - .config/claude/scripts/lib/redactor.py        # 流用する既存 redactor (read-only)

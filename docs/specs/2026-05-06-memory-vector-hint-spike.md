@@ -1,7 +1,8 @@
 ---
 date: 2026-05-06
 task: Memory vector hint layer spike (B2 from Hermes Fleet absorb plan)
-status: draft
+status: complete
+implemented: 2026-05-07
 scope: ~/.claude/projects/-Users-takeuchishougo-dotfiles/memory/**/*.md
 references:
   - docs/specs/2026-04-17-memory-schema-retention.md  # 親 spec
