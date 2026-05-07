@@ -722,6 +722,14 @@
 - Gemini 追加発見: Jina Reader (`r.jina.ai/<url>`) / 15 分キャッシュ / JS 非対応 / Cline は MCP+Playwright でフルブラウザ
 - 関連レポート: docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md / 統合プラン: docs/plans/2026-05-06-webfetch-policy-plan.md
 
+## [2026-05-08] ingest | Cyril Obsidian Vault Smarter (@cyrilXBT)
+
+- ソース: 「How to Build an Obsidian Knowledge Vault That Gets Smarter Every Day」記事
+- 判定: Gap 0, Partial 1 (contradiction detection), Already 3 (強化不要), N/A 4, 棄却 5
+- 採用 (3 タスク S): A) /think に保存済み信念との矛盾照合 step 追加 / B) auto-morning-briefing.sh の Daily path を 07-Daily に統一 / C) thinking-context-template に Reading 欄追加
+- 副次発見: Hammerspoon (.hammerspoon/{daily_enforcer.lua,README.md}) にも同 path drift があり同時修正済み
+- 分類: reference-only (記事の主要主張 8 件棄却、Codex 批評で厳格化)
+
 ## [2026-05-07] ingest | Warp oz-skills (15 skill) absorb
 
 - ソース: https://github.com/warpdotdev/oz-skills (MIT, 2026)
