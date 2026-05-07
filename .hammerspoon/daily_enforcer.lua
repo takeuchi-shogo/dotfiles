@@ -8,7 +8,7 @@ local config = {
     os.getenv("OBSIDIAN_VAULT_PATH"),
     home .. "/Documents/Obsidian Vault",
   },
-  vault_daily_dir = "01-Projects/Daily",
+  vault_daily_dir = "07-Daily",
   fallback_daily_dir = home .. "/daily-notes",
   template_path = home .. "/dotfiles/docs/templates/daily.md",
   report_start_hour = 18,

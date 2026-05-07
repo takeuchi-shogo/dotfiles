@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NOTIFY="$SCRIPT_DIR/cmux-notify.sh"
 DATE="$(date +%Y-%m-%d)"
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
-DAILY_NOTE_DIR="01-Projects/Daily"
+DAILY_NOTE_DIR="07-Daily"
 
 # --- Preflight ---
 if ! command -v claude &>/dev/null; then
