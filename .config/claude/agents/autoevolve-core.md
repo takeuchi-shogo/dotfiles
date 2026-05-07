@@ -1,6 +1,6 @@
 ---
 name: autoevolve-core
-description: "(legacy 2026-05-03) AutoEvolve 統合エージェント。旧 /improve コマンド (廃止) から呼び出されていた。/improve は false-positive 多発で 2026-05-03 retire 済み。新規呼び出し非推奨、scripts/learner/* との連携保守用。"
+description: "AutoEvolve 統合エージェント。/improve コマンドから呼び出され、Analyze/Garden/Improve フェーズを実行する。データソースは quality.jsonl / patterns.jsonl / friction-events.jsonl / session-metrics.jsonl の 4 つを主入力とし、errors.jsonl は producer 健全時 (24h 以内 mtime + 実セッション由来 record) のみ採用 (improve-policy.md データソース方針参照)。起動時に渡されるフラグ (--evolve / --single-change / --multi-change / --dry-run / ultrathink) はセッション全体で保持し Improve フェーズにも引き継ぐ。"
 model: sonnet
 memory: user
 tools:
