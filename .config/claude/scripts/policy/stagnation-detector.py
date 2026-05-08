@@ -230,7 +230,7 @@ def detect_stagnation(state: dict) -> tuple[str, str] | None:
         return (
             "consecutive_failures",
             f"連続 {consecutive} 回失敗しています。"
-            "codex-debugger で根本原因分析を推奨します。"
+            "`/codex:rescue --read-only` で根本原因分析を推奨します。"
             "現在のアプローチに固執せず、問題を再定義してください。",
         )
 

@@ -48,10 +48,11 @@ last_reviewed: 2026-04-23
 
 | Agent | Model | 外部 CLI | 備考 |
 |---|---|---|---|
-| codex-debugger | haiku | Codex CLI | エラー分析・デバッグ |
 | codex-plan-reviewer | haiku | Codex CLI | Spec/Plan 批評 + リスク分析 |
 | codex-reviewer | haiku | Codex CLI | 深い推論レビュー |
 | gemini-explore | haiku | Gemini CLI | 1M コンテキスト分析 |
+
+エラー分析・デバッグは `/codex:rescue --read-only` を使う（プラグイン経由）。
 
 ### Implementer（コード書き込み可能）
 

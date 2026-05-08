@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 """Post-test analysis hook — suggests Codex analysis when tests fail.
 
 Triggered by: hooks.PostToolUse (Bash)
 Input: JSON with tool_name, tool_input, tool_output on stdin
 Output: JSON with additionalContext suggestion on stdout
 """
+
+from __future__ import annotations
+
 import re
 import sys
 from pathlib import Path
@@ -13,13 +15,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import (
-    load_hook_input, output_passthrough, output_context,
-    check_tool, run_hook,
+    load_hook_input,
+    output_passthrough,
+    output_context,
+    check_tool,
+    run_hook,
 )
 
 
 TEST_COMMANDS = [
-    re.compile(r"(?:go\s+test|pytest|npm\s+test|npx\s+jest|npx\s+vitest|bun\s+test|cargo\s+test|pnpm\s+test)"),
+    re.compile(
+        r"(?:go\s+test|pytest|npm\s+test|npx\s+jest|npx\s+vitest|bun\s+test|cargo\s+test|pnpm\s+test)"
+    ),
     re.compile(r"(?:npm|pnpm|bun|yarn)\s+run\s+test"),
 ]
 
@@ -74,11 +81,14 @@ def main() -> None:
     if has_test_failure(output):
         count = count_failures(output)
         count_str = f"{count}件の" if count > 0 else ""
-        output_context("PostToolUse", (
-            f"[Post-Test] {count_str}テスト失敗が検出されました。\n"
-            "codex-debugger エージェントで根本原因を分析できます。\n"
-            "または debugger エージェントで体系的にデバッグすることも可能です。"
-        ))
+        output_context(
+            "PostToolUse",
+            (
+                f"[Post-Test] {count_str}テスト失敗が検出されました。\n"
+                "`/codex:rescue --read-only` で根本原因を分析できます。\n"
+                "または debugger エージェントで体系的にデバッグすることも可能です。"
+            ),
+        )
         return
 
     output_passthrough(data)

@@ -89,7 +89,7 @@ CC 本体の coordinator prompt が規定する 4 フェーズは、任意のマ
 
 | 条件 | 委譲先 |
 |---|---|
-| 設計判断・リスク分析・深い推論 | Codex (`codex-plan-reviewer`, `codex-reviewer`, `codex-debugger`) |
+| 設計判断・リスク分析・深い推論 | Codex (`codex-plan-reviewer`, `codex-reviewer`, `/codex:rescue`) |
 | 大規模コード分析・外部リサーチ・マルチモーダル | Gemini (`gemini-explore`) |
 | ドメイン特化タスク | 専門サブエージェント（下記参照） |
 | Claude の 200K で十分なタスク | Claude Code 本体で直接処理 |
@@ -102,7 +102,7 @@ CC 本体の coordinator prompt が規定する 4 フェーズは、任意のマ
 |---|---|---|
 | `agent-router.py` | タスクキーワード検出 | 各専門エージェント（additionalContext で推奨） |
 | `file-pattern-router.py` | ファイルパターン検出 | 対応する専門エージェント（.md → doc-gardener 等） |
-| `error-to-codex.py` | Bash エラー検出 | `codex-debugger`（エラー分析） |
+| `error-to-codex.py` | Bash エラー検出 | `/codex:rescue --read-only`（エラー分析） |
 | `suggest-gemini.py` | 大規模分析キーワード | `gemini-explore`（1M コンテキスト活用） |
 | `post-test-analysis.py` | テスト失敗 | `test-analyzer`（失敗分析） |
 | `golden-check.py` | コード変更 | `golden-cleanup`（GP 逸脱検出） |
@@ -211,7 +211,7 @@ triage-router
 |---|---|
 | レビュー指摘 | Implement に戻り修正 → 再レビュー |
 | テスト失敗 | `debugger` → 根本原因特定 → 修正 → 再テスト |
-| Bash エラー | `error-to-codex.py` → `codex-debugger` で深い分析 |
+| Bash エラー | `error-to-codex.py` → `/codex:rescue --read-only` で深い分析 |
 | デバッグ膠着 | 専門エージェント作成 → 新セッションで再試行（G5 heuristic） |
 | コンテキスト枯渇 | サブエージェントに委譲 / `/checkpoint` → 新セッション |
 | Plan 破綻 | `codex-plan-reviewer` で再分析 → Plan 修正 → Decision Log 記録 |
