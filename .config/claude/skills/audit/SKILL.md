@@ -8,7 +8,8 @@ description: >
   'コード監査', 'full audit', 'プロジェクト診断', '技術的負債の洗い出し', 'tech debt audit',
   'コードの健全性', 'codebase health'.
   Do NOT use for: 直近の差分レビュー (use /review)、ドキュメント鮮度チェック (use /check-health)、
-  AI ワークフロー監査 (use /ai-workflow-audit)。
+  AI ワークフロー監査 (use /ai-workflow-audit)、skill 定義の health/衝突検出 (use skill-audit)、
+  アーキテクチャ深化候補の診断 (use improve-codebase-architecture)。
 origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
