@@ -108,6 +108,8 @@ last_reviewed: 2026-04-23
 - Universal Verifier (CUA検証) — controllability帰属 + 動的ルーブリック + Two-pass verification + scoring uncontrollable + AutoEvolve構造レビュー、6タスク3Wave — `docs/plans/2026-04-10-universal-verifier-integration.md`
 - その他: Ultimate Guide, OTel, AI System Design, MiniMax 等 — `docs/research/` 配下の analysis.md 参照
 - WebFetch Haiku 要約 (sherry/Zenn 2026-05-04) — WebFetch は内部 Haiku 要約あり、3 条件 (markdown対応/trusted domain/<100k chars) 外はサイレント truncate。8/8 採用 (web-fetch-policy.md + telemetry hook + 委譲契約改訂 + absorb gate 化 + security 接続)。L 規模 14 ファイル → `docs/plans/2026-05-06-webfetch-policy-plan.md`、レポート: `docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`
+- Warp oz-skills 15 skill (2026-05-07) — Warp ADE ベンダー MIT 配布。新 skill 追加せず 6 件すべて rubric 移植 (Pruning-First): ci-fix-policy.md / check-health Step 3.8 / design-reviewer WCAG / pull-request Pre-PR Chain / scheduling-decision-table.md / agent-browser-server-lifecycle.md。レポート: `docs/research/2026-05-07-warp-oz-skills-absorb-analysis.md`
+- Cyril Obsidian Vault Smarter (cyrilXBT 2026-05-08) — newsletter プロモバイアス、reference only 分類 (主張 8 件棄却)。Codex 批評で副次採用 3 タスク (S 規模): /think 信念矛盾照合 step / auto-morning-briefing.sh + Hammerspoon の Daily path 07-Daily 統一 (ca82145) / thinking-context-template に Reading 欄。レポート: `docs/research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md`
 
 ---
 
