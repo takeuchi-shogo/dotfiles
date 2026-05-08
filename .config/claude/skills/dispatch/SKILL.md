@@ -5,7 +5,7 @@ description: >
   Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて'.
   Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）。
 origin: self
-user_invocable: true
+user-invocable: true
 ---
 
 # /dispatch — cmux Worker Router

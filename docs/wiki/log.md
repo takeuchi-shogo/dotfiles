@@ -730,6 +730,14 @@
 - 副次発見: Hammerspoon (.hammerspoon/{daily_enforcer.lua,README.md}) にも同 path drift があり同時修正済み
 - 分類: reference-only (記事の主要主張 8 件棄却、Codex 批評で厳格化)
 
+## [2026-05-08] meta | /improve サイクル 1 — skill pruning evaluation 開始
+
+- トリガー: /improve サイクル 1 (2026-05-08) で skill-audit が dormant 8 件 + 大型 5 件 + description 衝突 4 件を検出
+- 即時適用: Track C audit/simplify description sharpen (commit 7541b7e) + briefing security 強化 (commit 89426bf)
+- 30 日評価開始: ai-workflow-audit / autocover / refactor-session / setup-background-agents / recall(local) / analyze-tacit-knowledge(local) / prompt-review / developer-onboarding (期間 2026-05-08 → 2026-06-07)
+- プラン: docs/plans/2026-05-08-skill-pruning-evaluation-plan.md (gitignored, ローカル参照)
+- リマインダー: 2026-06-07 09:00 cron で `dead-weight-scan.py` 起動 (cycle 2 で配置予定)
+
 ## [2026-05-07] ingest | Warp oz-skills (15 skill) absorb
 
 - ソース: https://github.com/warpdotdev/oz-skills (MIT, 2026)

@@ -19,26 +19,30 @@ NOTIFY="$SCRIPT_DIR/cmux-notify.sh"
 DATE="$(date +%Y-%m-%d)"
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
 DAILY_NOTE_DIR="07-Daily"
+DOTFILES_DIR="$HOME/dotfiles"
 TITLE_MAX_LEN="${MORNING_BRIEFING_TITLE_MAX:-200}"
 
 # 外部 title をサニタイズ: 共通 HTML entity decode + 長さ上限
 # 攻撃者が制御可能な RSS/HN/arXiv title が無制限 prompt 流入するのを防ぐ
+# entity decode 順序: lt/gt/quot/apos を先、&amp; を最後 (二重エンコード &amp;lt; を `<` に展開しない)
 sanitize_title() {
     local input="$1"
     local max_len="${2:-$TITLE_MAX_LEN}"
     printf '%s' "$input" \
-        | sed 's/&amp;/\&/g; s/&lt;/</g; s/&gt;/>/g; s/&quot;/"/g; s/&#39;/'"'"'/g; s/&apos;/'"'"'/g' \
+        | sed 's/&lt;/</g; s/&gt;/>/g; s/&quot;/"/g; s/&#39;/'"'"'/g; s/&apos;/'"'"'/g; s/&amp;/\&/g' \
         | cut -c1-"$max_len"
 }
 
 # Atom/RSS の title 要素抽出 (CDATA + 通常タグ両対応)
 # 改行を空白に潰してから抽出することでマルチライン CDATA も拾う
+# 抽出後に `<` `>` を除去して CDATA 内に埋め込まれた script 等のタグ残留を防ぐ
 extract_feed_titles() {
     local raw="$1" skip_first="${2:-1}" head_n="${3:-0}"
     local titles
     titles=$(printf '%s' "$raw" | tr '\n' ' ' \
         | grep -oE '<title[^>]*>(<!\[CDATA\[[^]]*\]\]>|[^<]+)</title>' \
         | sed -E 's|<title[^>]*>(<!\[CDATA\[)?||; s|(\]\]>)?</title>||' \
+        | tr -d '<>' \
         | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
     [[ "$skip_first" -eq 1 ]] && titles=$(printf '%s\n' "$titles" | tail -n +2)
     [[ "$head_n" -gt 0 ]] && titles=$(printf '%s\n' "$titles" | head -n "$head_n")
@@ -84,7 +88,7 @@ $review_prs
 "
 
 # Recent commits (yesterday)
-recent_commits=$(git -C "$HOME/dotfiles" log --oneline --since="yesterday" \
+recent_commits=$(git -C "$DOTFILES_DIR" log --oneline --since="yesterday" \
     --no-merges 2>/dev/null | head -10 || echo "(none)")
 context+="## Yesterday's Commits
 $recent_commits
@@ -219,7 +223,6 @@ if [[ -n "$VAULT_PATH" ]] && [[ -d "$VAULT_PATH" ]]; then
 fi
 
 # --- Wiki auto-update (if new research reports exist) ---
-DOTFILES_DIR="$HOME/dotfiles"
 if [[ -d "$DOTFILES_DIR/docs/wiki" ]]; then
     last_compiled=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$DOTFILES_DIR/docs/wiki/INDEX.md" 2>/dev/null | head -1 || echo "2020-01-01")
     new_reports=$(git -C "$DOTFILES_DIR" log --since="$last_compiled" --name-only --pretty=format: -- "docs/research/*.md" 2>/dev/null | sort -u | grep -c . || echo "0")
