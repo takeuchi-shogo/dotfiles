@@ -40,8 +40,6 @@ last_reviewed: 2026-04-23
 | test-analyzer | sonnet | Analyze-only | テスト設計品質 |
 | product-reviewer | sonnet | Analyze-only | 仕様整合性 |
 | design-reviewer | sonnet | Analyze-only | UI/UX 設計 |
-| safe-git-inspector | haiku | Analyze-only | Git 読み取り専用 |
-| db-reader | haiku | Analyze-only | DB 読み取り専用 |
 | ui-observer | sonnet | Analyze-only | ブラウザ状態観察 |
 
 ### Deep Analyzer（外部 CLI 連携）
@@ -59,22 +57,15 @@ last_reviewed: 2026-04-23
 | Agent | Model | 備考 |
 |---|---|---|
 | backend-architect | sonnet | バックエンド設計・実装 |
-| build-fixer | sonnet | ビルドエラー修正 |
 | debugger | sonnet | バグ修正 |
-| frontend-developer | sonnet | フロントエンド実装 |
-| nextjs-architecture-expert | sonnet | Next.js 特化 |
-| golden-cleanup | sonnet | コード品質改善 |
 | document-factory | sonnet | ドキュメント生成 |
 | doc-gardener | haiku | 軽量ドキュメント修正 |
-| golang-pro | sonnet | Go 実装 |
-| typescript-pro | sonnet | TypeScript 実装 |
 | test-engineer | sonnet | テスト作成 |
 
 ### Orchestrator（ルーティング・管理）
 
 | Agent | Model | 備考 |
 |---|---|---|
-| triage-router | haiku | 軽量タスク分類 |
 | meta-analyzer | sonnet | Task/Meta 分離分析 |
 | autoevolve-core | sonnet | 改善サイクル管理 |
 
