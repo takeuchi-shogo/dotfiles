@@ -1,6 +1,6 @@
 ---
 name: type-design-analyzer
-description: 型設計の品質を分析するレビューエージェント。新しい型のカプセル化、不変条件の表現、型安全性を評価。型の追加・リファクタリング時に使用。
+description: "型設計の品質を分析する専門レビューエージェント。新規型のカプセル化・不変条件の表現・型安全性・nil安全性・タイプステートを評価し、定量スコア (encapsulation/invariant/usefulness/enforcement) と改善提案を返す。Use PROACTIVELY when: 新しい type/interface/struct/enum/Option/Result/discriminated union が追加された / 既存型のリファクタリング / PR で複数の型が変更された / ドメインモデルの設計レビュー. Do NOT use for: 単純な型エイリアス追加、JSON shape の変更のみ、汎用コードレビュー (use code-reviewer)、セキュリティレビュー (use security-reviewer)。"
 tools: Read, Bash, Glob, Grep
 disallowedTools: Edit, Write, NotebookEdit
 model: sonnet

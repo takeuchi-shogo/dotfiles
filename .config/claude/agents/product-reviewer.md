@@ -1,6 +1,6 @@
 ---
 name: product-reviewer
-description: Product観点のコードレビュー。spec fileとの整合性、ユーザー課題の解決度、スコープクリープ、エッジケース見落としを検出。UI変更やspec file存在時に/reviewから自動起動。
+description: "Product 観点のコードレビュー専門エージェント。spec file との整合性、ユーザー課題の解決度、スコープクリープ、エッジケース見落とし、ユーザー体験リスクを検出する。Use PROACTIVELY when: spec file (docs/specs/*.prompt.md) が存在 / UI 変更が含まれる / ユーザー受入条件への適合性を検証したい / 50行以上のロジック変更. /review から自動起動。Do NOT use for: 純粋な内部リファクタリング (use code-reviewer)、セキュリティ監査 (use security-reviewer)、型設計 (use type-design-analyzer)。"
 tools: Read, Bash, Glob, Grep
 model: sonnet
 memory: local
