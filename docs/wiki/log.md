@@ -750,3 +750,11 @@
   - T5: references/scheduling-decision-table.md
   - T6: references/agent-browser-server-lifecycle.md
 - 分析レポート: docs/research/2026-05-07-warp-oz-skills-absorb-analysis.md
+
+## [2026-05-10] ingest | 12-rule CLAUDE.md (anonymous Telegram article)
+
+- ソース: anonymous Telegram daily-tips article (skool.com 販売漏斗パターン、Boris/Three-Model Stack 系列)
+- 判定: Gap 0, Partial 2 (R6/R9), Already 6 (R5/R7/R8/R10/R11/R12)
+- 取り込み: T1 R12 silent success audit (S 規模、completion-gate.py + checkpoint_manager.py の silent except 修正) + T2 R9 test intent rubric (S 規模、review-dimensions.md に correctness 補足追記)
+- 棄却: T3 12-rule CLAUDE.md 全採用 (Pruning-First 違反 + 200 行 ceiling 抵触 + 記事根拠の弱さ)
+- 分析レポート: `docs/research/2026-05-10-12-rule-claude-md-absorb-analysis.md`

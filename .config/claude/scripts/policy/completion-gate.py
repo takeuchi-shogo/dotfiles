@@ -155,12 +155,11 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
     except subprocess.TimeoutExpired:
         return False, "テストがタイムアウトしました (120秒)"
     except Exception as exc:
-        # If we can't run tests, don't block
         print(
             f"[completion-gate] test run failed: {exc}",
             file=sys.stderr,
         )
-        return True, ""
+        return False, f"test runner exception: {exc}"
 
 
 def _classify_test_failure(output: str) -> tuple[str, str]:

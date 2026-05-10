@@ -238,8 +238,11 @@ def main() -> None:
                 sys.stdout,
             )
             return
-    except Exception:
-        pass
+    except Exception as exc:
+        print(
+            f"[checkpoint_manager] checkpoint logic failed: {type(exc).__name__}",
+            file=sys.stderr,
+        )
 
     sys.stdout.write(data)
 
@@ -247,5 +250,8 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
-        pass
+    except Exception as exc:
+        print(
+            f"[checkpoint_manager] main() failed: {type(exc).__name__}", file=sys.stderr
+        )
+        sys.exit(0)
