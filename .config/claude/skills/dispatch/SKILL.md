@@ -1,11 +1,13 @@
 ---
 name: dispatch
-description: >
-  cmux Worker Router — タスクをサブエージェントまたは cmux Worker（Claude Code / Codex / Gemini）に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。
-  Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて'.
-  Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）。
+description: "cmux Worker Router — タスクをサブエージェントまたは cmux Worker (Claude Code / Codex / Gemini) に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて', '別のモデルで', '長時間タスク', 'バックグラウンドで', '並列で実行', 'route this task'. Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）、単発の Codex/Gemini 質問（use /codex or /gemini directly）。"
 origin: self
 user-invocable: true
+metadata:
+  pattern: tool
+  chain:
+    upstream: ["/spec (タスク定義)"]
+    downstream: ["/codex", "/gemini", "Agent tool"]
 ---
 
 # /dispatch — cmux Worker Router

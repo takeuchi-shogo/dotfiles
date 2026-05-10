@@ -1,14 +1,14 @@
 ---
 name: debate
-description: >
-  複数AIモデル(Codex/Gemini)に同じ質問を投げ、独立した視点を収集・統合する。
-  Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons',
-  'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better'.
-  Do NOT use for factual questions with clear answers — use WebSearch or gemini skill instead.
+description: "複数AIモデル (Codex/Gemini) に同じ質問を投げ、独立した視点を収集・統合する。技術選定・設計判断で 1 モデルに偏らず triangulation する。Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons', 'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better', '別の意見', '他のモデルにも聞いて'. Do NOT use for: 事実確認 (use WebSearch or /gemini)、単発の Codex/Gemini 質問 (use /codex or /gemini directly)、コードレビュー (use /review)。"
 origin: self
+user-invocable: true
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline
+  chain:
+    upstream: ["/spec (判断対象を明確化)", "/think (独自考察)"]
+    downstream: ["/decision (採択を記録)"]
 ---
 
 # Multi-Model Debate
