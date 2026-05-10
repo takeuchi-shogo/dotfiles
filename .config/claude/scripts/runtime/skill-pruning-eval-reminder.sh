@@ -88,7 +88,7 @@ PY
   echo
   echo "## Track B — Large Skill Split Progress (情報のみ、retire 対象外)"
   echo
-  for skill in ast-grep-practice gleam-practice review playwright-test skill-audit; do
+  for skill in ast-grep-practice review playwright-test skill-audit; do
     p="$HOME/.claude/skills/$skill/SKILL.md"
     if [ -f "$p" ]; then
       lines=$(wc -l < "$p" | tr -d ' ')
