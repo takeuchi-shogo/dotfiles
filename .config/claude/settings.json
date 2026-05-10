@@ -788,5 +788,6 @@
     }
   },
   "effortLevel": "xhigh",
-  "plansDirectory": "./tmp/plans"
+  "plansDirectory": "./tmp/plans",
+  "skipAutoPermissionPrompt": true
 }
