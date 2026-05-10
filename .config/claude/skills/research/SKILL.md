@@ -1,14 +1,14 @@
 ---
 name: research
-description: >
-  マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に
-  自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
-  Triggers: '調査して', '深掘り', 'research', '複数ソース', '並列調査', 'multi-source investigation'.
-  Do NOT use for simple single-query searches — use WebSearch or gemini skill instead.
+description: "マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。Triggers: '調査して', '深掘り', 'research', '複数ソース', '並列調査', 'リサーチして', 'まとめて調べて', '徹底的に調べて', 'multi-source investigation', 'deep dive', 'comprehensive research'. Do NOT use for: 単発検索 (use WebSearch)、単一モデルへの質問 (use /codex or /gemini)、記事 1 本の要約 (use /digest)。"
 origin: self
+user-invocable: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline
+  chain:
+    upstream: ["/spec (リサーチテーマ定義)"]
+    downstream: ["/absorb (取り込み判断)", "/digest (記事 1 本要約)"]
 ---
 
 # Deep Research — Multi-Agent Orchestration

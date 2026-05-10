@@ -1,9 +1,13 @@
 ---
 name: obsidian-knowledge
-description: "Use when searching, organizing, or linking knowledge in your Obsidian Vault — note search, bulk tag changes, link discovery, permanent note generation from literature notes, or MOC auto-generation. Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート'. Do NOT use for: コンテンツ生成 (use obsidian-content), Vault 初期セットアップ (use obsidian-vault-setup). Markdown syntax/properties/callouts → defer to obsidian plugin skills. CLI commands → defer to obsidian:obsidian-cli."
+description: "Obsidian Vault のナレッジ整理・検索・リンク化を行う。ノート検索、bulk タグ変更、リンク候補発見、Literature → Permanent Note 昇格、MOC 自動生成。Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート', 'Vault整理', 'ナレッジ整理', 'ノート整理', '関連ノート探して', 'リンク追加', 'permanent note 化'. Do NOT use for: コンテンツ生成 (use obsidian-content)、Vault 初期セットアップ (use obsidian-vault-setup)、Markdown syntax/properties/callouts (defer to obsidian:obsidian-markdown)、CLI commands (defer to obsidian:obsidian-cli)、Literature Note 作成 (use /digest)。"
 origin: self
+user-invocable: true
 metadata:
   pattern: tool-wrapper
+  chain:
+    upstream: ["/digest (Literature Note 作成)", "/note (Inbox 保存)"]
+    downstream: ["obsidian:obsidian-cli (CLI 操作)", "obsidian:obsidian-markdown (記法)"]
 ---
 
 # Obsidian Knowledge Manager

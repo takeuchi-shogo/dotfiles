@@ -1,15 +1,15 @@
 ---
 name: think
-description: >
-  思考を深める対話セッション。Obsidian の信念・不確実性ドキュメントを自動ロード、思考プロトコル
-  (述べる→反論→盲点) で研ぐ。session/update/decision/roleplay。
-  Triggers: '/think', '考えを整理', '壁打ち', '判断に迷う', 'decision framework'.
-  Not for: トレードオフ比較 (/debate)、要件ブレスト (brainstorming)、タスク計画 (/timekeeper)。
+description: "思考を深める対話セッション。Obsidian の信念・不確実性ドキュメントを自動ロード、思考プロトコル (述べる→反論→盲点) で研ぐ。session/update/decision/roleplay の 4 サブモード。Triggers: '/think', '考えを整理', '壁打ち', '判断に迷う', '考え直したい', '頭の中整理', '相談したい', '一緒に考えて', 'decision framework', 'thinking partner', 'sounding board'. Do NOT use for: トレードオフ比較 (use /debate)、要件ブレスト (use superpowers:brainstorming)、タスク計画 (use /timekeeper)、判断結果の記録のみ (use /decision)。"
 origin: self
+user-invocable: true
 argument-hint: session | update | decision | roleplay
 allowed-tools: Read, Write, Edit, Glob, AskUserQuestion
 metadata:
   pattern: inversion+coaching
+  chain:
+    upstream: ["/recall (過去文脈復元)"]
+    downstream: ["/decision (判断記録)", "/debate (多モデル比較)"]
 ---
 
 # /think — Thinking Partner Session

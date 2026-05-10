@@ -1,9 +1,13 @@
 ---
 name: digest
-description: "Use when converting NotebookLM output text into structured Obsidian Literature Notes, or when summarizing any text/URL/PDF into an actionable brief. Paste YouTube/article summaries and it auto-infers metadata, saves to 05-Literature/. Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに', 'summarize', '要約して', 'ブリーフ作成'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge), コンテンツ生成 (use obsidian-content)."
+description: "NotebookLM 出力テキスト・記事・URL・PDF を構造化 Obsidian Literature Note に変換する。メタデータ自動推論で 05-Literature/ に保存、actionable brief を生成。Triggers: 'NotebookLM', '文献ノート', 'Literature Note', 'YouTube要約を保存', '記事をVaultに', 'この記事保存', 'PDF まとめ', 'summarize', '要約して', 'ブリーフ作成', 'digest', 'リテラチャーノート'. Do NOT use for: ナレッジ整理 (use obsidian-knowledge)、外部記事の取り込み判断 (use /absorb)、複数ソース横断調査 (use /research)、単純な inbox 保存 (use /note)。"
 origin: self
+user-invocable: true
 metadata:
   pattern: generator
+  chain:
+    upstream: ["/research (深掘り)"]
+    downstream: ["/absorb (取り込み判断)", "/obsidian-knowledge (整理・リンク)"]
 ---
 
 # Digest — NotebookLM → Literature Note
