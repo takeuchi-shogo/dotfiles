@@ -1,14 +1,14 @@
 ---
 name: research
-description: >
-  マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に
-  自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。
-  Triggers: '調査して', '深掘り', 'research', '複数ソース', '並列調査', 'multi-source investigation'.
-  Do NOT use for simple single-query searches — use WebSearch or gemini skill instead.
+description: "マルチモデル並列リサーチ。研究テーマを分解し、サブタスクの性質に応じて claude -p / Gemini / Codex に自動割り当てして並列実行、結果を集約してレポートを生成する。深い調査や複数ソースの統合が必要な場合に使用。Triggers: '調査して', '深掘り', 'research', '複数ソース', '並列調査', 'リサーチして', 'まとめて調べて', '徹底的に調べて', 'multi-source investigation', 'deep dive', 'comprehensive research'. Do NOT use for: 単発検索 (use WebSearch)、単一モデルへの質問 (use /codex or /gemini)、記事 1 本の要約 (use /digest)。"
 origin: self
+user-invocable: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 metadata:
   pattern: pipeline
+  chain:
+    upstream: ["/spec (リサーチテーマ定義)"]
+    downstream: ["/absorb (取り込み判断)", "/digest (記事 1 本要約)"]
 ---
 
 # Deep Research — Multi-Agent Orchestration
@@ -35,6 +35,37 @@ metadata:
 3. **Execute** — claude -p で並列実行（最大8並列）
 4. **Aggregate** — 結果を集約
 5. **Polish** — チャプター毎に精査、最終レポート生成
+
+## Lifecycle Registry
+
+セッション開始時に `task_registry.register()` でタスクを登録し、Polish 完了時に
+`update_status()` で完了状態と成果物パスを記録する。
+
+**Trigger 条件**: 単発 query は登録不要。サブタスクが 2 件以上（並列実行）の場合のみ登録。
+理由: schema 規約（task-registry-schema.md）の「短寿命の Sync subagent は registry に書かない」。
+
+**Step 2 Plan 完了時に register**:
+```bash
+TASK_ID=$(python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from task_registry import register
+print(register('async', 'research', '<topic>', metadata={'subtask_count': N, 'angles': '<csv>'}))
+")
+```
+
+**Step 5 Polish 完了時に update_status**:
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from task_registry import update_status
+update_status('$TASK_ID', 'completed',
+    output_path='<report path>',
+    metadata={'duration_ms': N, 'subtask_count': N})
+"
+```
+
+エラーで中断した場合は `update_status('$TASK_ID', 'failed', error='<msg>')` を呼ぶ。
+metadata の任意拡張規約は `references/task-registry-schema.md` 参照。
 
 ## Step 1: Reconnaissance
 
@@ -178,7 +209,7 @@ variant 並列は **Step 3 Execute 内のサブタスクプロンプト** で表
 
 - **MCP ツール**: brave-search, context7, scite（インストール済みの場合）
 - **Scite MCP**: 学術文献検索・Smart Citations・引用グラフ分析。学術トピックのサブタスクで積極的に使用
-- **WebFetch/WebSearch**: 標準ツール
+- **WebFetch/WebSearch**: 標準ツール (URL 取得経路は `references/web-fetch-policy.md` に従う — trusted 外ドメインはサイレント truncation 回避のため `curl + defuddle` 推奨)
 
 ### マルチモデル並列実行
 

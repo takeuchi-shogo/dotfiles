@@ -135,7 +135,7 @@ APM では `skill name` はディレクトリ名と一致し、install 時にそ
 
 - 汎用名（`test`, `utils`, `helper`）は避ける
 - scope prefix を付ける（`mizchi-empirical-tuning` 等）か、リッチな説明的名前にする
-- 既存の有名 skill 名（`moonbit-practice`, `ast-grep` 等）を避ける
+- 既存の有名 skill 名（`ast-grep` 等）を避ける
 
 ## 公開チェックリスト
 

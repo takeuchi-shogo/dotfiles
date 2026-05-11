@@ -7,6 +7,7 @@ Categories:
   - references: ~/.claude/references/*.md files (loaded on demand)
   - hook_injected: PreToolUse/PostToolUse hook outputs from recent session
   - mcp_descriptions: MCP tool descriptions (estimated from settings.json)
+  - skill_descriptions: SKILL.md frontmatter `description` fields (always exposed)
 
 Output: JSONL to ~/.claude/logs/instruction-budget-YYYY-MM-DD.jsonl
 Threshold: warn if total > 6000 tokens (approx. Stanford "Lost in the Middle"
@@ -19,6 +20,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -224,6 +226,78 @@ def measure_references(claude_dir: Path) -> dict:
     }
 
 
+_FRONTMATTER_RE = re.compile(r"^---\n(.+?)\n---", re.DOTALL)
+_DESCRIPTION_RE = re.compile(
+    r"^description:\s*(.+?)(?=\n[a-zA-Z_][a-zA-Z0-9_-]*:|\Z)",
+    re.DOTALL | re.MULTILINE,
+)
+# Leading YAML block scalar indicator: `>`, `>-`, `>+`, `|`, `|-`, `|+`
+_BLOCK_SCALAR_INDICATOR_RE = re.compile(r"^[>|][-+]?\s*\n")
+
+
+def _extract_description(skill_md: Path) -> str | None:
+    """Return the trimmed `description` field of a SKILL.md frontmatter, or None.
+
+    Handles YAML block scalars (`>`, `|`, with optional `-`/`+` chomp), surrounding
+    quotes, CRLF line endings, and empty values. Returns None when the field is
+    absent or empty after stripping decorations.
+    """
+    try:
+        text = skill_md.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    text = text.replace("\r\n", "\n")
+    fm_match = _FRONTMATTER_RE.match(text)
+    if not fm_match:
+        return None
+    # Append "\n" so a description in the last position terminates at \Z.
+    desc_match = _DESCRIPTION_RE.search(fm_match.group(1) + "\n")
+    if not desc_match:
+        return None
+    raw = desc_match.group(1).strip()
+    # Strip block scalar indicator line (`>`, `|`, optional `-`/`+`) so the
+    # YAML syntax characters don't inflate the token count.
+    raw = _BLOCK_SCALAR_INDICATOR_RE.sub("", raw, count=1).strip()
+    # Strip surrounding quotes if the entire value is wrapped in matching quotes.
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
+        raw = raw[1:-1].strip()
+    return raw or None
+
+
+def measure_skill_descriptions(claude_dir: Path) -> dict:
+    """Measure total chars of all SKILL.md frontmatter `description` fields.
+
+    Skill descriptions are always injected into the system prompt, so they
+    represent a continuous tax on the instruction budget. See
+    `docs/specs/2026-05-04-skill-tier-pruning.md`.
+    """
+    skills_dir = claude_dir / "skills"
+    if not skills_dir.exists():
+        return {
+            "source": "skill_descriptions",
+            "chars": 0,
+            "tokens_est": 0,
+            "skill_count": 0,
+            "note": "skills dir not found",
+        }
+
+    total_chars = 0
+    skill_count = 0
+    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
+        desc = _extract_description(skill_md)
+        if desc is None:
+            continue
+        total_chars += len(desc)
+        skill_count += 1
+
+    return {
+        "source": "skill_descriptions",
+        "chars": total_chars,
+        "tokens_est": total_chars // CHARS_PER_TOKEN,
+        "skill_count": skill_count,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -235,6 +309,7 @@ def _collect_results(claude_dir: Path, log_dir: Path) -> tuple[dict, Path]:
         measure_claude_md(claude_dir),
         measure_mcp_descriptions(claude_dir / "settings.json"),
         measure_hook_outputs(log_dir),
+        measure_skill_descriptions(claude_dir),
     ]
     references_info = measure_references(claude_dir)
     total_tokens = sum(c["tokens_est"] for c in components)

@@ -623,3 +623,138 @@
 - 統合プラン: docs/plans/active/2026-04-29-routines-absorb-plan.md
 - Codex 批評: 既存 /absorb + AutoEvolve で土台十分、A+B を gate/report に最小差分追加が最優先
 - Gemini 補完: Reward Hacking / Slop 蓄積 / Goodhart が主要失敗パターン → Anti-Gaming Layer 必要
+
+## [2026-04-29] ingest | Claude Code Skills が "勝手に動く" 6つの設計法則
+
+- ソース: zodchiii氏 X.com (https://x.com/zodchiii/status/2048345453096313005) / 東大Claude Code研究所紹介, 2026-04
+- 判定: Already 6, Partial 1, Gap 1, 棄却 4 (Pruning-First 徹底)
+- 取り込み: 採用 2 件のみ
+  - T1: validation-checklist.md に「3 near-miss negative examples」チェック追加
+  - T2: skill-writing-principles § 7 に「first screen 50行 (trigger/usage/next-read pointers)」原則追記
+- 棄却: Out of Scope 100% (過剰)、6法則 ↔ 12原則 crosswalk 新規ファイル (docs 増殖)、50文字未満 ast-grep (観察的相関)
+- 教訓: 100個リバースエンジニアリングという脳筋手法の知見も、大半は既に skill-writing-principles 12原則 + skill-creator + skill-audit に内蔵されていた
+- 分析レポート: `docs/research/2026-04-29-claude-skills-six-laws-absorb-analysis.md`
+
+## [2026-04-29] ingest | Codex vs Claude Code 役割分担 (Codex Studio)
+
+- ソース: 「【保存版】Codex vs Claude Code 数百時間使ってたどり着いた最強の役割分担」(@Codestudiopjbk)
+- 判定: Already 3, Partial 3 (Reject), Gap 3 (Reject), N/A 3
+- 取り込み: 1 件のみ — `.config/claude/rules/codex-delegation.md` に「Safety Claim を過信しない」セクション追記 (trusted profile 運用前提の明示)
+- 棄却理由: Codex Studio = Codex 寄りベンダーバイアス強い (DM 募集アカウント)。E/G/L (tokenizer +35%/Codex 4-23 機能/Anthropic disclosure) は公式 changelog で裏取り不可 (Gemini 補完)。Codex 批評も「採用 0 件が妥当」と判定
+- レポート: docs/research/2026-04-29-codex-vs-claudecode-role-split-absorb-analysis.md
+
+## [2026-04-29] ingest | The Self-Healing Agent Harness (CREAO 続編)
+
+- ソース: CREAO CTO Peter Pang, 2026-04-29 推定
+- 判定: Gap 1, Partial 1 (T4-C), Already (強化採用) 3, N/A 5, 棄却 7
+- 取り込み: T1 outcome over trajectory / T2 model-family diversity / T3 drift 再校正条件 / T4-C regression-suite populate (別セッション)
+- 棄却の主軸: CREAO の Engineering Pipeline と Bridge は前作 absorb (2026-04-14) で「multi-tenant 製品の儀式」として N/A 判定済
+- 関連: docs/research/2026-04-29-self-healing-harness-absorb-analysis.md, docs/plans/active/2026-04-29-self-healing-absorb-plan.md
+
+## [2026-04-30] ingest | What to Learn, Build, and Skip in AI Agents (2026)
+
+- ソース: anonymous engineer ($250k+ offers, stealth company tech lead), 2026-04 meta-guide
+- 判定: Already 6 (L1/L3/L4/L5/L6/B2), Already→不要 1 (L2 aci-tool-design.md #3 が同等カバー), Already→N/A 1 (M2 weekly-review GTD focus 不適合), N/A 6 (F2/L7/B1/M1/S1/W1)
+- 取り込み: **採用 1 件のみ** — F1 5-test filter (will-it-matter-2y / postmortem-w-numbers / non-disruptive-adopt / cost-of-skipping-6m / measurable-impact) を `references/triage-criteria.md` に 1 セクション追記。test 4「6 ヶ月 skip コスト ≒ 0」の機会費用フレーミングが novel
+- Codex 批評: exec 失敗 (BG kill, exit 144) → Opus がファイル直接検証 (aci-tool-design.md / weekly-review SKILL.md / triage-criteria.md) で同等批評達成、L2 と M2 を強化候補から降格
+- Gemini fact-check: Spotify 25% / 40% retry / CC April 2026 47% regression / LangGraph 1/3 全て未検証 anecdote と判明 → 報告書に untrusted-stat タグ
+- 教訓: 40+ 累積 absorb 後の meta 級記事は Already 率高 (本記事は ~80% カバー済)、ファイル直接検証が外部 critic より高効率なケースあり
+- 分析レポート: docs/research/2026-04-30-learn-build-skip-2026-absorb-analysis.md
+
+## [2026-04-30] ingest | Claude API skill now in CodeRabbit, JetBrains, Resolve AI, and Warp
+
+- ソース: https://claude.com/blog/claude-api-skill (Anthropic 公式, 2026-04-29)
+- 判定: Gap 0 / Partial 0→N/A 修正 / Already 5 (強化不要) / N/A 3
+- 取り込み: **採用 0 件** (Codex+Gemini 一致、Pruning-First)
+- 教訓: アナウンス記事 + ベンダーバイアス警戒。claude-api SKILL.md model ID 陳腐化は別件 hygiene
+- レポート: docs/research/2026-04-30-claude-api-skill-absorb-analysis.md
+
+## [2026-05-02] ingest | 30 Claude Code Sub-Agents I Actually Use in 2026
+
+- ソース: anonymous Medium 系記事 (テキスト貼り付け、URL なし)
+- 判定: Gap 0 / Partial 5 / Already 7 / N/A 15 / not_found 3 (deep-dive で Self-Rejection Rule pattern + Subagent Count Ceiling を Gap 発見)
+- 取り込み: T2 migration-guard.md に forward+reverse BLOCK rule + Postgres-specific hard blockers / T3 edge-case-analysis SKILL.md に 15 軸補足チェックリスト / T5 agent-design-lessons.md に Self-Rejection Rule Pattern セクション / メタ Subagent Count Ceiling セクション (Gemini 50+ degradation 9/10→5/10、dotfiles 33 個で残り 17)
+- 棄却 26 件: business team agent 15 個 (Sales/Marketing/CS/Ops/Finance) は個人 dotfiles で out_of_scope、code-reviewer / counterargument / decision-log / daily-plan は既存仕組みで実質カバー
+- 関連レポート: docs/research/2026-05-02-30-subagents-2026-absorb-analysis.md
+
+## [2026-05-04] ingest | I tracked 430 hours of Claude Code usage. 73% was wasted on these 9 patterns
+
+- ソース: anonymous X post + Telegram funnel (https://t.me/+_ZWrQN7GuDA3ZDEy、URL なし、テキスト貼り付け)
+- 判定: Gap 1 (Pattern 5 skill loading 12,283 token tax) / Partial 2 (8 早期停止 / 9 SessionStart) / Already 5 / 保留 1 (4 Cache TTL)
+- 取り込み 5 件: T1 (M, 最優先) skill Tier 分類で常時 description tax 半減 (12,283→~6,000) / T1.5 (S) dotfiles/CLAUDE.md project 再検討 / T2 (S) SessionStart hook 監査 / T3 (S) Cache TTL 実態確認調査 / T4 (XS) MEMORY references 流入経路確認
+- 棄却 3: Pattern 1 (CLAUDE.md user) Pruning-First / Pattern 6 (MCP) settings.json 0 個で最小 / Pattern 7 (Thinking) DISABLE_ADAPTIVE_THINKING=1 設定済
+- 教訓: 14+13+11+10+7+6+5+4+3=73% engineered 数字。Telegram 集客で信頼度低。判断は記事数値ではなく当 setup 実測 (107 skill 12,283 token tax) ベース。Codex critique で Opus 過大評価寄りバイアスを 4 件補正 (Pattern 5 Gap 格上げ、Pattern 4 保留、Pattern 1/6 棄却)
+- 関連レポート: docs/research/2026-05-04-claude-code-overhead-9patterns-absorb-analysis.md
+
+## [2026-05-04] ingest | Distribution vs Escalation: Subagents or Advisors
+
+- ソース: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02, author unknown)
+- 判定: Gap 0 / Partial 3 (#3 Advisor 索引接続, #5 Drive 主体逆転表, #7 lifecycle registry) / Already 6 / N/A 1 (Forked subagent 再確認)
+- 取り込み: A1 (decision-tables-index Advisor 行 + Drive 主体逆転表) / A2 (advisor-strategy one-shot per decision + review-consensus §9) / A3 (subagent-delegation Return Contract) / B1 (mcp-audit soft→enforcement 修正) / B2 (fork-analysis reaffirmed footnote)
+- 分離: B3 (lifecycle registry coverage) は別 plan
+- Hallucination Risk: advisor_20260301 / Anthropic blog 4/9 / UC Berkeley advisor 論文 が確認不可、specific tool names / 数値は採用せず pattern のみ採用
+- 分析レポート: docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md
+
+## [2026-05-06] ingest | I Tried 100+ Claude Code Skills. These 6 Are The Best
+
+- ソース: anonymous AI agency operator 記事 (real estate / HVAC / coaches / marketing 業界向け automation 販売バイアス)
+- 判定: Already 4 (Skill Creator, Superpowers, Frontend Design + 当初 Context Mode)、Partial 3 (GSD, /ultrareview, Claude Mem)、Codex 修正で Context Mode → Partial 要実験に降格
+- Phase 2.5 Refine: Codex で `/ultra-review` → 公式名 `/ultrareview` 確認、Pro/Max 3 free 期間 2026-05-05 終了 (今日から有料)、最大の罠 = MEMORY.md を semantic layer で置換
+- 取り込み 5 タスク (3 件は今セッション実装済): T1 Codex Review Gate に Independent Reproduction Standard 追加 / T2 task skills:eval-e2e 化 / T3 post-compact-verify.js に reinjection selector (P1 Active Plans + P2 Recently Edited) / T4 checkpoint 強化 (skip) / T5 Claude Mem vector spike (リスク annotation 付き、別セッション推奨)
+- 詳細: docs/research/2026-05-06-100-skills-best6-absorb-analysis.md
+
+## [2026-05-06] ingest | Your Claude Code's WebFetch Isn't Actually Reading the Web Properly
+
+- ソース: sherry/Zenn 2026-05-04 (https://zenn.dev/zhizhiarv/articles/claude-code-webfetch-haiku-summary)
+- 主張: Claude Code の WebFetch は内部で Haiku が要約、3 条件 (Content-Type: text/markdown + 80+ trusted domains + <100k chars) 外はサイレント truncate。表示の "204.4KB" は受信バイト、実際 LLM が読むのは要約後コンテンツ。
+- 判定: Phase 2 初版で Gap 4/Partial 5 → Phase 2.5 (Codex+Gemini 並列批評) で Gap 4 → Already 拡張に格下げ (friction-events 1 schema + 外部 JSON + 1 行参照で吸収可能)、新規 Gap 3 追加 (引用 faithfulness vs Copyright filter 125字 / HTML→md lossy / Haiku 要約層の prompt injection 表面)
+- 取り込み 8/8 採用 (ユーザー判断 `a`):
+  - A1 references/web-fetch-policy.md (URL pattern → 経路 decision table) 新規 + 7 skill (absorb/research/deep-read/digest/web-design-guidelines/alphaxiv/tech-article-reproducibility) から 1 行参照
+  - A2 PostToolUse hook `scripts/runtime/webfetch-truncation-detector.py` で `webfetch_truncation_suspect` event を friction-events.jsonl に記録
+  - A3 references/model-routing.md と subagent-delegation-guide.md の「Haiku WebFetch 委譲」契約を「生 markdown 取得まで」に限定、要約は呼び出し側責務 (二重圧縮の根本遮断)
+  - B1 当プロジェクトで 1 度実測 (Wikipedia/Zenn/Qiita/AWS docs で受信バイト vs 可視文字数 vs 元記事) — policy 化前の根拠確保
+  - B2 absorb SKILL.md Phase 1 を gate 化 (trusted 外で curl+defuddle/Gemini grounding に強制切替) + 引用 faithfulness 警告
+  - C1/C2 web-fetch-policy.md 内に「原文引用必要時」「code/table 重視記事」のオーバーライド明記
+  - C3 security-reviewer agent に「Haiku 要約層の prompt injection 表面」観点追加
+- 棄却: trusted_domains リスト本体を CLAUDE.md/MEMORY.md 転記 (IFScale 違反) / 各 skill に 3 行手順分散 (DRY 違反)
+- 規模: L (14 ファイル変更、新規 2 + 修正 12)、推奨実行: 新セッション + `/rpi docs/plans/2026-05-06-webfetch-policy-plan.md`
+- 観測前提: Claude Code v2.1.126 リバースエンジニアリング由来 (observation_pinned)、Anthropic 公式は Haiku 介在を直接記述していない (Gemini 確認、コミュニティで 100KB truncation 自体は再現多数)
+- Gemini 追加発見: Jina Reader (`r.jina.ai/<url>`) / 15 分キャッシュ / JS 非対応 / Cline は MCP+Playwright でフルブラウザ
+- 関連レポート: docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md / 統合プラン: docs/plans/2026-05-06-webfetch-policy-plan.md
+
+## [2026-05-08] ingest | Cyril Obsidian Vault Smarter (@cyrilXBT)
+
+- ソース: 「How to Build an Obsidian Knowledge Vault That Gets Smarter Every Day」記事
+- 判定: Gap 0, Partial 1 (contradiction detection), Already 3 (強化不要), N/A 4, 棄却 5
+- 採用 (3 タスク S): A) /think に保存済み信念との矛盾照合 step 追加 / B) auto-morning-briefing.sh の Daily path を 07-Daily に統一 / C) thinking-context-template に Reading 欄追加
+- 副次発見: Hammerspoon (.hammerspoon/{daily_enforcer.lua,README.md}) にも同 path drift があり同時修正済み
+- 分類: reference-only (記事の主要主張 8 件棄却、Codex 批評で厳格化)
+
+## [2026-05-08] meta | /improve サイクル 1 — skill pruning evaluation 開始
+
+- トリガー: /improve サイクル 1 (2026-05-08) で skill-audit が dormant 8 件 + 大型 5 件 + description 衝突 4 件を検出
+- 即時適用: Track C audit/simplify description sharpen (commit 7541b7e) + briefing security 強化 (commit 89426bf)
+- 30 日評価開始: ai-workflow-audit / autocover / refactor-session / setup-background-agents / recall(local) / analyze-tacit-knowledge(local) / prompt-review / developer-onboarding (期間 2026-05-08 → 2026-06-07)
+- プラン: docs/plans/2026-05-08-skill-pruning-evaluation-plan.md (gitignored, ローカル参照)
+- リマインダー: 2026-06-07 09:00 cron で `dead-weight-scan.py` 起動 (cycle 2 で配置予定)
+
+## [2026-05-07] ingest | Warp oz-skills (15 skill) absorb
+
+- ソース: https://github.com/warpdotdev/oz-skills (MIT, 2026)
+- 判定: Already 1 / Already 強化可能 4 / Partial 6 / Gap 0 / N/A 4
+- 取り込み (6件すべて rubric 移植, 新 skill 追加なし):
+  - T1: references/ci-fix-policy.md (permissions/pull_request_target/flaky rerun 3 hard rule)
+  - T2: skills/check-health/SKILL.md Step 3.8 user-facing change drift rubric
+  - T3: agents/design-reviewer.md WCAG POUR + severity + manual testing
+  - T4: commands/pull-request.md Step 0 Pre-PR Chain Check
+  - T5: references/scheduling-decision-table.md
+  - T6: references/agent-browser-server-lifecycle.md
+- 分析レポート: docs/research/2026-05-07-warp-oz-skills-absorb-analysis.md
+
+## [2026-05-10] ingest | 12-rule CLAUDE.md (anonymous Telegram article)
+
+- ソース: anonymous Telegram daily-tips article (skool.com 販売漏斗パターン、Boris/Three-Model Stack 系列)
+- 判定: Gap 0, Partial 2 (R6/R9), Already 6 (R5/R7/R8/R10/R11/R12)
+- 取り込み: T1 R12 silent success audit (S 規模、completion-gate.py + checkpoint_manager.py の silent except 修正) + T2 R9 test intent rubric (S 規模、review-dimensions.md に correctness 補足追記)
+- 棄却: T3 12-rule CLAUDE.md 全採用 (Pruning-First 違反 + 200 行 ceiling 抵触 + 記事根拠の弱さ)
+- 分析レポート: `docs/research/2026-05-10-12-rule-claude-md-absorb-analysis.md`

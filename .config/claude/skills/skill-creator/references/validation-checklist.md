@@ -66,6 +66,7 @@ All 4 should be "Yes" to proceed. If any is "No", consider the alternative.
 - [ ] `name` field: kebab-case, no spaces, no capitals
 - [ ] `description` includes WHAT and WHEN
 - [ ] `description` under 1024 characters
+- [ ] Trigger phrases include 3 near-miss negative examples (similar requests that should NOT trigger this skill)
 - [ ] No XML tags (`<` or `>`) in frontmatter
 - [ ] Instructions are clear and actionable (imperative form)
 - [ ] Error handling included

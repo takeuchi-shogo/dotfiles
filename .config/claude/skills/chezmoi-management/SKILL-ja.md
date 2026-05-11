@@ -133,7 +133,6 @@ chezmoi re-add ~/.claude/skills/nix-setup/SKILL.md
 **現在 APM 経由で入っているもの** (`dot_apm/apm.yml` 抜粋):
 
 - `moonbitlang/moonbit-agent-guide/*` (moonbit-agent-guide, moonbit-refactoring, moonbit-c-binding)
-- `mizchi/moonbit-practice/skills/moonbit-practice`
 - `mizchi/flaker/skills/flaker-setup`
 - `ast-grep/agent-skill/ast-grep`
 - `mizchi/tui.mbt/skills/tuimbt-practice`

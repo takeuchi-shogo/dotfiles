@@ -86,6 +86,12 @@ claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 > 出典: yamadashy "Claude Code Routines" absorb (2026-04-29) — Task D。
 > 本セクションは仕様のみ。実機 pilot は別セッションで実施する。
 
+> **Research Preview 注記** (Boris Tip 28 absorb, 2026-04-30): Claude Code Routines は研究プレビュー機能で、CLI シグネチャ・課金体系・スケジュール仕様が予告なく変更される可能性がある。Pilot 開始時に必ず以下を再確認すること:
+> 1. `claude --help` / `claude agents --help` で現時点の Routines/Triggers 関連サブコマンドの存在を確認する。`triggers` サブコマンドは 2026-05 時点では未公開のため、Anthropic 公式 changelog で release タイミングを確認 (CLI-first discovery 原則)
+> 2. GitHub trigger を併用する場合は API token のスコープと revocation 手順を別途設計 (token 漏洩時の被害範囲を限定)
+> 3. 課金条件 (per-run 上限 / monthly cap / overage 挙動) を Anthropic 公式 changelog で裏取り
+> 4. 仕様変更時のフォールバック (local launchd / cron 維持) を Phase 3 まで残す
+
 ### Pilot 目標
 
 Daily Health Check を local launchd plist から **cloud Routines** に試験移行し、Mac sleep 中断耐性 / コスト / レイテンシを 1 週間並行運転で実測する。Phase 1 (試行) → Phase 2 (評価) → Phase 3 (本移行) の段階運用。

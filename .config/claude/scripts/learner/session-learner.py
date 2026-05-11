@@ -314,7 +314,7 @@ def _classify_approach(events: list[dict]) -> str:
     skill_names = {
         e.get("skill_name", "") for e in events if e.get("category") == "skill"
     }
-    if skill_names & {"codex-debugger", "codex-reviewer"}:
+    if skill_names & {"codex-reviewer"}:
         return "codex-deep"
     if "gemini-explore" in skill_names:
         return "gemini-research"

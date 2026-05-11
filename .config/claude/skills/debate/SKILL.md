@@ -1,14 +1,14 @@
 ---
 name: debate
-description: >
-  複数AIモデル(Codex/Gemini)に同じ質問を投げ、独立した視点を収集・統合する。
-  Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons',
-  'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better'.
-  Do NOT use for factual questions with clear answers — use WebSearch or gemini skill instead.
+description: "複数AIモデル (Codex/Gemini) に同じ質問を投げ、独立した視点を収集・統合する。技術選定・設計判断で 1 モデルに偏らず triangulation する。Triggers: 'AとBどちらが良い', 'トレードオフ', 'trade-off', '比較して', 'pros and cons', 'この設計の問題点', 'セカンドオピニオン', 'second opinion', '技術選定', 'which is better', '別の意見', '他のモデルにも聞いて'. Do NOT use for: 事実確認 (use WebSearch or /gemini)、単発の Codex/Gemini 質問 (use /codex or /gemini directly)、コードレビュー (use /review)。"
 origin: self
+user-invocable: true
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
   pattern: pipeline
+  chain:
+    upstream: ["/spec (判断対象を明確化)", "/think (独自考察)"]
+    downstream: ["/decision (採択を記録)"]
 ---
 
 # Multi-Model Debate
@@ -149,7 +149,7 @@ Step 3 の後、追加ラウンドを実行:
 
 - 単純な事実確認（→ WebSearch や context7）
 - コード実装（→ 直接書く）
-- バグ修正（→ debugger / codex-debugger）
+- バグ修正（→ debugger / `/codex:rescue --read-only`）
 - **レイテンシ敏感 / streaming 応答が必要な場面** — /debate は MoA パターン (Proposer 並列 → Aggregator 統合) であり、最終層の Aggregator が first token を決めるまで応答開始できない (TTFT penalty)。バッチ処理・壁打ちには向くが、インタラクティブ応答には不向き (出典: Wang et al. "Mixture-of-Agents Enhances LLM Capabilities" ICLR 2025 — failure mode #1)
 - **コスト敏感 / トークン予算がタイトな場面** — 複数モデル呼び出しで単一モデルの 3-7 倍の API コスト。/debate を呼ぶ前に「本当に複数視点が必要か」を自問する
 

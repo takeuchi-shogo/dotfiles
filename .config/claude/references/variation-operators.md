@@ -29,7 +29,7 @@ last_reviewed: 2026-04-23
 
 - 有効だったパターンの再構成・組み合わせ
 - 例: 動作する関数をモジュールに分離、インターフェース変更
-- 適用: codex-debugger で構造的な根本原因分析
+- 適用: `/codex:rescue --read-only` で構造的な根本原因分析
 
 ### local refinement (局所洗練)
 

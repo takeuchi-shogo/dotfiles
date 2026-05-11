@@ -27,7 +27,7 @@ CLAUDE.md の `<important if>` タグは「いつ何を読むか」の positive 
 |---|---------|----|----------|
 | 1 | user が直接回答を要求 | 「skill 使わず直接答えて」「シンプルに」 | 平文で回答 |
 | 2 | scope 外の task | debug skill に新機能設計を依頼 | AskUserQuestion で意図確認 |
-| 3 | 過剰 skill 起動 | typo 修正に `/epd` | skill なしで直接 Edit |
+| 3 | 過剰 skill 起動 | typo 修正に `/rpi` | skill なしで直接 Edit |
 | 4 | session 中の repeat invoke | 同じ skill を 5 分以内に再実行 | 前回結果を参照、再実行は確認してから |
 | 5 | skill の declared scope 外 | frontend skill に backend API 設計を依頼 | 対応する別 skill を提案 |
 
@@ -66,9 +66,9 @@ task 規模に対して skill が過大な場合は起動しない:
 
 | task 規模 | 適用可能 skill | 適用不可 skill |
 |----------|---------------|--------------|
-| S (typo, 1 行) | 直接 Edit, `/commit` | `/epd`, `/spike`, `/rpi` |
-| M (関数追加, バグ修正) | `/rpi`, `/review`, `/fix-issue` | `/epd` (過剰) |
-| L (新機能, リファクタ) | `/epd`, `/spec` → `/rpi` | — |
+| S (typo, 1 行) | 直接 Edit, `/commit` | `/spike`, `/rpi` |
+| M (関数追加, バグ修正) | `/rpi`, `/review`, `/fix-issue` | L 規模 skill (過剰) |
+| L (新機能, リファクタ) | `/spec` → `/rpi` | — |
 
 ## Anti-Patterns
 

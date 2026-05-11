@@ -134,6 +134,44 @@ python3 $HOME/.claude/scripts/learner/contradiction-scanner.py 2>/dev/null || tr
 - 各サーバーのトークン消費量が妥当か（セッションコンテキストの 15% 超は要注意）
 - 不要なサーバーは切断を推奨
 
+### Step 3.8: User-facing change → docs drift rubric
+
+> 出典: Warp `oz-skills/docs-update` (2026-05-06 absorb) を rubric として移植。
+> 24h commit scan を自動実行する代わりに、health check の判定軸を 1 本追加する。
+
+直近コミットに **user-facing change** のシグナルがあるのに対応する公開ドキュメントが更新されていない場合、警告を出す。
+
+User-facing change のシグナル（diff から検出する）:
+
+| シグナル | 検出方法 | 対応すべき docs |
+|----------|---------|----------------|
+| CLI 引数 / flag の追加・削除・rename | `--help` 出力に影響、bin スクリプト diff | README, `--help` テキスト, man |
+| 公開 API の signature 変更 | export された関数 / type / route の diff | API リファレンス, 型定義, OpenAPI |
+| 環境変数 / config key の追加・削除 | `.env.example` / config schema diff | README, env reference |
+| breaking change (semver major) | CHANGELOG / commit に `BREAKING CHANGE` | CHANGELOG, migration guide |
+| skill / command / agent の追加・削除・rename | `.claude/skills/`, `.claude/commands/`, `.claude/agents/` diff | MEMORY.md, CLAUDE.md, README |
+
+```bash
+# 直近 N 件のコミットから user-facing change シグナルを抽出（参考スニペット）
+git log --since="7 days ago" --pretty=format:"%h %s" -- \
+  '*.md' '.claude/**' 'README*' 'CHANGELOG*' \
+  'package.json' 'go.mod' 'Cargo.toml' \
+  '.env.example' 'config/*.{yaml,yml,json,toml}' \
+  | head -30
+
+# user-facing シグナル（CLI flag, API signature 変更）
+git diff --since="7 days ago" --stat -- 'cmd/' 'bin/' 'src/' 'lib/' 2>/dev/null | tail -10
+```
+
+判定:
+- 上記シグナル検出かつ docs 未更新 → 「ドキュメント更新を推奨する変更があります」と警告
+- 警告内容には変更ファイル、推奨更新先、関連 commit を含める
+- 修正は `doc-gardener` agent または手動で対応（自動 PR 化はしない — Warp の docs-update は team CI 前提）
+
+判定軸の Anti-pattern:
+- 内部リファクタを user-facing と誤判定する → 「export されている」「README に名前が出る」「help テキストに出る」のいずれかが必要
+- skill description 軽微な typo を昇格扱いにする → 振る舞い変更があるかで判定する
+
 ### Step 4: 深刻な問題への対応
 
 参照が壊れている場合は `doc-gardener` エージェントに修正を委譲する:

@@ -112,6 +112,6 @@ KeyError: 'key'                              ← 根本原因
 |---------|-------|-----|
 | `build failed / compilation failed` | ビルド設定またはコード構文の問題 | build-fixer エージェントに委譲 |
 | `segmentation fault` | メモリ不正アクセス | debugger エージェントで根本原因分析 |
-| `fatal error` | 回復不能なランタイムエラー | スタックトレース全体を確認、codex-debugger で分析 |
+| `fatal error` | 回復不能なランタイムエラー | スタックトレース全体を確認、`/codex:rescue --read-only` で分析 |
 | `ECONNREFUSED / connection refused` | サーバー未起動またはポート不一致 | プロセス確認 (`lsof -i :PORT`)、ポート番号確認 |
 | `permission denied` | ファイル/ディレクトリ権限不足 | `ls -la` で権限確認、`chmod` で修正 |

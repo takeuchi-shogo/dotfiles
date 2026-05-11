@@ -35,7 +35,7 @@ Fetch fresh guidelines before each review:
 https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
 ```
 
-Use WebFetch to retrieve the latest rules. The fetched content contains all the rules and output format instructions.
+Use WebFetch to retrieve the latest rules. 本 skill は固定 URL (上記 vercel-labs/web-interface-guidelines) のみを取得するため WebFetch 可。一般 URL の取得経路は `references/web-fetch-policy.md` に従う (`raw.githubusercontent.com` は user-controlled path のため curated trusted_domains からは除外)。The fetched content contains all the rules and output format instructions.
 
 ## Usage
 

@@ -113,7 +113,7 @@ TDD は **設計ツール** として機能する -- テストを先に書くこ
 | 要件が曖昧、何を作るか不明 | SDD | `/spec` → `/spike` |
 | Issue はあるが仕様が不明確 | BDD | `/interviewing-issues` |
 | 仕様は明確、実装の正しさを担保したい | TDD | テスト先行で `/rpi` |
-| 大規模で不確実性が高い | SDD → BDD → TDD | `/epd` |
+| 大規模で不確実性が高い | SDD → BDD → TDD | `/spec` → `/interviewing-issues` → `/rpi` |
 | 仕様明確で中規模 | TDD or BDD | `/rpi` |
 | バグ修正（再現手順あり） | TDD | Red（再現テスト）→ Green（修正） |
 
@@ -133,15 +133,14 @@ TDD は **設計ツール** として機能する -- テストを先に書くこ
 | **中** | BDD → TDD | Given/When/Then 定義 → テスト先行実装 |
 | **低** | TDD のみ | Red → Green → Refactor |
 
-### /epd との関係
+### 大規模 + 高不確実性のフロー
 
-`/epd` は SDD + BDD + TDD の統合フロー:
+SDD + BDD + TDD を順に適用:
 
 ```
 /spec(SDD) → /spike → /validate(BDD) → Decide → /rpi(TDD) → Review(3軸) → Commit
 ```
 
-不確実性が高い場合は `/epd` を使えば方法論の選択を意識せずに適切な順序で適用される。
 仕様が明確な場合は `/rpi` で直接実装に入る。
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: ui-observer
-description: "agent-browser CLI を使った UI 状態観察・バグ再現・パフォーマンス計測エージェント。メインコンテキストを消費せずサブエージェント内でブラウザを操作する。"
+description: "agent-browser CLI を使った UI 状態観察・バグ再現・パフォーマンス計測の専門エージェント。メインコンテキストを消費せずサブエージェント内でブラウザを操作し、screenshot/console/network/DOM 状態を収集する。Use PROACTIVELY when: UI バグの再現が必要 / レンダリング崩れの原因調査 / Core Web Vitals 計測 / 実際のブラウザでの動作確認が要件 / E2E 経路の状態スナップショット取得. Do NOT use for: ローカルでの単発確認 (use webapp-testing skill directly)、コードレビュー (use design-reviewer)、Playwright スクリプトの作成 (use playwright-test skill)。"
 tools: Read, Bash, Glob, Grep, Write, Edit
 model: sonnet
 memory: user

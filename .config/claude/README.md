@@ -54,11 +54,11 @@ graph TB
             SK_OPS["DevOps<br><small>/morning, /kanban, /capture</small>"]
         end
 
-        subgraph agents_box["Agents (31)"]
+        subgraph agents_box["Agents (23)"]
             direction LR
             AG_REV["Review<br><small>code-reviewer, codex-reviewer</small>"]
-            AG_IMPL["Implement<br><small>debugger, build-fixer</small>"]
-            AG_MAINT["Maintenance<br><small>doc-gardener, golden-cleanup</small>"]
+            AG_IMPL["Implement<br><small>debugger</small>"]
+            AG_MAINT["Maintenance<br><small>doc-gardener</small>"]
             AG_EVOLVE["AutoEvolve<br><small>autoevolve-core</small>"]
         end
 
@@ -405,10 +405,9 @@ flowchart TB
 
 ---
 
-## Agents カテゴリマップ (31個)
+## Agents カテゴリマップ (23個)
 
 Agents は**専門実行コンテキスト**。Skills が知識を提供し、Agents がそれを実行する。
-`triage-router` が最適なエージェントを推薦する。
 
 ### Code Review (8)
 
@@ -423,33 +422,26 @@ Agents は**専門実行コンテキスト**。Skills が知識を提供し、Ag
 | `test-analyzer` | テスト品質・エッジケース |
 | `security-reviewer` | OWASP Top 10・信頼境界 |
 
-### Architecture & Design (4)
+### Architecture & Design (3)
 
 | エージェント | 役割 |
 |-------------|------|
 | `backend-architect` | API/DB/スケーラビリティ |
-| `nextjs-architecture-expert` | App Router/RSC |
 | `document-factory` | ドキュメント自動生成 |
 | `type-design-analyzer` | 型設計品質 |
 
-### Implementation & Debug (7)
+### Implementation & Debug (2)
 
 | エージェント | 役割 |
 |-------------|------|
-| `build-fixer` | ビルドエラー最小修正 |
 | `debugger` | 体系的根本原因分析 |
-| `codex-debugger` | Codex 深いデバッグ |
 | `codex-plan-reviewer` | Spec/Plan 批評 + リスク分析 |
-| `frontend-developer` | React/レスポンシブ |
-| `golang-pro` | Go goroutine/channel |
-| `typescript-pro` | 高度な型システム |
 
-### Maintenance (3)
+### Maintenance (2)
 
 | エージェント | 役割 |
 |-------------|------|
 | `doc-gardener` | ドキュメント鮮度 |
-| `golden-cleanup` | GP 違反スキャン |
 | `ui-observer` | agent-browser UI 観察 |
 
 ### Product & Design Review (2)
@@ -466,13 +458,10 @@ Agents は**専門実行コンテキスト**。Skills が知識を提供し、Ag
 | `test-engineer` | テスト戦略・カバレッジ |
 | `edge-case-hunter` | 境界値・異常系検出 |
 
-### Routing & Infra (4)
+### Routing & Infra (1)
 
 | エージェント | 役割 |
 |-------------|------|
-| `triage-router` | タスク分類・推薦 |
-| `safe-git-inspector` | Git 履歴 読取専用 |
-| `db-reader` | DB 読取専用 |
 | `gemini-explore` | Gemini 1M 分析 |
 
 ### AutoEvolve (1)

@@ -159,3 +159,9 @@ print(f'Checkpoint saved: {path}')
 | 更新タイミング | セッション終了時 | 各セッションで累積 |
 | 目的 | 次のセッションへの引き継ぎ | プロジェクトの意思決定記録 |
 | 配置 | tmp/ or worktree root | プロジェクトルート |
+
+## Anti-Patterns
+
+- **外部副作用は checkpoint で戻せない**: DB 操作 / 外部 API 呼び出し / repo 外への file system 変更 / キュー投入 / メール送信などは checkpoint には記録されない。`/rewind` で会話と code 状態は戻せても、外部状態は別途確認・補償が必要。リスクが高い操作は checkpoint 保存後に分離し、可能ならドライランで先に検証する。
+
+> 出典: Boris Tip 19 absorb (2026-04-30) — 「外部副作用がある作業は checkpoints では戻せない」

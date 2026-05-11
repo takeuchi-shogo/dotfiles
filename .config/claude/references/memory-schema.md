@@ -38,6 +38,7 @@ last_reviewed: 2026-04-23
 ## 既存カテゴリ簡易マッピング
 
 - `traces/*.jsonl`, `learnings/{errors,quality,telemetry,friction-events,skill-executions,agent-invocations}.jsonl` → **event (30日)**
+  - `friction-events.jsonl` の `friction_class` 値例: `environment_blocker`, `validation_ping_pong`, `webfetch_truncation_observation` (manual sampling), `webfetch_truncation_suspect` (auto via `runtime/webfetch-truncation-detector.py`)
 - `learnings/{patterns,review-findings,review-feedback,skill-credit,strategy-outcomes,hypotheses}.jsonl`, `metrics/skill-tier-shadow.jsonl` → **learning (永続)**
 - `metrics/{session-metrics,improve-history}.jsonl`, `learnings/skill-benchmarks.jsonl` → **summary (永続)**
   - `skill-benchmarks.jsonl` 追加フィールド (T4 Autogenesis): `task_category: retrieval|generation|gate` (default: `generation`), `model_tier: weak|strong` (default: `strong`)。ceiling detection (baseline >= 0.9, delta < 0.03) で使用

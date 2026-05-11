@@ -227,3 +227,61 @@ npx @pageai/ralph-loop  # プロジェクトルートで実行
 ```
 
 Claude Code の機能ではなく、外部のオーケストレーション層。CLI エージェントは交換可能（Codex, Gemini CLI 等）。
+
+---
+
+## Self-Rejection Rule Pattern
+
+出典: 30-subagents-2026 absorb (T5)。記事 "30 Claude Code Sub-Agents I Actually Use in 2026" から抽出した novel な prompt design pattern。
+
+エージェント自身に「自分の出力をチェックして再生成を強制する明示的な reject rule」を埋め込む。後段の reviewer に依存せず、agent prompt 内で品質ゲートを完結させる。
+
+### 例
+
+| Agent | Reject 条件 |
+|-------|------------|
+| spec-writer | success metric が vanity (page views, time on page) ならリジェクト → action metric に書き直す |
+| edge-cases | 「null チェック」単独で具体シナリオがない edge case はリジェクト |
+| counterargument | 反論が edge case のみで本質を突いていなければリジェクト |
+| decision-log | options が 2-3 個揃わない「I just decided」記録はリジェクト |
+| methodology-critic | pre-registration がない experimental claim を `strong` 評価しない |
+| daily-plan | must-ship が longest focus window に収まらないなら plan 自体をリジェクト |
+
+### 既存実装
+
+- `code-reviewer.md` の COMPLETION CONTRACT (Findings/Scores/Verdict 3 セクション必須) は self-reject 系の先例
+- 他 33 subagent の大半には体系化されていない
+
+### 適用ガイドライン
+
+- **既存実装の確認**: `code-reviewer.md` の COMPLETION CONTRACT (Findings/Scores/Verdict 3 セクション必須) と機能的に等価な mechanism が既に存在する。新規導入前に既存パターンとの差分を確認する
+- **新規 subagent / skill 設計時**: 「この agent が出力すべきでない悪い形」を 1-3 個明示する
+- **既存 prompt 強化時**: 全展開ではなく、reviewer 系・generator 系の高 stakes agent に限定して導入する（Pruning-First）
+- **Static-checkable rules は外に出す**: linter/hook で表現できるものは prompt に書かず mechanism に寄せる（CLAUDE.md 原則）。reject rule は agent の意味判断にしか書けないものに限る
+
+---
+
+## Subagent Count Ceiling
+
+出典: 30-subagents-2026 absorb (メタ発見、Gemini grounding)。
+
+> **Note**: 50+ degradation 数値の根拠は Gemini grounding (single-source、独立ベンチマーク未確認、unit / CI 未明記)。Watch item として運用し、必要なら独自計測で精緻化する。
+
+### 経験則
+
+- 50+ subagent を持つ harness では triage 性能が劣化する (Gemini 報告: 9/10 → 5/10、auto-delegation の精度低下 + token cost 増加)
+- 個別の subagent description が「似ている」ほど、description-based router の判別が崩れる
+- Single-purpose 原則を守った狭い agent ほど、数が増えると相互の境界が曖昧になる
+
+### 現状
+
+- dotfiles の `.config/claude/agents/` 実数: **33 個** (2026-05-02 時点)
+- 警戒ラインまで残り **17 個**
+- 直近 absorb で新規 subagent を追加していないのは正解 (例: 30-subagents-2026 absorb は採用 0 件)
+
+### ガード
+
+- 新規 subagent 追加前に **既存 33 個との責務重複チェック**を行う
+- 既存 subagent の prompt 拡張で達成できる場合、新規追加より優先する (Pruning-First)
+- 警戒ライン 50 個 (現在 33 個、余裕 17 個)。**40 個到達時に新規追加モラトリアム開始**、50 個到達時に削除候補を `/skill-audit` で洗い出す (Build to Delete 原則)
+- subagent 数の単純集計は `ls .config/claude/agents/*.md | wc -l` で随時確認できる

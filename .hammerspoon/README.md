@@ -14,8 +14,8 @@
 
 優先順は以下。
 
-1. `OBSIDIAN_VAULT_PATH/01-Projects/Daily/YYYY-MM-DD.md`
-2. `~/Documents/Obsidian Vault/01-Projects/Daily/YYYY-MM-DD.md`
+1. `OBSIDIAN_VAULT_PATH/07-Daily/YYYY-MM-DD.md`
+2. `~/Documents/Obsidian Vault/07-Daily/YYYY-MM-DD.md`
 3. `~/daily-notes/YYYY-MM-DD.md`
 
 ## セットアップ

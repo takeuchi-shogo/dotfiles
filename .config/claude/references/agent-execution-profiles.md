@@ -40,40 +40,32 @@ last_reviewed: 2026-04-23
 | test-analyzer | sonnet | Analyze-only | テスト設計品質 |
 | product-reviewer | sonnet | Analyze-only | 仕様整合性 |
 | design-reviewer | sonnet | Analyze-only | UI/UX 設計 |
-| safe-git-inspector | haiku | Analyze-only | Git 読み取り専用 |
-| db-reader | haiku | Analyze-only | DB 読み取り専用 |
 | ui-observer | sonnet | Analyze-only | ブラウザ状態観察 |
 
 ### Deep Analyzer（外部 CLI 連携）
 
 | Agent | Model | 外部 CLI | 備考 |
 |---|---|---|---|
-| codex-debugger | haiku | Codex CLI | エラー分析・デバッグ |
 | codex-plan-reviewer | haiku | Codex CLI | Spec/Plan 批評 + リスク分析 |
 | codex-reviewer | haiku | Codex CLI | 深い推論レビュー |
 | gemini-explore | haiku | Gemini CLI | 1M コンテキスト分析 |
+
+エラー分析・デバッグは `/codex:rescue --read-only` を使う（プラグイン経由）。
 
 ### Implementer（コード書き込み可能）
 
 | Agent | Model | 備考 |
 |---|---|---|
 | backend-architect | sonnet | バックエンド設計・実装 |
-| build-fixer | sonnet | ビルドエラー修正 |
 | debugger | sonnet | バグ修正 |
-| frontend-developer | sonnet | フロントエンド実装 |
-| nextjs-architecture-expert | sonnet | Next.js 特化 |
-| golden-cleanup | sonnet | コード品質改善 |
 | document-factory | sonnet | ドキュメント生成 |
 | doc-gardener | haiku | 軽量ドキュメント修正 |
-| golang-pro | sonnet | Go 実装 |
-| typescript-pro | sonnet | TypeScript 実装 |
 | test-engineer | sonnet | テスト作成 |
 
 ### Orchestrator（ルーティング・管理）
 
 | Agent | Model | 備考 |
 |---|---|---|
-| triage-router | haiku | 軽量タスク分類 |
 | meta-analyzer | sonnet | Task/Meta 分離分析 |
 | autoevolve-core | sonnet | 改善サイクル管理 |
 

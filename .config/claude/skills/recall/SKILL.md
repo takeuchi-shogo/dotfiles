@@ -2,18 +2,37 @@
 name: recall
 allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git symbolic-ref:*), Bash(git rev-parse:*), Bash(grep:*)
 argument-hint: [scope] | [action(scope)]
-description: >
-  Reconstruct development context from contextual commit history. コミット履歴から開発文脈を復元する。
-  Triggers: 'recall', '前回の続き', '文脈復元', 'what was I working on', 'reconstruct context'.
-  Do NOT use for: 日報確認（use /daily-report）、チェックポイント復元（use /checkpoint）。
+description: "コミット履歴 (contextual commits) から開発文脈を復元する。セッション再開時、ブランチの decision/rejected/learned/constraint を時系列で抽出。Triggers: 'recall', '前回の続き', '文脈復元', 'これまでの作業', 'どこまでやった', 'コンテキスト復元', 'context 復元', 'continue', '再開', '続きから', 'what was I working on', 'reconstruct context'. Do NOT use for: 日報確認(use /daily-report), チェックポイント保存・復元(use /checkpoint), 過去セッション transcript の全文検索(use grep on ~/.claude/projects/)."
 origin: self
-disable-model-invocation: true
+user-invocable: true
+metadata:
+  pattern: query
+  chain:
+    upstream: ["/commit (contextual commit を残す)", "/checkpoint (別経路)"]
+    downstream: ["/rpi", "/spec", "/spike"]
 ---
 
 # Context Recall
 
-Git 履歴からコンテキスト付きコミットのアクションラインを検索し、
-開発コンテキストを復元する。
+Git 履歴からコンテキスト付きコミット (contextual commits) のアクションラインを検索し、開発コンテキストを復元する。
+
+## When to use
+
+- **セッション再開時**: 「前回の続きから」「どこまでやった?」のような曖昧な再開要求
+- **判断の再確認**: 過去の rejected アプローチを参照して、再提案を避けたい
+- **スコープ別レビュー**: 特定機能 (auth, payments 等) の決定履歴を時系列で確認
+
+## Chain
+
+- **前段**: `/commit` で contextual commit (intent/decision/rejected/constraint/learned) を残しておくと、`/recall` の出力が情報密度高くなる
+- **後段**: 復元後に `/rpi` (実装フェーズ) や `/spec` / `/spike` で次の作業へ移る
+- **対比**: `/checkpoint` は明示的な作業状態保存 (HANDOFF.md 生成)、`/recall` は git log ベースの自動文脈再構成
+
+## Examples
+
+- ユーザー発話: 「前回の続き」「どこまでやった?」「再開」 → `/recall`
+- 「auth 周りの判断は?」「auth の過去経緯」 → `/recall auth`
+- 「rejected された認証方式は?」 → `/recall rejected(auth)`
 
 ## 引数の判定
 

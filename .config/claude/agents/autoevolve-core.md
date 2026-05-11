@@ -1,6 +1,6 @@
 ---
 name: autoevolve-core
-description: "AutoEvolve 統合エージェント。セッションデータの分析、設定改善の提案、知識品質の維持を3フェーズで実行する。/improve コマンドから呼び出される。"
+description: "(legacy 2026-05-03) AutoEvolve 統合エージェント。旧 /improve コマンド (廃止) から呼び出されていた。/improve は false-positive 多発で 2026-05-03 retire 済み。新規呼び出し非推奨、scripts/learner/* との連携保守用。"
 model: sonnet
 memory: user
 tools:

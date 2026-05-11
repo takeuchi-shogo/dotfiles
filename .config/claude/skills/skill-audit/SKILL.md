@@ -107,6 +107,8 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - **Dominant かつ 5D に Poor あり** → 品質に関わらず使われている = 代替不在の信号。最優先で改善
 - **Dominant + Unused の共存** → Expert Collapse の決定的証拠。Unused スキル側の description/trigger 不備を真っ先に疑う
 
+> 削減目標値・description 上限ガイド・運用ポリシーは [`docs/specs/2026-05-04-skill-tier-pruning.md`](../../../../docs/specs/2026-05-04-skill-tier-pruning.md) を参照。
+
 ### Step 0.7: Composition Depth Check
 
 ADR-0008 の compound / molecule / atom レイヤリングに対応した静的解析。skill 間の呼び出し関係の深さを計測し、Skill Graphs 2.0 が指摘した **compound ceiling (8-10 molecules 超で成功率 ~43%)** を超えそうな skill を検出する。
@@ -444,37 +446,10 @@ Generate the report at `docs/benchmarks/YYYY-MM-DD-audit.md` using this template
 
 ## K-Variant Testing (RLOO/GRPO)
 
-スキルの設定バリエーションを K>=3 個用意し、
-RLOO/GRPO advantage で最適な variant を特定する。
+スキル設定の K>=3 個 variant を `aggregate_benchmark.py --variants` で比較し、
+RLOO/GRPO advantage で最適 variant を特定する。
 
-### 手順
-
-1. 対象スキルの SKILL.md を K 個の variant にコピー
-2. 各 variant で `run_eval.sh` を実行し result JSON を生成
-3. `aggregate_benchmark.py --variants` で比較:
-
-```bash
-python3 ~/.claude/scripts/eval/aggregate_benchmark.py \
-    --variants v1.json v2.json v3.json \
-    --output report.md
-```
-
-4. レポートの Advantage 値を確認:
-   - **RLOO Advantage > 0**: baseline より優れている
-   - **RLOO Advantage < 0**: baseline より劣っている
-   - **GRPO Advantage**: z-score 正規化された相対位置
-
-### RLOO Advantage 解釈ガイド
-
-| Advantage | 解釈 | アクション |
-|-----------|------|-----------|
-| > +0.5 | 明確に優秀 | merge 推奨 |
-| +0.1 ~ +0.5 | やや優秀 | 追加テスト推奨 |
-| -0.1 ~ +0.1 | 差なし | 変更不要 |
-| < -0.1 | 劣化 | revert 推奨 |
-
-GRPO は z-score なので ±1.0 が1標準偏差。
-±2.0 を超える variant は外れ値として注意。
+詳細手順 + RLOO Advantage 解釈ガイド (4 段階閾値): [`references/k-variant-testing.md`](references/k-variant-testing.md)
 
 ## Output Locations
 
@@ -487,44 +462,9 @@ GRPO は z-score なので ±1.0 が1標準偏差。
 ## Agent Consolidation Scan
 
 エージェント数の肥大化を防ぎ、統合候補を検出する。`/skill-audit consolidation` で単独実行、または通常の audit ワークフロー末尾で自動実行。
+ドメイン重複 + 使用頻度 + 出力種別直交性の 3 軸で統合候補を判定する。
 
-### 背景
-
-モデル能力の向上に伴い、1エージェントが複数専門をカバーできるようになる。30+エージェントの管理オーバーヘッドを定期的に評価し、skill modes 化（1エージェント+複数モード）への統合判断材料を提供する。
-
-### 手順
-
-1. **エージェント一覧収集** — `~/.claude/agents/*.md` の frontmatter から name, description, tools を全件抽出
-2. **ドメイン重複検出** — description のキーワードが重複するエージェントペアを抽出（閾値: 3語以上の共通キーワード）
-3. **使用頻度推定** — `git log --oneline -100` でエージェント名の出現頻度を計測。直近100コミットで起動ゼロのエージェントをフラグ
-4. **統合候補判定** — 以下のいずれかに該当するペアを統合候補として提示:
-   - 同一 tools セットを持ち、ドメインが隣接
-   - 片方の機能が他方の機能の部分集合
-   - 両方とも使用頻度が低い（直近100コミットで各5回未満）
-5. **Orthogonality Check (出力種別の直交性)** — description から各エージェントの**主な出力種別**を推定し (`review-report` / `observation-report` / `plan` / `spec` / `implementation-patch` / `research-summary` など)、以下をフラグする:
-   - 同一出力種別のエージェントが **3 体以上**存在 → 役割の直交性が低い。主エージェント + skill mode 化を検討
-   - ドメインが異なっても出力種別が同じペア → 統合判定の補助シグナルとして提示（ドメイン重複とは独立に評価）
-
-> **Orthogonality の原則**: 「エージェントの役割空間は出力種別 × ドメインの 2 軸で張る。同じセルに複数エージェントが居ると Expert Collapse または Role Confusion を起こしやすい」(2025-2026 マルチエージェント粒度研究より)
-
-### 出力テーブル
-
-```markdown
-## Agent Consolidation Scan
-
-| # | Agent A | Agent B | 重複理由 | 推奨アクション |
-|---|---------|---------|---------|---------------|
-| 1 | code-reviewer | golang-reviewer | Go レビューが code-reviewer の skill mode で可能 | 統合検討 |
-| 2 | silent-failure-hunter | — | 直近100コミットで起動0回 | 退役 or 統合検討 |
-```
-
-### 判定基準
-
-| パターン | アクション |
-|---------|-----------|
-| ドメイン重複 + 同一 tools | 統合を強く推奨 |
-| 使用頻度ゼロ（100コミット） | 退役候補としてフラグ（即削除しない） |
-| 部分集合関係 | 親エージェントの skill mode 化を提案 |
+詳細手順 (Orthogonality Check + 出力テーブル + 判定基準): [`references/agent-consolidation.md`](references/agent-consolidation.md)
 
 ## Gotchas
 

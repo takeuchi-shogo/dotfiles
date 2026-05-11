@@ -5,7 +5,8 @@
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "ENABLE_LSP_TOOL": "1",
-    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1"
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
+    "CLAUDE_CODE_NO_FLICKER": "1"
   },
   "attribution": {
     "commit": "",
@@ -228,6 +229,25 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/harness-snapshot.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/memory-vec-hint-hook.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
@@ -279,6 +299,11 @@
             "type": "command",
             "command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null &",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/memory-vec-stop-hook.py",
+            "timeout": 5
           }
         ]
       }
@@ -650,6 +675,17 @@
             "statusMessage": "Observing..."
           }
         ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/webfetch-truncation-detector.py",
+            "timeout": 5,
+            "statusMessage": "WebFetch truncation check..."
+          }
+        ]
       }
     ],
     "PreCompact": [
@@ -747,5 +783,6 @@
     }
   },
   "effortLevel": "xhigh",
-  "plansDirectory": "./tmp/plans"
+  "plansDirectory": "./tmp/plans",
+  "skipAutoPermissionPrompt": true
 }

@@ -1,13 +1,18 @@
 ---
-status: active
+status: deprecated
+deprecated_at: 2026-05-03
+deprecation_reason: "/improve skill retire (5 サイクル連続 false-positive、認知負荷が改善ループの価値を上回った)"
 last_reviewed: 2026-04-23
 ---
 
-# AutoEvolve 改善ポリシー
+# AutoEvolve 改善ポリシー (deprecated 2026-05-03)
 
-> このファイルは karpathy/autoresearch の program.md に相当する概念的ガイドである。
-> AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義する。
-> ユーザーがこのファイルを編集することで、改善の方向性を操作できる。
+> **DEPRECATED**: /improve skill は 2026-05-03 に retire 済み。本ドキュメントは過去設計の保管。
+> 再開する場合は scripts/learner/ の整合性確認 + observability producer dead 問題 (errors.jsonl 16d/friction 25d 停止) の根本対処が前段。
+>
+> このファイルは karpathy/autoresearch の program.md に相当する概念的ガイドであった。
+> AutoEvolve エージェントが設定を改善する際の方針・制約・優先度を定義していた。
+> ユーザーがこのファイルを編集することで、改善の方向性を操作できた。
 
 ## システムパイプライン
 

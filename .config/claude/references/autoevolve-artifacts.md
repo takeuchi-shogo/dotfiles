@@ -1,11 +1,16 @@
 ---
-status: reference
+status: deprecated
+deprecated_at: 2026-05-03
+deprecation_reason: "/improve skill retire に伴い AutoEvolve artifact 生成パイプライン停止"
 last_reviewed: 2026-04-23
 ---
 
-# AutoEvolve Artifacts (short reference)
+# AutoEvolve Artifacts (deprecated 2026-05-03)
 
-AutoEvolve ループが生成・消費する artifact 一覧。詳細 schema は各ファイルの出典を参照。
+> **DEPRECATED**: /improve skill 廃止に伴い、本 artifact pipeline (proposals.jsonl, candidates.md 等) は新規生成停止。
+> 過去の `runs/YYYY-MM-DD/` は履歴として保管 (削除しない)。
+
+AutoEvolve ループが生成・消費していた artifact 一覧。詳細 schema は各ファイルの出典を参照。
 
 ## 一覧
 

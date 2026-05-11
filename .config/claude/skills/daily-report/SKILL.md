@@ -1,13 +1,13 @@
 ---
 name: daily-report
-description: >
-  1日の全プロジェクト横断セッションをまとめた日報を生成する。/daily-report で今日、/daily-report yesterday で昨日、/daily-report YYYY-MM-DD で指定日の日報を作成。
-  Triggers: '日報', 'daily-report', '今日何した', 'what did I do today', '作業ログ'.
-  Do NOT use for: 朝の計画（use /morning）、週次レビュー（use /weekly-review）、セッション分析（use /analyze-tacit-knowledge）。
+description: "1日の全プロジェクト横断セッションをまとめた日報を生成する。/daily-report で今日、/daily-report yesterday で昨日、/daily-report YYYY-MM-DD で指定日の日報を作成。Triggers: '日報', 'daily-report', '今日何した', '今日の作業', '今日やったこと', '日次サマリ', 'what did I do today', '作業ログ', '今日のまとめ', 'today summary'. Do NOT use for: 朝の計画（use /morning）、週次レビュー（use /weekly-review）、セッション分析（use /analyze-tacit-knowledge）。"
 origin: self
-disable-model-invocation: true
+user-invocable: true
 metadata:
   pattern: generator
+  chain:
+    upstream: ["/checkpoint (セッション中の保存)"]
+    downstream: ["/timekeeper review (振り返り)"]
 ---
 
 # Daily Report Generator
@@ -28,46 +28,71 @@ metadata:
 
 引数を解釈し、対象日付を `YYYY-MM-DD` 形式で確定する。
 
-### Step 2: セッション情報の収集
+### Step 2: セッション情報の収集 (jsonl 直読み式)
 
-Bash で以下を実行し、対象日のセッションを全プロジェクトから収集する:
+> **2026-05-03 改訂**: 旧版は `sessions-index.json` 依存だったが、Claude Code 本体の挙動変更で
+> 3 ヶ月以上 index が更新停止する事象が発生 (確認: 2026-02-11 で停止、jsonl は 248 個に対し index entries は 22 のみ)。
+> jsonl ファイルを直接 walk する設計に変更し、index に依存しない。
+
+Bash で以下を実行し、対象日に活動のあった jsonl を全プロジェクトから収集する:
 
 ```bash
 TARGET_DATE="YYYY-MM-DD"
-for index_file in ~/.claude/projects/*/sessions-index.json; do
-  jq -r --arg date "$TARGET_DATE" '
-    .entries[]
-    | select(
-        (.created // "" | startswith($date)) or
-        (.modified // "" | startswith($date))
-      )
-    | {sessionId, firstPrompt, summary, messageCount, created, modified, gitBranch, projectPath, fullPath}
-  ' "$index_file" 2>/dev/null
-done
+NEXT_DATE=$(date -j -v+1d -f "%Y-%m-%d" "$TARGET_DATE" "+%Y-%m-%d")
+
+# find -newermt で対象日 modified の jsonl を探索 (空 dir でも error なし)
+while IFS= read -r jsonl; do
+  proj_name=$(basename $(dirname "$jsonl"))
+  session_id=$(basename "$jsonl" .jsonl)
+  # 最初の user message と cwd / branch を抽出
+  first_user=$(jq -r 'select(.type == "user") | (.message.content | tostring | .[0:120])' "$jsonl" 2>/dev/null | head -1)
+  cwd=$(jq -r '.cwd // empty' "$jsonl" 2>/dev/null | head -1)
+  git_branch=$(jq -r '.gitBranch // empty' "$jsonl" 2>/dev/null | head -1)
+  msg_count=$(grep -c '"type":"user"' "$jsonl" 2>/dev/null)
+  echo "{\"project\":\"$proj_name\",\"session_id\":\"$session_id\",\"cwd\":\"$cwd\",\"branch\":\"$git_branch\",\"messages\":$msg_count,\"first_user\":\"$first_user\",\"path\":\"$jsonl\"}"
+done < <(find ~/.claude/projects -maxdepth 2 -name "*.jsonl" \
+  -newermt "$TARGET_DATE 00:00" -not -newermt "$NEXT_DATE 00:00" 2>/dev/null)
 ```
 
-結果が0件の場合は「対象日のセッションが見つかりませんでした」と報告して終了。
+**設計判断**:
+- `find -newermt` は zsh の `*.jsonl` glob NOMATCH error を回避する
+- `-newermt "$TARGET_DATE 00:00" -not -newermt "$NEXT_DATE 00:00"` で「対象日 00:00〜翌日 00:00」に modified された jsonl を厳密 filter
+- mtime ベースなので **multi-day session も拾う** (作業した日として全て計上)
+
+**結果の解釈**:
+- `mtime` ベースの filter は「その日に活動があった session」を検出する (multi-day session も拾う)
+- 結果が 0 件の場合は「対象日のセッションが見つかりませんでした」と報告して終了
+- `cwd` が project の判別に最も信頼できる (project_dir 名は path encoded で読みにくい)
 
 ### Step 3: JSONL からユーザーメッセージを抽出
 
-各セッションの JSONL ファイルから、ユーザーメッセージを抽出して作業内容を把握する:
+各セッションの JSONL ファイルから、対象日のユーザーメッセージを抽出して作業内容を把握する:
 
 ```bash
-jq -r 'select(.type == "user") | .timestamp + " | " + (.message.content | tostring | .[0:200])' "$JSONL_PATH" | head -10
+TARGET_DATE="YYYY-MM-DD"
+jq -r --arg d "$TARGET_DATE" '
+  select(.type == "user") |
+  select(.timestamp | startswith($d)) |
+  .timestamp + " | " + (.message.content | tostring | .[0:200])
+' "$JSONL_PATH" | head -10
 ```
 
-**制約**: 各セッションから最大10メッセージまで。トークン節約のため、メッセージは先頭200文字に切り詰める。
+**制約**:
+- 各セッションから最大10メッセージまで (トークン節約)
+- メッセージは先頭200文字に切り詰める
+- timestamp prefix で対象日のみフィルタ (multi-day session の他日メッセージを除外)
 
 ### Step 4: グルーピングと関連付け
 
 収集した情報を以下のルールでグルーピングする:
 
-1. **projectPath** でプロジェクト単位にまとめる
-2. 同じプロジェクト内で **gitBranch** が同じセッションをさらにまとめる
-3. summary / firstPrompt の内容が類似しているセッションは、ブランチが異なっていても同じ「やったこと」としてまとめて良い
-4. 各グループ内で **時系列順** に並べる
+1. **cwd** でプロジェクト単位にまとめる (Step 2 で抽出済み、cwd の最後のディレクトリ名を project name として使用)
+2. 同じプロジェクト内で **branch** が同じセッションをさらにまとめる
+3. first_user の内容が類似しているセッションは、ブランチが異なっていても同じ「やったこと」としてまとめて良い
+4. 各グループ内で **mtime 時系列順** に並べる
 
-**プロジェクト名の表示**: `projectPath` の最後のディレクトリ名を使う（例: `/Users/foo/dev/my-app` → `my-app`）
+**プロジェクト名の表示**: `cwd` の最後のディレクトリ名を使う（例: `/Users/foo/dev/my-app` → `my-app`）。
+`cwd` が空の場合は `project` (path-encoded directory 名) を fallback として使い、`-` を `/` に置換して表示する。
 
 ### Step 4.5: AutoEvolve データの収集
 

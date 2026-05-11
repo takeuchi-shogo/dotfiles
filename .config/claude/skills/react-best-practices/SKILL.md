@@ -1,10 +1,9 @@
 ---
 name: react-best-practices
 description: >
-  Comprehensive React and Next.js performance optimization guide with 40+ rules for eliminating waterfalls,
-  optimizing bundles, and improving rendering. Use when optimizing React apps, reviewing performance, or refactoring components.
-  Triggers: 'React パフォーマンス', 'バンドル最適化', 'waterfall 解消', 'React optimization', 'bundle size', 'レンダリング改善', 'Server Components'.
-  Do NOT use for: フロントエンドアーキテクチャ決定（use /senior-frontend）、UI/UXデザイン（use /ui-ux-pro-max）、コンポジションパターン（use /vercel-composition-patterns）。
+  React/Next.js パフォーマンス最適化 40+ rule (waterfalls 解消、bundle 最適化、レンダリング改善)。
+  Triggers: 'React パフォーマンス', 'bundle size', 'waterfall', 'Server Components'.
+  Not for: アーキ決定 (/senior-frontend)、UI/UXデザイン (/ui-ux-pro-max)。
 origin: self
 version: 1.0.0
 author: Vercel Engineering

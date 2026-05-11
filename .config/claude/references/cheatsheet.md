@@ -16,9 +16,7 @@ last_reviewed: 2026-04-23
 | `/rpi` | Research → Plan → Implement の3フェーズ実行 | `/rpi 認証機能を追加` |
 | `/spec` | 仕様書を生成（曖昧な要件を構造化） | `/spec ユーザー管理API` |
 | `/spike` | プロトタイプで技術検証 | `/spike WebSocket 接続` |
-| `/epd` | EPD 統合ワークフロー（不確実性が高い場合） | `/epd 新規決済連携` |
 | `/checkpoint` | 作業状態を手動保存（中断・再開用） | `/checkpoint` |
-| `/improve` | AutoEvolve 改善サイクルをオンデマンド実行 | `/improve` |
 
 ### リサーチ系
 
@@ -39,9 +37,7 @@ last_reviewed: 2026-04-23
 
 | コマンド | 説明 | 使用例 |
 |---|---|---|
-| `/persona` | ペルソナ切り替え | `/persona senior-architect` |
 | `/onboarding` | 初期プロファイル設定 | `/onboarding` |
-| `/profile-drip` | 1日1問でプロファイルを漸進的に構築 | `/profile-drip` |
 | `/security-review` | セキュリティ観点のコードレビュー | `/security-review` |
 | `/autonomous` | 自律実行モード（worktree 並列） | `/autonomous タスクリスト` |
 | `/recall` | メモリから過去の知見を検索 | `/recall hook 設計` |
@@ -139,11 +135,9 @@ Claude Code (Opus) ── サブエージェント委譲
 | 3 | `/rpi` | Research → Plan → Implement の体系的実行 | 手動 |
 | 4 | `/spec` | 仕様書生成（曖昧 → 構造化） | 手動 |
 | 5 | `/spike` | プロトタイプ作成・技術検証 | 手動 |
-| 6 | `/epd` | EPD 統合ワークフロー | 手動 |
-| 7 | `/absorb` | 外部知見（論文・記事）をメモリに統合 | 手動 |
-| 8 | `/checkpoint` | 作業状態の保存・復元 | 手動 / 自動 |
-| 9 | `search-first` | 実装前に既存解決策を検索 | 自動（hook） |
-| 10 | `/improve` | AutoEvolve 改善サイクル | 手動 |
+| 6 | `/absorb` | 外部知見（論文・記事）をメモリに統合 | 手動 |
+| 7 | `/checkpoint` | 作業状態の保存・復元 | 手動 / 自動 |
+| 8 | `search-first` | 実装前に既存解決策を検索 | 自動（hook） |
 
 ---
 

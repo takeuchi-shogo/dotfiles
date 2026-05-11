@@ -50,7 +50,7 @@ flowchart LR
     DIRECT --> TE
     DIRECT --> DBG
 
-    ETC -.->|"error path"| CDXD["codex-debugger<br/>Deep Error Analysis"]
+    ETC -.->|"error path"| CDXD["/codex:rescue --read-only<br/>Deep Error Analysis"]
     SG -.->|"large analysis"| GEM["gemini-explore<br/>1M Context / Research"]
     PTA -.->|"test failure"| TA["test-analyzer<br/>Failure Analysis"]
 

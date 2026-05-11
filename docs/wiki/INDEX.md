@@ -17,6 +17,7 @@
 - [Drafts Lifecycle (Graduation Mechanism)](concepts/_drafts/README.md) — agent→human authorship 昇格をディレクトリ分離で実装。Karpathy Modified Second Brain pattern (2026-04) から採用
 - [Harness Pipeline BAN article (2026-04-21)](../research/2026-04-21-harness-pipeline-absorb-analysis.md) — GitHub BAN 事例から導出: reproduce-first attestation before polish、resume anchor contract、plan→implement bridge hook。Gap 2 低優先、7 タスク採択
 - [AlphaSignal Harness Engineering (2026-04-24)](../research/2026-04-24-harness-engineering-absorb-analysis.md) — OpenAI/Anthropic/ThoughtWorks 横断。2026-04-19 harness-everything と高重複。独自 contribution 3 点採択 (Reasoning Sandwich 手動チェックリスト / dead-weight-scan superseded_by_model タグ / ADR-0006 ThoughtWorks 4 軸分類 Appendix)、既存 plan M2 に subtask merge
+- [Self-Healing Agent Harness (CREAO 続編, 2026-04-29)](../research/2026-04-29-self-healing-harness-absorb-analysis.md) — CREAO CTO Peter Pang 続編。Gap 1 / Partial 1 / Already 強化採用 3 / N/A 5 / 棄却 7。採用 4 件: T1 evaluator-calibration-guide.md に「Outcome over Trajectory」原則 / T2 absorb SKILL.md Phase 2.5 に model-family diversity rationale / T3 evaluator-calibration-guide.md に「再校正条件」セクション / T4-C regression-suite.json populate + improve-policy Rule 33 (別セッション)。棄却の主軸: Engineering Pipeline と Bridge は前作 absorb (2026-04-14) で「multi-tenant 製品の儀式」として N/A 判定済 → プラン: [../plans/active/2026-04-29-self-healing-absorb-plan.md](../plans/active/2026-04-29-self-healing-absorb-plan.md)
 
 ### agent — エージェント設計
 
@@ -31,6 +32,9 @@
 - **Sequential Protocol** — Dochkina 2026 で Orchestrator-Subagent を 14% 上回る実測あり。役割を動的に自動選択する逐次プロトコル。移行シグナル (coordinator context > 70%、情報損失の繰り返し) が定義されたら `references/agent-orchestration-map.md` に明記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 - **Coordinator Context Budget** — Orchestrator-Subagent パターンにおける並列サブエージェント件数の閾値管理。5 並列: safe、5-10: 警戒・summary 層検討、10+: 強制 summary 層 or Agent Teams 切替。Wave 1 Task 2 で `references/subagent-delegation-guide.md` に追記予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
 - **Generator-Verifier Reward Hacking** — Verifier が Generator の出力を形式的に pass させてしまう失敗モード。ralph-loop の盲点。N サイクル毎の人間監査 + Verifier 基準の periodic update で検知・防止。Wave 2 Task 4 で `references/review-consensus-policy.md` に "Reward Hacking Mitigation" セクション追加予定 → 参照: [multi-agent-coordination-patterns-analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
+- **Self-Rejection Rule Pattern** — agent が自己出力を pass させやすい構造的バイアスを reject ルールで反転させるパターン (例: migration-guard の forward+reverse BLOCK)。30 sub-agents (2026-05-02) absorb で抽出 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
+- **Subagent Count Ceiling (50+ degradation)** — サブエージェント総数 50+ で description trigger 衝突・選択精度劣化 (Gemini 観測 9/10→5/10)。dotfiles 現状 33 個で残り余裕 17。新規追加時は count budget を意識 → 参照: `agent-design-lessons.md`、[2026-05-02-30-subagents-2026-absorb-analysis](../research/2026-05-02-30-subagents-2026-absorb-analysis.md)
+- **Distribution vs Escalation pattern** — サブエージェント (work distributor) と アドバイザー (one-shot consultant) の使い分け原則。Drive 主体逆転 (Top-Down vs Bottom-Up) で委譲方向を判定し、Subagent Return Contract (re-flooding 防止) と Advisor one-shot per decision (no iteration / no debate) を組み合わせる → 参照: [2026-05-04-distribution-vs-escalation-absorb-analysis](../research/2026-05-04-distribution-vs-escalation-absorb-analysis.md)
 
 ### claude-code — Claude Code
 
@@ -41,6 +45,8 @@
 - **cwd-aware routing matrix** — 作業ディレクトリ (dotfiles / repo / tmp 等) に応じてモデル・スキル・フックを自動切替する経路表。Context Design 5層の Execution 層に対応 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md), [context-design-absorb-analysis](../research/2026-04-17-context-design-absorb-analysis.md)
 - [AGENTS.md Patterns (Augment AuggieBench)](../research/2026-04-23-agents-md-patterns-absorb-analysis.md) — AuggieBench 実測: good AGENTS.md = Haiku→Opus 相当、bad は no docs より悪化。7 パターン + search-result sprawl 対策
 - **Claude Code Routines × 継続的パフォーマンスチューニング (2026-04-29)** — yamadashy による Claude Code Routines 機能を使った自律的改善ループの実践。Improvement Vectors matrix (impact × effort 2軸)・End-to-End Improvement Floor・Plateau 多軸検出・Anti-Gaming Layer (Reward Hacking / Slop 蓄積 / Goodhart 対策)・`_dashboard.md` sparkline 可視化・Routines pilot 仕様化を採択。Codex 批評: 既存 /absorb + AutoEvolve で土台十分、A+B を gate/report に最小差分追加が最優先。Gemini 補完: Reward Hacking / Slop 蓄積 / Goodhart が主要失敗パターン → Anti-Gaming Layer 必須 → 関連: [複利ループ](concepts/compounding-loop.md), [自己改善エージェント](concepts/self-improving-agents.md), [AutoEvolve](../../.config/claude/references/) → 参照: [2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis](../research/2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis.md)
+- **WebFetch 内部 Haiku 要約問題 (2026-05-06)** — sherry/Zenn 記事の検証 absorb。Claude Code WebFetch は内部で Haiku 要約、3 条件 (Content-Type: text/markdown + 80+ trusted domains + <100k chars) 外はサイレント truncate (Wikipedia/Zenn 等)。Codex 批評で初版 Gap 4 を Already 拡張に格下げ (friction-events.jsonl + 外部 JSON で吸収) + 新規 Gap 3 追加 (引用 faithfulness vs Copyright filter 125字 / HTML→md lossy / Haiku injection 表面 = security 接続)。8/8 採用: web-fetch-policy.md decision table + 7 skill 1 行参照 + PostToolUse `webfetch_truncation_suspect` hook + Haiku 委譲契約「生取得限定」+ absorb Phase 1 gate 化。L 規模 14 ファイル plan: `docs/plans/2026-05-06-webfetch-policy-plan.md` → 参照: [2026-05-06-webfetch-haiku-summary-absorb-analysis](../research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md)
+- [12-rule CLAUDE.md absorb (2026-05-10)](../research/2026-05-10-12-rule-claude-md-absorb-analysis.md) — anonymous content farm pattern Reject、副次採用 T1 R12 silent success audit + T2 R9 test intent rubric
 
 ### memory — メモリ・コンテキスト
 
@@ -67,6 +73,9 @@
 - [スキル呼び出しパターン](concepts/skill-invocation-patterns.md) — 同一スキルを異なる World（呼び出し文脈・フェーズ・モデル）で再利用するパターン。improve/absorb/research/モデルルーティングの 4 事例。Invert Test による World 追加検証
 - [スキル競合解決](concepts/skill-conflict-resolution.md) — Negative Routing（Do NOT use for 明示）・衝突優先度（supersedes → priority → specificity）・規模ガード。/skill-audit conflict-scan との連携
 - [mattpocock-skills-absorb (2026-04-29)](../research/2026-04-29-mattpocock-skills-absorb-analysis.md) — 28K stars 5-skill chain の dotfiles 統合分析。4/5 既統合、Pruning-First で 2 件のみ採用 (prd-to-issues HITL/AFK markers + grill-interview Auto Mode 警告)
+- [Claude Skills 6法則 absorb (2026-04-29)](../research/2026-04-29-claude-skills-six-laws-absorb-analysis.md) — zodchiii 100個Skillリバースエンジニアリング、採用 2 件 (near-miss negative + first screen 50行)
+- [100+ Claude Skills Best 6 (2026-05-06)](../research/2026-05-06-100-skills-best6-absorb-analysis.md) — Codex で `/ultrareview` 公式機能と確認、Pro/Max free 期間 2026-05-05 終了。最優先採用: Codex Review Gate に Independent Reproduction Standard 追加
+- [Warp oz-skills 15-skill absorb (2026-05-07)](../research/2026-05-07-warp-oz-skills-absorb-analysis.md) — warpdotdev/oz-skills (MIT, 2026) の 15 skill カタログ。Already 1 / Already 強化可能 4 / Partial 6 / Gap 0 / N/A 4。新 skill 追加なしで rubric のみ移植 (6 件)。主軸: **Warp ADE** (Agent Development Environment) 配布パターン、**ci-fix policy** 3 hard rule (permissions / pull_request_target / flaky rerun)、**WCAG POUR** + severity + manual testing を design-reviewer に統合、**Pre-PR Chain Check** (pull-request.md Step 0)、scheduling-decision-table、agent-browser-server-lifecycle
 
 ### security — セキュリティ
 
@@ -112,6 +121,7 @@
 - [Cascade Routing / Online Cascade](../references/cascade-routing.md) — cheap→judge→escalate の動的ルーティング設計。FrugalGPT 98% コスト削減の実証。静的 tier routing より常に優先する。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
 - [Model Debt Register](../references/model-debt-register.md) — model-specific rule を永続資産ではなく削除条件付き負債として管理する register。Harvey 事例の示唆: モデルアップデートで即座に無効化されるルールは事前に退場戦略を書く。参照: [new-software-cli-skills-vertical-models](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md)
 - [Agent Experience (AX)](../research/2026-04-11-new-software-cli-skills-vertical-models-analysis.md) — AX 時代における SaaS の設計原則。エージェントを主要ユーザーとして捉え、CLI / MCP / Skills インターフェースを人間向け UI と同等以上に優先する。Vertical model 台頭により performance が新たな moat になる
+- [Codex vs Claude Code 役割分担 absorb](../research/2026-04-29-codex-vs-claudecode-role-split-absorb-analysis.md) — Codex Studio 記事。Pruning-First で採用 1 件 (codex-delegation.md に Safety Claim 過信回避)、ベンダーバイアス + 公式裏取り不可で他 11 件棄却
 
 ### tooling — ツール・エコシステム
 
@@ -119,6 +129,7 @@
 - **Symphony Pilot** — [docs/playbooks/symphony-pilot.md](../playbooks/symphony-pilot.md) — Linear-bound Codex orchestration。OpenAI Symphony (github.com/openai/symphony) の設計原則を dotfiles Codex ワークフローに適用するパイロット運用 → 参照: [2026-04-29-symphony-clawsweeper-absorb-analysis](../research/2026-04-29-symphony-clawsweeper-absorb-analysis.md)
 - **Codex Janitor** — [docs/playbooks/codex-janitor-workflow.md](../playbooks/codex-janitor-workflow.md) — slop-janitor 派生 refactor loop runner。ClawSweeper (github.com/openclaw/clawsweeper) パターンから導出した、既存 Follow-Ups 消化・snapshot hash 検証・keep-open bias 除去の 3 グループ構成 → 参照: [2026-04-29-symphony-clawsweeper-absorb-analysis](../research/2026-04-29-symphony-clawsweeper-absorb-analysis.md)
 - [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault。Vault 自動メンテナンス・双方向整合性チェック・AI Second Brain 構築パターン。参照: [lit-noah-obsidian-claude-code-meta](../research/2026-04-09-noah-obsidian-claude-code-meta-analysis.md)
+- [Cyril Obsidian Vault Smarter absorb (2026-05-08)](../research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md) — Readwise+N8N+Daily Brief automation 記事の reference-only 分類分析。副次採用: /think contradiction check / Daily path drift 修正 / Reading 欄追加
 - [ターミナルツーリング](concepts/terminal-tooling.md) — Ghostty + cmux + デュアルオーディエンス CLI
 
 ### personal-analyst — 個人アナリスト・AI活用

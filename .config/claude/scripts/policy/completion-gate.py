@@ -155,12 +155,11 @@ def _run_tests(cmd: str) -> tuple[bool, str]:
     except subprocess.TimeoutExpired:
         return False, "テストがタイムアウトしました (120秒)"
     except Exception as exc:
-        # If we can't run tests, don't block
         print(
             f"[completion-gate] test run failed: {exc}",
             file=sys.stderr,
         )
-        return True, ""
+        return False, f"test runner exception: {exc}"
 
 
 def _classify_test_failure(output: str) -> tuple[str, str]:
@@ -435,8 +434,37 @@ def _check_review_gate() -> str | None:
     )
 
 
+def _get_session_initial_harness() -> set[str]:
+    """Read snapshot of files modified at session start.
+
+    Returns empty set if snapshot is missing (back-compat: behave as before).
+    Used to filter out parallel-session edits from this session's harness gate.
+    """
+    sid = os.environ.get("CLAUDE_SESSION_ID", "")
+    if not sid:
+        return set()
+    snapshot = os.path.join(
+        os.environ.get("HOME", ""),
+        ".claude",
+        "session-state",
+        f"initial-harness-{sid}.txt",
+    )
+    if not os.path.exists(snapshot):
+        return set()
+    try:
+        with open(snapshot, encoding="utf-8") as f:
+            return {line.strip() for line in f if line.strip()}
+    except OSError:
+        return set()
+
+
 def _get_changed_harness_files() -> list[str]:
-    """Get uncommitted harness file changes from git diff."""
+    """Get uncommitted harness file changes from git diff.
+
+    Filters out files that were already modified when this session started
+    (parallel session edits). Without filter, multi-session workflow triggers
+    false-positive Harness Review Gate warnings on each session.
+    """
     try:
         result = subprocess.run(
             ["git", "diff", "--name-only", "HEAD"],
@@ -447,13 +475,19 @@ def _get_changed_harness_files() -> list[str]:
         )
         if result.returncode != 0:
             return []
-        return [
+        all_changed = [
             f.strip()
             for f in result.stdout.splitlines()
             if f.strip() and any(m in f for m in HARNESS_PATH_MARKERS)
         ]
     except (subprocess.TimeoutExpired, OSError):
         return []
+
+    # Session-aware filter: exclude files that were already modified at session start
+    initial = _get_session_initial_harness()
+    if initial:
+        return [f for f in all_changed if f not in initial]
+    return all_changed
 
 
 def _harness_review_flag_path(harness_files: list[str]) -> str:

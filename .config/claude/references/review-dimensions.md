@@ -18,6 +18,15 @@ last_reviewed: 2026-04-23
 | consistency | 既存コードベースとの一貫性、convention drift の有無（`references/convention-pinning.md` 参照） | 0.15 | 5: 完全に一貫 / 4: ほぼ一貫 / 3: 部分的に逸脱 / 2: 一貫性低い / 1: 全く異なるスタイル |
 | performance | 不要な計算、N+1、メモリリーク | 0.10 | 5: 最適 / 4: 問題なし / 3: 軽微な非効率 / 2: パフォーマンス問題 / 1: 重大なボトルネック |
 
+## Test Intent Rubric (correctness 補足)
+
+Test を含む変更では「実行成功」だけでなく test が encode する WHY を確認する:
+
+- business logic を変えたら fail するか (hardcoded constant を返すだけで pass する test は無価値)
+- assertion が behavior の意味を表現しているか (`expect(getUserName()).toBe('John')` は対象 ID が hardcoded なら無意味)
+
+意図を encode しない test は correctness 次元を 3 以下にする。
+
 ## 加重平均スコア
 
 ```

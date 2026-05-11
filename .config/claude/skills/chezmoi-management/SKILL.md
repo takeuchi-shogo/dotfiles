@@ -134,7 +134,6 @@ chezmoi re-add ~/.claude/skills/nix-setup/SKILL.md
 **Currently installed via APM** (excerpt from `dot_apm/apm.yml`):
 
 - `moonbitlang/moonbit-agent-guide/*` (moonbit-agent-guide, moonbit-refactoring, moonbit-c-binding)
-- `mizchi/moonbit-practice/skills/moonbit-practice`
 - `mizchi/flaker/skills/flaker-setup`
 - `ast-grep/agent-skill/ast-grep`
 - `mizchi/tui.mbt/skills/tuimbt-practice`
