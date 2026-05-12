@@ -1,9 +1,10 @@
 ---
 name: alloydb-basics
-description: >-
-  Manages clusters, instances, and backups for AlloyDB for PostgreSQL, and
-  integrates with AlloyDB model context protocol (MCP) tools for automated database operations.
+description: "AlloyDB for PostgreSQL のクラスタ・インスタンス・バックアップ管理と MCP ツール連携を支援する。HA、Read Pool、AI workload 向け PostgreSQL 互換 DB の運用設計。Triggers: 'AlloyDB', 'alloydb', 'alloy db', 'AlloyDB クラスタ', 'AlloyDB バックアップ', 'alloydb mcp', 'AlloyDB HA', 'PostgreSQL 互換', 'GCP postgres', 'AlloyDB AI'. Do NOT use for: Cloud SQL の PostgreSQL (use /cloud-sql-basics)、分析ワークロード (use /bigquery-basics)、非 GCP の PostgreSQL。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # AlloyDB Basics

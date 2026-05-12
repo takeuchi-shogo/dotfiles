@@ -1,9 +1,10 @@
 ---
 name: cloud-sql-basics
-description: >-
-  Cloud SQL (MySQL/PostgreSQL/SQL Server) インスタンス作成・説明。バックアップ、HA、
-  セキュア接続を扱う。Use when creating or explaining a Cloud SQL instance or database.
+description: "Cloud SQL (MySQL / PostgreSQL / SQL Server) のインスタンス作成・バックアップ・HA・セキュア接続を支援する。マネージド RDB の運用設計。Triggers: 'Cloud SQL', 'cloud sql', 'cloud sql インスタンス', 'cloud sql backup', 'cloud sql ha', 'MySQL GCP', 'PostgreSQL GCP', 'SQL Server GCP', 'マネージド RDB', 'GCP db 作成'. Do NOT use for: AlloyDB (use /alloydb-basics)、BigQuery (use /bigquery-basics)、Spanner、Firestore (use /firebase-basics)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Cloud SQL Basics

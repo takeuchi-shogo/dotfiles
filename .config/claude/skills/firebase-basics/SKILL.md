@@ -1,7 +1,10 @@
 ---
 name: firebase-basics
-description: Use this skill whenever you are working on a project that uses Firebase products or services, especially for mobile or web apps.
+description: "Firebase の Firestore / Auth / Hosting / Functions / Storage を扱うモバイル・Web アプリ開発を支援する。SDK 初期化、認証、リアルタイム DB、デプロイの基本パターンを案内。Triggers: 'Firebase', 'firebase', 'firestore', 'firebase auth', 'firebase hosting', 'firebase functions', 'firebase sdk', 'モバイル GCP', 'web app firebase', 'firebase 設定'. Do NOT use for: フル GCP プロジェクト onboarding (use /google-cloud-recipe-onboarding)、純粋な Cloud Functions (use /cloud-run-basics または gcloud)、BigQuery 分析 (use /bigquery-basics)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Firebase Basics

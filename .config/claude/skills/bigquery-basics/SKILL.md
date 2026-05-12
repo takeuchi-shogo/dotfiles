@@ -1,13 +1,10 @@
 ---
 name: bigquery-basics
-description: >-
-  Manages datasets, tables, and jobs in BigQuery, and integrates with BigQuery
-  ML and Gemini for advanced data analytics and AI-driven insights. Use when
-  you need to interact with BigQuery, run SQL queries, manage BigQuery
-  resources, or leverage BigQuery's built-in ML capabilities. Also use when
-  performing data analysis, ingesting data into BigQuery, or developing AI
-  applications on BigQuery.
+description: "BigQuery のデータセット・テーブル・クエリ・ジョブ管理を支援する。SQL 実行、データ取り込み、BigQuery ML / Gemini 連携による AI 分析、リソース運用までカバー。Triggers: 'BigQuery', 'BQ クエリ', 'BigQuery ML', 'bq query', 'データウェアハウス', 'BigQuery 分析', 'BQ テーブル', 'BigQuery ingest', 'BigQuery Gemini', 'GCP データ分析'. Do NOT use for: 運用 OLTP DB (use /cloud-sql-basics or /alloydb-basics)、ストリーム取り込み単体の Pub/Sub 設定、IAM 設計 (use /google-cloud-recipe-auth)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # BigQuery Basics

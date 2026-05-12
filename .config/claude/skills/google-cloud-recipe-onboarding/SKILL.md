@@ -1,7 +1,10 @@
 ---
 name: google-cloud-recipe-onboarding
-description: Guidance for a developer's first steps on Google Cloud, covering account creation, billing setup, project management, and deploying a first resource.
+description: "Google Cloud を初めて触る開発者の first step を支援する。アカウント作成、課金設定、プロジェクト管理、最初のリソースデプロイをカバー。Triggers: 'GCP オンボーディング', 'gcp 始める', 'GCP アカウント', 'gcp billing', 'gcp project', 'first GCP', 'GCP セットアップ', 'gcp 入門', 'deploy first GCP', 'GCP 初期設定'. Do NOT use for: 既存プロジェクトの運用、認証単独 (use /google-cloud-recipe-auth)、特定サービスの設定 (use /cloud-run-basics / /gke-basics 等)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Onboarding to Google Cloud

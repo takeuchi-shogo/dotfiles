@@ -1,10 +1,10 @@
 ---
 name: cloud-run-basics
-description: >-
-  Manages Cloud Run services, jobs, and worker pools. Use when you need to deploy applications
-  responding to HTTP requests (services), run event-triggered or scheduled tasks (jobs),
-  or handle always-on pull-based background processing (worker pools).
+description: "Cloud Run の services / jobs / worker pools の作成・デプロイ・スケール設定を支援する。HTTP サーバーは services、バッチ・スケジュール実行は jobs、常駐 pull 型は worker pools と用途別に振り分け。Triggers: 'Cloud Run', 'cloud run デプロイ', 'gcloud run deploy', 'サーバーレス', 'コンテナデプロイ', 'Cloud Run job', 'worker pool', 'cloud run scale', 'Cloud Run 設定', 'GCP にデプロイ'. Do NOT use for: GKE (use /gke-basics)、IAM・認証設定 (use /google-cloud-recipe-auth)、信頼性レビュー (use /google-cloud-waf-reliability)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Cloud Run Basics
