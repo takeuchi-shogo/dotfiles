@@ -15,7 +15,7 @@
 
   outputs = { self, nixpkgs, nix-darwin, home-manager, ... }:
     let
-      mkDarwin = { system, hostName, hostModule }:
+      mkDarwin = { system, hostName, hostModule, userName }:
         nix-darwin.lib.darwinSystem {
           inherit system;
           modules = [
@@ -26,15 +26,17 @@
               networking.hostName = hostName;
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.users.takeuchishougo = import ./home;
+              home-manager.extraSpecialArgs = { inherit userName; };
+              home-manager.users.${userName} = import ./home;
+              _module.args.userName = userName;
             }
           ];
         };
     in
     {
       darwinConfigurations = {
-        private = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro"; hostModule = ./darwin/private.nix; };
-        work    = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro-work"; hostModule = ./darwin/work.nix; };
+        private = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro";      hostModule = ./darwin/private.nix; userName = "takeuchishougo"; };
+        work    = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro-work"; hostModule = ./darwin/work.nix;    userName = "shogo_takeuchi"; };
       };
 
       devShells = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" ] (system:

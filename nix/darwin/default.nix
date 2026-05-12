@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, userName, ... }:
 
 {
   # programs.zsh.enable = true は /etc/zshrc を nix-darwin 管理下に置き、
@@ -9,13 +9,13 @@
   # integer (types.ints.between 1 maxStateVersion). maxStateVersion = 6 (2026-04).
   system.stateVersion = 6;
 
-  system.primaryUser = "takeuchishougo";
+  system.primaryUser = userName;
 
   # nix-darwin master + home-manager master では、home-manager 側の home.homeDirectory が
   # ここの users.users.<name>.home を source にする。未宣言だと null 扱いで eval 失敗。
-  users.users.takeuchishougo = {
-    name = "takeuchishougo";
-    home = "/Users/takeuchishougo";
+  users.users.${userName} = {
+    name = userName;
+    home = "/Users/${userName}";
   };
 
   # Determinate Nix が daemon/設定を管理するため、nix-darwin 側の nix management は無効化。
@@ -55,6 +55,10 @@
       # Tap-only formulae
       "borders"   # FelixKratz/formulae tap
       "mo"        # k1LoW tap
+      # LLM token-saving CLI proxy. Hook: `rtk hook claude` (see .config/claude/settings.json)
+      "rtk"
+      # Task runner (Taskfile.yml executor)
+      "go-task"
     ];
 
     casks = [

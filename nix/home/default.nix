@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, userName, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/dotfiles";
@@ -8,8 +8,8 @@ let
   ghqr = pkgs.callPackage ../pkgs/ghqr.nix {};
 in
 {
-  home.username = "takeuchishougo";
-  home.homeDirectory = "/Users/takeuchishougo";
+  home.username = userName;
+  home.homeDirectory = "/Users/${userName}";
 
   # HM release 文字列 enum。system.stateVersion (integer) とは別物。
   home.stateVersion = "25.11";
