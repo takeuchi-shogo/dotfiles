@@ -62,14 +62,19 @@ description 改善で auto-invoke discoverability 向上:
    ```
    現状 `core.hooksPath` が `/Users/takeuchishougo/dotfiles/.git/hooks` を指していて lefthook が「Skipping hook sync」状態。pre-commit/commit-msg は動いているが lefthook の自動 sync が無効。
 
-2. **Phase 1b: Plugin-managed 6 件削除判断** (M 規模)
-   - 対象: claude-opus-4-5-migration / codex-result-handling / requesting-code-review / receiving-code-review / obsidian-bases / json-canvas
+2. **Phase 1b: Plugin-managed 5 件削除判断** (M 規模) — **2026-05-13 方針確定: 全件 B (放置)**
+   - 対象 (5 件): codex-result-handling / requesting-code-review / receiving-code-review / obsidian-bases / json-canvas
+   - 6 件目だった `claude-opus-4-5-migration` は **既に未 install** (marketplace に source あるのみ、`installed_plugins.json` 不在、現 session の skill 一覧にも不在) → 対象外
+   - 5 件の親 plugin と巻き添え:
+     - `codex-result-handling` → `codex@openai-codex` (巻き添え: codex-cli-runtime / gpt-5-4-prompting / /rescue / /setup)
+     - `requesting-code-review` / `receiving-code-review` → `superpowers@claude-plugins-official` 5.0.7 (巻き添え: using-superpowers, writing-plans, executing-plans, brainstorming, systematic-debugging, TDD 等常用 8 件)
+     - `obsidian-bases` / `json-canvas` → `obsidian@obsidian-skills` (巻き添え: defuddle, obsidian-cli, obsidian-markdown)
    - skills-lock.json には未登録 → plugin marketplace 経由のため個別 disable 機構なし
-   - 選択肢:
-     - A: plugin 全体 uninstall (副作用: 同じ plugin 内の他 skill も消える)
-     - B: 放置 (plugin auto-update で復活し続ける)
-     - C: plugin marketplace でカスタム fork して該当 skill 除外
-   - 推奨: B（放置）で 60 日後に再判定
+   - 選択肢評価:
+     - A: plugin 全体 uninstall → **棄却** (常用 skill の損失が削除益を大幅に上回る)
+     - B: 放置 → **採用** (description tax ≈ 5×150 = 750 token/session、実害小)
+     - C: marketplace を fork → **棄却** (ROI 最悪、auto-update 喪失 + メンテ負債)
+   - 確定方針: B (放置)、60 日後 (2026-07-09) tally で auto-invoke 0 が続けば upstream に「skill 単位 disable 機構」を issue/PR で提案
 
 3. **Phase 3: Recent skip 50 件改善** (L 規模、subagent 並列推奨)
    - GCP 13 件 (本業使用、description 改善で復活見込み)
@@ -132,3 +137,9 @@ GCP 13 件から始めて、subagent 並列で description 改善を進めて。
 - docs/plans/ subdirectory tracking ✅
 - 観察期間継続中（Day 2 / 60）
 - 次セッション scope = 本ファイル
+
+## 2026-05-13 追記
+
+- lefthook 復活完了: `git config --unset-all --local core.hooksPath` + `lefthook install` で pre-commit/commit-msg 再 sync (lefthook 2.1.6)
+- Phase 1b 確定: 全件 B (放置)、対象は 6 → 5 件に訂正 (上記 §「Phase 1b」参照)
+- 次の優先: Phase 3 (Recent skip 50 件改善、GCP 13 件から)
