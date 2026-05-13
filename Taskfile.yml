@@ -112,6 +112,37 @@ tasks:
     cmds:
       - ~/dotfiles/.bin/validate_symlinks.sh
 
+  doctor:
+    desc: Run setup health check (binary/symlink/nix/hook/brew) — see docs/specs/2026-05-13-setup-doctor.md
+    cmds:
+      - bash scripts/lifecycle/doctor.sh all
+      - task: validate-symlinks
+
+  doctor:binary:
+    desc: Check required binaries and minimum versions
+    cmds:
+      - bash scripts/lifecycle/doctor.sh binary
+
+  doctor:symlink:
+    desc: Check managed symlinks (delegates to validate-symlinks)
+    cmds:
+      - task: validate-symlinks
+
+  doctor:nix:
+    desc: Check nix-darwin profile/hostname/darwin-rebuild
+    cmds:
+      - bash scripts/lifecycle/doctor.sh nix
+
+  doctor:hook:
+    desc: Statically validate settings.json hook commands (read-only, no execution)
+    cmds:
+      - bash scripts/lifecycle/doctor.sh hook
+
+  doctor:brew:
+    desc: Check declared brews (nix-darwin) vs installed
+    cmds:
+      - bash scripts/lifecycle/doctor.sh brew
+
   upgrade-claude:
     desc: Upgrade Claude Code and apply system prompt patches
     cmds:

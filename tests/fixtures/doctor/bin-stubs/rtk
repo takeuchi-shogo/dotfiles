@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+[[ "${1:-}" = "--version" ]] && { echo "rtk 0.35.0"; exit 0; }
+exit 0
