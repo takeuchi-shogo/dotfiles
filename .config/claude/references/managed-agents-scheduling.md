@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-05-14
 ---
 
 # Managed Agents Scheduling — 移行検討リファレンス
@@ -79,7 +79,59 @@ claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 
 - `references/managed-agents-hybrid.md` — Hybrid Architecture 全体像
 - `references/unattended-pipeline.md` — 既存の無人実行パイプライン設計
+- `references/routine-prompt-rubric.md` — Routine prompt を書くときの 6 要素 (role/task/process/output/error/constraints)
 - `scripts/runtime/` — 現在のスケジュール実行スクリプト群
+
+## Routine Prompt Rubric
+
+Routine 公開前は必ず [`routine-prompt-rubric.md`](routine-prompt-rubric.md) の 6 要素 (Role/Task/Process/Output/Error Handling/Constraints) + Pre-flight Checklist を通すこと。
+
+Routine は無人実行で会話 context を持たないため、prompt の自己完結性が品質を決める。曖昧な prompt は run ごとの出力 drift を生み、無人ゆえに事後発見になる。
+
+## Routine Recipe Catalog
+
+> 出典: Khairallah "How to Set Up Claude Code Routines" (2026-05-13 absorb) Step 5。
+> 既存の Daily Health Check Pilot (後述) は Mac sleep 耐性検証の specific pilot、ここは generic な recipe 集。
+
+dotfiles 既存スキルとの組合せで動かす generic な routine 雛形。**いずれもまず launchd / 手動実行で動作確認した後に Routine 化する** (yamadashy absorb で確立した段階移行原則)。
+
+| # | Recipe | Schedule | 既存スキル組合せ | 代替する手作業 |
+|---|--------|----------|----------------|--------------|
+| R1 | Daily PR Review | 平日 09:00 | `gh-fix-ci` + `/review` の rubric を Routine 用 prompt に展開 | 朝の PR 棚卸し |
+| R2 | Weekly Dependency Audit | 月曜 06:00 | `dependency-auditor` skill の severity matrix を prompt に展開 | 手動 `npm audit` / `cargo audit` |
+| R3 | Doc Drift Detection | 金曜 17:00 | `check-health` の rubric を Routine 化、`docs/` と `README.md` の API 言及をスキャン | 手動 doc 棚卸し |
+| R4 | Changelog from Release Tag | GitHub event (release tag push) | `conventional-changelog` reference を prompt に展開 | 手動 CHANGELOG.md 更新 |
+| R5 | Tech Debt Sweep | 月初 08:00 | `/audit` skill rubric から TODO/deprecated dep/test gap を抽出 | 手動 tech debt 棚卸し |
+
+各 recipe の prompt は **必ず `routine-prompt-rubric.md` の 6 要素** を満たして書く。dotfiles 内で実機 pilot するときは以下の段階運用:
+
+1. **Phase 0**: 該当 skill を手動実行 1 週間 (出力品質の baseline)
+2. **Phase 1**: `claude agents create` で Routine 化、local + cloud 並行運転 1 週間
+3. **Phase 2**: Mac sleep 耐性 / レイテンシ / コストを実測、Phase 3 移行 Go/No-Go 判定
+4. **Phase 3**: cloud 単独運用、local fallback は plist 残置
+
+dotfiles 環境特有の制約 (要 prompt 内明示):
+
+- **コード変更は `claude/<feature>` branch のみ push 可** (default)。main / master 直 push は構造的に不可
+- **lint config 保護**: `.eslintrc*` / `biome.json` / `.prettierrc*` は `protect-linter-config` hook で書込禁止 (Routine からも適用)
+- **commit gate**: lefthook pre-commit / commit-msg は Routine の commit でも発火。`--no-verify` 禁止
+- **冪等性**: 同一 Routine が連続 2 回 run しても被害が出ない設計 (例: 同じ PR に同じコメントを 2 回投稿しない仕組みを Constraints に書く)
+
+### "Dreaming" Feature (Inconclusive, 2026-05-14)
+
+Khairallah 記事は "Code with Claude on May 6th" (2026-05-06) で "Dreaming" feature が発表されたと主張する (Routine が過去 run を review し自己改善)。
+
+**2026-05-14 時点の検証状況**:
+
+- 一次ソース (Anthropic 公式 blog / engineering blog / code.claude.com) で確認できず
+- Codex 経由の web 検証は no output、Gemini grounding は rate limit で確認不能
+- Khairallah は content farm pattern 7 件目 (Boris/Three-Model Stack/Cyril/12-rule/zodchixquant/0xfene/Nav Toor の系列) で信頼性低い
+
+**運用方針**:
+
+- Dreaming feature を前提とした Routine 設計は禁止 (Inconclusive 段階)
+- ユーザーが claude.ai/code/routines にアクセスする機会があれば実在性確認
+- 確定したら本セクションを Real / Misnamed / Fabricated 判定で更新
 
 ## Routines Pilot: Daily Health Check
 
