@@ -3,6 +3,7 @@
 **Status**: Draft
 **Created**: 2026-05-13
 **Owner**: takeuchi-shogo
+**Platform**: macOS (nix-darwin) only — Linux/WSL は対象外 (`darwin-rebuild` 等 macOS 固有 binary を前提)
 
 ## Why now
 
@@ -22,11 +23,11 @@
 
 | カテゴリ | 検出対象 | 失敗時の症状 |
 |---|---|---|
-| `binary` | 必須 binary 存在 + minimum version (rtk≥0.39, jq, gh, task, sheldon, direnv, mise, starship, git, brew, darwin-rebuild, claude) | hook が ENOENT、Taskfile が動かない |
+| `binary` | 必須 binary 存在 + minimum version (rtk≥0.39, jq, gh, task, sheldon, direnv, mise, starship, git, brew, darwin-rebuild, claude) — `darwin-rebuild` は macOS のみ | hook が ENOENT、Taskfile が動かない |
 | `symlink` | 既存 `validate-symlinks` を継承し、`~/.claude/`, `~/.config/`, `~/.zshrc` 配下の管理対象 link を確認 | dotfiles の編集が反映されない |
 | `nix` | `nix flake check` + `hostname` と適用済み profile の整合 (private/work) | 別 profile を誤適用、再起動後の設定 drift |
 | `hook` | settings.json の hook `command` を **dry-run smoke test** (空 JSON を stdin で投入し exit code 確認) | Claude Code 上の hook fail |
-| `brew` | nix-darwin `homebrew.brews` 宣言と `brew list` の差分 | 宣言したのに未 install / Cellar mismatch |
+| `brew` | nix-darwin `homebrew.brews` + `homebrew.taps` の宣言と `brew list` / `brew tap` の差分 | 宣言したのに未 install / Cellar mismatch / tap 未追加 |
 
 ### Non-goals
 
