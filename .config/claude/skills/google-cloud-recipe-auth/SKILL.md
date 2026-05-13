@@ -1,7 +1,10 @@
 ---
 name: google-cloud-recipe-auth
-description: Provides expert guidance on authenticating and authorizing to Google Cloud services and APIs, covering human users, service identities, Application Default Credentials (ADC), and best practices for secure access.
+description: "Google Cloud の認証・認可設計を支援する。human user / service account / Application Default Credentials (ADC) / Workload Identity Federation のベストプラクティスをカバー。Triggers: 'GCP 認証', 'gcloud auth', 'ADC', 'Application Default Credentials', 'GCP IAM', 'service account', 'gcp 権限', 'Workload Identity Federation', 'gcp credentials', 'OAuth GCP'. Do NOT use for: Firebase Auth (use /firebase-basics)、ネットワーク調査 (use /google-cloud-recipe-networking-observability)、セキュリティ全体設計 (use /google-cloud-waf-security)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Authenticating to Google Cloud

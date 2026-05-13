@@ -1,7 +1,10 @@
 ---
 name: google-cloud-waf-reliability
-description: Generates reliability-focused guidance for Google Cloud workloads based on the design principles and recommendations in the Google Cloud Well-Architected Framework. Use this skill to evaluate a workload, identify reliability requirements, and provide actionable recommendations for build, deploy, and manage the workload reliably in Google Cloud.
+description: "Google Cloud Well-Architected Framework (WAF) の信頼性ピラーに沿ってワークロードを評価し、SLO / HA / DR / capacity 計画の actionable な推奨を生成する。Triggers: 'GCP reliability', 'WAF reliability', 'SLO GCP', 'SLA GCP', 'gcp 信頼性', 'gcp HA', 'gcp 冗長性', 'disaster recovery GCP', 'GCP DR', 'gcp uptime'. Do NOT use for: コスト最適化 (use /google-cloud-waf-cost-optimization)、セキュリティ (use /google-cloud-waf-security)、ネットワーク調査 (use /google-cloud-recipe-networking-observability)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Google Cloud Well-Architected Framework skill for the Reliability pillar

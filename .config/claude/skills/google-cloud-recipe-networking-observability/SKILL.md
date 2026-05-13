@@ -1,8 +1,10 @@
 ---
 name: google-cloud-recipe-networking-observability
-description: >-
-  Investigates Google Cloud networking issues by analyzing logs, metrics, and diagnostics. Use when investigating VPC Flow Logs, NAT, firewall, or threat logs, querying latency and throughput metrics, or running Connectivity Tests for path diagnostics.
+description: "Google Cloud のネットワーク調査をログ・メトリクス・診断ツールで支援する。VPC Flow Logs、Cloud NAT、firewall、threat log、Connectivity Tests、latency / throughput メトリクスをカバー。Triggers: 'VPC Flow Logs', 'vpc flow', 'Cloud NAT', 'GCP firewall', 'connectivity test', 'gcp ネットワーク調査', 'latency GCP', 'throughput GCP', 'GCP threat log', 'GCP network'. Do NOT use for: アプリ層ログ、信頼性レビュー (use /google-cloud-waf-reliability)、IAM (use /google-cloud-recipe-auth)。"
 origin: external
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 # Google Cloud Networking Observability Expert

@@ -4,8 +4,10 @@ license: Apache-2.0
 metadata:
   author: Google Cloud
   version: "1.0.0"
-description: "Plan, create, configure production-ready GKE clusters via Autopilot golden path. Networking, Workload Identity, scaling, cost, AI/ML inference. WHEN: create/secure/scale GKE, GKE inference, GKE multi-tenancy, GKE upgrade."
+  pattern: reference
+description: "GKE Autopilot を golden path として、production-ready クラスタの計画・作成・設定を支援する。Networking、Workload Identity、スケーリング、コスト、AI/ML inference、multi-tenancy、upgrade をカバー。Triggers: 'GKE', 'gke', 'Kubernetes GCP', 'k8s GCP', 'Autopilot', 'gke cluster', 'Workload Identity', 'gke デプロイ', 'gke スケール', 'gke inference'. Do NOT use for: Cloud Run (use /cloud-run-basics)、汎用 k8s 学習、IAM 単独設計 (use /google-cloud-recipe-auth)、信頼性レビュー (use /google-cloud-waf-reliability)。"
 origin: external
+user-invocable: true
 ---
 
 # Google Kubernetes Engine (GKE) Basics

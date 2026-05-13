@@ -1,8 +1,11 @@
 ---
 name: gemini-api
-description: Guides the usage of the Gemini API on Agent Platform with the Google Gen AI SDK. Use when the user asks about using Gemini in an enterprise environment or explicitly mentions Vertex AI, Google Cloud, or Agent Platform. Covers SDK usage (Python, JS/TS, Go, Java, C#), capabilities like Live API, tools, multimedia generation, caching, and batch prediction.
+description: "Agent Platform (旧 Vertex AI) 上で Gemini API を Google Gen AI SDK で扱う。Python / JS-TS / Go / Java / C# の SDK 使用、Live API、ツール呼び出し、マルチメディア生成、キャッシュ、バッチ予測をカバー。Triggers: 'Gemini API', 'gemini api', 'Vertex AI', 'vertex ai', 'Google Gen AI SDK', 'Live API', 'Gemini Python', 'gemini sdk', 'Agent Platform', 'gemini grounding'. Do NOT use for: ローカル Gemini CLI (use /gemini)、Claude API (use /claude-api)、OpenAI / 他社 SDK。"
 origin: external
 compatibility: Requires active Google Cloud credentials and Agent Platform API enabled.
+user-invocable: true
+metadata:
+  pattern: reference
 ---
 
 IMPORTANT: Agent Platform (full name Gemini Enterprise Agent Platform) was previously named "Vertex AI" and many web resources use the legacy branding.
