@@ -77,7 +77,7 @@ JSON
 out=$(SETUP_DOCTOR_SETTINGS="$TMP/bad-settings.json" $DOCTOR hook 2>&1 || true)
 assert_contains "04-hook-unresolvable" "$out" '\[hook[[:space:]]*\] FAIL: no resolvable executable in hook'
 
-# ----- Scenario 5: brew drift (declared but not installed) -----
+# ----- Scenario 5: brew formula drift (declared but not installed) -----
 cat > "$TMP/extra-brew.nix" <<'NIX'
 {
   homebrew = {
@@ -88,7 +88,25 @@ cat > "$TMP/extra-brew.nix" <<'NIX'
 }
 NIX
 out=$(SETUP_DOCTOR_NIX_FILE="$TMP/extra-brew.nix" $DOCTOR brew 2>&1 || true)
-assert_contains "05-brew-drift" "$out" '\[brew[[:space:]]*\] FAIL: this-formula-definitely-does-not-exist-xyz declared in nix but not installed'
+assert_contains "05-brew-formula-drift" "$out" '\[brew[[:space:]]*\] FAIL: this-formula-definitely-does-not-exist-xyz declared in nix\.brews but not installed'
+
+# ----- Scenario 6: invalid settings.json -> hook FAIL (not silent OK) -----
+printf '{ this is not json' > "$TMP/broken-settings.json"
+out=$(SETUP_DOCTOR_SETTINGS="$TMP/broken-settings.json" $DOCTOR hook 2>&1 || true)
+assert_contains "06-hook-invalid-json" "$out" '\[hook[[:space:]]*\] FAIL: settings\.json is not valid JSON'
+
+# ----- Scenario 7: brew tap drift (declared but not tapped) -----
+cat > "$TMP/extra-tap.nix" <<'NIX'
+{
+  homebrew = {
+    taps = [
+      "nonexistent-org/nonexistent-tap-xyz"
+    ];
+  };
+}
+NIX
+out=$(SETUP_DOCTOR_NIX_FILE="$TMP/extra-tap.nix" $DOCTOR brew 2>&1 || true)
+assert_contains "07-brew-tap-drift" "$out" '\[brew[[:space:]]*\] FAIL: nonexistent-org/nonexistent-tap-xyz declared in nix\.taps but not tapped'
 
 echo
 echo "=== Summary: PASS=$PASS FAIL=$FAIL ==="

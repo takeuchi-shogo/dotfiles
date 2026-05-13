@@ -115,8 +115,11 @@ tasks:
   doctor:
     desc: Run setup health check (binary/symlink/nix/hook/brew) — see docs/specs/2026-05-13-setup-doctor.md
     cmds:
+      # `defer` ensures symlink validation runs even if doctor.sh exits non-zero.
+      # Without it Task stops on the first FAIL and skips symlink checks — but FAIL
+      # is exactly when you want the full report. (Task >= 3.36 syntax.)
+      - defer: { task: validate-symlinks }
       - bash scripts/lifecycle/doctor.sh all
-      - task: validate-symlinks
 
   doctor:binary:
     desc: Check required binaries and minimum versions

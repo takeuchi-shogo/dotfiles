@@ -23,6 +23,18 @@ FAIL_COUNT=0
 WARN_COUNT=0
 OK_COUNT=0
 
+# Portable timeout: GNU coreutils `timeout` is not on stock macOS, and
+# `gtimeout` only exists if `brew install coreutils` was run. Fall back
+# to running the command without a timeout — better than swallowing the
+# probe via `|| true` and silently degrading FAILs to WARNs.
+if command -v timeout >/dev/null 2>&1; then
+  _to() { timeout "$@"; }
+elif command -v gtimeout >/dev/null 2>&1; then
+  _to() { gtimeout "$@"; }
+else
+  _to() { shift; "$@"; }   # drop the duration arg, run directly
+fi
+
 emit() {
   local cat="$1" sev="$2" msg="$3" hint="${4:-}"
   if [[ -n "$hint" ]]; then
@@ -72,7 +84,7 @@ check_binary() {
     fi
     local cmd="${probe//\{bin\}/$name}"
     local ver
-    ver=$(timeout 5 bash -c "$cmd" </dev/null 2>/dev/null || true)
+    ver=$(_to 5 bash -c "$cmd"</dev/null 2>/dev/null || true)
     if [[ -z "$ver" ]]; then
       emit binary WARN "$name version probe failed" "cmd: $cmd"
       continue
@@ -115,6 +127,13 @@ check_hook() {
   # metacharacter prefixes. Bash word-split doesn't handle quoted spaces; that's
   # why we skip noisy tokens (`*"*`, `*}*`) and keep walking until something
   # resolves (e.g., `bash`, `python3`, an absolute path).
+  # Verify settings.json parses before iterating; otherwise silent OK hides
+  # the case where Claude itself cannot load the hook config.
+  local jq_err
+  jq_err=$(jq empty "$SETTINGS_FILE" 2>&1) || {
+    emit hook FAIL "settings.json is not valid JSON" "${jq_err%%$'\n'*}"
+    return
+  }
   local unresolved=0 total=0
   while IFS= read -r cmd; do
     [[ -z "$cmd" ]] && continue
@@ -142,7 +161,7 @@ check_hook() {
   [[ $unresolved -eq 0 && $total -gt 0 ]] && emit hook OK "all $total hook commands resolve"
   # rtk hook claude subcommand recognition (read-only)
   if command -v rtk >/dev/null 2>&1; then
-    if timeout 5 rtk hook --help </dev/null 2>/dev/null | grep -qE '^[[:space:]]+claude\b'; then
+    if _to 5 rtk hook --help </dev/null 2>/dev/null | grep -qE '^[[:space:]]+claude([[:space:]]|$)'; then
       emit hook OK "rtk hook claude subcommand recognized"
     else
       emit hook FAIL "rtk hook claude subcommand missing" "run: brew upgrade rtk"
@@ -159,35 +178,51 @@ check_brew() {
     emit brew SKIP "brew not in PATH"
     return
   fi
-  # Extract brews from nix file: handle both `"name"` and `{ name = "name"; ... }`
-  local declared
-  declared=$(awk '
-    /brews[[:space:]]*=/{in_b=1; next}
-    in_b && /\]/{in_b=0}
-    in_b && /name[[:space:]]*=[[:space:]]*"[^"]+"/{
-      s=$0; sub(/.*name[[:space:]]*=[[:space:]]*"/, "", s); sub(/".*/, "", s); print s; next
-    }
-    in_b && /^[[:space:]]*"[^"]+"/{
-      s=$0; sub(/^[[:space:]]*"/, "", s); sub(/".*/, "", s); print s
-    }
-  ' "$NIX_FILE" | sort -u)
-  if [[ -z "$declared" ]]; then
-    emit brew WARN "no brews declared in $NIX_FILE"
+  # Extract brews and taps from nix file. Both `"name"` (string) and
+  # `{ name = "name"; args = [...]; }` (attrset) forms are supported for brews.
+  # Taps are always plain strings in `homebrew.taps`.
+  _nix_list() {
+    local key="$1"
+    awk -v key="$key" '
+      $0 ~ "(^|[^a-zA-Z_])" key "[[:space:]]*=[[:space:]]*\\["{in_b=1; next}
+      in_b && /\]/{in_b=0}
+      in_b && /name[[:space:]]*=[[:space:]]*"[^"]+"/{
+        s=$0; sub(/.*name[[:space:]]*=[[:space:]]*"/, "", s); sub(/".*/, "", s); print s; next
+      }
+      in_b && /^[[:space:]]*"[^"]+"/{
+        s=$0; sub(/^[[:space:]]*"/, "", s); sub(/".*/, "", s); print s
+      }
+    ' "$NIX_FILE" | sort -u
+  }
+  local brews taps
+  brews=$(_nix_list "brews")
+  taps=$(_nix_list "taps")
+  if [[ -z "$brews" && -z "$taps" ]]; then
+    emit brew WARN "no brews or taps declared in $NIX_FILE"
     return
   fi
-  local installed missing=""
-  installed=$(timeout 10 brew list --formula 2>/dev/null | sort -u || true)
+  local installed installed_taps missing_b="" missing_t=""
+  installed=$(_to 10 brew list --formula 2>/dev/null | sort -u || true)
+  installed_taps=$(_to 10 brew tap 2>/dev/null | sort -u || true)
   while IFS= read -r b; do
     [[ -z "$b" ]] && continue
-    grep -qx "$b" <<< "$installed" || missing="$missing $b"
-  done <<< "$declared"
-  if [[ -z "${missing// }" ]]; then
-    local count
-    count=$(printf '%s\n' "$declared" | wc -l | tr -d ' ')
-    emit brew OK "all $count declared brews installed"
+    grep -qx "$b" <<< "$installed" || missing_b="$missing_b $b"
+  done <<< "$brews"
+  while IFS= read -r t; do
+    [[ -z "$t" ]] && continue
+    grep -qix "$t" <<< "$installed_taps" || missing_t="$missing_t $t"
+  done <<< "$taps"
+  if [[ -z "${missing_b// }" && -z "${missing_t// }" ]]; then
+    local nb nt
+    nb=$(printf '%s\n' "$brews" | grep -c . || true)
+    nt=$(printf '%s\n' "$taps"  | grep -c . || true)
+    emit brew OK "all declared brews ($nb) and taps ($nt) installed"
   else
-    for b in $missing; do
-      emit brew FAIL "$b declared in nix but not installed" "run: task nix:switch"
+    for b in $missing_b; do
+      emit brew FAIL "$b declared in nix.brews but not installed" "run: task nix:switch"
+    done
+    for t in $missing_t; do
+      emit brew FAIL "$t declared in nix.taps but not tapped" "run: task nix:switch"
     done
   fi
 }
