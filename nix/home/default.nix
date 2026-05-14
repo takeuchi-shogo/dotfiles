@@ -28,6 +28,7 @@ in
     fzf
     gh
     gnugrep
+    jujutsu
     lua5_4              # pkgs.lua is 5.2.4; sketchybar/colors.lua uses 5.3+ bitwise ops
     neovim
     # Tier 2 tooling (Phase B1 Step 4)
@@ -95,12 +96,13 @@ in
     "llms.txt"      = outLink "llms.txt";
     "ruff.toml"     = outLink "ruff.toml";
 
-    # .config/<tool> dir-level symlinks (12)
+    # .config/<tool> dir-level symlinks (13)
     ".config/aerospace"   = outLink ".config/aerospace";
     ".config/borders"     = outLink ".config/borders";
     ".config/gh"          = outLink ".config/gh";
     ".config/ghostty"     = outLink ".config/ghostty";
     ".config/git"         = outLink ".config/git";
+    ".config/jj"          = outLink ".config/jj";
     ".config/karabiner"   = outLink ".config/karabiner";
     ".config/lazygit"     = outLink ".config/lazygit";
     ".config/nvim"        = outLink ".config/nvim";
