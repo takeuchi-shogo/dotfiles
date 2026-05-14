@@ -751,7 +751,8 @@
     "typescript-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
-    "terraform-skill@antonbabenko-terraform": true
+    "terraform-skill@antonbabenko-terraform": true,
+    "warp@claude-code-warp": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -770,6 +771,12 @@
       "source": {
         "source": "github",
         "repo": "antonbabenko/terraform-skill"
+      }
+    },
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
       }
     }
   },

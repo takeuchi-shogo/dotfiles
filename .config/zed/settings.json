@@ -98,6 +98,7 @@
   // Tabs
   // ===================
   "tabs": {
+    "close_position": "right",
     "show_diagnostics": "all",
     "file_icons": true,
     "git_status": true
