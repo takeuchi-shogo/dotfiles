@@ -18,6 +18,10 @@ CLAUDE.local.md
 # Machine-local zsh config
 .config/zsh/local.zsh
 
+# Jujutsu (jj) per-repo runtime state (operation log, repo metadata).
+# Written by jj into ~/.config/jj/repos/<hash>/, which symlinks into dotfiles.
+.config/jj/repos/
+
 # Claude reviewer persona (contains personal data)
 .config/claude/agents/reviewer-*.md
 .config/claude/data/*
