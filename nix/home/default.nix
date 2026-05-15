@@ -99,6 +99,7 @@ in
     # .config/<tool> dir-level symlinks (13)
     ".config/aerospace"   = outLink ".config/aerospace";
     ".config/borders"     = outLink ".config/borders";
+    ".config/cmux"        = outLink ".config/cmux";
     ".config/gh"          = outLink ".config/gh";
     ".config/ghostty"     = outLink ".config/ghostty";
     ".config/git"         = outLink ".config/git";
