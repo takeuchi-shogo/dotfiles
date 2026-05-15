@@ -758,3 +758,10 @@
 - 取り込み: T1 R12 silent success audit (S 規模、completion-gate.py + checkpoint_manager.py の silent except 修正) + T2 R9 test intent rubric (S 規模、review-dimensions.md に correctness 補足追記)
 - 棄却: T3 12-rule CLAUDE.md 全採用 (Pruning-First 違反 + 200 行 ceiling 抵触 + 記事根拠の弱さ)
 - 分析レポート: `docs/research/2026-05-10-12-rule-claude-md-absorb-analysis.md`
+
+## [2026-05-14] ingest | Khairallah Claude Code Routines
+
+- ソース: "How to Set Up Claude Code Routines to Automate Any Workflow (Full Course)" (@eng_khairallah1, content farm pattern 7th)
+- 判定: Gap 4 / Partial 5 / Already(強化可能) 3 / Already(強化不要) 1 / N/A 1 / Inconclusive 1
+- 取り込み: T1 routine-prompt-rubric.md 新規 (Bulletproof prompt 6 要素) / T2 managed-agents-scheduling.md に Recipe Catalog R1-R5 + Dreaming Inconclusive 注記 / T3 scheduling-decision-table.md に Step 6 + 段階運用 / T4 decision-tables-index.md 更新
+- 教訓: Codex no output 2 連発 + Gemini rate limit で Phase 2.5 劣化 → 前日 Nav Toor 検証データを Phase 2.5 補完源として再活用するパターンが成立
