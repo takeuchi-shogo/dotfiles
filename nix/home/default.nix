@@ -29,6 +29,7 @@ in
     gh
     gnugrep
     jujutsu
+    lazyjj              # TUI for jj (lazygit-like)
     lua5_4              # pkgs.lua is 5.2.4; sketchybar/colors.lua uses 5.3+ bitwise ops
     neovim
     # Tier 2 tooling (Phase B1 Step 4)
