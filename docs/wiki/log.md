@@ -765,3 +765,13 @@
 - 判定: Gap 4 / Partial 5 / Already(強化可能) 3 / Already(強化不要) 1 / N/A 1 / Inconclusive 1
 - 取り込み: T1 routine-prompt-rubric.md 新規 (Bulletproof prompt 6 要素) / T2 managed-agents-scheduling.md に Recipe Catalog R1-R5 + Dreaming Inconclusive 注記 / T3 scheduling-decision-table.md に Step 6 + 段階運用 / T4 decision-tables-index.md 更新
 - 教訓: Codex no output 2 連発 + Gemini rate limit で Phase 2.5 劣化 → 前日 Nav Toor 検証データを Phase 2.5 補完源として再活用するパターンが成立
+
+## [2026-05-16] ingest | Anthropic Agent SDK Credit (2026-06-15 billing split)
+
+- ソース: <https://zed.dev/blog/anthropic-subscription-changes> (Zed Industries, 2026-05-15)
+- 一次検証: <https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan> (`obsidian:defuddle` で全文取得確認、Gemini grounding の 3 誤判定を訂正)
+- 判定: Gap 1 / Partial 1 / N/A 2 / Already 強化 3 + 副次 F1+F2 (合計 6 件、全採用)
+- 取り込み: `references/agent-sdk-credit.md` (new decision-table) + `model-routing.md` Cost-aware Fallback 節 + `managed-agents-scheduling.md` Phase 0 (Routine `claude -p` は credit 消費) + `skills/{research,autonomous,dispatch}/SKILL.md` credit short note + `~/.claude/skills/absorb/SKILL.md` Codex Skill 経由パターン化 (F1) + memory 3 件 (F2)
+- 教訓: (a) Gemini grounding は二重矛盾あり (内部メモ UNVERIFIED vs 最終 summary VERIFIED)、defuddle で自分で一次取得が必須 / (b) Codex `Agent(subagent_type: "codex:codex-rescue")` 直起動は codex CLI 孤立 stall、`Skill(skill: "codex:rescue")` 経由が正規 / (c) Phase 2.5 `ScheduleWakeup` ループは 2 回 max、独自検証で進む / (d) competitive vendor 記事 (Zed=ACP 推進者) でも事実主張は全 Verified なケースあり
+- 関連 commit: `ec3e1c6`
+- 分析レポート: `docs/research/2026-05-16-anthropic-agent-sdk-credit-absorb-analysis.md`
