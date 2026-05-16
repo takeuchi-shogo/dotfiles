@@ -29,6 +29,18 @@ claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 | AutoEvolve | **中** | 長時間実行の可能性あり → コスト管理が必要。ただし信頼性向上 |
 | Patrol Agent | **低** | 5分間隔はコールドスタート（3-8秒）の影響が大きい。ローカル維持が合理的 |
 
+## Phase 0: 2026-06-15 Agent SDK credit billing 認識
+
+2026-06-15 から `claude -p` / Claude Agent SDK / Claude Code GitHub Actions は subscription pool から外れ、月次 **Agent SDK credit** (Pro $20 / Max 5x $100 / Max 20x $200 / Team Std $20 / Team Prem $100 / Ent usage $20 / Ent seat-Premium $200) を消費する。Routine の `claude -p` 起動は本 credit を消費するため、Recipe 設計時に消費量を意識する。詳細: `references/agent-sdk-credit.md`。
+
+| 経路 | プール |
+|------|--------|
+| Routine が `claude -p` を起動 | Agent SDK credit |
+| Routine が Managed Agents API (claude-api skill 経由) | API key (Developer Platform) pay-as-you-go (credit 対象外) |
+| Routine が interactive Claude Code (TUI) を起動 | Subscription pool |
+
+Recipe R1-R5 を月 1 回回す程度であれば Pro credit $20 で十分。週次 8 並列 research を込みにする場合は Max 5x 以上または Codex/Gemini 委譲を検討する。
+
 ## コスト設計指針
 
 ### ハード予算キャップ（必須）

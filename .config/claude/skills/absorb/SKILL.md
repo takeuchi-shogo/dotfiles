@@ -177,7 +177,18 @@ Codex と Gemini を **並列** で起動する:
 
 ### Codex: 分析批評
 
-`codex-rescue` サブエージェント（または `/dispatch` 経由の cmux Worker）に以下を依頼:
+**呼び出し方 (重要)**: `Skill` tool で `codex:rescue` skill を呼ぶ。`--background` フラグでバックグラウンド実行、main session は他の処理を進められる。
+
+```
+Skill(skill: "codex:rescue", args: "--background <prompt>")
+```
+
+**NG パターン (実測 stall 例あり)**:
+- `Agent(subagent_type: "codex:codex-rescue")` の直接起動 — 中継 subagent は 162s で完了するが、その内部で起動した codex CLI が "Considering citation strategy" reasoning 段階でサイレント終了し最終 assistant message を出さずに孤立する事象を確認 (2026-05-16)。Skill 経由 (slash command `/codex:rescue`) は resume/fresh 確認 + `--background`/`--wait` ライフサイクル管理が組み込まれている
+
+**フォールバック**: skill stall 時は `/dispatch` 経由の cmux Worker に切替可能。
+
+**プロンプト内容 (依頼テンプレート)**:
 
 > 以下は外部記事のギャップ分析結果です。この分析に対して批評してください:
 > 1. **見落とし**: 記事の手法で分析から漏れているものはないか

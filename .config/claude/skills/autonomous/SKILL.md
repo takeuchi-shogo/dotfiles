@@ -24,7 +24,7 @@ metadata:
 
 1. **Analyze** — タスクを分析、サブタスクに分解
 2. **Plan** — task_list.md を作成、ユーザー承認
-3. **Execute** — claude -p でヘッドレス実行（セッションループ）
+3. **Execute** — claude -p でヘッドレス実行（セッションループ）— ⚠ 2026-06-15 以降は Agent SDK credit 消費 (`references/agent-sdk-credit.md`)、長時間タスクは枯渇リスク最大
 4. **Monitor** — 進捗を表示、必要に応じて介入
 
 ## Step 1: Analyze

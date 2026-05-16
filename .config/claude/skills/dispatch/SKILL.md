@@ -33,7 +33,7 @@ metadata:
    - コードベース全体分析（200K超）、外部リサーチ（Google Search grounding）
    - マルチモーダル処理（PDF/動画/音声）、ドキュメント全体分析
    - 参照: `rules/gemini-delegation.md`
-4. **30分以上 or 人間介入の可能性** → cmux Claude Code Worker
+4. **30分以上 or 人間介入の可能性** → cmux Claude Code Worker (⚠ 2026-06-15 以降、Worker が `claude -p`/SDK 起動形態なら Agent SDK credit 消費。Codex/Gemini Worker は独立予算で credit 対象外: `references/agent-sdk-credit.md`)
 5. **5+ 並列タスク** → cmux Worker（モデルはタスク性質で選択）
 6. **それ以外** → サブエージェント（デフォルト）
 

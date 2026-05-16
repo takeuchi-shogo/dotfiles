@@ -64,3 +64,14 @@ last_reviewed: 2026-04-23
 ## WebFetch 委譲注記 (Haiku 内部要約対策)
 
 Claude Code v2.1.126 で `WebFetch` は内部 Haiku 要約 + 100k chars truncation を観測 (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。Haiku 委譲時は二重圧縮 (Haiku 内部要約 → 委譲先要約) を回避するため、**生取得段階に限定**し要約は呼び出し側で行う。経路選択は `references/web-fetch-policy.md` に従う。
+
+## Cost-aware Fallback (2026-06-15〜 Agent SDK credit 対応)
+
+2026-06-15 から `claude -p` / Claude Agent SDK / Claude Code GitHub Actions は subscription pool ではなく **月次 Agent SDK credit** から消費される (詳細: `references/agent-sdk-credit.md`)。Credit 枯渇時、または heavy parallel `claude -p` バッチを設計する段階で以下の順序でフォールバック判断する:
+
+1. **Codex (cmux Worker) に委譲** — 設計判断・批評・review は元々 Codex 推奨。subscription pool 外で動く独立予算
+2. **Gemini (cmux Worker) に委譲** — 大規模分析・grounding 検索は Gemini が適切。同じく独立予算
+3. **Interactive Claude Code (TUI) に切替** — parallel orchestration を諦めるが subscription pool に戻る
+4. **extra usage 有効化 + API rate 受け入れ** — 上記が不可な場合のみ
+
+判断ポイント: 起動前に「subscription pool で済むか、credit 消費か」を意識する。`/research` `/autonomous` の `claude -p` 多用はヘビー枠扱い、Codex/Gemini 委譲を先に検討する。Subagent (`Agent` tool) 経由は Claude Code 内部呼び出しで subscription 扱いのため影響なし。

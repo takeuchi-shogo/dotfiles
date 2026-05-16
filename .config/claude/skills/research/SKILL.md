@@ -32,7 +32,7 @@ metadata:
 
 1. **Reconnaissance** — トピックの初期調査、サブ目標の分解
 2. **Plan** — サブタスクのリスト提示、ユーザー確認
-3. **Execute** — claude -p で並列実行（最大8並列）
+3. **Execute** — claude -p で並列実行（最大8並列）— ⚠ 2026-06-15 以降は Agent SDK credit 消費 (`references/agent-sdk-credit.md`)、heavy parallel は Codex/Gemini 委譲も検討
 4. **Aggregate** — 結果を集約
 5. **Polish** — チャプター毎に精査、最終レポート生成
 
