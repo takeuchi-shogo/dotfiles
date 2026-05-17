@@ -775,3 +775,15 @@
 - 教訓: (a) Gemini grounding は二重矛盾あり (内部メモ UNVERIFIED vs 最終 summary VERIFIED)、defuddle で自分で一次取得が必須 / (b) Codex `Agent(subagent_type: "codex:codex-rescue")` 直起動は codex CLI 孤立 stall、`Skill(skill: "codex:rescue")` 経由が正規 / (c) Phase 2.5 `ScheduleWakeup` ループは 2 回 max、独自検証で進む / (d) competitive vendor 記事 (Zed=ACP 推進者) でも事実主張は全 Verified なケースあり
 - 関連 commit: `ec3e1c6`
 - 分析レポート: `docs/research/2026-05-16-anthropic-agent-sdk-credit-absorb-analysis.md`
+
+## [2026-05-17] ingest | SocratiCode absorb
+
+- ソース: https://github.com/giancarloerra/SocratiCode (Giancarlo Erra / Altaire Limited、AGPL-3.0+商用、2640⭐)
+- 判定: 18 手法のうち採用 1 (#4 S 規模) + 降格 1 (#16 XS) + eval spike plan 1 (M plan-only)、Already 強化不要 9、N/A (dotfiles 用途外 Gap 含む) 7
+- 取り込み:
+  - T1 (S): `.config/claude/references/code-review-graph-guide.md` に CRG 循環依存検出 limitation 補足 (`flows.py` cycle 防止のみ、SocratiCode `codebase_graph_circular` 相当無し、madge/pylint fallback)
+  - T2 (XS): `.config/claude/scripts/policy/mcp-audit.py` + `references/decision-tables-index.md` に plugin+standalone 重複登録 audit checklist memo (#16 降格、即実装 YAGNI)
+  - T3 (M plan-only): `docs/plans/pending/2026-05-17-memory-vec-scope-extension-spike.md` (memory-vec scope を docs/research+specs+references 478files/4MB に拡張する eval-only spike)
+- 教訓: (a) 3 度目の同分野 absorb (CRG 採用 / graphify 棄却) は Pruning-First で本体棄却、強化観点で記録のみ / (b) Codex 単独 Phase 2.5 (Gemini quota 完全枯渇 gemini-3-flash-preview/2.5-pro 両モデル 10 attempts max) でも memory-vec Phase D 実装済を再発見し #2/#8 判定誤り補正 / (c) Altaire vendor 記事のベンチ (61%/84%/37x) は grep-only baseline で vendor claim 扱い、`codebase-graph-benchmarks.md` の「5-15x 収束」教訓と整合 / (d) cmux `launch-worker.sh` `surface:1` ハードコード + `codex exec -q` 廃止のバグ併発 (修正は本 absorb 外)
+- 分析レポート: `docs/research/2026-05-17-socraticode-absorb-analysis.md`
+- Obsidian Literature Note: `~/Documents/Obsidian Vault/05-Literature/lit-giancarlo-erra-socraticode.md`

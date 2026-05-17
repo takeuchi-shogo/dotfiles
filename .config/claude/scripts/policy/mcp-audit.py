@@ -44,6 +44,13 @@ DANGEROUS_MCP_PREFIXES = [
     ("^mcp__.*__truncate$", "Destructive truncate operation"),
 ]
 
+# Audit checklist (2026-05-17, SocratiCode absorb 由来): 次に MCP plugin を
+# Claude Code に追加するときは "plugin + standalone" 重複導入で prefix collision
+# (`mcp__plugin_X_X__Y` と `mcp__X__Y` の両方が登録される状態) が発生していない
+# か手動確認する。実例: SocratiCode は plugin install 後に `claude mcp add` を
+# 別途実行すると重複登録になる。即時 hard block は YAGNI のため見送り、実害発生
+# 時に warn を追加する。詳細: docs/research/2026-05-17-socraticode-absorb-analysis.md  # noqa: E501
+
 # Server name normalization (display name -> tool_name prefix)
 _SERVER_NAME_MAP = {
     "discord": "plugin_discord_discord",

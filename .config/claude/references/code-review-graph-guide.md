@@ -65,3 +65,13 @@ DETECT モードのレビュー手順でも blast radius 情報を活用。
 - auto-update hooks は使わない（既存 hook 体系との衝突回避）。必要時にツール経由で更新
 - 18言語対応: Python, TypeScript/TSX, JavaScript, Vue, Go, Rust, Java, Scala, C#, Ruby, Kotlin, Swift, PHP, Solidity, C/C++, Dart, R, Perl
 - Impact 分析は conservative（recall 100%, precision ~38%）。over-predict する設計
+
+## 循環依存検出の取り扱い (2026-05-17 追記)
+
+CRG は `flows.py` 内で flow traversal の **無限ループ防止としての cycle 検出**を実装しているが、SocratiCode の `codebase_graph_circular` 相当の「**プロジェクト全循環依存を列挙する独立ツール**」は **未公開**。回避策:
+
+- `query_graph_tool` で `imports_of` を depth 指定して呼び出し、戻り値の依存チェーンを手動でグラフ解析する
+- 大規模リポでは `madge --circular`（JS/TS）/ `pylint --rcfile=R0901` 等の言語固有ツールにフォールバック
+- 取り込み判断: dotfiles では循環依存検出の独立ニーズが現状無いため、新ツールは導入しない（[`codebase-graph-benchmarks.md`](codebase-graph-benchmarks.md) L59 Pruning-First 原則に従う）。需要発生時に CRG 上流に issue を立てるか、`madge` をスクリプト化する選択肢を保留
+
+> 出典: SocratiCode absorb 分析 `docs/research/2026-05-17-socraticode-absorb-analysis.md` の Codex 批評で「CRG vs SocratiCode の唯一の独立した gap」と判定された項目。
