@@ -166,4 +166,11 @@ in
   '';
 
   programs.home-manager.enable = true;
+
+  # nh: Nix helper CLI. `nh darwin switch` で flake auto-detect、nvd diff 同梱。
+  # clean は launchd 連携が未検証のため OFF。手動 `nh clean all` を運用。
+  programs.nh = {
+    enable = true;
+    flake = "${dotfiles}/nix";
+  };
 }
