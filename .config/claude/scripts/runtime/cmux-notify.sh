@@ -11,7 +11,7 @@ TITLE="${1:-Claude Code}"
 BODY="${2:-}"
 SOUND="${3:-default}"
 
-CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
+CMUX_CLI="${CMUX_CLI:-$(command -v cmux 2>/dev/null || echo /Applications/cmux.app/Contents/Resources/bin/cmux)}"
 
 # cmux 内で実行中かどうかを判定
 if [[ -n "${CMUX_WORKSPACE_ID:-}" ]] && "$CMUX_CLI" ping &>/dev/null; then

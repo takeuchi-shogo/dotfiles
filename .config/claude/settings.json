@@ -310,7 +310,7 @@
           {
             "type": "command",
             "command": "bash -c 'START=$(cat /tmp/claude-session-start.txt 2>/dev/null || echo 0); NOW=$(date +%s); ELAPSED=$((NOW - START)); if [ $ELAPSED -gt 300 ]; then MINS=$((ELAPSED / 60)); bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスク完了 (${MINS}分)\" hero; else bash $HOME/.claude/scripts/runtime/cmux-notify.sh \"Claude Code\" \"タスクが完了しました\" hero; fi' > /dev/null 2>&1 &",
-            "timeout": 5
+            "timeout": 3
           },
           {
             "type": "command",
@@ -748,7 +748,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'Claude Code が入力を待っています' glass"
+            "command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'Claude Code が入力を待っています' glass > /dev/null 2>&1 &",
+            "timeout": 3
           }
         ]
       }
