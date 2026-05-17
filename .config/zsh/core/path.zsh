@@ -6,6 +6,10 @@ export PATH="/opt/homebrew/bin:$PATH"
 if [ -d "/etc/profiles/per-user/$USER/bin" ]; then
   export PATH="$PATH:/etc/profiles/per-user/$USER/bin"
 fi
+# home-manager session vars (NH_FLAKE 等). programs.zsh.enable=false のため手動 source。
+if [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
+  . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
+fi
 if [ -d "/run/current-system/sw/bin" ]; then
   export PATH="$PATH:/run/current-system/sw/bin"
 fi
