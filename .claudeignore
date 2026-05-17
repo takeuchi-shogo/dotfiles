@@ -24,6 +24,15 @@ id_ed25519.*
 id_ecdsa
 id_ecdsa.*
 
+# --- Generic credential / secret patterns ---
+*credentials*
+*secret*
+*password*
+*passwd*
+private_key*
+.htpasswd
+*.kdbx
+
 # --- Platform-specific secrets ---
 .config/raycast/**/secrets*
 .config/raycast/**/*token*
