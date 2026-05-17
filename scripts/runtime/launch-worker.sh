@@ -45,7 +45,12 @@ if ! "$CMUX_CLI" ping &>/dev/null; then
 fi
 
 # --- ワークスペース作成 ---
-WS=$("$CMUX_CLI" new-workspace "${WORKER_ID}")
+WS_RAW=$("$CMUX_CLI" new-workspace "${WORKER_ID}")
+WS=$(echo "$WS_RAW" | awk '{print $NF}')
+if [[ ! "$WS" =~ ^workspace:[0-9]+$ ]]; then
+  echo "[launch-worker] new-workspace returned unexpected output: ${WS_RAW}" >&2
+  exit 1
+fi
 echo "[launch-worker] Created workspace: ${WS}" >&2
 
 dispatch_log_state "$WORKER_ID" "pending" "launching"
