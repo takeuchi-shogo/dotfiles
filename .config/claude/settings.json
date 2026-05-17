@@ -648,6 +648,11 @@
             "command": "python3 $HOME/.claude/scripts/runtime/agent-invocation-logger.py",
             "timeout": 3,
             "statusMessage": "Logging agent invocation..."
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/runtime/cmux-notify.sh 'Claude Code' 'サブエージェント完了' default > /dev/null 2>&1 &",
+            "timeout": 3
           }
         ]
       },
