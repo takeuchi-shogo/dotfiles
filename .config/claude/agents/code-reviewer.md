@@ -311,6 +311,26 @@ PASS
 - **根拠**: {今回検出した問題の概要}
 ```
 
+## Requires Escalation
+
+このセクションは code-reviewer 実行中に **BLOCK verdict 発動時 / 自己評価困難時の人間 hand-off 手順** を定義する。
+Skill description `Do NOT use for:` (入口判定) とは直交し、本セクションは **実行中判定**。
+詳細仕様: `references/agent-design-lessons.md` の Requires Escalation Rubric Specification を参照。
+
+| Condition | Detector | Evidence | Severity | Action | Target |
+|---|---|---|---|---|---|
+| BLOCK verdict 発動 | verdict | `## Verdict` セクションに `BLOCK` (MUST が 1 件以上) を出力 | CRITICAL | レビュー結果を全文出力 + MUST 箇所を file:line で列挙 + 修正案 (suggestion block) を caller に返す | caller agent (修正サイクル) |
+| 3 サイクル PASS 未達 | command exit/log | 同一 diff range (`git diff HEAD~3..HEAD`) への review 連続 3 回で Verdict が `NEEDS_FIX` or `BLOCK` | HIGH | レビュー停止 + Findings 履歴の収束/発散パターンを報告 + ループ脱出案を提示 | user (設計判断) |
+| Layer 0 (test) 未実行 | command exit/log | `git diff --stat` に test ファイル変更なし + production code 変更が 50 行以上、または CI workflow に test job 不在 | HIGH | finding に `[MUST] test missing` を強制追加 + 必要なテスト種別 (unit/integration/e2e) を指定 | caller agent → user |
+| Design Rationale 不在 (M/L) | semantic-with-required-evidence | M/L 規模 diff (50 行以上 OR 複数ディレクトリ) で commit message + PR description に What / Why this approach / Risk mitigation の 3 点欠落 | MEDIUM | `ASK` → `MUST` に昇格 + Rationale 要求テンプレート提示 | caller agent |
+| Confirmation Bias 検出 | semantic-with-required-evidence | 単一 review 内の Pass 1 (Blind-first、diff のみ) と Pass 2 (Context-aware、commit msg + PR body 後付け) で Findings の severity が 1 段階以上変動 (例: 同一 file:line が Pass 1 で MUST、Pass 2 で NIT) を検出。判定は Pass 2 終了時の self-check で行う (1 review 内に閉じた評価、外部 dual-execution 不要) | HIGH | Blind-first 評価 (Pass 1) を採用 + bias 検出を Findings 末尾に `[BIAS_DETECTED]` タグで記録 (verdict 再実行はしない、出力は 1 回) | self (記録のみ) |
+| 同一カテゴリ NIT 累積過多 | command exit/log | 同 file に NIT 5 件以上、または同カテゴリ NIT 3 件以上 (AgentFixer 64-88% 違反パターン) | MEDIUM | `ASK` 昇格 + 体系的問題として 1 件の構造的 finding に集約 | user (設計判断) |
+
+**Hand-off prerequisites**:
+- `caller agent` ターゲットは COMPLETION CONTRACT (Findings/Scores/Verdict) の出力後に hand-off (途中終了禁止)
+- `user (設計判断)` ターゲットは Verdict セクションに `Human Decision Required: <理由>` を追記
+- `self (記録のみ)` ターゲットは COMPLETION CONTRACT 出力後に Findings 末尾へ `[BIAS_DETECTED]` タグ + bias 詳細 (Pass 1 と Pass 2 で severity 変動した file:line) を追記するのみ (verdict 再出力せず、外部 escalation 不要)
+
 ## Memory Management
 
 作業開始時: メモリディレクトリの MEMORY.md を確認し、過去の知見を活用する。

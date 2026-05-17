@@ -127,6 +127,26 @@ PROMPT
 - Codex CLI への指示は英語で行う
 - 結果の報告は日本語で返す
 
+## Requires Escalation
+
+このセクションは codex-reviewer 実行中に **Codex CLI 異常 / Capability gap / Evaluator drift 検出時の人間 hand-off 手順** を定義する。
+Skill description `Do NOT use for:` (入口判定) とは直交し、本セクションは **実行中判定**。
+詳細仕様: `references/agent-design-lessons.md` の Requires Escalation Rubric Specification を参照。
+
+| Condition | Detector | Evidence | Severity | Action | Target |
+|---|---|---|---|---|---|
+| Codex CLI silent stall | command exit/log | `codex exec` が exit code 0 で終了 + stdout に `## Verdict` 不在、または `## Review Scores` 不在 | CRITICAL | エラー報告 + Codex stdout を全文添付 + Verdict を `NEEDS_FIX` で代替出力 | user (即時) |
+| Codex CLI 実行失敗 | command exit/log | exit code 非 0 / network timeout (`curl: (28)`) / API rate limit (`429`) / sandbox violation | CRITICAL | エラー内容を Verdict セクションに記載 + retry 不可なら code-reviewer 単独 fallback を caller に提案 | caller agent → user |
+| Capability score 1/5 以下 | verdict | `## Review Scores` の weakest dimension が 1/5、または 2 次元以上が 2/5 以下 | HIGH | finding を全件 human review に回す + capability gap を Findings 末尾に明記 | user (設計判断) |
+| 矛盾 finding 連発 | semantic-with-required-evidence | 同一 file:line への MUST/CONSIDER が 3 件以上で互いに排他的な修正案 (例: 「null check 追加」と「null 不可な型に変更」) | HIGH | 該当 findings を全て `ASK` 降格 + 矛盾内容を明示 + 設計判断を要求 | user (設計判断) |
+| Evaluator Drift 疑い | command exit/log | `gate_model_version: "gpt-5.5"` の連続 5 review で全て PASS、または connectivity issue で skip 履歴あり | MEDIUM | Verdict に `evaluator_drift_warning: true` を付与 + 異モデル (Gemini grounding / Claude Opus) で 1 回再評価を caller に推奨 | user (calibration) |
+| Self-preference Bias 違反 | command exit/log | `CODEX_MEMORY_DISABLED` / `CLAUDE_PROJECT_MEMORY_DISABLED` env 設定なしで実行 (env dump で確認)、または Proposer と Reviewer が同モデルファミリー | HIGH | レビュー破棄 + env 整備後に再実行 + Self-preference 検出を Findings 末尾に明記 | self (再実行) |
+
+**Hand-off prerequisites**:
+- `user (即時)` ターゲットは Codex stdout raw を必ず添付 (要約せず)
+- `caller agent` ターゲットは fallback 提案を `## Verdict` セクション末尾に記載
+- `self (再実行)` は同セッション内 1 回まで、env 修正後の再 exec も同様
+
 ## Memory Management
 
 作業開始時:
