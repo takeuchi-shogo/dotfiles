@@ -72,6 +72,13 @@ Read `instructions/capture-and-write.md` for the full procedure:
 - **Evaluability Check**: eval 方法が定義されているか確認。未定義なら Testing セクションに追加必須（[Atomic Skill Design Principles](instructions/skill-writing-guide.md#atomic-skill-design-principles) 参照）
 - **Anti-Patterns**: Recommend including an Anti-Patterns section
 - **Security Scan**: Run `skill-security-scan.py` before testing
+- **High-Stakes Agent Check** (subagent / agent.md 作成時のみ): 以下のいずれかに該当する場合、`## Requires Escalation` rubric (6 カラム) を必須化する:
+  - `BLOCK` / `BLOCK_PR` / `CRITICAL` 等の **gate verdict を出力する agent** (例: code-reviewer, security-reviewer)
+  - **destructive tools** (Write / Edit / Bash で削除・上書き) を持つ agent
+  - **memory: user** (全プロジェクト共有メモリ) を持つ agent
+  - **permissionMode: plan** 等で実行範囲が広い agent
+  - 仕様: `references/agent-design-lessons.md` の **Requires Escalation Rubric Specification** を参照
+  - 該当しない通常 skill (本ファイルのような知識系 skill) は対象外
 
 ### 2. Skill Writing Guide
 
