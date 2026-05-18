@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  cmux-worktree-daemon: cmux workspace.created event を listen し自動で worktree を切る常駐 daemon
+  - install: task cmux:worktree-daemon:install
+  - uninstall: task cmux:worktree-daemon:uninstall
+  - logs: ~/.cache/cmux/cmux-worktree-daemon.{out,err,log}
+  - kill switch: CMUX_WORKTREE_DAEMON_DISABLE=1 を env に追加
+  __HOME__ は install 時に sed で置換される。
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.cmux.worktree-daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__HOME__/dotfiles/scripts/runtime/cmux-worktree-daemon.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+    <key>StandardOutPath</key>
+    <string>__HOME__/.cache/cmux/cmux-worktree-daemon.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/.cache/cmux/cmux-worktree-daemon.err.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>

@@ -258,3 +258,19 @@ tasks:
     desc: 'Experimental wrapper over `gh skill search` (requires gh CLI v2.90+)'
     cmds:
       - bash ~/dotfiles/scripts/experimental/gh-skill-wrapper.sh search {{.CLI_ARGS}}
+
+  cmux:worktree-daemon:install:
+    desc: 'Install cmux-worktree-daemon LaunchAgent (auto worktree on workspace.created)'
+    cmds:
+      - mkdir -p $HOME/Library/LaunchAgents $HOME/.cache/cmux
+      - sed "s|__HOME__|$HOME|g" {{.TASKFILE_DIR}}/templates/launchagents/com.cmux.worktree-daemon.plist > $HOME/Library/LaunchAgents/com.cmux.worktree-daemon.plist
+      - launchctl bootout gui/$UID/com.cmux.worktree-daemon 2>/dev/null || true
+      - launchctl bootstrap gui/$UID $HOME/Library/LaunchAgents/com.cmux.worktree-daemon.plist
+      - echo "✅ cmux-worktree-daemon installed (see ~/.cache/cmux/cmux-worktree-daemon.log)"
+
+  cmux:worktree-daemon:uninstall:
+    desc: 'Uninstall cmux-worktree-daemon LaunchAgent'
+    cmds:
+      - launchctl bootout gui/$UID/com.cmux.worktree-daemon 2>/dev/null || true
+      - rm -f $HOME/Library/LaunchAgents/com.cmux.worktree-daemon.plist
+      - echo "✅ cmux-worktree-daemon uninstalled"

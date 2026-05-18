@@ -226,7 +226,7 @@ cmux (~/.../cmux.sock)
 |------|------|------|------------|
 | `cmux events` (newline-delimited JSON stream) | ✅ | event subscribe 永続化、`--reconnect` + `--cursor-file` で再開可 | `cmux events --reconnect --category workspace --cursor-file ~/.cache/cmux/seq` |
 | `workspace.create` RPC method | ✅ | プログラム制御で workspace 作成 | `cmux capabilities` の methods に存在 |
-| `workspace.created` 系 event 配信 | ⚠️ 未検証 | daemon 側 listener のトリガー | 実機サンプル要収集 (`cmux events --category workspace --limit 5`) |
+| `workspace.created` event 配信 | ✅ 配信 (実機確認 2026-05-19) | daemon 側 listener のトリガー | payload に `workspace_id` / `cwd` / `title` / `custom_title` / `index` / `tab_count` を含む |
 | 宣言的 `onWorkspaceCreate` hook (cmux.json) | ❌ | — | `notifications.hooks` は通知系のみ、`cmux hooks` は agent 側 (codex/opencode 等) install 用 |
 
 **結論**: 宣言的 workspace lifecycle hook は無いが、`cmux events --reconnect` 永続接続で event-driven daemon が実装可能。
@@ -253,4 +253,49 @@ cmux (~/.../cmux.sock)
 
 - #48: `wt-*` zsh worktree wrappers (✅ 完了 f1ea539) — Phase 1 wrapper 方式の基盤
 - #49: `cmux.json` Worktree Agents action (✅ 完了 5bbebf) — Phase 1 C 方式の基盤
-- #51: 本 Issue (cmux new-workspace + worktree 自動連携) — Phase 0 完了、Phase 1 は necessity 評価待ち
+- #51: 本 Issue (cmux new-workspace + worktree 自動連携) — Phase 0 完了、Phase 1 B + Phase 2 smart auto 実装済 (2026-05-19)
+
+## Issue #51: Phase 1 B 実装 (公式 events.md Resume 契約準拠)
+
+`scripts/runtime/cmux-worktree-daemon.sh` を LaunchAgent (`com.cmux.worktree-daemon`) として常駐させ、公式 `cmux events --reconnect --cursor-file` パターンで `workspace.created` event を listen。
+
+### 動作 (smart auto モード, default)
+
+1. `workspace.created` event 受信
+2. payload (`workspace_id`, `cwd`, `title`/`custom_title`) を抽出
+3. cwd が git repo の **main repo** か検査 (worktree 内なら再帰防止で skip)
+4. title sanitize (`[^a-zA-Z0-9_+.-]` → `-`) → worktree 名
+5. 既存 worktree あれば skip
+6. `git worktree add <repo>/.claude/worktrees/<name> -b worktree-<name>` 実行
+
+### 環境変数
+
+| 変数 | 用途 | default |
+|------|------|---------|
+| `CMUX_WORKTREE_DAEMON_DISABLE=1` | kill switch (no-op exit) | unset (有効) |
+| `CMUX_WORKTREE_DAEMON_OPT_IN_PREFIX` | title 先頭一致のみ通過する opt-in mode | unset (smart auto モード) |
+| `CMUX_WORKTREE_CURSOR_FILE` | seq 永続化先 | `~/.cache/cmux/cmux-worktree-cursor.seq` |
+| `CMUX_WORKTREE_LOG_FILE` | log 出力先 | `~/.cache/cmux/cmux-worktree-daemon.log` |
+
+### Install / Uninstall
+
+```
+task cmux:worktree-daemon:install     # plist install + launchctl bootstrap
+task cmux:worktree-daemon:uninstall   # bootout + plist 削除
+tail -f ~/.cache/cmux/cmux-worktree-daemon.log   # 動作確認
+```
+
+### Phase 2 自動化レベル (env で切替)
+
+- **smart auto (default)**: cwd が git repo の main repo の workspace のみ自動 worktree 化
+- **opt-in**: `CMUX_WORKTREE_DAEMON_OPT_IN_PREFIX="wt:"` 等を export すると、title 先頭一致のみ通過
+- **完全自動**: 該当 mode なし (smart auto で git repo を判定するため、非 git workspace は自然 skip)
+- **kill switch**: `CMUX_WORKTREE_DAEMON_DISABLE=1` で daemon を no-op に切替
+
+### 運用前提・既知 limitation
+
+- **LaunchAgent 経由運用が前提**: plist の `KeepAlive=true` + `ThrottleInterval=10` で daemon クラッシュ時に macOS launchd が自動再起動する。foreground 実行 (`bash scripts/runtime/cmux-worktree-daemon.sh`) は test only — cmux app が終了すると `cmux events` パイプ EOF で daemon が静かに停止する。
+- **multi-instance 防止**: LaunchAgent (macOS launchd) が 1 instance を保証。foreground で複数起動すると重複 event 処理 + branch 競合エラーが起きるため、test 後は `pkill -f cmux-worktree-daemon` で確実に kill する。
+- **path-special name の reject**: `payload.title` が `.` / `..` / `.git` / 先頭ドット (`.foo` 等) の場合は sanitize で空文字に reject される (path traversal + dotfile 衝突防止)。
+- **bare repo / worktree 内 cwd**: bare repo (`--is-bare-repository=true`) は skip、worktree 内 cwd は `git_dir != git_common_dir` で skip して再帰防止。
+- **既存 worktree との区別**: 正規 worktree は `git worktree list --porcelain` で検査して skip、orphan directory (SIGTERM 中断等で残った壊れた path) は警告ログ + skip で手動 cleanup を要求。
