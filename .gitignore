@@ -14,6 +14,7 @@ CLAUDE.local.md
 .claude/agent-memory/
 .claude/channels/
 .claude/scheduled_tasks.lock
+.claude/worktrees/
 
 # Machine-local zsh config
 .config/zsh/local.zsh
