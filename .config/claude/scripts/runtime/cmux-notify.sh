@@ -11,7 +11,23 @@ TITLE="${1:-Claude Code}"
 BODY="${2:-}"
 SOUND="${3:-default}"
 
-CMUX_CLI="${CMUX_CLI:-$(command -v cmux 2>/dev/null || echo /Applications/cmux.app/Contents/Resources/bin/cmux)}"
+# CMUX CLI resolver — allow-list 優先で PATH hijacking リスク軽減 (CWE-426)
+# 優先順: $CMUX_CLI env → 絶対パス allow-list → command -v fallback
+_resolve_cmux_cli() {
+    if [[ -n "${CMUX_CLI:-}" ]]; then
+        printf '%s\n' "$CMUX_CLI"
+        return 0
+    fi
+    local c
+    for c in \
+        "/Applications/cmux.app/Contents/Resources/bin/cmux" \
+        "/opt/homebrew/bin/cmux" \
+        "/usr/local/bin/cmux"; do
+        [[ -x "$c" ]] && { printf '%s\n' "$c"; return 0; }
+    done
+    command -v cmux 2>/dev/null || printf '%s\n' "/Applications/cmux.app/Contents/Resources/bin/cmux"
+}
+CMUX_CLI="$(_resolve_cmux_cli)"
 
 # cmux 内で実行中かどうかを判定
 if [[ -n "${CMUX_WORKSPACE_ID:-}" ]] && "$CMUX_CLI" ping &>/dev/null; then
