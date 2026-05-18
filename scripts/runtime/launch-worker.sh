@@ -14,7 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LIB_DIR="$(cd "$SCRIPT_DIR/../lib" 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
 source "${LIB_DIR}/dispatch_logger.sh"
 
-CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
+CMUX_CLI="${CMUX_CLI:-$(command -v cmux 2>/dev/null || echo /Applications/cmux.app/Contents/Resources/bin/cmux)}"
 MODEL=""
 TASK=""
 WORKTREE=""

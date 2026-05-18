@@ -64,6 +64,7 @@
     casks = [
       "wezterm"
       "ghostty"
+      "cmux"                  # Ghostty-based agent terminal (macOS >= 14)
       "aerospace"             # nikitabobko/tap
       "hammerspoon"
       "karabiner-elements"
