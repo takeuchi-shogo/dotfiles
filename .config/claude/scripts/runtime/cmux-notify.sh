@@ -11,9 +11,10 @@ TITLE="${1:-Claude Code}"
 BODY="${2:-}"
 SOUND="${3:-default}"
 
-# CMUX CLI resolver (CWE-426/427). Inline exempt: lib/ にアクセス不可な path 構造のため
-# scripts/lib/cmux_resolver.sh と同期して inline 維持。変更時は両方更新すること。
-# 失敗時は CMUX_CLI="" で osascript fallback に流す。
+# CMUX CLI resolver (CWE-426/427). Canonical: scripts/lib/cmux_resolver.sh
+# Inline exempt: cmux-notify.sh は .config/claude/scripts/runtime/ 配下で lib/ にアクセス
+# 不可な path 構造のため inline 維持。canonical (scripts/lib/cmux_resolver.sh) と同期する。
+# Scope: 詳細は canonical を参照。失敗時は CMUX_CLI="" で osascript fallback に流す。
 _resolve_cmux_cli() {
     if [[ -n "${CMUX_CLI:-}" ]]; then
         if [[ "$CMUX_CLI" = /* ]] \
@@ -23,13 +24,12 @@ _resolve_cmux_cli() {
             printf '%s\n' "$CMUX_CLI"
             return 0
         fi
+        echo "[cmux-notify] CMUX_CLI rejected (need absolute, executable, regular, non-symlink): $CMUX_CLI" >&2
         return 1
     fi
     local c
     for c in \
-        "/Applications/cmux.app/Contents/Resources/bin/cmux" \
-        "/opt/homebrew/bin/cmux" \
-        "/usr/local/bin/cmux"; do
+        "/Applications/cmux.app/Contents/Resources/bin/cmux"; do
         if [[ -x "$c" ]] && [[ ! -d "$c" ]] && [[ ! -L "$c" ]]; then
             printf '%s\n' "$c"
             return 0
@@ -37,10 +37,10 @@ _resolve_cmux_cli() {
     done
     return 1
 }
-CMUX_CLI="$(_resolve_cmux_cli 2>/dev/null)" || CMUX_CLI=""
+CMUX_CLI="$(_resolve_cmux_cli)" || CMUX_CLI=""
 
 # cmux 内で実行中かどうかを判定
-if [[ -n "${CMUX_WORKSPACE_ID:-}" ]] && "$CMUX_CLI" ping &>/dev/null; then
+if [[ -n "${CMUX_WORKSPACE_ID:-}" ]] && [[ -n "$CMUX_CLI" ]] && "$CMUX_CLI" ping &>/dev/null; then
     # cmux ネイティブ通知
     "$CMUX_CLI" notify --title "$TITLE" --body "$BODY" 2>/dev/null || true
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # cmux_resolver.sh — secure CMUX CLI resolution (CWE-426 / CWE-427)
-#
-# Priority: $CMUX_CLI env → absolute-path allow-list → fail-closed (no PATH search)
-# Validation: absolute path, executable, regular file, non-symlink
-# Non-standard installs (Homebrew Cellar, Nix, asdf) must set $CMUX_CLI to a canonical absolute path.
+# Priority: $CMUX_CLI env → /Applications/cmux.app/.../cmux → fail-closed (no PATH search)
+# Validation: absolute path, executable, regular file, non-symlink (rejects all symlinks)
+# Homebrew/Nix/asdf: set $CMUX_CLI to a canonical absolute path (their bin/ is a symlink)
+# Out of scope: user uid compromise, TOCTOU race between validation and execve
 
 _resolve_cmux_cli() {
     if [[ -n "${CMUX_CLI:-}" ]]; then
@@ -20,15 +20,13 @@ _resolve_cmux_cli() {
 
     local c
     for c in \
-        "/Applications/cmux.app/Contents/Resources/bin/cmux" \
-        "/opt/homebrew/bin/cmux" \
-        "/usr/local/bin/cmux"; do
+        "/Applications/cmux.app/Contents/Resources/bin/cmux"; do
         if [[ -x "$c" ]] && [[ ! -d "$c" ]] && [[ ! -L "$c" ]]; then
             printf '%s\n' "$c"
             return 0
         fi
     done
 
-    echo "[cmux_resolver] cmux not found in allow-list. Set \$CMUX_CLI to a canonical absolute path." >&2
+    echo "[cmux_resolver] cmux not found at /Applications/cmux.app/Contents/Resources/bin/cmux. Set \$CMUX_CLI to a canonical absolute path for non-standard installs." >&2
     return 1
 }
