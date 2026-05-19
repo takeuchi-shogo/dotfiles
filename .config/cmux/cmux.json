@@ -217,6 +217,12 @@
       "title": "Worktree Agents",
       "commandName": "Worktree Agents",
       "icon": { "type": "symbol", "name": "folder.badge.plus" }
+    },
+    "pr-review-agent": {
+      "type": "workspaceCommand",
+      "title": "PR Review Agent",
+      "commandName": "PR Review Agent",
+      "icon": { "type": "symbol", "name": "eye.fill" }
     }
   },
 
@@ -225,6 +231,7 @@
       "action": "worktree-agents",
       "contextMenu": [
         { "action": "worktree-agents", "title": "Worktree Agents" },
+        { "action": "pr-review-agent", "title": "PR Review Agent" },
         { "type": "separator" },
         { "action": "cmux.newTerminal", "title": "New Terminal" },
         { "action": "cmux.newBrowser", "title": "New Browser" }
@@ -282,6 +289,43 @@
                   }
                 }
               ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "PR Review Agent",
+      "description": "Prompt for PR number, set up a review worktree on knowledge-work/knowledgework, and launch Claude reading REVIEW_TASK.md",
+      "workspace": {
+        "name": "PR Review Agent",
+        "cwd": ".",
+        "layout": {
+          "direction": "horizontal",
+          "split": 0.38,
+          "children": [
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Setup",
+                    "command": "set -euo pipefail; state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; rm -f \"$state\"; printf '\\033[1;33mPR Review Agent — knowledge-work/knowledgework\\033[0m\\n'; printf 'Enter PR number: '; read -r pr_num; if ! [[ \"$pr_num\" =~ ^[0-9]+$ ]]; then echo \"ERROR: invalid PR number: $pr_num\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; ~/dotfiles/scripts/runtime/prepare-pr-review.sh \"$pr_num\" || { echo \"ERROR: prepare-pr-review.sh failed\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; }; worktree=\"$HOME/projects/knowledge-work/knowledgework-review/.claude/worktrees/pr-${pr_num}\"; printf \"%s\\n\" \"$worktree\" > \"$state\"; cd \"$worktree\"; echo \"\"; echo \"--- Worktree ready. Claude pane will start automatically. ---\"; exec \"${SHELL:-/bin/zsh}\" -l",
+                    "focus": true
+                  }
+                ]
+              }
+            },
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Claude Review",
+                    "command": "state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; echo \"Waiting for PR setup (timeout 300s)...\"; elapsed=0; while [ ! -s \"$state\" ]; do sleep 0.2; elapsed=$((elapsed + 1)); if [ $elapsed -ge 1500 ]; then echo \"ERROR: PR review setup timed out after 300s\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; done; dir=$(cat \"$state\"); cd \"$dir\"; echo \"\"; echo \"================================================\"; echo \"Worktree: $dir\"; echo \"Next: type '@REVIEW_TASK.md' and press Enter\"; echo \"================================================\"; echo \"\"; exec claude"
+                  }
+                ]
+              }
             }
           ]
         }
