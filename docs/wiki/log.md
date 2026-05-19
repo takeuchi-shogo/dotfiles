@@ -787,3 +787,11 @@
 - 教訓: (a) 3 度目の同分野 absorb (CRG 採用 / graphify 棄却) は Pruning-First で本体棄却、強化観点で記録のみ / (b) Codex 単独 Phase 2.5 (Gemini quota 完全枯渇 gemini-3-flash-preview/2.5-pro 両モデル 10 attempts max) でも memory-vec Phase D 実装済を再発見し #2/#8 判定誤り補正 / (c) Altaire vendor 記事のベンチ (61%/84%/37x) は grep-only baseline で vendor claim 扱い、`codebase-graph-benchmarks.md` の「5-15x 収束」教訓と整合 / (d) cmux `launch-worker.sh` `surface:1` ハードコード + `codex exec -q` 廃止のバグ併発 (修正は本 absorb 外)
 - 分析レポート: `docs/research/2026-05-17-socraticode-absorb-analysis.md`
 - Obsidian Literature Note: `~/Documents/Obsidian Vault/05-Literature/lit-giancarlo-erra-socraticode.md`
+
+## [2026-05-20] ingest | Claude Code Large Codebase Best Practices (Anthropic 公式)
+
+- ソース: https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start
+- 判定: Already 10, N/A 3, Partial 1, Already (軽微強化余地) 1
+- 取り込み: なし (D 選択)
+- 最重要発見: Task 1-3 候補 (skill path-scoped/cadence/token tax 監視) 全て既存 (`skill-suggest.py` PATH_MAP / `skill-pruning-eval-reminder.sh` / `skill-count-alert.sh`) と完全重複、Pruning-First 失敗事例
+- 分析: docs/research/2026-05-20-claude-code-large-codebase-absorb-analysis.md
