@@ -8,6 +8,45 @@ includes:
 tasks:
   # Phase B2.4 (2026-04-26): symlink タスクは削除。home-manager (nix:switch) が
   # symlink を管理する。詳細は docs/plans/completed/2026-04-25-phase-b2-plan.md。
+  #
+  # 例外: 自己書き換えするアプリ (cmux など) は home-manager の symlink を
+  # 実ディレクトリに置き換えてしまうため、明示的な復旧タスクが必要。
+
+  cmux:link:
+    desc: |
+      cmux の symlink を ~/dotfiles/.config/cmux/ に貼り直す。
+      cmux が symlink を実ディレクトリに置き換えた場合の復旧用。
+      既存の live config は ~/.config/cmux.bak-<timestamp> にバックアップ。
+    cmds:
+      - |
+        set -euo pipefail
+        live="$HOME/.config/cmux"
+        target="$HOME/dotfiles/.config/cmux"
+        if [ ! -d "$target" ]; then
+          echo "ERROR: target not found: $target" >&2
+          exit 1
+        fi
+        if [ -L "$live" ]; then
+          current=$(readlink "$live")
+          if [ "$current" = "$target" ]; then
+            echo "✅ Already a symlink: $live → $current"
+            exit 0
+          fi
+          echo "Replacing existing symlink: $live → $current"
+          rm "$live"
+        elif [ -d "$live" ]; then
+          ts=$(date +%Y%m%d-%H%M%S)
+          backup="$HOME/.config/cmux.bak-$ts"
+          echo "Backing up live config: $live → $backup"
+          mv "$live" "$backup"
+        elif [ -e "$live" ]; then
+          echo "ERROR: $live exists and is neither a symlink nor a directory" >&2
+          exit 1
+        fi
+        ln -s "$target" "$live"
+        echo "✅ Created symlink: $live → $(readlink "$live")"
+        echo ""
+        echo "Next: reload cmux config (cmd+shift+, in cmux) or restart cmux."
 
   install:
     desc: Run initial bootstrap setup (legacy, pre-nix). For nix-managed setup use nix:bootstrap.
