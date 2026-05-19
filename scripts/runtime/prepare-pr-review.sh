@@ -22,6 +22,19 @@ readonly REPO_NAME="knowledgework"
 readonly REVIEW_REPO_DIR="${HOME}/projects/knowledge-work/knowledgework-review"
 readonly TEMPLATE_PATH="${HOME}/dotfiles/templates/pr-review/REVIEW_TASK.md.tpl"
 
+# ---- Host gate (work 環境のみで動作) ----
+# private PC では cmux UI に action が見えても本 script は早期 exit する。
+# 環境変数 PR_REVIEW_FORCE=1 で override 可能 (検証用)。
+readonly ALLOWED_HOST="MacBookPro-work"
+current_host=$(hostname -s 2>/dev/null || hostname)
+if [[ "${PR_REVIEW_FORCE:-0}" != "1" && "$current_host" != "$ALLOWED_HOST" ]]; then
+  echo "PR Review Agent is disabled on this host." >&2
+  echo "  current hostname : $current_host" >&2
+  echo "  allowed hostname : $ALLOWED_HOST" >&2
+  echo "  Override with PR_REVIEW_FORCE=1 if intentional." >&2
+  exit 78  # EX_CONFIG
+fi
+
 # ---- 引数 ----
 if [[ $# -ne 1 ]]; then
   echo "usage: prepare-pr-review.sh <PR_NUMBER>" >&2
