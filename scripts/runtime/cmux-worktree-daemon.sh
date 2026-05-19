@@ -1,38 +1,41 @@
 #!/usr/bin/env bash
 # cmux-worktree-daemon.sh — cmux で workspace 作成時に自動で git worktree を切る daemon
 #
-# 公式 cmux events.md の Resume 契約に準拠 (--reconnect + --cursor-file):
-#   1. events.stream を最後に処理した seq で開始
-#   2. --reconnect で再接続を cmux 側に委ねる
-#   3. --cursor-file で seq を side effect 成功後に永続化
-# Ref: https://github.com/manaflow-ai/cmux/blob/main/docs/events.md
+# events.jsonl tail 方式 (cmux events CLI は launchctl 環境で即 exit するため代替):
+#   - cmux 公式 events.md は `~/.cmuxterm/events.jsonl` に全 event を append すると明記
+#     ("Every emitted event is also appended to ~/.cmuxterm/events.jsonl",
+#      16 MiB rotation, 4096 in-memory replay)
+#   - cmux events CLI (Resume 契約) は LaunchAgent 環境で cmux events 子 process が
+#     起動直後に exit する症状あり (TTY/session 関連、env-iso foreground では動く)
+#   - tail -F は socket/Mach port 不要で launchctl 環境でも安定動作
+# Refs:
+#   - https://github.com/manaflow-ai/cmux/blob/main/docs/events.md
+#   - GitHub Issue #51 (cmux events CLI 採用不可の経緯は references/cmux-ecosystem.md)
 #
 # workspace.created event の payload (実機確認 2026-05-19):
 #   { name: "workspace.created", source: "workspace.lifecycle",
 #     payload: { workspace_id, cwd, title, custom_title, index, tab_count, ... } }
 #
 # 動作 (smart auto モード, default):
-#   1. workspace.created event 受信
+#   1. events.jsonl tail で workspace.created event 受信
 #   2. payload.cwd が git repo (main repo, worktree 内ではない) か検査
 #   3. payload.title (or custom_title) を sanitize → worktree 名
 #   4. 既存 worktree なし & cwd が main repo なら git worktree add 実行
 #
 # Env:
-#   CMUX_CLI                              cmux CLI path (default: 動的解決)
 #   CMUX_WORKTREE_DAEMON_DISABLE=1        kill switch (no-op exit)
 #   CMUX_WORKTREE_DAEMON_OPT_IN_PREFIX    title prefix で opt-in mode (default: 空 = smart auto)
-#   CMUX_WORKTREE_CURSOR_FILE             cursor seq file (default: ~/.cache/cmux/cmux-worktree-cursor.seq)
 #   CMUX_WORKTREE_LOG_FILE                log file (default: ~/.cache/cmux/cmux-worktree-daemon.log)
+#   CMUX_EVENTS_JSONL                     events.jsonl path (default: ~/.cmuxterm/events.jsonl)
 #
 # Refs: GitHub Issue #51
 
 set -euo pipefail
 
-CMUX_CLI="${CMUX_CLI:-$(command -v cmux 2>/dev/null || echo /Applications/cmux.app/Contents/Resources/bin/cmux)}"
-CURSOR_FILE="${CMUX_WORKTREE_CURSOR_FILE:-$HOME/.cache/cmux/cmux-worktree-cursor.seq}"
+EVENTS_FILE="${CMUX_EVENTS_JSONL:-$HOME/.cmuxterm/events.jsonl}"
 LOG_FILE="${CMUX_WORKTREE_LOG_FILE:-$HOME/.cache/cmux/cmux-worktree-daemon.log}"
 
-mkdir -p "$(dirname "$CURSOR_FILE")" "$(dirname "$LOG_FILE")"
+mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {
   printf '%s %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >>"$LOG_FILE"
@@ -130,16 +133,17 @@ process_event() {
   fi
 }
 
-log "cmux-worktree-daemon starting (cmux=$CMUX_CLI cursor=$CURSOR_FILE)"
+log "cmux-worktree-daemon starting (events=$EVENTS_FILE)"
 
-# 公式 Resume 契約: --reconnect で永続接続、--cursor-file で seq 永続化
-"$CMUX_CLI" events \
-  --reconnect \
-  --cursor-file "$CURSOR_FILE" \
-  --category workspace \
-  --name workspace.created \
-  --no-ack --no-heartbeat \
-  2>>"$LOG_FILE" | while IFS= read -r line; do
+# events.jsonl が cmux 起動前で存在しない場合は touch して `tail -F` の retry に任せる
+[[ -e "$EVENTS_FILE" ]] || : >"$EVENTS_FILE"
+
+# launchd 環境では bash の子 process pipe で TTY/job-control 経由の signal を遮断
+exec </dev/null
+
+# `tail -F` は file rotation (events.jsonl → events.jsonl.1) に追従する。
+# `-n 0` で起動前の event は処理せず末尾から開始 (daemon 起動後の新 workspace のみ対象)。
+exec tail -F -n 0 "$EVENTS_FILE" 2>>"$LOG_FILE" | while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   process_event "$line"
 done

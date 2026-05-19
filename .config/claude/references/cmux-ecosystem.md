@@ -255,9 +255,11 @@ cmux (~/.../cmux.sock)
 - #49: `cmux.json` Worktree Agents action (✅ 完了 5bbebf) — Phase 1 C 方式の基盤
 - #51: 本 Issue (cmux new-workspace + worktree 自動連携) — Phase 0 完了、Phase 1 B + Phase 2 smart auto 実装済 (2026-05-19)
 
-## Issue #51: Phase 1 B 実装 (公式 events.md Resume 契約準拠)
+## Issue #51: Phase 1 B 実装 (公式 events.jsonl tail 方式)
 
-`scripts/runtime/cmux-worktree-daemon.sh` を LaunchAgent (`com.cmux.worktree-daemon`) として常駐させ、公式 `cmux events --reconnect --cursor-file` パターンで `workspace.created` event を listen。
+`scripts/runtime/cmux-worktree-daemon.sh` を LaunchAgent (`com.cmux.worktree-daemon`) として常駐させ、公式 events.md で明記された `~/.cmuxterm/events.jsonl` (「Every emitted event is also appended」) を `tail -F` で listen。
+
+**経緯**: 当初 `cmux events --reconnect --cursor-file` (Resume 契約) を採用したが、launchctl 環境では cmux events 子 process が起動直後に exit する症状あり (TTY/session 関連、env-iso foreground では正常動作)。`events.jsonl` は socket/Mach port 不要で append-only に依存するため launchctl でも安定動作。公式 events.md 範囲内の代替実装。
 
 ### 動作 (smart auto モード, default)
 
@@ -274,7 +276,7 @@ cmux (~/.../cmux.sock)
 |------|------|---------|
 | `CMUX_WORKTREE_DAEMON_DISABLE=1` | kill switch (no-op exit) | unset (有効) |
 | `CMUX_WORKTREE_DAEMON_OPT_IN_PREFIX` | title 先頭一致のみ通過する opt-in mode | unset (smart auto モード) |
-| `CMUX_WORKTREE_CURSOR_FILE` | seq 永続化先 | `~/.cache/cmux/cmux-worktree-cursor.seq` |
+| `CMUX_EVENTS_JSONL` | tail 対象 events.jsonl の path | `~/.cmuxterm/events.jsonl` |
 | `CMUX_WORKTREE_LOG_FILE` | log 出力先 | `~/.cache/cmux/cmux-worktree-daemon.log` |
 
 ### Install / Uninstall
@@ -294,7 +296,9 @@ tail -f ~/.cache/cmux/cmux-worktree-daemon.log   # 動作確認
 
 ### 運用前提・既知 limitation
 
-- **LaunchAgent 経由運用が前提**: plist の `KeepAlive=true` + `ThrottleInterval=10` で daemon クラッシュ時に macOS launchd が自動再起動する。foreground 実行 (`bash scripts/runtime/cmux-worktree-daemon.sh`) は test only — cmux app が終了すると `cmux events` パイプ EOF で daemon が静かに停止する。
+- **LaunchAgent 経由運用が前提**: plist の `KeepAlive=true` + `ThrottleInterval=10` で daemon クラッシュ時に macOS launchd が自動再起動する。foreground 実行 (`bash scripts/runtime/cmux-worktree-daemon.sh`) は test only — `tail -F` は cmux app 終了後も続くため、必ず手動 kill が必要。
+- **`tail -F` 起動時点で events.jsonl 末尾から開始** (`-n 0`): daemon 起動前の workspace は対象外。cmux 起動時の既存 workspaces は対象外で意図通り。
+- **events.jsonl rotation 対応**: `tail -F` は cmux による rotation (`events.jsonl.1` への移動) に追従する。
 - **multi-instance 防止**: LaunchAgent (macOS launchd) が 1 instance を保証。foreground で複数起動すると重複 event 処理 + branch 競合エラーが起きるため、test 後は `pkill -f cmux-worktree-daemon` で確実に kill する。
 - **path-special name の reject**: `payload.title` が `.` / `..` / `.git` / 先頭ドット (`.foo` 等) の場合は sanitize で空文字に reject される (path traversal + dotfile 衝突防止)。
 - **bare repo / worktree 内 cwd**: bare repo (`--is-bare-repository=true`) は skip、worktree 内 cwd は `git_dir != git_common_dir` で skip して再帰防止。

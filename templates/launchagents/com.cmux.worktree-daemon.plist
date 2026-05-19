@@ -7,6 +7,11 @@
   - logs: ~/.cache/cmux/cmux-worktree-daemon.{out,err,log}
   - kill switch: CMUX_WORKTREE_DAEMON_DISABLE=1 を env に追加
   __HOME__ は install 時に sed で置換される。
+
+  実装: ~/.cmuxterm/events.jsonl を tail -F (cmux events CLI は launchctl 環境で
+  即 exit するため代替、details: references/cmux-ecosystem.md Issue #51 節)。
+  events.jsonl は cmux 公式 events.md で「Every emitted event is also appended」と
+  明記されており、公式範囲内の実装。
 -->
 <plist version="1.0">
 <dict>
