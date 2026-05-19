@@ -12,8 +12,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LIB_DIR="$(cd "$SCRIPT_DIR/../lib" 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
 source "${LIB_DIR}/dispatch_logger.sh" 2>/dev/null || true
+source "${LIB_DIR}/cmux_resolver.sh"
 
-CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
+CMUX_CLI="$(_resolve_cmux_cli)" || { echo "[race-runner] cmux not found" >&2; exit 3; }
 TASK=""
 MODELS="claude,codex"
 TIMEOUT=1800

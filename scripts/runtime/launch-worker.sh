@@ -13,8 +13,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LIB_DIR="$(cd "$SCRIPT_DIR/../lib" 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
 source "${LIB_DIR}/dispatch_logger.sh"
+source "${LIB_DIR}/cmux_resolver.sh"
 
-CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
+CMUX_CLI="$(_resolve_cmux_cli)" || { echo "[launch-worker] cmux not found" >&2; exit 3; }
 MODEL=""
 TASK=""
 WORKTREE=""

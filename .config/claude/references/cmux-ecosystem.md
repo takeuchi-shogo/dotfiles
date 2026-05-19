@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-04-23
+last_reviewed: 2026-05-19
 ---
 
 # cmux エコシステム リファレンス
@@ -215,3 +215,42 @@ cmux (~/.../cmux.sock)
 | `/autonomous` + worktree | cmux-team + ワークスペース分離 | 可視性向上、リアルタイム介入可能 |
 | `claude --fork-session` 手動 | `!cfork` | ゼロ遅延、ペイン自動作成 |
 | PC 画面で監視 | cmux-remote | iPhone から外出中も監視可能 |
+
+## Issue #51: 自動 worktree 連携 — Phase 0 実現可能性調査 (2026-05-19)
+
+`cmux new-workspace` で workspace 作成時に自動で git worktree を切る wrapper / hook の実現可能性を調査。
+
+### 調査結果
+
+| 機能 | 実在 | 用途 | 検証コマンド |
+|------|------|------|------------|
+| `cmux events` (newline-delimited JSON stream) | ✅ | event subscribe 永続化、`--reconnect` + `--cursor-file` で再開可 | `cmux events --reconnect --category workspace --cursor-file ~/.cache/cmux/seq` |
+| `workspace.create` RPC method | ✅ | プログラム制御で workspace 作成 | `cmux capabilities` の methods に存在 |
+| `workspace.created` 系 event 配信 | ⚠️ 未検証 | daemon 側 listener のトリガー | 実機サンプル要収集 (`cmux events --category workspace --limit 5`) |
+| 宣言的 `onWorkspaceCreate` hook (cmux.json) | ❌ | — | `notifications.hooks` は通知系のみ、`cmux hooks` は agent 側 (codex/opencode 等) install 用 |
+
+**結論**: 宣言的 workspace lifecycle hook は無いが、`cmux events --reconnect` 永続接続で event-driven daemon が実装可能。
+
+### Phase 1 設計選択肢
+
+| 方式 | 実装コスト | 信頼性 | 注意点 |
+|------|----------|--------|--------|
+| A) wrapper コマンド (`cmux-new-workspace-with-worktree`) | 低 | 高 (同期実行) | ユーザー明示的呼び出し必要 |
+| B) `cmux events` daemon (永続 listener) | 中 | 中 (daemon 死活管理必要) | LaunchAgent or systemd unit、`--cursor-file` で resume |
+| C) `cmux.json` action から zsh 関数呼び出し | 低 | 中 | Issue #49 action 機構の応用 |
+
+**推奨**: Issue #48 (`wt-new`) で実用上十分か体感評価を先行。不十分なら C → B の順で導入。
+
+### Phase 2 自動化レベル
+
+| モード | 挙動 | 推奨度 |
+|--------|------|--------|
+| 完全自動 (workspace 名 = worktree 名で常に作る) | 全 workspace で worktree 強制 | 低 (一回限り workspace で過剰) |
+| opt-in (`--with-worktree` フラグ付き起動時のみ) | 明示的指定時のみ | **高** |
+| smart auto (cwd が git repo の workspace のみ) | repo 内 workspace で自動 | 中 (誤検出リスク) |
+
+### 関連 Issue
+
+- #48: `wt-*` zsh worktree wrappers (✅ 完了 f1ea539) — Phase 1 wrapper 方式の基盤
+- #49: `cmux.json` Worktree Agents action (✅ 完了 5bbebf) — Phase 1 C 方式の基盤
+- #51: 本 Issue (cmux new-workspace + worktree 自動連携) — Phase 0 完了、Phase 1 は necessity 評価待ち

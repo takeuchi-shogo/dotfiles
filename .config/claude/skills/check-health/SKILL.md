@@ -122,7 +122,7 @@ python3 $HOME/.claude/scripts/learner/contradiction-scanner.py 2>/dev/null || tr
 
 矛盾候補が検出された場合:
 - `[CONTRADICTION_CANDIDATE]` タグの内容をユーザーに報告
-- `/improve` での解消を提案
+- 個別ファイルの手動修正、または該当箇所を `references/contradiction-mapping.md` の解決フローに従って解消 (旧 `/improve` 動線は 2026-05-03 retire 済)
 - `references/contradiction-mapping.md` の解決フローに従う
 
 ### Step 3.7: MCP サーバートークンコストチェック
