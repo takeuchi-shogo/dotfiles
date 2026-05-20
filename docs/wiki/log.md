@@ -795,3 +795,19 @@
 - 取り込み: なし (D 選択)
 - 最重要発見: Task 1-3 候補 (skill path-scoped/cadence/token tax 監視) 全て既存 (`skill-suggest.py` PATH_MAP / `skill-pruning-eval-reminder.sh` / `skill-count-alert.sh`) と完全重複、Pruning-First 失敗事例
 - 分析: docs/research/2026-05-20-claude-code-large-codebase-absorb-analysis.md
+
+## [2026-05-20] ingest | Hermes Agent + x_search 最小セットアップ
+
+- ソース: xAI 公式 (@xai 2026-05-16/17) "grok-hermes" アナウンス由来、ユーザー貼り付け記事
+- 判定: Gap 1 (低価値), Already 1, Already(強化可能) 1, N/A 2
+- 取り込み: なし (Reference Only) — X Premium サブスク前提 + dotfiles 用途で X 検索 ROI 極小 + Grok 解釈レイヤー経由 (interpretation layer 問題と同型) + 30 秒+ レスポンスは non-blocking パターン不適
+- レポート: `docs/research/2026-05-20-hermes-x-search-absorb-analysis.md`
+- Obsidian Literature Note: `~/Documents/Obsidian Vault/05-Literature/lit-anonymous-hermes-x-search-minimal-setup-2026-05-20.md`
+
+## [2026-05-19] ingest | Cyril Obsidian Dashboard (@cyrilXBT)
+
+- ソース: docs/research/2026-05-19-cyril-obsidian-dashboard-absorb-analysis.md
+- 判定: Gap/Partial 0 件、Already 4 件 (T4/T5/T6/T8/T10/T11)、N/A 6 件 (T1/T2/T3/T7/T9/T12 — Dataview legacy + agency domain mismatch)
+- 採用: Task A (daily_enforcer Review section detector 追加 / 1-2 ファイル) + Task B (Dataview micro-dashboard 3-section template with Bases 移行 caveat / 2 新規 + 1 修正)
+- 関連: docs/research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md (同一著者前回 absorb)
+- 教訓: content farm 11 件目、技術主張も時代遅れ (Dataview legacy 確認)、副次発見 (T11) が実害近い

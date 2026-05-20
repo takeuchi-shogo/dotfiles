@@ -211,12 +211,66 @@ local function has_meaningful_report_content(section)
   return false
 end
 
+-- /timekeeper review が保存する `## Review` セクション (HTML marker 無し) を検出する。
+-- daily_enforcer の `## 日報` block と別物として書かれるため、review 完了済みでも
+-- enforcer 側で「未記入」と誤判定する不整合を解消する。
+local function extract_review_section(content)
+  -- `## Review` の完全一致を要求する (trailing が改行またはスペース)。
+  -- 単純な `\n## Review` の plain find では `## ReviewNotes` 等にも誤マッチするため。
+  local start_pos = content:find("\n## Review\n", 1, true)
+    or content:find("\n## Review ", 1, true)
+  if not start_pos then
+    if content:sub(1, 10) == "## Review\n" or content:sub(1, 10) == "## Review " then
+      start_pos = 1
+    else
+      return ""
+    end
+  else
+    start_pos = start_pos + 1
+  end
+
+  local after_header = content:find("\n", start_pos, true)
+  if not after_header then
+    return ""
+  end
+
+  local next_section = content:find("\n## ", after_header + 1, true)
+  if next_section then
+    return content:sub(after_header + 1, next_section - 1)
+  end
+
+  return content:sub(after_header + 1)
+end
+
+local function has_meaningful_review_content(section)
+  for line in section:gmatch("[^\r\n]+") do
+    local trimmed = line:match("^%s*(.-)%s*$")
+    if trimmed == "" then
+    elseif trimmed:match("^###") then
+    elseif trimmed:match("^<!%-%-") then
+    elseif trimmed:match("^%-%-%-") then
+    else
+      local list_content = trimmed:match("^%-%s*(.*)$")
+      if list_content then
+        if list_content:match("%S") then
+          return true
+        end
+      elseif trimmed:match("%S") then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
 local function build_status()
   local now = os.date("*t")
   local today = os.date("%Y-%m-%d")
   local note = ensure_today_note(today)
   local morning_done = has_meaningful_morning_content(extract_section(note.content, markers.morning))
   local report_done = has_meaningful_report_content(extract_section(note.content, markers.report))
+    or has_meaningful_review_content(extract_review_section(note.content))
   local pending = {}
 
   if not morning_done then

@@ -135,6 +135,7 @@
 - **Codex Janitor** — [docs/playbooks/codex-janitor-workflow.md](../playbooks/codex-janitor-workflow.md) — slop-janitor 派生 refactor loop runner。ClawSweeper (github.com/openclaw/clawsweeper) パターンから導出した、既存 Follow-Ups 消化・snapshot hash 検証・keep-open bias 除去の 3 グループ構成 → 参照: [2026-04-29-symphony-clawsweeper-absorb-analysis](../research/2026-04-29-symphony-clawsweeper-absorb-analysis.md)
 - [Obsidian 統合](concepts/obsidian-integration.md) — 永続メモリとナレッジ管理のハブとしての Vault。Vault 自動メンテナンス・双方向整合性チェック・AI Second Brain 構築パターン。参照: [lit-noah-obsidian-claude-code-meta](../research/2026-04-09-noah-obsidian-claude-code-meta-analysis.md)
 - [Cyril Obsidian Vault Smarter absorb (2026-05-08)](../research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md) — Readwise+N8N+Daily Brief automation 記事の reference-only 分類分析。副次採用: /think contradiction check / Daily path drift 修正 / Reading 欄追加
+- [Cyril Obsidian Dashboard absorb (2026-05-19)](../research/2026-05-19-cyril-obsidian-dashboard-absorb-analysis.md) — 同一著者 (@cyrilXBT) の Dashboard 記事 (content farm 11 件目)。Dataview legacy 確認で N/A 6 件、Already 4 件。採用 2 件: Task A (daily_enforcer Review section detector) + Task B (Dataview micro-dashboard 3-section template with Bases 移行 caveat)
 - [ターミナルツーリング](concepts/terminal-tooling.md) — Ghostty + cmux + デュアルオーディエンス CLI
 
 ### personal-analyst — 個人アナリスト・AI活用
