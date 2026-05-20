@@ -18,7 +18,7 @@ RESET = "\033[0m"
 
 # ── 実行パラメータ ───────────────────────────────────────────
 
-CLAUDE_BIN_DEFAULT = "/Users/takeuchishougo/.local/bin/claude"
+CLAUDE_BIN_DEFAULT = str(Path.home() / ".local" / "bin" / "claude")
 ENCODING_NAME = "o200k_base"
 ARM_SLEEP_SEC = 1.0
 PROMPT_SLEEP_SEC = 2.0

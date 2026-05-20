@@ -20,7 +20,7 @@ metadata:
 
 ## 設定
 
-- **Vault パス**: `/Users/takeuchishougo/Documents/Obsidian Vault`
+- **Vault パス**: `~/Documents/Obsidian Vault`
 - **保存先**: `07-Daily/YYYY-MM-DD.md`
 - **今日の日付**: コマンド実行時の日付を使用
 
