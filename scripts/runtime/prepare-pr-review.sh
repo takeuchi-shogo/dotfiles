@@ -130,6 +130,19 @@ sys.stdout.write(text)
 mv "$tmp_file" "$review_task_path"
 trap - EXIT
 
+# ---- worktree 内ツール承認 (副作用対策) ----
+# direnv / mise は worktree (= 別ディレクトリ) で個別に trust が必要。
+# 失敗しても致命的ではないので || true で continue。
+(
+  cd "$worktree_path"
+  if command -v direnv >/dev/null 2>&1 && [[ -f .envrc ]]; then
+    direnv allow . >/dev/null 2>&1 && echo "==> direnv allow: OK" || echo "==> direnv allow: skipped" >&2
+  fi
+  if command -v mise >/dev/null 2>&1 && [[ -f mise.toml ]]; then
+    mise trust >/dev/null 2>&1 && echo "==> mise trust: OK" || echo "==> mise trust: skipped" >&2
+  fi
+)
+
 # ---- 次の手順を案内 ----
 cat <<EOF
 
