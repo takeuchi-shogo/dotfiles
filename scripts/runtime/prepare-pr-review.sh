@@ -143,6 +143,26 @@ trap - EXIT
   fi
 )
 
+# ---- code-review-graph: main repo の DB を共有 ----
+# worktree は別 cwd 扱いなので code-review-graph はそこ独自の DB を探しに行き、
+# 結果ゼロ件で PR Review Agent が graph を活用できない。
+# main repo (REVIEW_REPO_DIR) の DB を symlink で共有する。
+# 書き込みロック競合を避けるため、worktree から graph update は走らせない想定
+# (auto-update hook は --repo フラグで main repo 側に固定すること)。
+(
+  cd "$worktree_path" || { echo "==> code-review-graph: cd to worktree failed, skip" >&2; exit 0; }
+  # ! -e は dangling symlink で true になるので ! -L を併用して明示的に除外。
+  if [[ -d "${REVIEW_REPO_DIR}/.code-review-graph" && ! -e .code-review-graph && ! -L .code-review-graph ]]; then
+    ln -s "${REVIEW_REPO_DIR}/.code-review-graph" .code-review-graph \
+      && echo "==> code-review-graph: symlink to main repo DB" \
+      || echo "==> code-review-graph: symlink failed" >&2
+  elif [[ -L .code-review-graph && ! -e .code-review-graph ]]; then
+    echo "==> code-review-graph: dangling symlink at .code-review-graph (remove manually)" >&2
+  elif [[ ! -d "${REVIEW_REPO_DIR}/.code-review-graph" ]]; then
+    echo "==> code-review-graph: main repo DB not found (run 'code-review-graph build' in $REVIEW_REPO_DIR)" >&2
+  fi
+)
+
 # ---- 次の手順を案内 ----
 cat <<EOF
 

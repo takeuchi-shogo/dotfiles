@@ -1,6 +1,32 @@
 {
-	"enabledPlugins": {
-		"superpowers@claude-plugins-official": true,
-		"discord@claude-plugins-official": true
-	}
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "discord@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "case \"$PWD\" in */worktrees/*) exit 0 ;; esac; command -v code-review-graph >/dev/null 2>&1 && repo=$(git rev-parse --show-toplevel 2>/dev/null) && [ -n \"$repo\" ] && code-review-graph update --skip-flows --repo \"$repo\" 2>/dev/null || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v code-review-graph >/dev/null 2>&1 && repo=$(git rev-parse --show-toplevel 2>/dev/null) && [ -n \"$repo\" ] && code-review-graph status --repo \"$repo\" 2>/dev/null || echo 'code-review-graph: skipping (graph unavailable or not a git repo)'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -96,3 +96,5 @@ tmp/
 
 # Zed editor prompts library (LMDB DB, app-local, may contain personal prompt history)
 .config/zed/prompts/
+# Added by code-review-graph
+.code-review-graph/
