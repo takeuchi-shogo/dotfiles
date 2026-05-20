@@ -76,6 +76,44 @@ test("should activate user", () => {
 });
 ```
 
+## Test Comments (前提・事前条件・検証項目)
+
+> 出典: erukiti「実践フルAIコーディングのための考え方とノウハウ」(Zenn 2024-12) — AI が書くテストはコメントを省略しがちで、後で読んだ AI も人間も「何を検証しているか」が読み取れなくなる。
+
+テストには以下 3 要素を **TSDoc / docstring / コメント** で明示する。言語非依存の汎用ルール:
+
+| 要素 | 内容 |
+|------|------|
+| **前提条件** | 環境・データの初期状態 (例: DB に user A が存在、外部 API は mock 済み) |
+| **事前条件** | テスト対象の関数を呼ぶ直前の状態 (例: user A はログイン済みかつ未認証フラグ) |
+| **検証項目** | 何が成立すれば pass か (例: 戻り値が { ok: false, code: "AUTH_REQUIRED" } である) |
+
+**粒度の基準**: 「**プロジェクト外の慣れていないエンジニアが読んで、このテストが何を保証しているか分かる**」水準。テスト名だけで全部書こうとせず、コメントに逃がす。
+
+### Few-shot Example (TypeScript / vitest)
+
+```typescript
+// NG: 何を保証するテストか不明
+test("should fail", () => {
+  const r = login("a", "wrong");
+  expect(r.ok).toBe(false);
+});
+
+// OK: 前提・事前・検証項目が読み取れる
+/**
+ * 前提: user "a" は DB に存在し、password ハッシュは "correct" 由来。
+ * 事前: ログイン試行は初回（rate limit に未到達）。
+ * 検証: 誤パスワード時は { ok: false, code: "INVALID_CREDENTIALS" } を返し、
+ *       失敗カウンタは 1 増えること。
+ */
+test("returns INVALID_CREDENTIALS and increments failure count on wrong password", () => {
+  const before = getFailureCount("a");
+  const r = login("a", "wrong");
+  expect(r).toEqual({ ok: false, code: "INVALID_CREDENTIALS" });
+  expect(getFailureCount("a")).toBe(before + 1);
+});
+```
+
 ## Troubleshooting Test Failures
 
 1. Use **test-engineer** agent for test strategy

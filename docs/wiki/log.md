@@ -811,3 +811,14 @@
 - 採用: Task A (daily_enforcer Review section detector 追加 / 1-2 ファイル) + Task B (Dataview micro-dashboard 3-section template with Bases 移行 caveat / 2 新規 + 1 修正)
 - 関連: docs/research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md (同一著者前回 absorb)
 - 教訓: content farm 11 件目、技術主張も時代遅れ (Dataview legacy 確認)、副次発見 (T11) が実害近い
+
+## [2026-05-21] ingest | Erukiti フルAIコーディング (Zenn)
+
+- ソース: https://zenn.dev/erukiti/articles/2512-full-ai-cofing
+- 判定: Gap 0, Partial 6 (→ うち 2 を N/A 降格), Already 5 (うち 1 強化不要に降格、4 強化可能), N/A 3 (Phase 2.5 で追加降格分含む)
+- 取り込み (6 項目, 4 ファイル変更):
+  - T1: CLAUDE.md core_principles に「暗黙フォールバック・モック・NO-OP 絶対禁止」追記
+  - T2: references/task-decomposition-guide.md に M/L 事前見積もりプロンプト + テスト/実装フェイズ分離プロンプト追記
+  - T3: rules/common/testing.md に「Test Comments (前提・事前条件・検証項目)」セクション追加
+  - T4: rules/typescript.md に「推奨スタック (vitest 優先)」+「レイヤー強制 (eslint-plugin-boundaries)」セクション追加
+- レポート: docs/research/2026-05-21-zenn-erukiti-full-ai-coding-absorb-analysis.md

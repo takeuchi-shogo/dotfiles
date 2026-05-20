@@ -109,6 +109,7 @@
 - [修復ルーティング](concepts/repair-routing.md) — 失敗時の修復先レイヤー判定（references / rules / skills / hooks）
 - [タスクアーキタイプ](concepts/task-archetype-templates.md) — 反復性の高い SW 開発領域のリファレンスドキュメント体系
 - **Tech-Debt-Skill absorb (2026-04-26)** — ksimback/tech-debt-skill を `/audit` に統合。Orient Gate・Severity×Effort 2軸・Hallucination Defense・Output Contract など 9 点強化（新規スキル作成なし） → 参照: [2026-04-26-tech-debt-skill-absorb-analysis](../research/2026-04-26-tech-debt-skill-absorb-analysis.md)
+- [Erukiti フルAIコーディング (2026-05-21)](../research/2026-05-21-zenn-erukiti-full-ai-coding-absorb-analysis.md) — LLM の原理的欠陥前提でメカニズム強制 (linter/レイヤー/結合テスト/フェイズ分割) を提案。dotfiles では暗黙フォールバック禁止/見積もりプロンプト/テストコメント TSDoc/eslint-plugin-boundaries/vitest 推奨を採用
 
 ### evaluation — 評価・観測
 

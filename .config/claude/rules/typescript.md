@@ -256,3 +256,64 @@ function getUser(id: UserId): User | null { ... }
 
 - `@types/*` パッケージは `devDependencies` に置く（ET Item 65）
 - TypeScript 本体も `devDependencies` に置く
+
+## 推奨スタック (AI コーディング前提)
+
+> 出典: erukiti「実践フルAIコーディングのための考え方とノウハウ」(Zenn 2024-12)
+> LLM が慣れている = 学習データが多い + 出力読み取りが安定しているスタックを選ぶ。プロジェクト都合がない限り以下を採用する。
+
+| カテゴリ | 推奨 | 注意 |
+|---------|------|------|
+| runtime | Node.js LTS | bun は AI コーディング段階では非推奨（出力フォーマット安定性が劣る） |
+| パッケージマネージャ | pnpm | npm/yarn でも可だが pnpm が workspace で有利 |
+| test runner | **vitest** | bun test は LLM の **出力読み取り精度が致命的に低い**（「カバレッジ 100% です！(実際 98%)」「テスト正常です！(実際 fail 2)」の自家中毒）。Jest も可 |
+| linter | **eslint** | Biome は plugin の自由度が低い。AI 想定外コードへの ad-hoc rule を書けるため eslint を選ぶ |
+| エラー型 | Discriminated Union (`Result<T,E>`) | `throw` ではなく値で返す（catch の握り潰し抑制） |
+
+**bun test を選ばない理由 (詳細)**: LLM がコンソール出力を要約する際、bun test の出力フォーマット (色コード混在・進捗表示) を誤読し、実際の失敗を「成功」と報告する事例が頻出。vitest/jest は plain text output が安定しており LLM の読み取り精度が高い。
+
+## レイヤー強制 (eslint-plugin-boundaries)
+
+> 出典: 同上。LLM はレイヤー違反を「気づかずに」書く。プロンプトで指示しても矛盾が増えるだけ — **linter で mechanism 強制する**ことが唯一の現実解。
+
+`Static-checkable rules は mechanism に寄せる` (CLAUDE.md core_principles) の TS 適用版。
+
+### 採用パターン
+
+```jsonc
+// .eslintrc.json (抜粋)
+{
+  "plugins": ["boundaries"],
+  "settings": {
+    "boundaries/elements": [
+      { "type": "domain",     "pattern": "src/domain/*" },
+      { "type": "usecase",    "pattern": "src/usecase/*" },
+      { "type": "adapter",    "pattern": "src/adapter/*" },
+      { "type": "infra",      "pattern": "src/infra/*" }
+    ]
+  },
+  "rules": {
+    "boundaries/element-types": ["error", {
+      "default": "disallow",
+      "rules": [
+        { "from": "usecase", "allow": ["domain"] },
+        { "from": "adapter", "allow": ["usecase", "domain"] },
+        { "from": "infra",   "allow": ["adapter", "domain"] }
+      ]
+    }]
+  }
+}
+```
+
+### 腐敗防止レイヤー (ACL)
+
+外部パッケージ・I/O・動的 import は **adapter / infra 層に閉じ込める**。`throw` を投げてよいのは ACL 境界のみ。domain / usecase 層では `Result<T,E>` を返す。
+
+| レイヤー | throw | class | 動的 import | 外部 SDK 直接呼び出し |
+|---------|-------|-------|-------------|----------------------|
+| domain | × | × | × | × |
+| usecase | × | × | × | × |
+| adapter | △ (再 throw のみ) | △ | △ | ◯ |
+| infra | ◯ (ACL 境界) | ◯ | ◯ | ◯ |
+
+**注意 (polyglot 配慮)**: このルールは TypeScript プロジェクト限定。Go / Python / Rust では各言語の慣用に従う (Go は error 値返却で同様の哲学が成立、Rust は `Result<T,E>` がデフォルト)。
