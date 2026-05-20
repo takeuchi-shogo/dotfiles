@@ -34,6 +34,7 @@ metadata:
 ```
 /absorb {URL or テキスト}
   Phase 1: Extract    → 記事の要点を構造化抽出          [Haiku / Gemini]
+  Phase 1.5: Saturation Gate → 同分野 absorb 飽和の早期検出  [Opus + Bash]
   Phase 2: Analyze    → 現状とのギャップ分析            [Sonnet Explore → Opus]
   Phase 2.5: Refine   → セカンドオピニオン + 周辺知識補完 [Codex + Gemini 並列]
   Phase 3: Triage     → ユーザーと「何を取り込むか」を選別 [Opus]
@@ -113,6 +114,81 @@ Phase 1 出力 JSON に **`fetch_metadata`** を含める:
 3. 空レスポンスのまま Phase 2 に進んではならない
 
 Opus は返された構造化抽出をユーザーに要約表示する（詳細は内部用）。
+
+## Phase 1.5: Saturation Gate（飽和検出） [Opus + Bash]
+
+**目的**: 同分野の absorb を 3 件以上繰り返して採用 0 を量産する **永続ループ** を Phase 2 に入る前に検出し、ユーザーに skip 選択肢を提示する。`/absorb` 自身の Pruning-First 違反を mechanism で防ぐ。
+
+判定ルール・family taxonomy・閾値・skip 時のショートカットは `references/topic-family-saturation.md` に定義する。
+
+### Step 1: Family 判定 [Opus]
+
+Phase 1 抽出結果 (主張 + 手法) を `references/topic-family-saturation.md` の taxonomy で照合する。
+- 該当 family なし → **PASS** (Phase 2 へ進む、新分野扱い)
+- 該当 family あり → Step 2 へ
+
+### Step 2: 過去 absorb 件数の集計 [Bash]
+
+```bash
+# 例: obsidian-second-brain family
+grep -i -E "obsidian|second brain|PARA|vault" \
+  /Users/takeuchishougo/dotfiles/docs/research/_index.md \
+  | grep -E "absorb|analysis" | wc -l
+```
+
+`docs/research/_index.md` から同 family の過去 absorb 件数 N を集計する。
+集計手順の詳細とフォールバック (ファイル名 enumeration) は reference 参照。
+
+### Step 3: 採用率の推定 [Opus]
+
+N >= 3 なら、各エントリ本文の以下マーカーで採用度合いを推定:
+- 採用 0 / Reference Only / reject / 棄却 → 採用なし
+- 採用 N 件 / Gap / 強化採用 (N >= 1) → 採用あり
+
+採用率 = (採用ありエントリ数) / N
+
+### Step 4: 判定と分岐 [Opus + AskUserQuestion]
+
+| 条件 | 判定 | アクション |
+|------|------|----------|
+| N < 3 | **PASS** | Phase 2 へ通常進行 |
+| N >= 3 & 採用率 >= 20% | **PASS (warning)** | Phase 2 へ進むが「重複領域」と user に告知 |
+| N >= 3 & 採用率 < 20% | **SATURATED** | `AskUserQuestion` で continue/skip 選択 |
+
+### Step 5: SATURATED 時の AskUserQuestion
+
+```
+この記事は topic family "<family>" の N 件目です:
+  過去事例: <最新 3 件のファイル名>
+  採用率: X% (Y 件中 Z 件で採用あり)
+
+フル absorb workflow (Phase 2-5) を実行しますか？
+
+選択肢:
+  - continue: 通常通り Phase 2 へ進む (新しい角度がある場合)
+  - skip: Wiki Log に 1 行だけ追記して終了 (Reference Only として閉じる)
+```
+
+### Step 6: skip 選択時のショートカット [Opus]
+
+Phase 2-5 をスキップして以下のみ実行:
+
+1. `docs/wiki/log.md` に追記:
+   ```
+   ## [YYYY-MM-DD] ingest-skip | <記事タイトル>
+   - ソース: <URL or タイトル>
+   - 理由: topic family "<family>" saturated (N 件目, 採用率 X%)
+   - スキップ判定: Phase 1.5 gate
+   ```
+2. MEMORY.md 索引には追記しない (Reference Only 以下のため)
+3. Phase 5.5-5.7 (Wiki INDEX / Obsidian / Wiki Log フル更新) も実行しない (log.md 1 行のみ)
+
+### Safety rules
+
+- 採用率算出の根拠が不明確な場合は **continue (PASS)** に倒す (false positive 回避)
+- ユーザーが事前に「飽和でも見たい」「強制 continue」と指示している場合は gate を skip
+- 同一 family に分類するか判断が割れる場合は family なし扱い (PASS)
+- 詳細は `references/topic-family-saturation.md` 参照
 
 ## Phase 2: Analyze（ギャップ分析 + 強化分析） [Sonnet Explore → Opus]
 
@@ -376,6 +452,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 | **Opus が Extract や探索を自分でやる** | **定型作業は Haiku/Sonnet に委譲する。Opus は判断・統合・ユーザー対話に集中** |
 | **subagent (Sonnet BG / general-purpose) から `Skill` tool で obsidian skill を呼び出す** | **実測で 600s no progress stall (2026-04-19)。skill ネスト呼び出しは Opus main session で実行する。Phase 5.6 Obsidian Bridge は Opus 直接実行が原則** |
 | **trusted 外ドメイン (Zenn/Qiita/note/Wikipedia 等) で WebFetch を直接使う** | **Claude Code v2.1.126 の WebFetch は内部 Haiku 要約 + 100k chars truncation がある (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。引用 faithfulness が壊れるため `obsidian:defuddle` / Jina Reader / Gemini grounding に切替。詳細: `references/web-fetch-policy.md`** |
+| **Phase 1.5 (Saturation Gate) をスキップする** | **同分野 absorb 3 件目以降の永続ループを防ぐ唯一の mechanism。Phase 1 完了後に必ず実行する。判定基準: `references/topic-family-saturation.md`** |
 
 ## Chaining
 
@@ -390,3 +467,4 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 - 分析レポートテンプレート: `templates/analysis-report.md`
 - 統合プランテンプレート: `templates/integration-plan.md`
 - 取捨選択基準: `references/triage-criteria.md`
+- 飽和検出基準 (Phase 1.5): `references/topic-family-saturation.md`
