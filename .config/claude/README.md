@@ -379,7 +379,6 @@ flowchart TB
     rpi["/rpi"]
     review["/review"]
     commit["/commit"]
-    improve["/improve"]
     research["/research"]
     autonomous["/autonomous"]
 
@@ -393,13 +392,11 @@ flowchart TB
     epd -->|"Phase 5"| review
     review -->|"完了後"| commit
 
-    improve -->|"分析"| autoevolveCore["autoevolve-core agent"]
     research -->|"並列実行"| claudeP["claude -p 子プロセス"]
     autonomous -->|"並列実行"| claudeP2["claude -p (worktree隔離)"]
 
     style epd fill:#e94560,stroke:#16213e,color:#ffffff
     style review fill:#533483,stroke:#16213e,color:#e0e0e0
-    style improve fill:#1b998b,stroke:#16213e,color:#ffffff
 ```
 
 ---

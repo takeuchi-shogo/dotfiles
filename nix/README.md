@@ -1,10 +1,10 @@
-# nix/ — Nix 移行層 (Phase 0+A 並走期)
+# nix/ — Nix 移行層
 
 ## 位置づけ
 
 このディレクトリは [docs/plans/active/2026-04-24-nix-migration-plan.md](../docs/plans/active/2026-04-24-nix-migration-plan.md) に従って dotfiles を Nix (flake + nix-darwin + home-manager) に段階的に移行するための作業領域。
 
-**Phase 0+A 並走期の運用ルール**: 既存の `Brewfile` / `.bin/symlink.sh` / `.bin/init-install.sh` は**一切変更しない**。Nix 側は疎通確認用 (`hello`) と D6 (`mkOutOfStoreSymlink`) 実証用 fixture のみ。
+**現状 (2026-05-20)**: Phase B2 完了 (`.bin/symlink.sh` 廃止、19+22 paths を home-manager 管理下に移行)、Phase C1a 完了 (`darwin/{private,work}.nix` で multi-host 分離)。Phase C1b (NSGlobalDomain attribute 宣言) と Phase D (HIToolbox) は未着手。詳細進捗は `RUNNING_BRIEF.md` の Progress Log を参照。
 
 ## 構成
 
