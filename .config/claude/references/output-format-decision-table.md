@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-05-09
+last_reviewed: 2026-05-21
 ---
 
 # Output Format Decision Table
@@ -68,8 +68,10 @@ GitHub / VSCode / Obsidian 全てが Mermaid native render をサポート。
 
 ## 出典
 
-- 記事: Thariq Shihipar "Using Claude Code: The Unreasonable Effectiveness of HTML" (2026-05, GitHub Pages)
+- 記事: Thariq Shihipar "Using Claude Code: The Unreasonable Effectiveness of HTML"
+  - 初出: 2026-05, GitHub Pages (thariqs.github.io/html-effectiveness)
+  - 公式再掲: 2026-05-20, [claude.com/blog](https://claude.com/blog/using-claude-code-the-unreasonable-effectiveness-of-html) — 末尾に "expresses his **personal opinions** – and affinity" との Anthropic 公式 disclaimer 付き (組織標準ではないことの公式確認)
 - 批評統合: [`docs/research/2026-05-09-html-effectiveness-absorb-analysis.md`](../../../docs/research/2026-05-09-html-effectiveness-absorb-analysis.md)
 - 主要批評根拠:
   - **Codex**: "HTML maximalism は helpful バイアス取り込みすぎ" — 個人 dotfiles と組織 share の文脈差を指摘
-  - **Gemini**: Anthropic 公式 Skills (google/skills, mizchi/skills) は全 markdown ベース。HTML maximalism は組織標準ではない
+  - **Gemini**: Anthropic 公式 Skills (google/skills, mizchi/skills) は全 markdown ベース。HTML maximalism は組織標準ではない (公式 disclaimer が裏付け)
