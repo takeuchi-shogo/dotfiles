@@ -98,7 +98,9 @@ else
   echo "    branch: $PR_BRANCH (tracked as $worktree_branch)"
   git fetch origin "$PR_BRANCH" --quiet
   mkdir -p "${REVIEW_REPO_DIR}/.claude/worktrees"
-  git worktree add -b "$worktree_branch" "$worktree_path" "origin/${PR_BRANCH}"
+  # -B: 既存の pr-review-<num> ブランチがあれば reset して再利用 (worktree は
+  # 削除しても branch は残るため毎回新規 -b では衝突する)
+  git worktree add -B "$worktree_branch" "$worktree_path" "origin/${PR_BRANCH}"
 fi
 
 # ---- REVIEW_TASK.md 生成 ----
