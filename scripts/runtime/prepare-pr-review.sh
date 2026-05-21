@@ -163,6 +163,25 @@ trap - EXIT
   fi
 )
 
+# ---- MCP 設定: worktree に code-review-graph MCP server を有効化 ----
+# knowledgework-review repo には .mcp.json が無いため、worktree から Claude を
+# 起動しても code-review-graph MCP tool が読み込まれない。worktree 単位で
+# .mcp.json を配置する (untracked で残る、PR Review 用の使い捨て設定)。
+mcp_config="${worktree_path}/.mcp.json"
+if [[ ! -f "$mcp_config" ]]; then
+  cat > "$mcp_config" <<'MCPJSON'
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "uvx",
+      "args": ["code-review-graph", "serve"]
+    }
+  }
+}
+MCPJSON
+  echo "==> .mcp.json: code-review-graph 用設定を配置"
+fi
+
 # ---- 次の手順を案内 ----
 cat <<EOF
 
