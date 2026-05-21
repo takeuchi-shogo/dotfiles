@@ -15,24 +15,27 @@ readonly LOG_FILE="${LOG_DIR}/poll.log"
 mkdir -p "$LOG_DIR"
 log() { printf '%s [inject:%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$$" "$*" >> "$LOG_FILE"; }
 
-ws_id="${CMUX_WORKSPACE_ID:-}"
-if [[ -z "$ws_id" ]]; then
-  log "skip: CMUX_WORKSPACE_ID not set"
-  exit 0
-fi
-
 sleep "$WAIT_SEC"
 
-surface_ref=$(cmux list-pane-surfaces --workspace "workspace:${ws_id}" 2>/dev/null \
-  | awk -v name="$SURFACE_NAME" '$0 ~ name {print $1; exit}')
-
-if [[ -z "$surface_ref" ]]; then
-  log "skip ws=$ws_id: surface '$SURFACE_NAME' not found"
+# cmux は UUID 形式の workspace handle を reject するため `cmux identify` で
+# 自身が居る pane の workspace short ref (workspace:N) を取る
+ws_ref=$(cmux identify 2>/dev/null | jq -r '.caller.workspace_ref // empty' 2>/dev/null)
+if [[ -z "$ws_ref" ]]; then
+  log "skip: cmux identify did not return workspace_ref"
   exit 0
 fi
 
-# list-pane-surfaces は selected surface に `*` プレフィックスを付ける
-surface_ref="${surface_ref#\*}"
+# selected surface 行は "* surface:N  Name  [selected]" で $1 が "*" になるため
+# 行から surface:N を直接抽出する
+surface_ref=$(cmux list-pane-surfaces --workspace "$ws_ref" 2>/dev/null \
+  | grep -F "$SURFACE_NAME" \
+  | grep -oE 'surface:[0-9]+' \
+  | head -1)
+
+if [[ -z "$surface_ref" ]]; then
+  log "skip ws=$ws_ref: surface '$SURFACE_NAME' not found"
+  exit 0
+fi
 
 if cmux send --surface "$surface_ref" "$PROMPT" 2>>"$LOG_FILE"; then
   log "sent prompt to $surface_ref"
