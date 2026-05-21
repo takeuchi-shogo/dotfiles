@@ -6,7 +6,8 @@
 
 set -uo pipefail
 
-readonly WAIT_SEC=15
+readonly WAIT_SEC=5
+readonly REPL_READY_SEC=3
 readonly SURFACE_NAME="Claude Review"
 readonly PROMPT='@REVIEW_TASK.md'
 readonly LOG_DIR="${HOME}/Library/Logs/pr-reviewer"
@@ -29,19 +30,22 @@ fi
 # (selected surface 行は "* surface:N  Name  [selected]" で $1 が "*" になるので
 #  grep -oE で行から surface:N を直接抽出)
 surface_ref=""
-for attempt in 1 2 3 4 5 6; do
+for attempt in $(seq 1 10); do
   surface_ref=$(cmux list-pane-surfaces --workspace "$ws_ref" 2>/dev/null \
     | grep -F "$SURFACE_NAME" \
     | grep -oE 'surface:[0-9]+' \
     | head -1)
   [[ -n "$surface_ref" ]] && break
-  sleep 5
+  sleep 1
 done
 
 if [[ -z "$surface_ref" ]]; then
-  log "skip ws=$ws_ref: surface '$SURFACE_NAME' not found after $WAIT_SEC+30s"
+  log "skip ws=$ws_ref: surface '$SURFACE_NAME' not found after $WAIT_SEC+10s"
   exit 0
 fi
+
+# surface 検出 ≠ claude REPL ready。REPL 起動 (token check + UI) を少し待つ
+sleep "$REPL_READY_SEC"
 
 if cmux send --surface "$surface_ref" "$PROMPT" 2>>"$LOG_FILE"; then
   log "sent prompt to $surface_ref"
