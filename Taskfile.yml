@@ -53,10 +53,37 @@ tasks:
     cmds:
       - ~/dotfiles/.bin/init-install.sh
 
+  setup:
+    desc: |
+      Post-clone / post-nix:switch orchestration. Idempotent — safe to re-run.
+      Pre-req: `task nix:bootstrap PROFILE=...` (first machine) or `task nix:switch PROFILE=...`.
+      Chains the steps that are NOT covered by nix-darwin / init-install.sh:
+        build-hooks → lefthook:install → build-claude → patch-claude → doctor
+      Excluded (run manually if needed): cmux:link, cmux:worktree-daemon:install.
+    cmds:
+      - task: build-hooks
+      - task: lefthook:install
+      - task: build-claude
+      - task: patch-claude
+      - task: doctor
+
   brew:
     desc: Install packages from Brewfile
     cmds:
       - brew bundle --file=~/dotfiles/Brewfile
+
+  brew:install:
+    desc: Alias for `task brew` (kept for spec/playbook compatibility — see docs/specs/2026-05-20-work-mac-validation.md)
+    cmds:
+      - task: brew
+
+  lefthook:install:
+    desc: Install lefthook git hooks (pre-commit + commit-msg) from lefthook.yml. Required after fresh clone — CLAUDE.md enforces `--no-verify` ban via these hooks.
+    preconditions:
+      - sh: command -v lefthook >/dev/null
+        msg: 'lefthook not found in PATH — install via `brew install lefthook` (or add to nix-darwin homebrew.brews)'
+    cmds:
+      - lefthook install
 
   nix:bootstrap:
     desc: 'First-time apply (darwin-rebuild not yet installed). Usage: task nix:bootstrap PROFILE=private'
