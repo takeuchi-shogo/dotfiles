@@ -147,10 +147,46 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 - 時間切れで深掘りできなかった領域
 ```
 
+## 完了処理 (必須)
+
+レビュー本体 `.claude/pr-reviews/pr-{{PR_NUMBER}}.md` を書き終えたら、**必ず**以下を実行してセッションを終わる:
+
+1. **Obsidian Vault にコピー** (frontmatter 付き):
+
+   ```bash
+   vault="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
+   target="$vault/AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md"
+   mkdir -p "$(dirname "$target")"
+   # <VERDICT> は TL;DR の総合判定をそのまま入れる: APPROVE / REQUEST_CHANGES / COMMENT
+   {
+     printf '%s\n' \
+       '---' \
+       "date: $(date +%Y-%m-%d)" \
+       'type: pr-review' \
+       'pr_number: {{PR_NUMBER}}' \
+       'pr_title: "{{PR_TITLE}}"' \
+       'pr_author: {{PR_AUTHOR}}' \
+       'pr_url: {{PR_URL}}' \
+       'pr_branch: {{PR_BRANCH}}' \
+       'verdict: <VERDICT>' \
+       'generated_by: claude-pr-review-agent' \
+       '---' \
+       ''
+     cat .claude/pr-reviews/pr-{{PR_NUMBER}}.md
+   } > "$target"
+   echo "saved: $target"
+   ```
+
+2. **ユーザーへの報告**: 「Obsidian に保存しました: `AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝えてセッション終了。
+
+3. **worktree の削除は触らない**。次の `poll-pr-reviewer.sh` 起動時に「Obsidian にコピー済 = レビュー完了」と判定して自動で `git worktree remove` される。
+
 ## 制約
 
-- **書き込み許可ファイル**: `.claude/pr-reviews/pr-{{PR_NUMBER}}.md` のみ
+- **書き込み許可ファイル**:
+  - `.claude/pr-reviews/pr-{{PR_NUMBER}}.md` (worktree 内、レビュー本体)
+  - `$OBSIDIAN_VAULT_PATH/AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md` (frontmatter 付きコピー)
 - 既存コードへの Edit / Write は **禁止** (レビューであって修正ではない)
 - `gh pr review` / `gh pr comment` / `gh pr merge` は **禁止** (再掲)
-- 1 セッション最大 30 分目安。超過しそうなら TL;DR だけ書いて終了
+- 1 セッション最大 30 分目安。超過しそうなら TL;DR だけ書いて Obsidian にコピー → 終了
 - 確信が持てない finding は **「自己批判」セクション** に正直に記載する
