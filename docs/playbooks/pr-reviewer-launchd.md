@@ -40,6 +40,24 @@ launchctl bootstrap "gui/$UID" ~/Library/LaunchAgents/com.user.pr-reviewer.plist
 launchctl print "gui/$UID/com.user.pr-reviewer" | head
 ```
 
+## 環境変数 (動作オプション)
+
+| 変数 | 値 | 用途 |
+|---|---|---|
+| `PR_REVIEW_AUTHOR` | GitHub login (例: `octocat`) | 指定 author の PR のみ対象。空文字なら全 author |
+| `PR_REVIEW_DRY_RUN` | `1` | cmux invoke せず log のみ出す (動作確認・初回検証用) |
+| `PR_REVIEW_FORCE` | `1` | host gate を bypass (`MacBookPro-work` 以外で実行) |
+
+使用例:
+
+```bash
+# 特定 author の PR を dry-run で確認
+PR_REVIEW_AUTHOR=<github-login> PR_REVIEW_DRY_RUN=1 ~/dotfiles/scripts/runtime/poll-pr-reviewer.sh
+
+# 全 author で本番実行
+~/dotfiles/scripts/runtime/poll-pr-reviewer.sh
+```
+
 ## 動作確認
 
 ```bash
@@ -57,7 +75,7 @@ launchctl kickstart "gui/$UID/com.user.pr-reviewer"
 
 ```
 2026-05-20T15:00:00+0900 [12345] poll: found 1 review-requested PR(s) (active: 0)
-2026-05-20T15:00:01+0900 [12345] invoke cmux for pr-116123 (author: @haniwawww): feat(...): ...
+2026-05-20T15:00:01+0900 [12345] invoke cmux for pr-116123 (author: @<login>): feat(...): ...
 2026-05-20T15:00:03+0900 [12345] ok pr-116123: marker written
 ```
 
