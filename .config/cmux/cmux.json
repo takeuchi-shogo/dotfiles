@@ -322,7 +322,7 @@
                   {
                     "type": "terminal",
                     "name": "Claude Review",
-                    "command": "state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; echo \"Waiting for PR setup (timeout 300s)...\"; elapsed=0; while [ ! -s \"$state\" ]; do sleep 0.2; elapsed=$((elapsed + 1)); if [ $elapsed -ge 1500 ]; then echo \"ERROR: PR review setup timed out after 300s\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; done; dir=$(cat \"$state\"); cd \"$dir\"; echo \"\"; echo \"================================================\"; echo \"Worktree: $dir\"; echo \"Next: type '@REVIEW_TASK.md' and press Enter\"; echo \"================================================\"; echo \"\"; exec env CLAUDE_SKIP_TEST_GATE=1 claude --permission-mode auto --add-dir \"$HOME/Documents/Obsidian Vault\""
+                    "command": "state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; echo \"Waiting for PR setup (timeout 300s)...\"; elapsed=0; while [ ! -s \"$state\" ]; do sleep 0.2; elapsed=$((elapsed + 1)); if [ $elapsed -ge 1500 ]; then echo \"ERROR: PR review setup timed out after 300s\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; done; dir=$(cat \"$state\"); cd \"$dir\"; echo \"\"; echo \"================================================\"; echo \"Worktree: $dir\"; echo \"Next: type '@REVIEW_TASK.md' and press Enter\"; echo \"================================================\"; echo \"\"; exec env CLAUDE_SKIP_TEST_GATE=1 claude --permission-mode auto --add-dir \"$HOME/Documents/Obsidian Vault\" --mcp-config \"$dir/.mcp.json\""
                   }
                 ]
               }
