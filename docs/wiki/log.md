@@ -8,6 +8,29 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-05-22] ingest-skip | 11 Claude things I wish someone had told me 12 months ago (anonymous)
+
+- ソース: テキスト貼り付け (anonymous "Based on conversations and workflows shared by advanced Claude users")
+- 理由: topic family "claude-tips-generic" 飽和 (12 件目相当)
+- 過去同系列: Boris 30 Tips / 12-rule CLAUDE.md / zodchixquant 15 Settings / 9 Overnight Agents / SKILL.md 15min / Khairallah Power User (Reject/Reference Only 中心)
+- 内容: 11 項目 (Projects / CLAUDE.md / Custom styles / Sonnet default / Haiku / Voice mode / Subagents / Skills>prompts / Memory / Distrust outputs / Systems-not-prompts) すべて dotfiles 実装済
+  - CLAUDE.md 130行 + references + MEMORY.md = operating manual 完備
+  - model-routing.md (Haiku/Sonnet/Opus 役割分担済), persona/output-mode skills
+  - 50+ subagents + 100+ skills + memory-schema with retention
+  - silent-failure-hunter + verification-before-completion + Codex Review Gate
+  - "skeptical senior engineer" は code-reviewer/codex-reviewer agents + /challenge skill で実装済
+- 一次評価: 11 手法すべて Already で新規取り込み価値ゼロ
+- スキップ判定: Phase 1.5 gate (anonymous source + listicle format + 全項目 dotfiles 既知パターン)
+
+## [2026-05-22] ingest-skip | One-Folder Obsidian System (cyrilXBT)
+
+- ソース: テキスト貼り付け (記事末尾 "Follow @cyrilXBT")
+- 理由: topic family "obsidian-second-brain" 飽和 (12 件目) + cyrilXBT 著者 **4 本連続**
+- 過去 cyril 系: Claude-only Stack (2026-04-11) / Vault Smarter (2026-05-08) / Dashboard (2026-05-19) / Personal OS (2026-05-21) — **直近 4/4 reference-only or 採用 0**
+- 内容重複: 1 folder + properties + 5 commands (/morning /capture /review /find /plan) + N8N 3 自動化はすべて Personal OS (2026-05-21) の再パッケージ
+- 一次評価: 12 手法すべて Already (Vault CLAUDE.md / digest / note / autonomous + cmux dispatch / friction-events.jsonl / daily-health-check.sh) で新規取り込み価値ゼロ
+- スキップ判定: Phase 1.5 gate (_index.md の「4 本目以降は著者検出で短絡可能」短絡示唆を発動)
+
 ## [2026-05-22] ingest-skip | How to Become a Claude Power User for FREE (Khairallah)
 
 - ソース: Twitter/Threads 配布記事 (テキスト貼り付け, @eng_khairallah1)
@@ -821,6 +844,14 @@
 - 採用: Task A (daily_enforcer Review section detector 追加 / 1-2 ファイル) + Task B (Dataview micro-dashboard 3-section template with Bases 移行 caveat / 2 新規 + 1 修正)
 - 関連: docs/research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md (同一著者前回 absorb)
 - 教訓: content farm 11 件目、技術主張も時代遅れ (Dataview legacy 確認)、副次発見 (T11) が実害近い
+
+## [2026-05-22] ingest-skip | Cyril Obsidian Personal OS Never Breaks Down (@cyrilXBT)
+
+- ソース: How to Turn Obsidian Into a Personal Operating System That Never Breaks Down (cyrilXBT, テキスト貼り付け)
+- 理由: topic family "obsidian-second-brain" saturated (N>=12 / Cyril 単独 4 本目)、_index.md `2026-05-21 cyril-personal-os` エントリと完全一致 (タイトル "Personal OS" / 8 フォルダ CAPTURE-ARCHIVE / 5 workflow Daily-Capture-Weekly-Queue-Health / CLAUDE.md SSOT / N8N automation)
+- スキップ判定: Phase 1.5 Saturation Gate + _index 明記「4 本目以降は Phase 1 で著者検出 → reference-only 即時判定で workflow 短絡可能」指示適用
+- 過去採用: 0% (Cyril 3 本連続 reference-only、副次発見も 2026-05-19 で停止)
+- 後続アクション: なし (MEMORY.md 索引追記なし、分析レポート作成なし、Codex/Gemini Phase 2.5 なし)
 
 ## [2026-05-21] ingest | Erukiti フルAIコーディング (Zenn)
 
