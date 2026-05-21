@@ -22,14 +22,16 @@
 - 一次評価: 11 手法すべて Already で新規取り込み価値ゼロ
 - スキップ判定: Phase 1.5 gate (anonymous source + listicle format + 全項目 dotfiles 既知パターン)
 
-## [2026-05-22] ingest-skip | One-Folder Obsidian System (cyrilXBT)
+## [2026-05-22] ingest (light Phase 2) | One-Folder Obsidian System (cyrilXBT)
 
 - ソース: テキスト貼り付け (記事末尾 "Follow @cyrilXBT")
-- 理由: topic family "obsidian-second-brain" 飽和 (12 件目) + cyrilXBT 著者 **4 本連続**
-- 過去 cyril 系: Claude-only Stack (2026-04-11) / Vault Smarter (2026-05-08) / Dashboard (2026-05-19) / Personal OS (2026-05-21) — **直近 4/4 reference-only or 採用 0**
-- 内容重複: 1 folder + properties + 5 commands (/morning /capture /review /find /plan) + N8N 3 自動化はすべて Personal OS (2026-05-21) の再パッケージ
-- 一次評価: 12 手法すべて Already (Vault CLAUDE.md / digest / note / autonomous + cmux dispatch / friction-events.jsonl / daily-health-check.sh) で新規取り込み価値ゼロ
-- スキップ判定: Phase 1.5 gate (_index.md の「4 本目以降は著者検出で短絡可能」短絡示唆を発動)
+- 分析: docs/research/2026-05-22-cyril-one-folder-absorb-analysis.md (light Phase 2 only, Phase 2.5 omitted by user direction)
+- 経緯: 初回 Phase 1.5 で SATURATED → skip 判定 → user 指摘 (「手を抜いて改善回さなかった？」) で短絡を撤回、2 novel point だけ救済分析
+- 過去 cyril 系: Claude-only Stack (04-11) / Vault Smarter (05-08, 副次 3 採用) / Dashboard (05-19, 副次 2 採用) / Personal OS (05-21, 短絡で 0 採用) / 今回 (短絡から救済、1 採用)
+- 判定: A1 one-folder 採用 Reject / **A2 anti-vision 記録 Adopt** / B1 auto router YAGNI Reject / B2 専用 capture N/A
+- 取り込み: `templates/obsidian-vault/CLAUDE.md` に "Design Rationale (IPARAG vs One-Folder)" セクション追加 (~15 行、Filing decision/PARA actionability/Galaxy namespace/chronological alt/file system performance 5 根拠)
+- 効果: 5 本目以降の同種主張に対する Phase 1.5 saturation gate を強化 (再検討不要根拠の文書化)
+- 反省: 3 本目 Personal OS で分析省略を始め、4 本目で skip 直結 → user 指摘で救済。**saturation gate は新規論点の有無を verify せず即時 skip すると false-skip を生む**
 
 ## [2026-05-22] ingest-skip | How to Become a Claude Power User for FREE (Khairallah)
 
@@ -863,3 +865,21 @@
   - T3: rules/common/testing.md に「Test Comments (前提・事前条件・検証項目)」セクション追加
   - T4: rules/typescript.md に「推奨スタック (vitest 優先)」+「レイヤー強制 (eslint-plugin-boundaries)」セクション追加
 - レポート: docs/research/2026-05-21-zenn-erukiti-full-ai-coding-absorb-analysis.md
+
+## [2026-05-22] ingest | How Anthropic Engineers Actually Save Tokens
+
+- ソース: テキスト貼り付け (community blog、Thariq Shihipar X 投稿引用)
+- 分析: docs/research/2026-05-22-anthropic-engineers-token-savings-absorb-analysis.md
+- 判定: Gap 4 (T4/T5/NEW1/NEW2), Partial 4 (T1/T6/T8/T9 修正), Already 2 (T2 強化必須/T3), N/A 1 (T7)
+- 取り込み (S 規模 5 ファイル):
+  - resource-bounds.md: Prompt Cache TTL 三層 (state 2h / main 1h / subagent 5min) + 混同回避注記
+  - cc-7-layer-memory-model.md: CacheSafeParams 強化 (MCP/tool deny/CC upgrade も invalidation 要因、CLAUDE.md mid-edit は restart まで未反映)
+  - model-routing.md: Model Switch / Cache Invalidation Boundary 新セクション
+  - subagent-delegation-guide.md: Subagent Prompt Cache TTL (5min) 注記
+  - session-protocol.md: /rewind を /clear の cache-safe 代替として追加
+- 取り込み (M 規模、保留): T9 session_observer 拡張 → docs/plans/active/2026-05-22-token-cache-observer-extension.md
+- Codex review (task-mpg0cxic-z5lvrk) 主要指摘:
+  - 2h state TTL ≠ 1h prompt cache TTL の混同回避が最重要
+  - token-dashboard は session_observer に既に cache_read/create 抽出 (Gap → Partial)
+  - opusplan 禁止 bias 警告 (品質メリット無視は誤り)
+- Gemini fact-check: 8 主張中 7 VERIFIED + 1 PARTIALLY VERIFIED (subagent 5min は公式に「even on subscription」明記)

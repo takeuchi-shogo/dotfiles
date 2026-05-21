@@ -109,6 +109,7 @@ def run_tail(
     cfg: TailConfig,
 ) -> None:
     """Tail transcript (+ optional debug log) in real-time."""
+    parse.reset_cache_tracker()
     if not cfg.compact:
         _print_header(transcript, cfg)
 
@@ -157,6 +158,7 @@ def _tail_once(tf, df, cfg: TailConfig) -> bool:
 
 def run_replay(transcript: Path, cfg: TailConfig) -> None:
     """Replay an entire session transcript."""
+    parse.reset_cache_tracker()
     try:
         with open(transcript, "r", encoding="utf-8") as f:
             for line in f:

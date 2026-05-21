@@ -261,6 +261,20 @@ capability を絞った subagent が「やれること」の境界は、harness 
 | **Inherit** | Agent ツール（デフォルト）— プロンプトに十分なコンテキストを含める |
 | **Clean** | `claude -p` でヘッドレス起動、または worktree + 最小プロンプト |
 
+### Subagent Prompt Cache TTL
+
+> 出典: "How Anthropic Engineers Actually Save Tokens" (2026-05) + 公式 Claude Code prompt caching docs。
+
+サブエージェント (Task tool 経由) の prompt cache TTL は **subscription 利用時でも常に 5 分**（main session の 1h ではなく）。5 分超のサブエージェント workflow では cache hit を仮定しない。
+
+| 起動経路 | cache TTL | 注意点 |
+|---------|----------|--------|
+| **fork** (親 cache 読み) | 親に従う (subscription: 1h) | Inherit モード、親の cache prefix を引き継ぐ |
+| **subagent** (Task tool 経由) | 5 minutes 固定 | Clean モード、独立 cache 空間 |
+| **`claude -p` ヘッドレス** | API default 5 min (`ENABLE_PROMPT_CACHING_1H=1` で 1h) | 別 process、subscription cache は引き継がない |
+
+設計含意: 重い review/分析ループを subagent に投げる場合は **1 回の呼び出しで完結させる**。ping-pong 形式 (subagent → 結果受け → 同じ subagent に再投資) は cache が効かず full rebuild が累積する。詳細は `references/resource-bounds.md § Prompt Cache TTL 三層` 参照。
+
 ### 判断基準
 
 ```

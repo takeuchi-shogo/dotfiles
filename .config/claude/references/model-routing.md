@@ -65,6 +65,29 @@ last_reviewed: 2026-04-23
 
 Claude Code v2.1.126 で `WebFetch` は内部 Haiku 要約 + 100k chars truncation を観測 (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。Haiku 委譲時は二重圧縮 (Haiku 内部要約 → 委譲先要約) を回避するため、**生取得段階に限定**し要約は呼び出し側で行う。経路選択は `references/web-fetch-policy.md` に従う。
 
+## Model Switch / Cache Invalidation Boundary
+
+> 出典: "How Anthropic Engineers Actually Save Tokens" (2026-05) + Codex review (2026-05-21) + 公式 [Claude Code prompt caching docs](https://code.claude.com/docs/en/prompt-caching)。
+
+prompt cache は **model 固有**。プロンプトの prefix が変わる以下のイベントで cache は完全リセットされる。切替は **task boundary（独立タスクの開始時）でのみ**行い、ターン中で model を渡り歩かない。
+
+### Cache を破壊するイベント
+
+| イベント | 影響範囲 | 備考 |
+|---------|---------|------|
+| **Model switch** (Opus ↔ Sonnet ↔ Haiku) | 全 layer | 各 model が独自 cache を持つため、切替で 0 hit rate |
+| **`opusplan` mode** (plan=Opus / execute=Sonnet) | 全 layer | plan↔execute の都度 model switch が発生。長時間ループでは初回 miss が累積する |
+| **MCP server 接続/切断** | system layer | tool definitions が変わる |
+| **Tool deny / allow 変更** | system layer | tool 集合変化 |
+| **Claude Code 本体 upgrade** | system layer | base system prompt 変化 |
+| **CLAUDE.md / settings.json edit** | project layer | mid-session edit は restart まで未反映 (live cache は安全)。次起動時に rebuild |
+
+### Boundary Rule
+
+- **opusplan は禁止しない**: plan 品質の向上 (Opus の deep reasoning) は token cost より価値が高いケースが多い。ただし「opusplan で毎ターン model 切替」を recurring loop に組み込まない
+- **切替は task boundary で**: 別タスクに移るタイミングでだけ model を変える。ターン中に「ちょっと Haiku に投げて戻す」は cache miss が累積する
+- **長い subagent workflow には cache 期待しない**: subagent TTL=5min なので 5 分超のループは subscription cache が効かない。`subagent-delegation-guide.md` も参照
+
 ## Cost-aware Fallback (2026-06-15〜 Agent SDK credit 対応)
 
 2026-06-15 から `claude -p` / Claude Agent SDK / Claude Code GitHub Actions は subscription pool ではなく **月次 Agent SDK credit** から消費される (詳細: `references/agent-sdk-credit.md`)。Credit 枯渇時、または heavy parallel `claude -p` バッチを設計する段階で以下の順序でフォールバック判断する:

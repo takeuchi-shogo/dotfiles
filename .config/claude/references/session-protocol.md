@@ -95,6 +95,7 @@ L タスクのセッション終了時は、変更の影響範囲を確認して
 1. **autocompact を待たず proactive に `/compact {focus}` を発動**: 次にやりたいことを明示する (`/compact focus on auth refactor, drop test debugging`)
 2. **方向転換時は `/compact` ではなく `/clear` を選ぶ**: モデルが方向を予測できない状態での compact は品質が最低
 3. **compaction 3回超えたら迷わず `/clear`**: `context-compaction-policy.md` の Reset > Compaction 原則と整合
+4. **直前ターンだけ巻き戻したい場合は `/rewind` を優先**: `/clear` は cache を破棄するが、`/rewind` は直近のメッセージだけ undo するため prompt cache の prefix を保てるケースが多い。「直前の質問だけ撤回」「ツール呼び出しの結果が大きすぎた」程度なら `/rewind` の方が cache-safe
 
 ### 判断フロー
 

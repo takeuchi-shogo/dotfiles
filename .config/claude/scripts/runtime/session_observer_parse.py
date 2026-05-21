@@ -111,18 +111,63 @@ def _block_tool_use(block: dict, model: str, sid: str) -> dict:
     return ev
 
 
+_LOW_RATIO_THRESHOLD = 0.30
+_CACHE_CREATE_STREAK_LIMIT = 3
+_cache_create_streak = 0
+
+
+def reset_cache_tracker() -> None:
+    """Reset the module-level cache_create streak counter.
+
+    Streaming pipelines feed `_make_usage_event` in transcript order, so the
+    streak is kept as module state. Tests reset it between cases to isolate.
+    """
+    global _cache_create_streak
+    _cache_create_streak = 0
+
+
 def _make_usage_event(usage: dict, model: str, msg: dict, sid: str) -> dict:
-    return make_event(
+    global _cache_create_streak
+    inp = max(0, usage.get("input_tokens", 0) or 0)
+    out = max(0, usage.get("output_tokens", 0) or 0)
+    cr = max(0, usage.get("cache_read_input_tokens", 0) or 0)
+    cw = max(0, usage.get("cache_creation_input_tokens", 0) or 0)
+
+    # cache_read / (cache_read + cache_create + input). None on cold start
+    # so callers can distinguish "no data yet" from "zero hits".
+    denom = cr + cw + inp
+    ratio = (cr / denom) if denom > 0 else None
+
+    # Streak rule: count consecutive cache-create-only turns (cw>0, cr==0).
+    # cr>0 (cache hit) resets the streak. Pure-input turns (cw=0, cr=0) are
+    # no-ops so a short input-only turn does not mask a real miss burst.
+    if cw > 0 and cr == 0:
+        _cache_create_streak += 1
+    elif cr > 0:
+        _cache_create_streak = 0
+
+    event = make_event(
         "tokens",
         "usage",
         sid,
-        input_tokens=usage.get("input_tokens", 0),
-        output_tokens=usage.get("output_tokens", 0),
-        cache_read=usage.get("cache_read_input_tokens", 0),
-        cache_create=usage.get("cache_creation_input_tokens", 0),
+        input_tokens=inp,
+        output_tokens=out,
+        cache_read=cr,
+        cache_create=cw,
+        cache_ratio=ratio,
         model=model,
         stop_reason=msg.get("stop_reason", ""),
     )
+
+    if (
+        ratio is not None
+        and ratio < _LOW_RATIO_THRESHOLD
+        and _cache_create_streak > _CACHE_CREATE_STREAK_LIMIT
+    ):
+        event["warning"] = "cache_miss_burst"
+        event["cache_create_streak"] = _cache_create_streak
+
+    return event
 
 
 _BLOCK_DISPATCH = {

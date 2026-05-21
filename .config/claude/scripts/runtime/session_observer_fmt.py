@@ -96,15 +96,29 @@ def usage(data: dict, compact: bool) -> str:
     """Format token usage."""
     inp = data.get("input_tokens", 0)
     out = data.get("output_tokens", 0)
-    cr = data.get("cache_read_input_tokens", 0)
-    cw = data.get("cache_creation_input_tokens", 0)
+    # Accept both routed-event keys (cache_read/cache_create) and raw API
+    # keys (cache_read_input_tokens/...). Callers feed either shape.
+    cr = data.get("cache_read", data.get("cache_read_input_tokens", 0))
+    cw = data.get("cache_create", data.get("cache_creation_input_tokens", 0))
+    ratio = data.get("cache_ratio")
+    warning = data.get("warning")
+    ratio_str = f"{ratio * 100:.0f}%" if isinstance(ratio, (int, float)) else "n/a"
+
     if compact:
-        return f"[usage] in={inp} out={out} cr={cr} cw={cw}"
-    return (
+        base = f"[usage] in={inp} out={out} cr={cr} cw={cw} ratio={ratio_str}"
+        return f"{base} ⚠ {warning}" if warning else base
+
+    line = (
         f"{C.DIM}📊 tokens: in={inp:,} out={out:,}"
         f" cache_read={cr:,}"
-        f" cache_create={cw:,}{C.RESET}"
+        f" cache_create={cw:,}"
+        f" ratio={ratio_str}{C.RESET}"
     )
+    if warning:
+        streak = data.get("cache_create_streak")
+        suffix = f" (streak={streak})" if streak else ""
+        line += f"\n{C.YELLOW}⚠️  cache warning: {warning}{suffix}{C.RESET}"
+    return line
 
 
 # --- internal helpers ---
