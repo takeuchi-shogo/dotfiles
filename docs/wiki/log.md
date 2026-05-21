@@ -8,6 +8,16 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-05-22] ingest-skip | How to Become a Claude Power User for FREE (Khairallah)
+
+- ソース: Twitter/Threads 配布記事 (テキスト貼り付け, @eng_khairallah1)
+- 理由: 飽和カテゴリ "claude-code-tips/general-setup-promo" 系の 8 件目相当 (採用率 ~0%)
+- 根拠: 過去 7 件累積 — Boris 30 Tips / 12-rule CLAUDE.md / zodchixquant 15 Settings / Three-Model Stack / Cyril x3 (Reference Only or Reject 中心)
+- 一次評価: 14 手法すべて Already 10 / Partial 1 / N/A 3 で新規取り込み価値ゼロ
+- Web UI 中心 (Projects, Memory, Cowork) で Claude Code CLI ユーザーには適用不能
+- Khairallah Routines (2026-05-14) で同著者は既 absorb 済 (4 件採用)
+- スキップ判定: Phase 1.5 gate (family taxonomy 厳格マッチ外だが、テーマと採用率パターンが完全一致)
+
 ## [2026-04-24] ingest | Deep Researcher (Onyx+CrewAI+Voxtral) by Akshay Pachaar
 
 - ソース: 記事 (Onyx + CrewAI + Voxtral 設計原則)
