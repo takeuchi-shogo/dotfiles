@@ -139,8 +139,10 @@ def _make_usage_event(usage: dict, model: str, msg: dict, sid: str) -> dict:
     ratio = (cr / denom) if denom > 0 else None
 
     # Streak rule: count consecutive cache-create-only turns (cw>0, cr==0).
-    # cr>0 (cache hit) resets the streak. Pure-input turns (cw=0, cr=0) are
-    # no-ops so a short input-only turn does not mask a real miss burst.
+    # cr>0 (cache hit, even partial — cw>0 and cr>0) resets the streak: any
+    # cache reuse is treated as recovery from a miss burst. Pure-input turns
+    # (cw=0, cr=0) are no-ops so a short input-only turn does not mask a
+    # real miss burst.
     if cw > 0 and cr == 0:
         _cache_create_streak += 1
     elif cr > 0:

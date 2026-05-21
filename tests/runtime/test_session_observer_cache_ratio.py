@@ -45,8 +45,8 @@ class TestCacheRatio:
         assert ev["cache_ratio"] == pytest.approx(0.9)
         assert "warning" not in ev
 
-    def test_only_input_zero_division_guard(self):
-        # input>0, no cache activity yet — ratio is 0.0, not error
+    def test_pure_input_no_cache_activity_ratio_is_zero(self):
+        # cold_start (inp=0) は None、inp>0 で cache 無は 0.0 (zero-div は別 path)
         ev = parse._make_usage_event(_usage(cr=0, cw=0, inp=500), "opus", {}, "sid")
         assert ev["cache_ratio"] == 0.0
         assert "warning" not in ev
@@ -66,6 +66,14 @@ class TestWarningTrigger:
                 _usage(cr=900, cw=50, inp=100), "opus", {}, "sid"
             )
         assert "warning" not in ev
+
+    def test_streak_exactly_at_limit_no_warning(self):
+        # streak == _CACHE_CREATE_STREAK_LIMIT (=3) は > 3 を満たさず発火しない最大値
+        events = [
+            parse._make_usage_event(_usage(cr=0, cw=500, inp=100), "opus", {}, "sid")
+            for _ in range(3)
+        ]
+        assert "warning" not in events[2]
 
     def test_warning_fires_on_4th_consecutive_miss(self):
         events = [
