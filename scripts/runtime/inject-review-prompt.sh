@@ -25,15 +25,21 @@ if [[ -z "$ws_ref" ]]; then
   exit 0
 fi
 
-# selected surface 行は "* surface:N  Name  [selected]" で $1 が "*" になるため
-# 行から surface:N を直接抽出する
-surface_ref=$(cmux list-pane-surfaces --workspace "$ws_ref" 2>/dev/null \
-  | grep -F "$SURFACE_NAME" \
-  | grep -oE 'surface:[0-9]+' \
-  | head -1)
+# Claude pane の surface 登録は state file 待ち等で遅延しうるため retry で待つ
+# (selected surface 行は "* surface:N  Name  [selected]" で $1 が "*" になるので
+#  grep -oE で行から surface:N を直接抽出)
+surface_ref=""
+for attempt in 1 2 3 4 5 6; do
+  surface_ref=$(cmux list-pane-surfaces --workspace "$ws_ref" 2>/dev/null \
+    | grep -F "$SURFACE_NAME" \
+    | grep -oE 'surface:[0-9]+' \
+    | head -1)
+  [[ -n "$surface_ref" ]] && break
+  sleep 5
+done
 
 if [[ -z "$surface_ref" ]]; then
-  log "skip ws=$ws_ref: surface '$SURFACE_NAME' not found"
+  log "skip ws=$ws_ref: surface '$SURFACE_NAME' not found after $WAIT_SEC+30s"
   exit 0
 fi
 
