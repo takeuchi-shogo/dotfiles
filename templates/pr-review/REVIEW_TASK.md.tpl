@@ -192,23 +192,19 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 
 3. **ユーザーへの報告**: 「Obsidian に保存しました: `PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝える。
 
-4. **worktree 削除 + cmux pane 終了**: 保存確認 OK なら以下を実行してセッションを完全に終了する:
+4. **worktree 削除 + cmux pane 終了**: 保存確認 OK なら**1 つの Bash 呼び出しで**以下を実行してセッションを完全に終了する:
 
    ```bash
-   wt_path="$PWD"
-   review_repo="$HOME/projects/knowledge-work/knowledgework-review"
-   if [[ -s "$target" ]]; then
-     cd "$review_repo"
-     # untracked (REVIEW_TASK.md + .claude/pr-reviews/) は Obsidian に保存済 = 損失なし
-     git worktree remove --force "$wt_path" && echo "worktree removed: $wt_path"
-     # cmux pane (workspace) を閉じる — Claude セッションも同時に終わる
-     if [[ -n "${CMUX_WORKSPACE_ID:-}" ]]; then
-       cmux close-workspace --workspace "workspace:${CMUX_WORKSPACE_ID}" || true
-     fi
-   else
-     echo "ERROR: Obsidian copy not confirmed, keeping worktree" >&2
-   fi
+   ~/dotfiles/scripts/runtime/finish-pr-review.sh "$target"
    ```
+
+   このスクリプトが内部で実施する処理:
+   - target ファイル存在確認 (non-empty)
+   - `cd "$HOME"` (worktree 削除後に cwd が消えないように)
+   - `git worktree remove --force` で worktree 強制削除 (untracked な REVIEW_TASK.md / .claude/pr-reviews/ は Obsidian に保存済 = 損失なし)
+   - `cmux identify` で workspace short ref 取得 → `cmux close-workspace` で workspace 全体 (Setup pane + Claude pane) を閉じる
+
+   **重要**: 上記の処理を複数の Bash 呼び出しに分割しないこと。Claude Code の Bash tool は cwd 状態を引き継がないため、`cd` の後に別 Bash で `git worktree remove` するとパスが解決できなくなる。常に `finish-pr-review.sh` を 1 行で呼ぶ。
 
 ## 制約
 
