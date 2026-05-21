@@ -2,7 +2,7 @@
 name: topic-family-saturation
 description: /absorb Phase 1.5 で同分野 absorb の飽和を検出するための family taxonomy と閾値定義
 type: reference
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-22
 ---
 
 # Topic Family Saturation Detection
@@ -79,26 +79,66 @@ grep -i -E "obsidian|second brain|PARA|vault" /Users/takeuchishougo/dotfiles/doc
 採用ありエントリ数のカウントに使った具体的な grep ヒット文字列を変数 `evidence` として保持する (Step 6 の log.md 追記で使用)。
 例: `evidence = ["採用 4 件 in Karpathy", "Reference Only in Cyril-x3"]`
 
+### Step 3.7: 手法 delta 計算 — false-skip ガード [必須]
+
+採用率 < 20% で SATURATED 候補となった場合、**skip 判定の前に必ず実行する**。
+飽和判定だけで skip すると、新規論点 (architecturally novel claims) を含む N+1 件目を見逃す。
+これは 2026-05-22 の "One-Folder Obsidian System" 事例で確認された false-skip 失敗モードである。
+
+1. Phase 1 抽出結果から **手法リスト** を取得 (Phase 1 出力 JSON の `手法` フィールド)
+2. 同 family の直近 3 件の analysis report (`docs/research/*-absorb-analysis.md`) を Read し、
+   各レポートの「手法」「主張」セクションから既知手法 set を構築
+3. `novel_methods = current_methods - union(prior_methods)` を計算
+   - 完全一致だけでなく **意味的同等** で判定 (例: 「9-folder IPARAG」と「multi-folder hierarchy」は同一)
+   - 過去 absorb で **明示的に Reject 済み** の手法 (例: one-folder vs IPARAG の真逆設計提案) は **再評価対象** として novel に含める。Reject の根拠が文書化されていれば次の Phase 2 で即時 N/A 判定でき低コスト
+4. `delta = |novel_methods|` を記録 (これを Step 4 と Step 5 が使う)
+
+判定への影響 (Step 4 参照):
+- `delta >= 2` → **SATURATED-but-novel** → `light-phase2` 強制提示
+- `delta == 1` → **SATURATED-borderline** → 3 択 (light-phase2 / continue / skip)
+- `delta == 0` → **SATURATED-pure-rehash** → 従来通り 2 択 (continue / skip、skip 推奨)
+
 ### Step 4: 判定とアクション
 
 | 条件 | 判定 | アクション |
 |------|------|----------|
 | N < 3 | PASS | Phase 2 へ通常進行 |
 | N >= 3 かつ 採用率 >= 20% | PASS (warning) | Phase 2 へ進むが「重複領域」と user に告知 |
-| N >= 3 かつ 採用率 < 20% | **SATURATED** | `AskUserQuestion` で `continue` / `skip` 選択 |
+| N >= 3 かつ 採用率 < 20% かつ delta >= 2 | **SATURATED-but-novel** | `AskUserQuestion` で `light-phase2` (推奨) / `continue` / `skip` |
+| N >= 3 かつ 採用率 < 20% かつ delta == 1 | **SATURATED-borderline** | `AskUserQuestion` で `light-phase2` / `continue` / `skip` (推奨なし) |
+| N >= 3 かつ 採用率 < 20% かつ delta == 0 | **SATURATED-pure-rehash** | `AskUserQuestion` で `continue` / `skip` (skip 推奨) |
 
 ### Step 5: SATURATED 時の AskUserQuestion テンプレ
+
+novel_methods の有無で提示内容を切り替える。
+
+**SATURATED-but-novel / SATURATED-borderline (delta >= 1) テンプレ:**
 
 ```
 この記事は topic family "<family>" の N 件目です:
   過去事例: <最新 3 件のファイル名>
   採用率: X%（Y 件中 Z 件で採用あり）
-
-フル absorb workflow (Phase 2-5) を実行しますか？
+  検出された新規論点 (delta=D): <novel_methods のリスト>
 
 選択肢:
-  - continue: 通常通り Phase 2 へ進む (新しい角度がある場合)
-  - skip: Wiki Log に 1 行だけ追記して終了 (Reference Only として閉じる)
+  - light-phase2: 新規論点 D 件だけ Phase 2 で検証 (Phase 2.5 省略可、mini レポート作成)
+  - continue: フル workflow (Phase 2-5 + Phase 2.5) に進む
+  - skip: log.md 1 行で閉じる (新規論点も無視)
+```
+
+**SATURATED-pure-rehash (delta == 0) テンプレ:**
+
+```
+この記事は topic family "<family>" の N 件目です:
+  過去事例: <最新 3 件のファイル名>
+  採用率: X%
+  新規論点: なし (delta = 0、完全な再パッケージ)
+
+フル absorb workflow を実行しますか？
+
+選択肢:
+  - continue: 念のため Phase 2 へ進む
+  - skip: Wiki Log に 1 行だけ追記して終了 (推奨)
 ```
 
 ### Step 6: skip 選択時のショートカット
@@ -109,13 +149,25 @@ Phase 2-5 をスキップして以下のみ実行:
    ```
    ## [YYYY-MM-DD] ingest-skip | <記事タイトル>
    - ソース: <URL or タイトル>
-   - 理由: topic family "<family>" saturated (N 件目, 採用率 X%)
+   - 理由: topic family "<family>" saturated-pure-rehash (N 件目, 採用率 X%, delta=0)
    - 根拠: <Step 3.5 で記録した evidence (grep ヒット文字列リスト)>
    - 該当 family のキーワード hit: <Step 1 で照合したキーワード>
    - スキップ判定: Phase 1.5 gate
    ```
 2. MEMORY.md の外部知見索引には追記しない (Reference Only 以下のため)
 3. Phase 5.5-5.7 (Wiki/Obsidian/Log) も実行しない (log.md だけ)
+
+### Step 6.5: light-phase2 選択時のショートカット
+
+Step 3.7 で抽出した novel_methods だけを対象に絞り込み Phase 2 を実行する:
+
+1. **Phase 2 Pass 1** — novel_methods のキーワードだけを Sonnet Explore に渡す (full method list ではなく)
+2. **Phase 2 Pass 2** — Opus が Already/Partial/Gap/N/A 判定 (novel_methods に限定)
+3. **Phase 2.5 (Codex+Gemini) は省略可** — light flag。ユーザーが明示希望すれば実行
+4. **Phase 3 (Triage)** — adopt 候補があれば AskUserQuestion で選別
+5. **Phase 4 (Plan + mini report)** — `docs/research/YYYY-MM-DD-{slug}-absorb-analysis.md` を作成、frontmatter に `status: light-phase2-only` を明記
+6. **Phase 5 (Handoff)** — 採用候補が S 規模なら即実行、それ以上は通常 handoff
+7. **log.md operation** は `ingest (light Phase 2)` (`ingest-skip` ではない)
 
 ## 判定の安全側ルール
 
@@ -145,6 +197,8 @@ Phase 2-5 をスキップして以下のみ実行:
 | 採用率 0% でも user 確認なしに自動 skip | 新しい角度を持つ N 件目を見逃す。**必ず AskUserQuestion** |
 | family taxonomy にタイトル一致だけで追加 | 永続パターンのみ登録する。3 件以上の累積実績が前提 |
 | skip 後に MEMORY.md 索引へ追記 | Reference Only 以下は索引も汚すだけ。log.md だけに残す |
+| **delta 計算をスキップして即 skip 判定** | **2026-05-22 で確認された false-skip 失敗モード。SATURATED 候補でも Step 3.7 (手法 delta) は必須実行。delta >= 1 なら light-phase2 を選択肢に出す** |
+| **過去の Reject 済み手法を novel から除外する** | Reject 根拠が古い・誤っている可能性。novel 扱いして Phase 2 で再評価し、文書化された Reject 根拠があれば即時 N/A で低コスト |
 
 ## 関連
 
