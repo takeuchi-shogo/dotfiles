@@ -155,7 +155,7 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 
    ```bash
    vault="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
-   target="$vault/AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md"
+   target="$vault/PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md"
    mkdir -p "$(dirname "$target")"
    # <VERDICT> は TL;DR の総合判定をそのまま入れる: APPROVE / REQUEST_CHANGES / COMMENT
    {
@@ -177,7 +177,7 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
    echo "saved: $target"
    ```
 
-2. **ユーザーへの報告**: 「Obsidian に保存しました: `AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝えてセッション終了。
+2. **ユーザーへの報告**: 「Obsidian に保存しました: `PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝えてセッション終了。
 
 3. **worktree の削除は触らない**。次の `poll-pr-reviewer.sh` 起動時に「Obsidian にコピー済 = レビュー完了」と判定して自動で `git worktree remove` される。
 
@@ -185,7 +185,7 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 
 - **書き込み許可ファイル**:
   - `.claude/pr-reviews/pr-{{PR_NUMBER}}.md` (worktree 内、レビュー本体)
-  - `$OBSIDIAN_VAULT_PATH/AUTO-PR-REVIEW/pr-{{PR_NUMBER}}-review.md` (frontmatter 付きコピー)
+  - `$OBSIDIAN_VAULT_PATH/PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md` (frontmatter 付きコピー)
 - 既存コードへの Edit / Write は **禁止** (レビューであって修正ではない)
 - `gh pr review` / `gh pr comment` / `gh pr merge` は **禁止** (再掲)
 - 1 セッション最大 30 分目安。超過しそうなら TL;DR だけ書いて Obsidian にコピー → 終了

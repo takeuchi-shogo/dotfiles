@@ -59,7 +59,7 @@ mkdir -p "$PROCESSED_DIR"
 # uncommitted な変更がある worktree は safe (--force なし) で skip。
 cleanup_done_worktrees() {
   local vault="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
-  local vault_dir="$vault/AUTO-PR-REVIEW"
+  local vault_dir="$vault/PR_REVIEW_AGENT"
   [[ -d "$vault_dir" ]] || return 0
   [[ -d "$WORKTREE_DIR" ]] || return 0
 
