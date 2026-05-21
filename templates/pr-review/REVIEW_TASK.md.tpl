@@ -91,6 +91,22 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 - **公開 API / Proto schema の breaking change** (互換性が壊れていないか)
 - diff には現れないが **同じ flow を共有するコード** への副作用
 
+## 観点②.5 Codex 深掘り (別モデル triangulation)
+
+Claude (Opus 4.7) とは別モデル (Codex CLI / gpt-5.5) で **独立した第三者視点** のレビューを 1 回挟む。
+観点①② で見落としやすい structural issue / business logic risk / 暗黙の前提を補完する。
+
+```bash
+codex exec review --base "{{BASE_BRANCH}}" "PR #{{PR_NUMBER}} を深掘りレビュー。観点①② で見落としそうな structural issue / business logic risk / breaking change / 同 flow への波及を指摘してください。深い推論が必要な箇所に集中。"
+```
+
+実行結果を最終 markdown の **「観点②.5 Codex 深掘り」** セクションに記載:
+- Critical / Important findings をリスト化 (Claude の指摘と重複するものは "Claude も同様指摘" と注記)
+- Codex 独自の指摘は強調 (triangulation の価値)
+- 出力全文ではなく **要約 + file:line 参照** に圧縮 (200-400 字目安)
+
+**失敗時 (codex unavailable / 認証切れ / timeout 等)**: silent fallback 禁止。失敗理由を「環境チェック」セクションに明記し、観点②.5 は **SKIPPED** と表示する。
+
 ## 観点③ KW 固有のリスク
 
 - `CODEOWNERS` を読み、影響範囲のオーナー設定が適切か
@@ -140,6 +156,11 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
 
 ### Breaking changes
 - なし / または具体的なリスト
+
+## 観点②.5 Codex 深掘り
+- [Codex finding] `path/to/file.go:LINE` — finding (Claude も同様指摘なら注記)
+- ... (200-400 字に圧縮)
+- 実行不可だった場合: **SKIPPED — <理由>**
 
 ## 観点③ KW 固有のリスク
 - **CODEOWNERS**: ...
