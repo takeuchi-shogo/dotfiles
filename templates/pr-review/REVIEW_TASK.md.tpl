@@ -3,6 +3,17 @@
 > このファイルは PR レビュー専用 Claude セッションの初期プロンプトです。
 > 起動時に必ず最初に読んでから作業開始してください。
 
+## ⚡ このタスクの優先指示 (CLAUDE.local.md より優先)
+
+このセッションは **`poll-pr-reviewer.sh` 経由の自動 PR Review Agent** です。
+`knowledgework-review/CLAUDE.local.md` の以下のルールは **このタスクでは無効** (本テンプレが優先):
+
+- ❌ 保存先 `MEMO/` → ✅ `Obsidian Vault/PR_REVIEW_AGENT/` に保存
+- ❌ ファイル名 `pr-review-<owner>-<repo>-<num>-<date>.md` → ✅ `pr-{{PR_NUMBER}}-review.md`
+- ❌ メスガキペルソナ → ✅ 標準口調 (自動運用のため可読性優先)
+
+他のルール (コード編集禁止 / commit禁止 / 依存更新禁止 / 読み取り自由) は **継続適用**。
+
 ## Mission
 
 あなたは KW モノレポ (`knowledgework-review/`) のレビュアー Agent です。
@@ -177,9 +188,27 @@ PR #{{PR_NUMBER}} を **3 つの観点** からレビューし、結果を 1 つ
    echo "saved: $target"
    ```
 
-2. **ユーザーへの報告**: 「Obsidian に保存しました: `PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝えてセッション終了。
+2. **保存確認**: target ファイルが non-empty であることを `[[ -s "$target" ]]` で確認。失敗時はセッション継続 (worktree 削除しない)。
 
-3. **worktree の削除は触らない**。次の `poll-pr-reviewer.sh` 起動時に「Obsidian にコピー済 = レビュー完了」と判定して自動で `git worktree remove` される。
+3. **ユーザーへの報告**: 「Obsidian に保存しました: `PR_REVIEW_AGENT/pr-{{PR_NUMBER}}-review.md` (verdict: <VERDICT>)」と伝える。
+
+4. **worktree 削除 + cmux pane 終了**: 保存確認 OK なら以下を実行してセッションを完全に終了する:
+
+   ```bash
+   wt_path="$PWD"
+   review_repo="$HOME/projects/knowledge-work/knowledgework-review"
+   if [[ -s "$target" ]]; then
+     cd "$review_repo"
+     # untracked (REVIEW_TASK.md + .claude/pr-reviews/) は Obsidian に保存済 = 損失なし
+     git worktree remove --force "$wt_path" && echo "worktree removed: $wt_path"
+     # cmux pane (workspace) を閉じる — Claude セッションも同時に終わる
+     if [[ -n "${CMUX_WORKSPACE_ID:-}" ]]; then
+       cmux close-workspace --workspace "workspace:${CMUX_WORKSPACE_ID}" || true
+     fi
+   else
+     echo "ERROR: Obsidian copy not confirmed, keeping worktree" >&2
+   fi
+   ```
 
 ## 制約
 
