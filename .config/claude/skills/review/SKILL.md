@@ -14,11 +14,10 @@ hooks:
       hooks:
         - type: prompt
           prompt: >
-            [REVIEW GUARD] /review スキルのレビューフェーズ（Step 1〜4: 分析・起動・統合・出力）が
-            現在進行中の場合のみブロックしてください。
-            レビュー結果の報告が完了した後、またはユーザーが「修正して」「直して」等の指示を出した後は
-            Edit/Write を許可してください。
-            判定基準: レビュー統合レポートがまだ出力されていない → ブロック。出力済み → 許可。
+            [REVIEW IN PROGRESS] /review スキル実行中の Edit/Write です。
+            Step 1〜4 (Synthesis 出力前) なら待機してレポート完成を優先してください。
+            Step 5 Fix Cycle 中またはユーザー修正指示後なら継続して問題ありません。
+            本当に実行しますか？
 metadata:
   pattern: reviewer
   version: 1.0.0
