@@ -1,20 +1,41 @@
 # Claude Cowork 相当機能の使い方ガイド (本環境版)
 
-> **Status**: 2026-05-09 作成 / Claude Code v2.1.119 / Anthropic Max plan
-> **目的**: Khairallah の "Claude Cowork" 記事 (マーケ系) が主張する用途 (情報収集 / 知見の蓄え / 改善ループ) を、本環境の **既存** Anthropic 公式機能で実現する方法をまとめる。
-> **前提**: 「Claude Cowork」は Anthropic 公式製品としては **存在しない**。ブランディング上の用語にすぎない。
+> **Status**: 2026-05-09 作成 / **2026-05-22 訂正** (Cowork 実在性を反映) / Claude Code v2.1.119 / Anthropic Max plan
+> **目的**: dotfiles は Claude Code (terminal) 中心の harness 設計を採用している。Khairallah の "Cowork" 記事 (マーケ系) が主張する用途 (情報収集 / 知見の蓄え / 改善ループ) を、Cowork に移行せず Claude Code + Skills + Routines + MCP で実現する方法をまとめる。
+> **前提**: 「Claude Cowork」は **2026 年初頭に Anthropic 公式機能として導入済み** (paid plans の Claude Desktop for macOS/Windows で利用可能、Chat tab と並ぶ独立 mode)。dotfiles では Claude Code (terminal) を主軸とするため Cowork は採用していない。
 
-## 1. 「Claude Cowork」は存在しない (誤解の整理)
+## 1. Claude Cowork と dotfiles の役割分離 (採用しない理由)
 
-| 記事の用語 | 実体 |
+> **2026-05-22 訂正履歴**: 旧版では「Claude Cowork は存在しない」と記載していたが、Anthropic 公式 Help Center で Cowork が confirmed feature であることが判明 (Codex absorb 検証 / Gemini grounding、2026-05-22)。stale fact を撤回し、dotfiles が Cowork ではなく Claude Code を選択する **理由** に書き直した。
+
+**Cowork は実在する**。公式 docs: [Get started with Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork) / [Claude app release notes](https://support.claude.com/en/articles/12138966-release-notes)。
+
+ただし dotfiles では **意図的に Cowork を採用していない**。理由:
+
+| 比較軸 | Cowork (Claude Desktop GUI) | Claude Code (terminal、dotfiles 主軸) |
+|---|---|---|
+| 起動形態 | Desktop app が起動中 & PC awake が前提 | terminal セッション、Routines (cron-based) も可 |
+| harness 投資 | Anthropic 提供の GUI に依存 | dotfiles で hooks/scripts/policy = 数千行 + 100+ skills + 22 agents 構築済 |
+| auditability | Cowork activity は Compliance API に未収録 (公式注意) | hooks/skills/agents は全て git-tracked、observability 完備 |
+| 削除権限 | 明示許可必要 (公式注意) | git revert で完全可逆 |
+| usage limits | Cowork は usage limits を消費しやすい (公式注意) | model-routing.md で意図的に Haiku/Sonnet 委譲、Opus 節約 |
+| 拡張性 | Anthropic 公式 connectors (Gmail/Cal/Drive 等) | MCP servers (任意のサーバー追加可) |
+| primary surface | GUI、folder access permissions、scheduled tasks | terminal、Bash 統合、settings.json harness |
+
+**結論**: Cowork を使うかどうかは dotfiles の harness 設計戦略の選択。**現状は Claude Code 中心**を維持し、Cowork に追従する benefit/cost は別途 audit する。
+
+### 1.1 記事の用語と dotfiles の対応
+
+| Cowork (公式機能) | dotfiles の代替 |
 |---|---|
-| "Cowork タスク" | Claude Code セッション (`claude` CLI、`claude -p` 非対話モード含む) |
-| "Connector" | MCP servers (Model Context Protocol) |
-| "/schedule" | Claude Code 公式 skill (Routines = cron-based 自動セッション、**実在**) |
-| "タスクテンプレート" | Skills (本環境に 100+ 登録済み) |
-| "Cloud Agents" | Claude.ai web 側の機能、Claude Code とは別経路 |
+| Cowork tab (Claude Desktop) | Claude Code セッション (`claude` CLI、`claude -p` 非対話モード含む) |
+| Cowork Connectors (Gmail/Slack/GDrive/Cal) | MCP servers (Model Context Protocol) |
+| Cowork `/schedule` | Claude Code Routines (`/schedule` skill 経由、別実装) |
+| Cowork Folder/Global instructions | `<repo>/CLAUDE.md` + `~/.claude/CLAUDE.md` + `.claude/projects/*/CLAUDE.md` |
+| Cowork Plugins (marketplace) | Skills (本環境に 100+ 登録済み) + plugin (`~/.claude/plugins/`) |
+| Cowork Cloud Agents | Claude.ai web 側の機能、dotfiles からは利用しない |
 
-つまり「Cowork という製品」を覚える必要はなく、**Skills + /schedule + MCP の 3 つの公式機能** を使いこなせば記事の主張する用途は満たせる。
+**Cowork `/schedule` と Claude Code Routines は別実装** (公式 docs 上は同名だが surface が異なる)。混同しないこと。
 
 ## 2. 公式機能の使い方マップ
 

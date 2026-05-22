@@ -883,3 +883,22 @@
   - token-dashboard は session_observer に既に cache_read/create 抽出 (Gap → Partial)
   - opusplan 禁止 bias 警告 (品質メリット無視は誤り)
 - Gemini fact-check: 8 主張中 7 VERIFIED + 1 PARTIALLY VERIFIED (subagent 5min は公式に「even on subscription」明記)
+
+
+## [2026-05-22] ingest | Khairallah — How to Actually Set Up Claude. 40 Features Most Users Have Never Touched
+
+- ソース: テキスト貼り付け (X 投稿、@eng_khairallah1)
+- 分析: docs/research/2026-05-22-khairallah-40-features-absorb-analysis.md
+- 判定: family `claude-code-tips` 11 件目 / Saturation Gate PASS (warning, 60% adoption)
+- 記事採用: 0 件 (TOP 5 強化候補すべて Sonnet imagination と Pass 2 で判定、Codex 独立検証で同判定確認)
+- Validation-only 1 件:
+  - docs/guides/2026-05-09-claude-cowork-equivalents.md: 「Claude Cowork は存在しない」stale fact → 「Cowork 実在前提で dotfiles が採用しない理由」に書き直し
+- Meta-finding 3 件 (本 absorb の主成果):
+  - /absorb SKILL.md anti-patterns に 4 行追加 (Sonnet 強化案 Pass 2 引用照合 / 未知用語 Gemini grounding 先行 / 採用 0 ≠ 終了 で platform drift 別 ledger / Sonnet imagination 罠 link)
+  - memory/feedback_absorb_sonnet_imagination.md 新設 (Gap fabrication = Already=存在確認≠強化不要 の対の罠)
+  - 同 family 11 件目で初検出した failure mode を skill 自身で防御化
+- 重要発見 (Codex / Gemini grounding):
+  - "Cowork tab" は Anthropic 公式機能として実在 (2026 年初頭 Claude Desktop 導入、support.claude.com/articles/13345190)
+  - Opus 当初の "factually dubious" 即断は誤り (未知用語の grounding 不足)
+  - dotfiles の stale doc が absorb 過程で露出 → platform drift audit としては値あり
+- ユーザー指摘: 「本当に参考になるもの、活かせるものなかった？手を抜いてない？」→ フル Phase 2-2.5 走査で Reject 判定の根拠を厳格化
