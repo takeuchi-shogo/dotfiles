@@ -12,10 +12,12 @@ last_reviewed: 2026-04-23
 Agent harness を育てていくと、同じ下位 tool に対して複数の層の wrapper が積まれていく傾向がある:
 
 ```
-Opus → /dispatch → codex-rescue → codex CLI → (本当にやりたかったこと)
+Opus → /dispatch → cmux Worker (launch-worker.sh --model codex) → codex CLI → (本当にやりたかったこと)
 Opus → /gemini    → gemini-explore → gemini CLI → (同上)
 Opus → /codex     → codex skill → codex CLI → (同上)
 ```
+
+> ※ かつて存在した `codex-rescue` agent (Skill/subagent_type 経由) は両ルートとも観察不能 + 失敗事例 (Permission Storm / Silent Stall / orphan 蓄積) のため廃止。詳細は memory `feedback_codex_casual_use.md`。
 
 各層には存在理由があるが、wrapper stack が厚くなると以下の問題が出る:
 
@@ -76,7 +78,7 @@ PostHog の例: 4 つの別 tool (`projects-get`, `insight-get`, `insight-query`
 | `/gemini` skill | `gemini` CLI | Taste encoding (1M context の使い所) | 適用条件の絞り込み |
 | `/commit` skill | `git commit` | Taste encoding (conventional commit 規則) | regex+emoji を固定化 |
 | `/review` skill | subagents 群 | Cross-tool orchestration | 変更規模に応じて parallel fan-out |
-| `codex-rescue` agent | `codex` CLI | Taste encoding (投入タイミングの判断) | 「自力で詰まった時だけ呼ぶ」を制約化 |
+| ~~`codex-rescue` agent~~ | ~~`codex` CLI~~ | ~~Taste encoding~~ | **廃止 (2026-05-23)**: Permission Storm / Silent Stall / orphan 蓄積で観察不能。cmux Worker (`launch-worker.sh --model codex`) で代替 |
 | `cmux-helpers` scripts | cmux CLI | Determinism (pane フロー), Token economy | ハイフン区切りコマンドの手順固定化 |
 
 ## 新規追加時のチェックリスト

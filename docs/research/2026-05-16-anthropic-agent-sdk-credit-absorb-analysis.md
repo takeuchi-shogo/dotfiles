@@ -1,3 +1,5 @@
+> **追記 (2026-05-23)**: 本文書中の `feedback_codex_invocation_pattern.md` への参照は historical record。2026-05-23 に `feedback_codex_casual_use.md` に統合され invocation_pattern.md は削除済 (両 memory の指示が矛盾していたため統合)。
+
 ---
 title: "Anthropic Agent SDK Credit — 2026-06-15 billing split (/absorb 分析レポート)"
 date: 2026-05-16

@@ -17,6 +17,7 @@
 - **モデル別ルーティング + 並行実行**: `references/model-routing.md`
 - **決定表の総索引**: `references/decision-tables-index.md` (どの判断はどこを見れば決まるか)
 - **コード変更後のレビュー**: `/review` skill に従う
+- **ブラッシュアップ系 (improve/debate/absorb) は cmux Worker 優先**: 設計判断・セカンドオピニオン・改善提案は `scripts/runtime/launch-worker.sh --model codex --task ...` で対話ラリー。サブエージェントに逃げない。CI/SSH 単独 (cmux 不在) では `codex exec --sandbox read-only` 直接呼び出しに fallback。`Skill(codex:rescue)` と `Agent(codex:codex-rescue)` は両方失敗事例あり (詳細: memory `feedback_codex_casual_use.md`)
 - 日本語で応答する
 
 ## コード設計原則

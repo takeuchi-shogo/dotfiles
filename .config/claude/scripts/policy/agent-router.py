@@ -186,7 +186,9 @@ def main() -> None:
         msg = (
             f"[Agent Router] 設計/推論キーワード ({keywords}) が検出されました。"
             "Codex CLI での深い分析を検討してください。"
-            "`codex exec` または `/codex:rescue` で実行できます。"
+            "対話ラリーは cmux Worker"
+            " (`scripts/runtime/launch-worker.sh --model codex --task ...`)、"
+            "単発投げは `codex exec --skip-git-repo-check -m gpt-5.5 ...` を使用。"
         )
         output_context("UserPromptSubmit", msg)
         return

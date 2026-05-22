@@ -85,8 +85,11 @@ def main() -> None:
             "PostToolUse",
             (
                 f"[Post-Test] {count_str}テスト失敗が検出されました。\n"
-                "`/codex:rescue --read-only` で根本原因を分析できます。\n"
-                "または debugger エージェントで体系的にデバッグすることも可能です。"
+                "debugger エージェントで体系的にデバッグ、または cmux Worker で\n"
+                "Codex に深掘り分析を依頼できます\n"
+                "(`scripts/runtime/launch-worker.sh --model codex --task ...`)。\n"
+                "備考: `Skill(codex:rescue)` および `Agent(codex:codex-rescue)` は\n"
+                "失敗事例あり、使わない。"
             ),
         )
         return

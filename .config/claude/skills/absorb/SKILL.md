@@ -318,16 +318,28 @@ Codex と Gemini を **並列** で起動する:
 
 ### Codex: 分析批評
 
-**呼び出し方 (重要)**: `Skill` tool で `codex:rescue` skill を呼ぶ。`--background` フラグでバックグラウンド実行、main session は他の処理を進められる。
+**呼び出し方 (正規パス)**: cmux Worker を起動して Codex に依頼する。1-hop で observable (send-key/read-screen)、permission storm/silent stall を回避できる。
 
+```bash
+~/dotfiles/scripts/runtime/launch-worker.sh --model codex --task "<prompt>"
+# → stdout に "workspace:N w-<id>-codex" が返る
+# 結果ファイル: ${DISPATCH_RESULT_DIR:-/tmp/cmux-results}/w-<id>-codex.md (default は /tmp/cmux-results)
 ```
-Skill(skill: "codex:rescue", args: "--background <prompt>")
+
+> **注意 (sandbox)**: `launch-worker.sh` の codex case は **default sandbox** で起動する (read-only ではない)。read-only 保証が必要な分析批評では下記の `codex exec --sandbox read-only` 直接呼び出しを使う。
+
+> **注意 (cmux 不在環境)**: CI/SSH 単独環境で cmux が無い場合、`launch-worker.sh` は exit 1 する。fallback として `codex exec` を直接使う。
+
+軽量・単発・cmux 外でよい場合は `codex exec` の直接呼び出しでも可:
+
+```bash
+codex exec --skip-git-repo-check -m gpt-5.5 --sandbox read-only \
+  --config model_reasoning_effort="xhigh" "<prompt>" 2>/dev/null
 ```
 
-**NG パターン (実測 stall 例あり)**:
-- `Agent(subagent_type: "codex:codex-rescue")` の直接起動 — 中継 subagent は 162s で完了するが、その内部で起動した codex CLI が "Considering citation strategy" reasoning 段階でサイレント終了し最終 assistant message を出さずに孤立する事象を確認 (2026-05-16)。Skill 経由 (slash command `/codex:rescue`) は resume/fresh 確認 + `--background`/`--wait` ライフサイクル管理が組み込まれている
-
-**フォールバック**: skill stall 時は `/dispatch` 経由の cmux Worker に切替可能。
+**NG パターン (両方失敗事例あり、使用禁止)**:
+- `Skill(skill: "codex:rescue", args: "--background ...")` — Permission Storm (settings.json allow に zsh -lc 内部パターン未追加で 15-30 prompts 連続発火) + 6-hop chain (Skill → command → fork → subagent → node → codex CLI) で観察不能 + `status: orphaned` 残骸が `~/.claude/plugins/data/codex-openai-codex/state/.../jobs/` に蓄積 (retention 機構なし)
+- `Agent(subagent_type: "codex:codex-rescue")` の直接起動 — 中継 subagent は 162s で完了するが、内部 codex CLI が "Considering citation strategy" reasoning 段階でサイレント終了し最終 assistant message を出さず孤立 (2026-05-16 観測)
 
 **プロンプト内容 (依頼テンプレート)**:
 

@@ -7,6 +7,8 @@ updated: 2026-04-04
 
 # Codex統合
 
+> **重要 (2026-05-23 更新)**: `/codex:rescue` および `codex-rescue` agent (Skill/subagent_type 両経路) は **廃止**。Permission Storm + Silent Stall + 6-hop chain (観察不能) のため。代替は cmux Worker (`scripts/runtime/launch-worker.sh --model codex --task "..."`) または `codex exec` 直接呼び出し。詳細: memory `feedback_codex_casual_use.md` / `rules/codex-delegation.md`。
+
 ## 概要
 
 CodexはOpenAIのコーディング特化CLIエージェントで、Claude Codeと補完的な役割分担を持つ。Claude（設計・レビュー・判断）とCodex（実装・テスト生成・高速推論）の分業により、同一タスクでClaudeの3〜4倍のトークン消費効率を実現できる。dotfilesではClaude Code内から`/codex`スキルおよびCodex Plugin（`codex-plugin-cc`）経由で統合し、Codex Review Gate・リスク分析・レスキュー委譲を実現している。

@@ -50,7 +50,7 @@ last_reviewed: 2026-04-23
 | codex-reviewer | haiku | Codex CLI | 深い推論レビュー |
 | gemini-explore | haiku | Gemini CLI | 1M コンテキスト分析 |
 
-エラー分析・デバッグは `/codex:rescue --read-only` を使う（プラグイン経由）。
+エラー分析・デバッグは cmux Worker (`scripts/runtime/launch-worker.sh --model codex --task "..."`) を使う。`/codex:rescue` プラグイン経由は失敗事例あり (memory `feedback_codex_casual_use.md`)。
 
 ### Implementer（コード書き込み可能）
 
