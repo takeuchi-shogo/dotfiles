@@ -29,7 +29,7 @@ MCP connector の全量と、有効化状態・ロックインリスク・代替
 | `deepwiki` | 3 | ❌ | ✅ | Anthropic (`@anthropic-ai/deepwiki-mcp`) | med | WebFetch + docs search | Codex 専用、Claude 未連携 |
 | `openaiDeveloperDocs` | 3 | ❌ | ✅ | OpenAI (`https://developers.openai.com/mcp`) | low | WebFetch | URL-based MCP |
 | `brave-search` | 4 (native) | ✅ | ❌ | Brave API (plugin) | low | WebSearch | Claude Code plugin に同梱 |
-| `obsidian` | 4 (native) | ✅ | ❌ | local (plugin) | low | Obsidian CLI (`obsidian-cli`) | Vault 操作 |
+| `obsidian` | 4 (native) | ✅ | ❌ | local (plugin) | low | Codex: `$codex-obsidian-knowledge` + filesystem search | Claude plugin 由来。Codex は MCP connector ではなく Vault path を直接読む |
 | `plugin_discord_discord` | 4 (native) | ✅ | ❌ | Discord (plugin) | low | Webhook | チャネル通知 |
 
 ## 検出済み drift (2026-04-17 実行時点)
