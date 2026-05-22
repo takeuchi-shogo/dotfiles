@@ -11,6 +11,18 @@
 
 このVaultは IPARAG + Zettelkasten メソッドで構成されている。
 
+### Design Rationale (IPARAG vs One-Folder)
+
+flat 単一フォルダ設計 (例: cyrilXBT "One-Folder Life System") を採用しない根拠:
+
+- **Filing decision は `00-Inbox` で既に遅延化されている** — capture 時の filing 判断コストは Inbox 集約で解消済。flat 化はこのコストを「naming convention 設計コスト」に置換するだけで根本解決にならない
+- **PARA は actionability-based の意味分割** — Projects (期限あり) / Areas (継続) / Resources (参照) / Archive (非アクティブ) は属性ではなく **責務** の境界。flat 化すると status property だけで擬似復元することになり、純粋な意味劣化
+- **Galaxy (Zettelkasten) は独立 namespace が必須** — atomic note 同士の dense linking は他層から隔離されている方が wikilink graph の信頼性が高い。flat 化すると daily/literature/project ノートと混在し graph が雑音化
+- **chronological + type filtering は frontmatter + Dataview で代替済** — flat の主目的（日付ソート + type filter）は `06-Archive` 以外の各フォルダ内で `type`/`date`/`status` property + Dataview クエリにより実現可能 (Obsidian Bases が GA 化した時点で Bases への移行を検討する)
+- **大規模 vault でのファイルシステム特性** — 単一フォルダに大量ファイルを置くと OS のディレクトリ走査と Obsidian indexer のパス解決コストが O(N) で増加する。IPARAG の階層は OS / Obsidian indexer 双方の境界フィルタを活用できる (具体的な閾値は環境依存で未計測)
+
+→ 現時点の設計判断では flat への移行は意味的・性能的に劣化を招く。将来 Obsidian Bases の GA・Zettelkasten 手法の変化・新しい indexer 実装などの **前提変化があった場合は本セクションの各論拠を個別に再検証する**。前提が同じなら再審不要。
+
 | フォルダ | 目的 |
 |---------|------|
 | 00-Inbox | 未整理ノートの一時置き場。キャプチャしたらここに入れる |
