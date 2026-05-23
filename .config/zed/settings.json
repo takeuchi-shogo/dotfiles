@@ -129,6 +129,9 @@
   // Languages & LSP
   // ===================
   "enable_language_server": true,
+  "file_types": {
+    "JSONC": ["cmux.json"]
+  },
   "languages": {
     "Go": {
       "enable_language_server": true,
