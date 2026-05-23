@@ -18,10 +18,13 @@ import subprocess
 import sys
 import tempfile
 
+# Must stay in sync with completion-gate.py:HARNESS_PATH_MARKERS.
+# "claude/settings" scopes to Claude Code settings only and avoids false
+# positives on .config/zed/settings.json, .vscode/settings.json etc.
 HARNESS_PATH_MARKERS = [
     "scripts/policy/",
     "scripts/runtime/",
-    "settings.json",
+    "claude/settings",
     "CLAUDE.md",
     "/agents/",
 ]

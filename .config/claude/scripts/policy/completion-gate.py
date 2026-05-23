@@ -47,10 +47,13 @@ MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "10"))
 
 # Harness Review Gate — mandatory review for harness file changes
 # Path markers that identify harness files (matched against git diff output)
+# NOTE: "claude/settings" scopes to Claude Code settings only
+# (.config/claude/settings.json, .claude/settings.json, .claude/settings.local.json)
+# and avoids false positives on .config/zed/settings.json, .vscode/settings.json etc.
 HARNESS_PATH_MARKERS = [
     "scripts/policy/",
     "scripts/runtime/",
-    "settings.json",
+    "claude/settings",
     "CLAUDE.md",
     "/agents/",
 ]
