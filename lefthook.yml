@@ -27,6 +27,15 @@ pre-commit:
     check-claudemd-lines:
       glob: "*.md"
       run: bash .config/claude/scripts/policy/check-claudemd-lines.sh
+    no-skill-readme:
+      # Anthropic 公式 Skills ガイド: skill folder には README.md ではなく SKILL.md を置く
+      # README.md は Claude Code の discovery 対象外で agent から見えない
+      # 既存 legacy README.md (e.g. vercel-composition-patterns) は別途整理。
+      # この hook は新規追加のみ block する。
+      glob: ".config/claude/skills/*/README.md"
+      run: |
+        echo "❌ skill folder に README.md は置かない (SKILL.md を使う): {staged_files}"
+        exit 1
 
 commit-msg:
   commands:

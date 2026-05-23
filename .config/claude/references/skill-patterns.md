@@ -73,6 +73,8 @@ last_reviewed: 2026-04-23
 **Gate conditions**: "Do NOT proceed to Step N+1 until [condition]"
 **Composability**: 最終ステップに Reviewer を含めることが多い
 
+> **`## Critical` section を top に置く** — Pipeline gate ("DO NOT proceed until ...") は SKILL.md の上部近くに `## Critical` セクションとしてまとめて配置すると agent が見逃さない。**適用対象: Pipeline / Guard / Gate 型 skill のみ。** knowledge skill・reference skill には強要しない (公式 Skills ガイド 2026-01 baseline では全 skill 強制を推奨するが、dotfiles では可読性優先で selective 適用)。
+
 ## Decision Tree
 
 スキルの主目的から最適パターンを選ぶ:
@@ -143,3 +145,7 @@ metadata:
   # pattern: inversion+generator    # 合成の場合は + で連結（主目的を先に）
   composable-with: [reviewer]       # optional: 組み合わせ可能なパターン
 ```
+
+## Dynamic Enforcement of Static Rules
+
+skill design rule のうち静的に検査可能なものは、validation-checklist (markdown) に書くだけでなく **lefthook pre-commit hook で動的に補強する**。例: 「skill folder には `README.md` ではなく `SKILL.md` を置く」というルールは `lefthook.yml` の `no-skill-readme` で新規 commit を block する。プロンプト命令と mechanism の二段構えで規約 drift を防ぐ (KISS: agent 説明 + harness 強制)。

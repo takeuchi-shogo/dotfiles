@@ -1,80 +1,99 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-05-23
 ---
 
 # Claude Skill Inventory
 
 Claude Code の skill を、常用すべき core と必要時だけ使う optional に分ける。
 
+各 skill には **use-case category** を付与する (Anthropic 公式 Skills ガイド 2026-01 推奨)。
+
+| Category | 意味 |
+|----------|------|
+| **Doc** | 知識・記録・ジャーナル系。読みと書きが中心、副作用なし |
+| **Workflow** | 多段プロセスを走らせる pipeline / inversion / composite |
+| **MCP-Enhance** | 外部 CLI / MCP server を wrap した tool-wrapper |
+| **Reference** | 言語・フレームワーク・API のリファレンス知識 |
+
 ## Core Workflow
 
 毎日の開発フローで優先して使う skill。
 
-- `check-health` — reviewer
-- `search-first` — pipeline
-- `review` — reviewer
-- `verification-before-completion` — pipeline+reviewer
-- `continuous-learning` — pipeline
-- `spec` — inversion+generator
-- `spike` — pipeline
-- `validate` — reviewer
-- `codex-review` — reviewer
+| Skill | Pattern | Category |
+|-------|---------|----------|
+| check-health | reviewer | Workflow |
+| search-first | pipeline | Workflow |
+| review | reviewer | Workflow |
+| verification-before-completion | pipeline+reviewer | Workflow |
+| continuous-learning | pipeline | Workflow |
+| spec | inversion+generator | Workflow |
+| spike | pipeline | Workflow |
+| validate | reviewer | Workflow |
+| codex-review | reviewer | Workflow |
 
 ## Cross-Model / Research
 
 外部モデルや深い調査が必要なときだけ使う。
 
-- `codex` — tool-wrapper
-- `gemini` — tool-wrapper
-- `research` — pipeline
-- `epd` — pipeline
-- `interviewing-issues` — inversion
+| Skill | Pattern | Category |
+|-------|---------|----------|
+| codex | tool-wrapper | MCP-Enhance |
+| gemini | tool-wrapper | MCP-Enhance |
+| research | pipeline | Workflow |
+| epd | pipeline | Workflow |
+| interviewing-issues | inversion | Workflow |
 
 ## Domain / Specialist
 
 技術領域が明確なときだけ使う。
 
-- `senior-architect` — tool-wrapper
-- `senior-backend` — tool-wrapper
-- `senior-frontend` — tool-wrapper
-- `react-best-practices` — tool-wrapper
-- `react-expert` — tool-wrapper
-- `frontend-design` — generator
-- `web-design-guidelines` — reviewer
-- `webapp-testing` — tool-wrapper
-- `vercel-composition-patterns` — tool-wrapper
-- `edge-case-analysis` — reviewer
-- `ui-ux-pro-max` — tool-wrapper+generator
+| Skill | Pattern | Category |
+|-------|---------|----------|
+| senior-architect | tool-wrapper | Reference |
+| senior-backend | tool-wrapper | Reference |
+| senior-frontend | tool-wrapper | Reference |
+| react-best-practices | tool-wrapper | Reference |
+| react-expert | tool-wrapper | Reference |
+| frontend-design | generator | Workflow |
+| web-design-guidelines | reviewer | Reference |
+| webapp-testing | tool-wrapper | MCP-Enhance |
+| vercel-composition-patterns | tool-wrapper | Reference |
+| edge-case-analysis | reviewer | Workflow |
+| ui-ux-pro-max | tool-wrapper+generator | Reference |
 
 ## Automation / Meta
 
 workflow 自体を改善するときに使う。
 
-- `autonomous` — pipeline
-- `create-pr-wait` — pipeline
-- `improve` — pipeline
-- `eureka` — generator
-- `skill-audit` — reviewer
-- `skill-creator` — pipeline+inversion
-- `setup-background-agents` — generator
-- `ai-workflow-audit` — reviewer
+| Skill | Pattern | Category |
+|-------|---------|----------|
+| autonomous | pipeline | Workflow |
+| create-pr-wait | pipeline | Workflow |
+| improve | pipeline | Workflow |
+| eureka | generator | Doc |
+| skill-audit | reviewer | Workflow |
+| skill-creator | pipeline+inversion | Workflow |
+| setup-background-agents | generator | Workflow |
+| ai-workflow-audit | reviewer | Workflow |
 
 ## Personal Ops
 
 個人運用や GTD、知識管理で使う。通常の coding task では自動で前提にしない。
 
-- `daily-report` — generator
-- `dev-ops-setup` — pipeline
-- `morning` — inversion+generator
-- `capture` — generator
-- `kanban` — tool-wrapper
-- `meeting-minutes` — generator
-- `weekly-review` — generator
-- `dev-insights` — reviewer
-- `obsidian-vault-setup` — generator
-- `obsidian-knowledge` — tool-wrapper
-- `obsidian-content` — generator
+| Skill | Pattern | Category |
+|-------|---------|----------|
+| daily-report | generator | Doc |
+| dev-ops-setup | pipeline | Workflow |
+| morning | inversion+generator | Doc |
+| capture | generator | Doc |
+| kanban | tool-wrapper | MCP-Enhance |
+| meeting-minutes | generator | Doc |
+| weekly-review | generator | Doc |
+| dev-insights | reviewer | Doc |
+| obsidian-vault-setup | generator | Workflow |
+| obsidian-knowledge | tool-wrapper | MCP-Enhance |
+| obsidian-content | generator | Doc |
 
 ## Default Guidance
 
@@ -82,6 +101,7 @@ workflow 自体を改善するときに使う。
 - domain skill は task が明確に一致したときだけ使う
 - `Personal Ops` は coding task の default にしない
 - 新しい skill を増やす前に、既存 tier のどこへ入るかを決める
+- **Category 偏りチェック**: 1 tier に Reference / Doc / MCP-Enhance のいずれかが集中していたら抽象階層を見直す
 
 ## Relationships (SkillNet)
 
