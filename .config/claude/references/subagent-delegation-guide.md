@@ -261,6 +261,18 @@ capability を絞った subagent が「やれること」の境界は、harness 
 | **Inherit** | Agent ツール（デフォルト）— プロンプトに十分なコンテキストを含める |
 | **Clean** | `claude -p` でヘッドレス起動、または worktree + 最小プロンプト |
 
+### CLAUDE_CODE_FORK_SUBAGENT=1 / `/fork` — 意図的非採用
+
+> 出典: aitmpl 系記事 "Keep your Claude Code context clean with Subagents" (2026-04-27 + 2026-05-23 再投入)。
+
+Anthropic 公式機能の `CLAUDE_CODE_FORK_SUBAGENT=1` 環境変数 (subagent が親 context を full inherit) および `/fork` slash command (オンデマンド fork) は、dotfiles では **意図的に非採用** とする。Gemini grounding の主張では v2.1.117+ で experimental → stable に昇格しているが、判断は変わらない:
+
+- **理由 1 (設計と逆方向)**: subagent は「親に summary のみ返す」が context cleanliness の本線。親の context を full inherit させると、subagent の isolation 利点 (tool call の隔離・narrower context = better output) を消す
+- **理由 2 (代替が機能している)**: 親の発見を子に渡したい場合は Inherit モード (上記表 fork) で十分。Agent ツールのデフォルトプロンプト + Handoff Packet (Deep Frying 回避) でカバーできる
+- **理由 3 (Distribution vs Escalation 再確認, 2026-05-04)**: 同記事系列が「Forked subagent はトレードオフ」を認めている。dotfiles 側の context cleanliness 哲学 (subagent は要約のみ親に返すのが原則) と衝突
+
+例外的な手動実験 (親文脈が肥大化して named subagent に説明できないケース) でのみ使用する。デフォルト採用しない。
+
 ### Subagent Prompt Cache TTL
 
 > 出典: "How Anthropic Engineers Actually Save Tokens" (2026-05) + 公式 Claude Code prompt caching docs。

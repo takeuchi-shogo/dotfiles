@@ -247,6 +247,20 @@ Phase 2-5 をスキップして以下のみ実行:
 2. MEMORY.md 索引には追記しない (Reference Only 以下のため)
 3. Phase 5.5-5.7 (Wiki INDEX / Obsidian / Wiki Log フル更新) も実行しない (log.md 1 行のみ)
 
+### Step 7: Stale-Plan Audit — 過去採用タスクの棚卸し
+
+PASS / SATURATED どちらの判定でも、N >= 1 (同 family に過去 absorb が存在) なら実行する。
+過去採用タスクが時間経過で陳腐化していないか mechanism で audit する Phase 1.5 の姉妹機能。
+
+判定基準・実行手順は `references/topic-family-saturation.md` Step 7 に定義する (こちらが正)。
+
+要点:
+- 同 family の最新 3 件の analysis report frontmatter を確認
+- `status` 既に明示 (implemented / superseded / retired / partially-superseded) → audit skip
+- `date` から 30 日未満 → audit skip (実装猶予期間)
+- それ以外 → `AskUserQuestion` で `implemented / superseded / narrowed / retired / kept` を user に選択させ frontmatter を更新
+- `kept` 選択は明示的判断であり `kept-by: YYYY-MM-DD` を必須記録 (暗黙的放置との区別)
+
 ### Safety rules
 
 - **詳細は `references/topic-family-saturation.md` を参照すること (こちらが正)**。本ファイルの Safety rules は要約。矛盾がある場合は reference が優先。

@@ -1,7 +1,11 @@
 ---
 source: "Keep your Claude Code context clean with Subagents (aitmpl 系記事)"
 date: 2026-04-27
-status: analyzed
+status: partially-superseded
+audited:
+  - date: 2026-05-23
+    by: "/absorb re-investment (同一 aitmpl 記事の再投入)"
+    summary: "前回採用 T2/T3/T4 を棚卸し。T3 cache hit rate は 2026-05-22 で superseded、T2/T4 は narrowed、T3 観測 2 指標は retired。"
 reaffirmed:
   - date: 2026-05-04
     by: "/absorb (Distribution vs Escalation, 2026-05-02)"
@@ -140,3 +144,35 @@ reaffirmed:
 - 観測先: `references/observability-signals.md`
 - 既存スキル: `/checkpoint`, `/check-context`, `/freeze`
 - 関連 absorb: 2026-04-17 context-design-absorb (5層コンテキストデザイン / cwd-aware profile), 2026-04-17 claude-code-session-mgmt (Compact vs Clear matrix / 300-400k multi-hop threshold)
+- **2026-05-23 棚卸し**: `docs/research/2026-05-23-subagent-context-fork-revisit-analysis.md` (同 aitmpl 記事の再投入で trigger された棚卸し)
+
+## 棚卸し (2026-05-23 re-absorb)
+
+同一の aitmpl 記事が再投入された際 (`/absorb` Saturation Gate で SATURATED-pure-rehash 検出) に、本レポートの planned tasks を棚卸しした結果。Codex (gpt-5.5 read-only) の批評を反映。
+
+### T2 — context-monitor.py event timeline → **Narrowed (実装不要に降格)**
+
+- **状態**: 未実施。context-monitor.py は statusline 用のみ稼働、JSONL ログ機能なし
+- **Codex 判定**: agent-invocation-logger + SubagentStop monitor で部分充足、追加 event timeline は不要
+- **アクション**: 実装計画を停止。`narrowed` として記録。将来 subagent イベント計測が業務要件として浮上した場合のみ再評価
+
+### T3 — observability-signals.md 3 指標 → 部分的に **Superseded**
+
+- **T3.cache_hit_rate (cache hit rate observability)** → **Superseded by 2026-05-22 absorb**
+  - 2026-05-22 の "Anthropic Engineers Token Savings" 取り込みで `session_observer` 側に cache_read/create 抽出が実装済
+  - 本タスクは吸収済、status を superseded として閉じる
+- **T3.explore_hit_rate (triage-router 命中率)** → **Retired**
+  - Codex 過小評価指摘の側だが、observability burden vs ROI が見合わず retire 判断
+  - 計測すべき場面が業務上発生した時点で再起票
+- **T3.plan_reject_rate (Plan ゲート差し戻し率)** → **Retired**
+  - 同上、optional 指標として降格
+
+### T4 — references/fork-experiment.md (新規ファイル) → **Narrowed (新規 file 廃止、inline 注記で代替)**
+
+- **状態**: 未作成
+- **Codex 判定**: 新規ファイル不要、`subagent-delegation-guide.md` に 1 段落注記で十分
+- **アクション**: 2026-05-23 セッションで `references/subagent-delegation-guide.md` の Context Inheritance Policy セクションに `CLAUDE_CODE_FORK_SUBAGENT=1` / `/fork` の意図的非採用 1 段落 (3 つの理由) を追加。新規ファイル計画は **retire**
+
+### 副次採用 (この棚卸しから派生した恒久改善)
+
+`/absorb` Phase 1.5 に **Stale-Plan Audit (Step 7)** を新設。本レポートの 1 ヶ月停滞が「未実施タスクを backlog と見すぎる」failure mode を露出させた。Step 7 では同 family 30 日経過 + status 未明示の analysis report について `implemented / superseded / narrowed / retired / kept` を AskUserQuestion で明示判断する。`kept` 選択時は `kept-by: YYYY-MM-DD` を必須記録し暗黙的放置と区別する。詳細は `references/topic-family-saturation.md` Step 7 を参照。
