@@ -8,8 +8,9 @@ saturation: PASS-with-warning
 adoption: 5
 rejected: 5
 n_a: 5
-status: pending-implementation
+status: implemented
 plan: docs/plans/active/2026-05-23-skill-guide-absorb-plan.md
+implemented_date: 2026-05-23
 ---
 
 # Absorb Analysis: Anthropic 公式 The Complete Guide to Building Skills for Claude

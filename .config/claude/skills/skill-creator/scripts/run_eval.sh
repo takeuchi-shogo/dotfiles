@@ -3,25 +3,52 @@ set -euo pipefail
 
 # run_eval.sh — Run claude -p with and without a skill for A/B benchmarking
 #
-# Usage: run_eval.sh <skill-name> <evals-json> [workspace-dir]
+# Usage:
+#   run_eval.sh <skill-name> <evals-json> [workspace-dir]
+#   run_eval.sh --dry-run <skill-name>
 #
 # For each eval in evals.json, launches two parallel claude -p processes:
 #   1. With skill   → eval-{name}/with_skill/outputs/response.md
 #   2. Without skill → eval-{name}/without_skill/outputs/response.md
 # Records timing data (duration_ms) for each run.
+#
+# Full-package eval (since 2026-05-23):
+#   --append-system-prompt receives SKILL.md plus scripts/ references/ assets/
+#   (depth-limited, per-file cap). See build_skill_bundle() below.
+#
+# --dry-run mode:
+#   Prints the file list + per-file byte counts that build_skill_bundle would
+#   include for <skill-name>, without invoking claude -p. Used by skill-audit
+#   to verify what the eval will see.
 
 ##############################################################################
 # Arguments
 ##############################################################################
 
-if [[ $# -lt 2 ]]; then
-  echo "Usage: run_eval.sh <skill-name> <evals-json> [workspace-dir]" >&2
-  exit 1
+DRY_RUN=0
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=1
+  shift
 fi
 
-SKILL_NAME="$1"
-EVALS_JSON="$2"
-WORKSPACE="${3:-.skill-eval/${SKILL_NAME}}"
+if [[ $DRY_RUN -eq 1 ]]; then
+  if [[ $# -lt 1 ]]; then
+    echo "Usage: run_eval.sh --dry-run <skill-name>" >&2
+    exit 1
+  fi
+  SKILL_NAME="$1"
+  EVALS_JSON=""
+  WORKSPACE=""
+else
+  if [[ $# -lt 2 ]]; then
+    echo "Usage: run_eval.sh <skill-name> <evals-json> [workspace-dir]" >&2
+    echo "       run_eval.sh --dry-run <skill-name>" >&2
+    exit 1
+  fi
+  SKILL_NAME="$1"
+  EVALS_JSON="$2"
+  WORKSPACE="${3:-.skill-eval/${SKILL_NAME}}"
+fi
 
 ##############################################################################
 # Resolve skill path
@@ -37,6 +64,70 @@ fi
 if [[ ! -f "${SKILL_DIR}/SKILL.md" ]]; then
   echo "ERROR: SKILL.md not found in: ${SKILL_DIR}" >&2
   exit 1
+fi
+
+##############################################################################
+# Dry-run: build the bundle and report contents, then exit
+##############################################################################
+
+if [[ $DRY_RUN -eq 1 ]]; then
+  echo "=== Dry-Run: ${SKILL_NAME} ==="
+  echo "  Skill dir: ${SKILL_DIR}"
+  echo ""
+  python3 - "$SKILL_DIR" <<'PYEOF'
+import sys
+from pathlib import Path
+
+skill_dir = Path(sys.argv[1]).resolve()
+AUX_DIRS = ("scripts", "references", "assets")
+MAX_DEPTH = 4
+MAX_BYTES = 64 * 1024
+
+entries: list[tuple[str, int, bool]] = []
+
+skill_md = skill_dir / "SKILL.md"
+data = skill_md.read_bytes()
+entries.append(("SKILL.md", len(data), False))
+
+for sub in AUX_DIRS:
+    base = skill_dir / sub
+    if not base.is_dir():
+        continue
+    for path in sorted(base.rglob("*")):
+        # Security: refuse symlinks. A malicious skill could point at
+        # ~/.ssh/id_rsa or /etc/shadow and leak file content into the bundle.
+        if path.is_symlink():
+            continue
+        if not path.is_file():
+            continue
+        rel = path.relative_to(skill_dir)
+        if len(rel.parts) > MAX_DEPTH:
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError:
+            continue
+        if b"\x00" in data[:4096]:
+            continue
+        try:
+            data.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        truncated = len(data) > MAX_BYTES
+        size = min(len(data), MAX_BYTES)
+        entries.append((str(rel), size, truncated))
+
+print("File listing:")
+total = 0
+for rel, size, truncated in entries:
+    flag = "  (truncated)" if truncated else ""
+    print(f"  {rel:<60} {size:>8} bytes{flag}")
+    total += size
+
+print()
+print(f"Total: {total} bytes ({len(entries)} files)")
+PYEOF
+  exit 0
 fi
 
 ##############################################################################
@@ -125,6 +216,11 @@ for sub in AUX_DIRS:
     if not base.is_dir():
         continue
     for path in sorted(base.rglob("*")):
+        # Security: refuse symlinks. A malicious skill folder could symlink
+        # ~/.ssh/id_rsa or /etc/shadow into scripts/references/assets and
+        # exfiltrate up to MAX_BYTES of content via --append-system-prompt.
+        if path.is_symlink():
+            continue
         if not path.is_file():
             continue
         rel = path.relative_to(skill_dir)
@@ -170,11 +266,13 @@ run_claude() {
       --append-system-prompt "You have the following skill loaded as a full package (SKILL.md plus scripts/, references/, assets/). Follow its instructions:
 
 ${skill_bundle}" \
-      > "${output_dir}/outputs/response.md" 2>/dev/null || exit_code=$?
+      > "${output_dir}/outputs/response.md" \
+      2>"${output_dir}/outputs/stderr.log" || exit_code=$?
   else
     claude -p "$prompt" \
       --allowedTools "$ALLOWED_TOOLS" \
-      > "${output_dir}/outputs/response.md" 2>/dev/null || exit_code=$?
+      > "${output_dir}/outputs/response.md" \
+      2>"${output_dir}/outputs/stderr.log" || exit_code=$?
   fi
 
   local end_ms

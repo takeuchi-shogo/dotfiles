@@ -235,7 +235,7 @@ bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-e
 
 **起動方法（正式実装）**:
 
-`aggregate.py --three-arm` が 3 つの arm JSON (A=skill, B=terse, C=baseline) を受け取り `delta_skill_vs_terse` (A−B) と `delta_terse_vs_baseline` (B−C) を JSON で stdout に出力する。`run_eval.sh` は 2-arm 構造を返すので、Arm B (terse-control) のみ別 skill として 1 回追加実行し、その後 jq で arm 単位の JSON を抽出する。
+`aggregate.py --three-arm` が 3 つの arm JSON (A=baseline, B=terse, C=skill) を受け取り、`delta_skill_vs_terse` (C−B), `delta_terse_vs_baseline` (B−A), `delta_skill_vs_baseline` (C−A) を JSON で stdout に出力する。`run_eval.sh` は 2-arm 構造を返すので、Arm B (terse-control) のみ別 skill として 1 回追加実行し、その後 jq で arm 単位の JSON を抽出する。
 
 ```bash
 SKILL_NAME=example-skill
@@ -243,7 +243,7 @@ EVALS=.skill-eval/${SKILL_NAME}/evals/evals.json
 WORK=.skill-eval/${SKILL_NAME}
 SC=~/.claude/skills/skill-creator/scripts
 
-# 1. arm A (full skill) と arm C (baseline) を取得
+# 1. arm A (baseline = without_skill) と arm C (with_skill) を取得
 bash "${SC}/run_eval.sh" "${SKILL_NAME}" "${EVALS}" "${WORK}/arm-ac"
 python3 "${SC}/aggregate.py" "${WORK}/arm-ac/iteration-1" --skill-name "${SKILL_NAME}"
 
@@ -252,15 +252,15 @@ bash "${SC}/run_eval.sh" terse-control "${EVALS}" "${WORK}/arm-b"
 python3 "${SC}/aggregate.py" "${WORK}/arm-b/iteration-1" --skill-name terse-control
 
 # 3. 各 arm を単一 configuration の JSON に抽出 (aggregate.py --three-arm の入力形式)
-jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_a.json"
-jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-b/iteration-1/benchmark.json"  > "${WORK}/arm_b.json"
-jq '{configurations: [.configurations[] | select(.name=="without_skill")]}' "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_c.json"
+jq '{configurations: [.configurations[] | select(.name=="without_skill")]}' "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_a.json"  # baseline
+jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-b/iteration-1/benchmark.json"  > "${WORK}/arm_b.json"  # terse
+jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_c.json"  # skill
 
 # 4. 3-arm 比較を計算
 python3 "${SC}/aggregate.py" --three-arm "${WORK}/arm_a.json" "${WORK}/arm_b.json" "${WORK}/arm_c.json"
 ```
 
-引数順序: `arm_a arm_b arm_c` = `skill / terse / baseline`。出力 JSON のキーは `delta_skill_vs_terse` (A−B) と `delta_terse_vs_baseline` (B−C)。前者が小さい場合「terse 指示で代替可能」、後者が大きい場合「baseline からの底上げ余地が大きい」と解釈する。
+引数順序: `arm_a arm_b arm_c` = `baseline / terse / skill`。出力 JSON のキー: `delta_skill_vs_terse` (C−B) が小さい場合「terse 指示で代替可能」、`delta_terse_vs_baseline` (B−A) が大きい場合「terse 指示自体に効果あり」、`delta_skill_vs_baseline` (C−A) は 2-arm 互換の総合 delta。
 
 **適用基準**: 出力スタイル系スキル（concise, persona, output-mode, rewrite 等）や「簡潔さ・文体で価値を出す」タイプのスキルに優先適用。複雑なワークフロー系（review, audit, epd 等）は 2-arm で十分。
 

@@ -1,10 +1,11 @@
 ---
 date: 2026-05-23
 source_analysis: docs/research/2026-05-23-anthropic-complete-guide-building-skills-absorb-analysis.md
-status: pending
+status: completed
 scale: M-L
 estimated_files: 8
 priority: medium
+completed_date: 2026-05-23
 ---
 
 # Plan: Anthropic Skills ガイド absorb 統合 (2026-05-23)
