@@ -74,6 +74,16 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - コア式/アルゴリズムの致命的エラー → Completeness を最大 Average（通常 Poor）
 - トリビアルなスクリプト（echo のみ等）→ Executability を最大 Average
 
+#### Outcomes-not-features rubric
+
+description が「ユーザー利益（outcome）」ではなく「機能リスト（features）」になっていないか静的にチェックする。Anthropic 公式 Skills ガイド (2026-01) で強調されている観点。
+
+- description の先頭が動詞 + 名詞 + outcome の形か（例: "Generate audit report", "Run OWASP review"）
+- 「Helps with X / Provides Y / Supports Z」のような機能列挙トーンになっていないか
+- 静的検査例: `grep -E "^(name:|description:.*\b(Add|Run|Generate|Check|Analyze|Build|Create|Review|Audit|Validate)\b)"` で先頭動詞を確認
+
+該当しない場合は Completeness を Average に下げ、audit report の `(5D)` 注記とは別に **(OutcomesRubric)** タグを付けて Improve に分類する。
+
 ### Step 0.5: Usage Tier Classification
 
 5D スキャンと並行して、対象スキルの使用頻度を分類する。
@@ -108,6 +118,22 @@ A/B ベンチマーク（重い）を回す前に、対象スキルの SKILL.md 
 - **Dominant + Unused の共存** → Expert Collapse の決定的証拠。Unused スキル側の description/trigger 不備を真っ先に疑う
 
 > 削減目標値・description 上限ガイド・運用ポリシーは [`docs/specs/2026-05-04-skill-tier-pruning.md`](../../../../docs/specs/2026-05-04-skill-tier-pruning.md) を参照。
+
+### Step 0.6: Description Token Tax
+
+`description` フィールドはセッション開始時に全 enabled skill 分が常時コンテキストにロードされる。1 行ずつでは小さく見えても合計で system prompt の数 % を占める tax になるため、毎回計測する。
+
+#### 手順
+
+1. enabled skill 数を数える: `ls ~/.claude/skills/ | wc -l`
+2. 各 skill の `description` フィールドの字数を合算する (frontmatter から抽出)
+3. budget 目安は **1,000-1,500 字相当**（CLAUDE.md システムプロンプト体感長と同程度に抑える）
+4. over-budget の場合:
+   - heaviest description Top-N をリストアップ
+   - description が長い skill から「retire 候補」または「description trim 候補」を推奨
+   - 単一 skill で 200 字超のものは個別 trim 対象
+
+合計と Top-5 heaviest を audit report Summary に **DescTokenTax** ブロックとして記録する。
 
 ### Step 0.7: Composition Depth Check
 
@@ -207,18 +233,34 @@ bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-e
 
 2-arm delta が大きくても arm C − arm B が小さい場合、そのスキルは「単に簡潔に書けと指示すれば代替可能」を意味する。過大評価を防ぐ重要な補正。
 
-**起動方法**（※現状 `run_eval.sh` の `--three-arm` は未実装。下記「最小実装」の手順で代替する）:
+**起動方法（正式実装）**:
+
+`aggregate.py --three-arm` が 3 つの arm JSON (A=skill, B=terse, C=baseline) を受け取り `delta_skill_vs_terse` (A−B) と `delta_terse_vs_baseline` (B−C) を JSON で stdout に出力する。`run_eval.sh` は 2-arm 構造を返すので、Arm B (terse-control) のみ別 skill として 1 回追加実行し、その後 jq で arm 単位の JSON を抽出する。
 
 ```bash
-# 将来 run_eval.sh が --three-arm をサポートした際のインタフェース想定
-bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json" --three-arm
+SKILL_NAME=example-skill
+EVALS=.skill-eval/${SKILL_NAME}/evals/evals.json
+WORK=.skill-eval/${SKILL_NAME}
+SC=~/.claude/skills/skill-creator/scripts
+
+# 1. arm A (full skill) と arm C (baseline) を取得
+bash "${SC}/run_eval.sh" "${SKILL_NAME}" "${EVALS}" "${WORK}/arm-ac"
+python3 "${SC}/aggregate.py" "${WORK}/arm-ac/iteration-1" --skill-name "${SKILL_NAME}"
+
+# 2. arm B (terse-control 専用 skill: "Answer concisely. No preamble, no summary." のみ)
+bash "${SC}/run_eval.sh" terse-control "${EVALS}" "${WORK}/arm-b"
+python3 "${SC}/aggregate.py" "${WORK}/arm-b/iteration-1" --skill-name terse-control
+
+# 3. 各 arm を単一 configuration の JSON に抽出 (aggregate.py --three-arm の入力形式)
+jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_a.json"
+jq '{configurations: [.configurations[] | select(.name=="with_skill")]}'    "${WORK}/arm-b/iteration-1/benchmark.json"  > "${WORK}/arm_b.json"
+jq '{configurations: [.configurations[] | select(.name=="without_skill")]}' "${WORK}/arm-ac/iteration-1/benchmark.json" > "${WORK}/arm_c.json"
+
+# 4. 3-arm 比較を計算
+python3 "${SC}/aggregate.py" --three-arm "${WORK}/arm_a.json" "${WORK}/arm_b.json" "${WORK}/arm_c.json"
 ```
 
-**現時点での最小実装**（`run_eval.sh` が `--three-arm` をサポートしないため、以下を手動で実行する）:
-
-1. `evals.json` の各 eval に `terse_control_prompt` フィールドを追加（省略時は元プロンプト + "Answer concisely. No preamble, no summary."）
-2. eval を 3 回実行（A/B/C）し、結果を `arm_{a,b,c}.json` に分けて保存
-3. `aggregate.py` が 3 アーム対応で `delta_skill_vs_terse` と `delta_terse_vs_baseline` を出力
+引数順序: `arm_a arm_b arm_c` = `skill / terse / baseline`。出力 JSON のキーは `delta_skill_vs_terse` (A−B) と `delta_terse_vs_baseline` (B−C)。前者が小さい場合「terse 指示で代替可能」、後者が大きい場合「baseline からの底上げ余地が大きい」と解釈する。
 
 **適用基準**: 出力スタイル系スキル（concise, persona, output-mode, rewrite 等）や「簡潔さ・文体で価値を出す」タイプのスキルに優先適用。複雑なワークフロー系（review, audit, epd 等）は 2-arm で十分。
 

@@ -101,11 +101,15 @@ Read `instructions/skill-writing-guide.md` for guidance on:
 
 これは Step 3 の本番テストとは別のフェーズ。ここでは Skill テキストの品質を上げることが目的で、出力の品質評価は Step 3 以降で行う。
 
+> **Full-package eval (default)**: デバッグランも `scripts/run_eval.sh` 経由で SKILL.md + `scripts/`, `references/`, `assets/` 全体をロードして実行する。auxiliary file を抜きで動作確認すると本番との乖離が出るため、初回から folder 全体を見せる。
+
 > 根拠: Meta-Harness (Lee+ 2026) 実装 Tips — "Run a few short debug runs (3-5 iterations) specifically to refine the skill before committing to a full run"
 
 ### 3. Testing and Evaluation
 
-Read `instructions/testing-evaluation.md` for the full test/eval pipeline:
+Read `instructions/testing-evaluation.md` for the full test/eval pipeline.
+
+> **Full-package eval (default)**: `scripts/run_eval.sh` は SKILL.md だけでなく skill folder 配下の `scripts/`, `references/`, `assets/` をまとめてコンテキストに注入する。eval 結果が本番の skill 環境と一致するための前提。
 
 - **Test Cases**: Draft 2-3 realistic prompts, pattern compliance check
 - **Step 1**: Spawn with-skill AND baseline runs in parallel

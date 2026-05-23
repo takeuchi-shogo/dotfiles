@@ -91,6 +91,64 @@ ALLOWED_TOOLS="Read,Grep,Glob,Bash,WebFetch,WebSearch"
 # Run helper — executes claude -p and records timing
 ##############################################################################
 
+##############################################################################
+# Build full-package skill bundle
+#
+# Loads SKILL.md plus every readable file under scripts/, references/, assets/
+# (depth-limited to keep payload bounded) into a single text bundle that the
+# eval-time agent receives via --append-system-prompt. Each included file is
+# delimited with a `=== <relative-path> ===` header so the agent can resolve
+# cross-references that would normally require disk access.
+##############################################################################
+
+build_skill_bundle() {
+  local skill_dir="$1"
+  python3 - "$skill_dir" <<'PYEOF'
+import os
+import sys
+from pathlib import Path
+
+skill_dir = Path(sys.argv[1]).resolve()
+skill_md = skill_dir / "SKILL.md"
+
+parts: list[str] = []
+parts.append(f"=== SKILL.md ===\n{skill_md.read_text()}")
+
+# Aux directories loaded for full-package eval (override official baseline
+# which exposes only SKILL.md). Depth-limited to keep payload sane.
+AUX_DIRS = ("scripts", "references", "assets")
+MAX_DEPTH = 4
+MAX_BYTES = 64 * 1024  # per file cap to avoid runaway payload
+
+for sub in AUX_DIRS:
+    base = skill_dir / sub
+    if not base.is_dir():
+        continue
+    for path in sorted(base.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(skill_dir)
+        if len(rel.parts) > MAX_DEPTH:
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError:
+            continue
+        # Skip binaries by inspecting null bytes
+        if b"\x00" in data[:4096]:
+            continue
+        if len(data) > MAX_BYTES:
+            data = data[:MAX_BYTES] + b"\n[...truncated]\n"
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        parts.append(f"=== {rel} ===\n{text}")
+
+sys.stdout.write("\n\n".join(parts))
+PYEOF
+}
+
 run_claude() {
   local output_dir="$1"
   local prompt="$2"
@@ -105,13 +163,13 @@ run_claude() {
   # Note: --skill flag doesn't exist; inject skill content via --append-system-prompt
   local exit_code=0
   if [[ -n "$skill_dir" ]]; then
-    local skill_content
-    skill_content=$(cat "${skill_dir}/SKILL.md")
+    local skill_bundle
+    skill_bundle=$(build_skill_bundle "$skill_dir")
     claude -p "$prompt" \
       --allowedTools "$ALLOWED_TOOLS" \
-      --append-system-prompt "You have the following skill loaded. Follow its instructions:
+      --append-system-prompt "You have the following skill loaded as a full package (SKILL.md plus scripts/, references/, assets/). Follow its instructions:
 
-${skill_content}" \
+${skill_bundle}" \
       > "${output_dir}/outputs/response.md" 2>/dev/null || exit_code=$?
   else
     claude -p "$prompt" \

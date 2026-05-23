@@ -284,20 +284,87 @@ def generate_markdown(benchmark: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _arm_quality(benchmark: dict[str, Any], arm_label: str) -> float:
+    """Extract a representative quality score for one arm benchmark.
+
+    Prefers the explicit `with_skill` configuration when present (so that an
+    arm produced by the standard 2-arm run is interpreted as the active arm),
+    otherwise falls back to the first configuration in `configurations`.
+    """
+    configs = benchmark.get("configurations") or []
+    if not configs:
+        raise ValueError(f"Arm {arm_label}: benchmark has no configurations")
+    for cfg in configs:
+        if cfg.get("name") == "with_skill":
+            return float(cfg.get("mean_quality_score", 0.0))
+    return float(configs[0].get("mean_quality_score", 0.0))
+
+
+def run_three_arm(arm_a: Path, arm_b: Path, arm_c: Path) -> dict[str, Any]:
+    """Compute 3-arm deltas from three benchmark.json files.
+
+    Arms (by convention):
+      A = skill   — full SKILL.md package
+      B = terse   — minimal terse description, no full package
+      C = baseline— no skill at all
+
+    Returns a dict with both deltas plus the source mean quality scores.
+    """
+    bench_a = load_json(arm_a)
+    bench_b = load_json(arm_b)
+    bench_c = load_json(arm_c)
+    if bench_a is None or bench_b is None or bench_c is None:
+        raise SystemExit("ERROR: one or more arm benchmark files could not be loaded")
+
+    q_a = _arm_quality(bench_a, "A")
+    q_b = _arm_quality(bench_b, "B")
+    q_c = _arm_quality(bench_c, "C")
+
+    return {
+        "mode": "three-arm",
+        "arms": {
+            "A_skill": {"source": str(arm_a), "mean_quality_score": q_a},
+            "B_terse": {"source": str(arm_b), "mean_quality_score": q_b},
+            "C_baseline": {"source": str(arm_c), "mean_quality_score": q_c},
+        },
+        "delta_skill_vs_terse": round(q_a - q_b, 4),
+        "delta_terse_vs_baseline": round(q_b - q_c, 4),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Aggregate eval benchmark results into a summary."
     )
     parser.add_argument(
         "iteration_dir",
-        help="Path to the iteration directory containing eval-* subdirs.",
+        nargs="?",
+        help="Path to the iteration directory containing eval-* subdirs "
+        "(omit when using --three-arm).",
     )
     parser.add_argument(
         "--skill-name",
-        required=True,
-        help="Name of the skill being benchmarked.",
+        help="Name of the skill being benchmarked (required for 2-arm mode).",
+    )
+    parser.add_argument(
+        "--three-arm",
+        nargs=3,
+        metavar=("ARM_A", "ARM_B", "ARM_C"),
+        help="Compute 3-arm deltas from three benchmark.json files "
+        "(A=skill, B=terse, C=baseline). Prints JSON to stdout.",
     )
     args = parser.parse_args()
+
+    if args.three_arm:
+        result = run_three_arm(*(Path(p) for p in args.three_arm))
+        json.dump(result, sys.stdout, indent=2, ensure_ascii=False)
+        sys.stdout.write("\n")
+        return
+
+    if not args.iteration_dir:
+        parser.error("iteration_dir is required unless --three-arm is used")
+    if not args.skill_name:
+        parser.error("--skill-name is required unless --three-arm is used")
 
     iter_dir = Path(args.iteration_dir)
     if not iter_dir.is_dir():
