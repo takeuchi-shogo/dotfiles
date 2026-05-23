@@ -2,7 +2,7 @@
 name: cursor
 description: >
   Cursor Agent CLI (ヘッドレスモード) を使ったコード分析・生成・リファクタリング。
-  マルチモデルアクセス（GPT-5, Sonnet-4 等）と Cloud Agent（非同期長時間タスク）が強み。
+  マルチモデルアクセス（composer-2.5-fast/claude-opus-4-7-thinking-max 等）と Cloud Agent（非同期長時間タスク）が強み。
   Triggers: 'cursor', 'Cursor で', 'cursor agent', 'Cloud Agent で', 'agent -p'.
   Do NOT use for: 1Mコンテキスト分析（use /gemini）、深い推論レビュー（use /codex）、
   Claude で十分な軽量タスク（use Agent tool directly）。
@@ -16,12 +16,12 @@ metadata:
 ## Running a Task
 
 1. デフォルトで非対話モード (`-p`) を使用する
-2. デフォルトモデルは `composer-2`。ユーザーが明示的に指定した場合はそちらを優先する
+2. デフォルトモデルは `composer-2.5-fast` (Cursor CLI 公式 default、2026-05-23 更新)。ユーザーが明示的に指定した場合はそちらを優先する
 3. 用途に応じてモードとオプションを選択:
    - `--force`: ファイル変更を許可（デフォルトは read-only）
    - `--mode=plan`: 計画のみ（変更なし）
    - `--mode=ask`: Q&A（読み取り専用）
-   - `--model <model>`: モデル指定（デフォルト: `composer-2`、他: `gpt-5.4-medium`, `claude-4.6-opus-high` 等）
+   - `--model <model>`: モデル指定（デフォルト: `composer-2.5-fast`、他: `composer-2.5` (current quality), `claude-opus-4-7-thinking-max`, `claude-4.6-sonnet-medium-thinking`, `gpt-5.3-codex-xhigh` 等）
    - `--output-format <text|json|stream-json>`: 出力形式
 4. コマンドを組み立てて実行する
 
@@ -29,11 +29,11 @@ metadata:
 
 | Use case             | Key flags                                               |
 | -------------------- | ------------------------------------------------------- |
-| Read-only 分析       | `agent -p --model composer-2 --trust "Analyze: {prompt}" 2>/dev/null`              |
-| 計画・設計           | `agent -p --model composer-2 --trust --mode=plan "{prompt}" 2>/dev/null`           |
-| ファイル変更         | `agent -p --model composer-2 --trust --force "{prompt}" 2>/dev/null`               |
-| モデル指定（Pro）    | `agent -p --model gpt-5.4-medium --trust "{prompt}" 2>/dev/null`            |
-| 構造化出力           | `agent -p --model composer-2 --trust --output-format json "{prompt}" 2>/dev/null`  |
+| Read-only 分析       | `agent -p --model composer-2.5-fast --trust "Analyze: {prompt}" 2>/dev/null`              |
+| 計画・設計           | `agent -p --model composer-2.5-fast --trust --mode=plan "{prompt}" 2>/dev/null`           |
+| ファイル変更         | `agent -p --model composer-2.5-fast --trust --force "{prompt}" 2>/dev/null`               |
+| モデル指定（Pro）    | `agent -p --model claude-opus-4-7-thinking-max --trust "{prompt}" 2>/dev/null`            |
+| 構造化出力           | `agent -p --model composer-2.5-fast --trust --output-format json "{prompt}" 2>/dev/null`  |
 | Cloud Agent（非同期）| `agent -c "{prompt}" 2>/dev/null`                       |
 | セッション再開       | `agent --continue 2>/dev/null`                          |
 | セッション一覧       | `agent ls 2>/dev/null`                                  |
@@ -48,7 +48,7 @@ metadata:
 
 ## When to Use Cursor Agent
 
-- **使う**: マルチモデル比較（GPT-5 vs Sonnet-4）、Cloud Agent で非同期タスク、Cursor のコードベースインデックスを活用した分析、画像/メディアの解析
+- **使う**: マルチモデル比較（composer-2.5-fast vs claude-opus-4-7-thinking-max 等）、Cloud Agent で非同期タスク、Cursor のコードベースインデックスを活用した分析、画像/メディアの解析
 - **使わない**: 1M コンテキスト分析（→ Gemini）、深い推論/セキュリティ分析（→ Codex）、Claude 単体で十分なタスク（→ Agent tool）
 
 ## Cloud Agent
