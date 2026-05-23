@@ -916,3 +916,17 @@
   - A3: subagent-delegation-guide.md に `/fork` 意図的非採用の 1 段落注記 (T4 の新規 file 採用を inline 注記に narrow)
 - Codex 推奨で副次採用、Gemini grounding は stable 化主張 (要 verification) — context cleanliness と逆方向の判断は不変
 - Meta-finding: 「未実施タスクを backlog と見すぎる」failure mode を mechanism (Step 7) で防ぐ。記事再投入が古い採用判断の剪定トリガーとして機能した Khairallah パターン
+
+## [2026-05-23] ingest | damidefi "Connect Claude to Obsidian Vault. 2 Months Later" (X creator)
+
+- ソース: テキスト貼り付け (URL なし)、著者 @damidefi (X creator, follower 100K 目標)
+- 分析: docs/research/2026-05-23-damidefi-claude-obsidian-second-brain-absorb-analysis.md
+- 判定: family `obsidian-second-brain` 10 件目 / Saturation Gate PASS (warning) (採用率 33% で形式通過、user `continue` 選択)
+- 主張: 4-layer (Capture/Automation/Memory/Intelligence) + type-based 6-folder + Daily 4-section synthesis (Connections/Patterns/Contradictions/Open Questions) + Weekly 30-day surprise test
+- 採用 0 件、Validation-only follow-up なし
+- Codex 批評で T3 (Partial→N/A)、T5 (Gap novel→Partial / novel ではない)、T7 (Already→Partial / on-demand 限定) に降格。「採用するなら T7 を 1 件だけ。最終推奨採用 0 件」
+- Meta-finding 1: **obsidian-second-brain family 3 連続 reference-only 確定** (Cyril x2 + damidefi)。共通パターン = creator-monetization-driven AI second brain genre (X follower KPI + 課金 SaaS + anecdotal metrics + Bookmark/Share 誘導)
+- Meta-finding 2: saturation taxonomy 閾値調整シグナル — N>=3 採用率>=20% の現行 PASS ルールでは「直近 2 件連続 reject」trend が拾えない → Step 4.5 連続 reject trend 副ガードを新設
+- Meta-finding 3: Sonnet imagination 罠再発 (T5 を Partial 強化可能と Sonnet が返したが Cyril 系で棄却済)。Pass 2 で過去 absorb の照合が必要
+- Meta-finding 4: Codex の reasoning depth が同族 absorb 文脈再構築に有効 — bias mitigation だけでなく context recovery としても Phase 2.5 価値あり
+- Gemini grounding: クォータ枯渇 (Free tier) で 3 retry 後 abort、Codex 単独で判定十分

@@ -26,7 +26,7 @@ last_reviewed: 2026-05-22
 
 | Family ID | キーワード (case-insensitive, OR) | 過去事例 |
 |-----------|---------------------------------|---------|
-| `obsidian-second-brain` | `obsidian`, `second brain`, `PARA`, `vault`, `session log` のうち **3 つ以上** hit | Cyril x3, akira_papa, Karpathy Second Brain Modified, Hermes |
+| `obsidian-second-brain` | `obsidian`, `second brain`, `PARA`, `vault`, `session log` のうち **3 つ以上** hit | Cyril x3, akira_papa, Karpathy Second Brain Modified, Hermes, damidefi (2026-05-23 で N=10、直近 3 連続 reference-only) |
 | `skill-graphs` | `skill graph`, `atom`, `molecule`, `compound`, `skill composition` のうち **2 つ以上** | Skill Graphs 2.0, Tan thin-harness, Atomic Skills |
 | `harness-engineering` | `harness`, `hook`, `scaffold`, `agent platform`, `harness everything` のうち **3 つ以上** | AlphaSignal Harness, Harness Pipeline BAN, Cursor harness, Self-Healing |
 | `claude-code-tips` | `claude code tips`, `hidden features`, `N tricks`, `N tips`, `cheat code` のうち **2 つ以上** | Boris 30 Tips, Three-Model Stack, 73% Overhead 9 Patterns |
@@ -107,11 +107,32 @@ grep -i -E "obsidian|second brain|PARA|vault" /Users/takeuchishougo/dotfiles/doc
 | 条件 | 判定 | アクション |
 |------|------|----------|
 | N < 3 | PASS | Phase 2 へ通常進行 |
-| N >= 3 かつ 採用率 >= 20% | PASS (warning) | Phase 2 へ進むが「重複領域」と user に告知 |
+| N >= 3 かつ 採用率 >= 20% | PASS (warning) | Phase 2 へ進むが「重複領域」と user に告知 (※下記の連続 reject 副ガード参照) |
 | N >= 3 かつ 採用率 < 20% かつ delta >= 2 | **SATURATED-but-novel** | `AskUserQuestion` で `light-phase2` (推奨) / `continue` / `skip` |
 | N >= 3 かつ 採用率 < 20% かつ delta == 1 | **SATURATED-borderline** | `AskUserQuestion` で `light-phase2` / `continue` / `skip` (推奨なし) |
 | N >= 3 かつ 採用率 < 20% かつ delta == 0 | **SATURATED-pure-rehash** | `AskUserQuestion` で `continue` / `skip` (skip 推奨) |
 | N >= 3 かつ 採用率 < 20% かつ prior_methods == unknown | **DELTA-UNKNOWN** | `AskUserQuestion` で `light-phase2` / `continue` / `skip` (light-phase2 推奨) |
+
+### Step 4.5: 連続 reject trend 副ガード (PASS warning 時のみ)
+
+**全体採用率は OK だが trend が悪化しているケース** を拾うための追加 check。Step 4 で `PASS (warning)` 判定になった場合のみ実行する。
+
+直近 N 件 (default N=3) を時系列順で並べ、**直近 2 件以上が連続で採用 0 件 (= reject)** なら、形式上 PASS でも `SATURATED-trending` 扱いで `AskUserQuestion` を発火する。
+
+```
+この family は全体採用率 X% で PASS 判定でしたが、直近 N 件のトレンドが reject 寄りです:
+  - <最新 entry>: 採用 0 (reference-only)
+  - <2 番目>: 採用 0 (reference-only)
+  - <3 番目>: 採用 N 件
+
+選択肢:
+  - continue (推奨): フル workflow に進む (trend は警告のみ)
+  - light-phase2: novel 論点だけ Phase 2 で検証
+  - skip: log.md 1 行で閉じる
+```
+
+**事例**: 2026-05-23 damidefi Obsidian Vault absorb (`docs/research/2026-05-23-damidefi-claude-obsidian-second-brain-absorb-analysis.md`) で確認。
+全体採用率 33% で PASS warning 通過したが、直近 2 件 (Cyril x2) が連続 reference-only で、本記事も結果 reference-only に収束した。Step 4.5 があれば user に trend warning を提示できた。
 
 ### Step 5: SATURATED 時の AskUserQuestion テンプレ
 
