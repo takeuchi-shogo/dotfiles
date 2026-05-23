@@ -902,3 +902,17 @@
   - Opus 当初の "factually dubious" 即断は誤り (未知用語の grounding 不足)
   - dotfiles の stale doc が absorb 過程で露出 → platform drift audit としては値あり
 - ユーザー指摘: 「本当に参考になるもの、活かせるものなかった？手を抜いてない？」→ フル Phase 2-2.5 走査で Reject 判定の根拠を厳格化
+
+
+## [2026-05-23] ingest (article=0, side-adopt=3, validation-only) | aitmpl — Keep your Claude Code context clean with Subagents (re-投入)
+
+- ソース: テキスト貼り付け (aitmpl 系記事、2026-04-27 absorb 済の同一記事)
+- 分析: docs/research/2026-05-23-subagent-context-fork-revisit-analysis.md
+- 判定: family `subagent / context-fork` (N=5+, 完全一致先行例あり) / Saturation Gate **SATURATED-pure-rehash** (delta=0) → ユーザーは continue 選択
+- **記事採用 0**: 全 8 手法は前回 2026-04-27 で analyze 済、新規論点なし
+- **副次採用 3 件** (validation-only follow-up):
+  - A1: /absorb に Stale-Plan Audit (Step 7) 追加 — 過去採用タスクの棚卸し mechanism (topic-family-saturation.md + SKILL.md)
+  - A2: 2026-04-27 レポートに `status: partially-superseded` + 棚卸し追記 (T3 superseded by 2026-05-22 session_observer / T2 narrowed / T4 narrowed)
+  - A3: subagent-delegation-guide.md に `/fork` 意図的非採用の 1 段落注記 (T4 の新規 file 採用を inline 注記に narrow)
+- Codex 推奨で副次採用、Gemini grounding は stable 化主張 (要 verification) — context cleanliness と逆方向の判断は不変
+- Meta-finding: 「未実施タスクを backlog と見すぎる」failure mode を mechanism (Step 7) で防ぐ。記事再投入が古い採用判断の剪定トリガーとして機能した Khairallah パターン
