@@ -17,12 +17,16 @@
   "git_panel": {
     "dock": "right"
   },
-  "theme": "Catppuccin Mocha",
-  "buffer_font_family": "MonaspiceKr Nerd Font Mono",
+  "theme": "Vesper Blur",
+  "icon_theme": "Soft Charmed Icons",
+  "buffer_font_family": "JetBrains Mono",
+  "buffer_font_fallbacks": ["Symbols Nerd Font Mono"],
   "buffer_font_size": 16,
-  "ui_font_family": "MonaspiceRn Nerd Font Mono",
+  "ui_font_family": "JetBrains Mono",
+  "ui_font_fallbacks": ["Symbols Nerd Font Mono"],
   "ui_font_size": 16,
   "ui_font_weight": 700,
+  "cursor_shape": "bar",
   "indent_guides": {
     // インデントに色を表示する
     "enabled": true,
