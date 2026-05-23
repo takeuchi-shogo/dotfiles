@@ -184,3 +184,13 @@ learned(stripe-multicurrency): presentment currency vs settlement currency are d
 
 decision(http-client): switched from axios to native fetch for zero-dependency HTTP
 ```
+
+## Output Self-Check
+
+コミットメッセージを `git commit` で確定する前に、以下 5 項目を verify する。1 項目でも No なら修正してから commit する。
+
+1. **意図対応**: ユーザー要求 (`$ARGUMENTS` or 暗黙の意図) と diff に対応しているか？
+2. **形式**: `<絵文字> <type>(<scope>): <subject>` + 必要なら body の構造、subject 72 文字以内、imperative mood か？
+3. **具体性**: body の `intent/decision/rejected/constraint/learned` が vague でなく、具体的なファイル/関数/数値/参照を含むか？
+4. **why over what**: subject + body の 1 文目で why が伝わるか？ diff から自明な what の言い換えになっていないか？
+5. **レビュー可能性**: このコミットを修正なしで PR に含めても、reviewer が文脈を再構築できるか？
