@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-05-25
 ---
 
 # サブエージェント vs cmux Worker 比較
@@ -40,3 +40,17 @@ last_reviewed: 2026-04-23
 - **デフォルトはサブエージェント**。起動コスト・コンテキスト共有・結果受け渡しで優位
 - **cmux Worker に昇格する条件**: 長時間タスク、マルチモデル、高並列、人間介入が必要な場合
 - 両者は排他ではなく**併用**。タスクの性質で自動振り分けする
+
+## Agent View / Agent Teams との境界
+
+cmux Worker は **process-level / multi-model** orchestration、Agent View / Agent Teams は **Claude session-level / single-model** orchestration。**別レイヤーであり、cmux が上位互換ではない**。
+
+| 用途 | 機構 | 補足 |
+|------|------|------|
+| Codex / Gemini 並列、長時間、実機監視 | **cmux Worker** | terminal-observable / multi-model / process-level |
+| Claude session の background 管理 (peek/attach) | **Agent View** | `claude agents` dashboard、`claude --bg` / `claude attach`、Claude-only |
+| shared task list + peer messaging | **Agent Teams** | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (`settings.json:4` で設定済)、`TeamCreate` / `TaskCreate` / `TaskUpdate` / `TaskList` / `SendMessage` tools、Claude-only peer coordination |
+
+peer coordination が必要なら Agent Teams、Codex/Gemini・長時間・実機監視なら cmux Worker。両者は排他ではなく、用途別に併存する。
+
+> 出典: 2026-05-25 /absorb (Agent Team 7 steps listicle) → Codex 批評で「cmux で上位互換」判定の Confirmation bias を指摘 (`docs/research/2026-05-25-claude-agent-teams-7steps-absorb-analysis.md`)。

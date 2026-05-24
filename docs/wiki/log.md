@@ -8,6 +8,28 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-05-25] ingest (light Phase 2, adopt=2 S) | How to Organize Your Obsidian Vault So You Can Always Find What You Need (cyrilXBT)
+
+- ソース: テキスト貼り付け (@cyrilXBT, follow @cyrilXBT 誘導つき full course 形式)
+- 判定: light-phase2 で 12 手法 → Already 9 / **Gap 1.5 (採用 2)** / N/A 2 = **採用 2 件 S**
+- Family: obsidian-second-brain (N=15 件目, Cyril 著者 5 件目)、SATURATED-borderline (delta=1)、ユーザー light-phase2 選択
+- 採用: T1 axis 2 + axis 4 → `vault-maintenance.sh` に `check_rare_tags()` + `check_naming_compliance()` 追加、cron 週次に統合 (RARE_TAG_THRESHOLD=5)
+- 検証: dotfiles vault dry-run で 354 タグ集計 → rare tag 多数検出 (governance/google-engineering/skill-design 等 1-4x)、命名違反 0 件 (vault well-organized 確認)、bash -n syntax OK
+- 棄却 (10 件): 8-folder PARA/YYYY-MM-DD-TYPE 命名/universal frontmatter/3-category tag prefix/MOC/3 search modes/Filesystem MCP/Progressive Reorganization plan/Retrieval-First Principle/Inbox 3-question rubric (全て既決 Already or 2026-05-22 で明示 Reject)
+- メタ: Cyril 5 件目で初の「small but real adopt」(過去 4 件 adopt 3→2→1→0 の漸減トレンドが反転)、delta=1 が真の novel になる珍しい事例。サンドボックス制約 (root-find Operation not permitted) 検出で subdir 走査パターンに refactor
+- レポート: `docs/research/2026-05-25-cyrilxbt-organize-vault-absorb-analysis.md`
+
+## [2026-05-25] ingest (light Phase 2 + Codex correction, adopt=1 S) | How to Build a Claude Agent Team in 7 Steps (Twitter listicle, unattributed)
+
+- ソース: テキスト貼り付け (anonymous Twitter promotional listicle, モデル ID `claude-sonnet-4-5-20250929` から 2025-Q4 派生疑い)
+- 判定: light-phase2 で 12 主張 → Already 5 / **Partial 1 (採用)** / N/A 4 / misnamed 1 / anecdotal 1 = **採用 1 件 S**
+- Family: claude-code-tips listicle (N=8 件目) + agent-orchestration (N=6 件目) hybrid、SATURATED-but-novel (delta=5 fabrication 高リスク)
+- WebSearch grounding (5 並列): 5 つの env/CLI 主張 (AGENT_TEAMS / Agent View / `--max-budget-usd` / SUBAGENT_MODEL / DISABLE_ADAPTIVE_THINKING) **すべて公式実在を確認**、`CLAUDE_CODE_DEFAULT_EFFORT` のみ **misnamed** (正式: `CLAUDE_CODE_EFFORT_LEVEL`)
+- dotfiles 既決内訳: AGENT_TEAMS=settings.json:4 設定済 / SUBAGENT_MODEL=Opus 1M lock-in で N/A / EFFORT=settings.json:815 `effortLevel: "xhigh"` 採用済 / DISABLE_ADAPTIVE_THINKING=Opus 4.7 no-op で 2026-05-19 意図的除外 / `--max-budget-usd`=2026-05-10 absorb で「CI 自動化なし → スキップ」決定済
+- **採用 (Codex 批評で訂正)**: #5 `claude agents` Agent View を当初「cmux で上位互換」と判定したが Confirmation bias と Codex 指摘 → `references/subagent-vs-cmux-worker.md` に **Agent View (session dashboard) / Agent Teams (peer messaging) / cmux (process-level multi-model)** の 3 レイヤー境界注記追加 (S 規模)
+- Phase 2.5 省略の代償を Codex 単独批評で補填 (cmux Worker spawn 失敗 → `codex exec --sandbox read-only -m gpt-5.5` fallback、Q1 のみ採用、Q2-Q4 不要)
+- レポート: `docs/research/2026-05-25-claude-agent-teams-7steps-absorb-analysis.md`
+
 ## [2026-05-22] ingest-skip | 11 Claude things I wish someone had told me 12 months ago (anonymous)
 
 - ソース: テキスト貼り付け (anonymous "Based on conversations and workflows shared by advanced Claude users")
