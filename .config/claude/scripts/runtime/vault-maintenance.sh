@@ -6,6 +6,8 @@
 #   - リンク切れ検出 ([[wikilink]] が存在しないファイルを参照している)
 #   - Stale Seed 検出 (#status/seed タグ + 更新日30日以上前)
 #   - 重複候補検出 (04-Galaxy/ 内でファイル名の単語重複率が高いペア)
+#   - Rare タグ検出 (RARE_TAG_THRESHOLD 未満の使用回数のタグ、ノイズ判定)
+#   - 命名規約違反検出 (CLAUDE.md naming conventions に従わないファイル)
 #
 # Usage: vault-maintenance.sh [--dry-run]
 # Env:   OBSIDIAN_VAULT_PATH (required)
@@ -20,6 +22,7 @@ DRY_RUN=false
 # --- Config ---
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
 STALE_DAYS=30
+RARE_TAG_THRESHOLD="${RARE_TAG_THRESHOLD:-5}"  # cyrilXBT 2026-05-25 absorb: N ノート未満で使われるタグはノイズ判定 (env override 可)
 TODAY="$(date +%Y-%m-%d)"
 
 # --- Validation ---
@@ -38,6 +41,8 @@ orphan_notes=()
 broken_links=()    # "file.md -> [[target]]" format
 stale_seeds=()
 duplicate_pairs=() # "noteA.md <-> noteB.md (score)" format
+rare_tags=()       # "<count>x #tag" format
+naming_violations=() # "file.md (expected: <pattern>)" format
 
 # ---------------------------------------------------------------------------
 # check_orphan_notes
@@ -206,6 +211,143 @@ check_duplicates() {
 }
 
 # ---------------------------------------------------------------------------
+# check_rare_tags
+#   Vault 全体から #tag と frontmatter `tags:` を集計し、出現回数が
+#   RARE_TAG_THRESHOLD 未満のタグを検出する。
+#   出典: cyrilXBT 2026-05-25 absorb (T1 axis 2)
+# ---------------------------------------------------------------------------
+check_rare_tags() {
+    echo "[vault-maintenance] Checking rare tags (threshold: ${RARE_TAG_THRESHOLD} notes)..."
+
+    # tag_name -> count 集計用 tempfile と per-note buffer
+    # trap で関数 RETURN 時に必ず削除 (set -e 中途 abort でも安全)
+    local tag_count_file per_note_buf
+    tag_count_file="$(mktemp)"
+    per_note_buf="$(mktemp)"
+    trap 'rm -f "$tag_count_file" "$per_note_buf"' RETURN
+
+    # 既知サブディレクトリを列挙して走査 (macOS sandbox の root-find 制限を回避)
+    local target_dirs=(
+        "$VAULT_PATH/00-Inbox" "$VAULT_PATH/01-Projects" "$VAULT_PATH/02-Areas"
+        "$VAULT_PATH/03-Resources" "$VAULT_PATH/04-Galaxy" "$VAULT_PATH/05-Literature"
+        "$VAULT_PATH/06-Archive" "$VAULT_PATH/07-Daily" "$VAULT_PATH/08-Agent-Memory"
+    )
+
+    for dir in "${target_dirs[@]}"; do
+        [[ -d "$dir" ]] || continue
+        while IFS= read -r -d '' note_path; do
+            # per-note buffer をクリア (本文 grep + frontmatter awk を統合してから dedup)
+            : > "$per_note_buf"
+
+            # 1) インライン #tag を抽出
+            #    前置文字は空白か行頭のみ受理 (URL fragment や ) 直後の誤検出を防ぐ)
+            grep -oE '(^|[[:space:]])#[a-zA-Z][a-zA-Z0-9/_-]*' "$note_path" 2>/dev/null \
+                | grep -oE '#[a-zA-Z][a-zA-Z0-9/_-]*' \
+                >> "$per_note_buf" || true
+
+            # 2) frontmatter `tags:` を抽出 (YAML list 記法、両形式対応)
+            #    tags: [foo, bar]  または  tags:\n  - foo\n  - bar
+            #    引用符は除去 ("topic/foo" → topic/foo、quoted YAML 対応)
+            awk '
+                /^---$/ { in_fm = !in_fm; next }
+                !in_fm { next }
+                /^tags:[[:space:]]*\[/ {
+                    gsub(/^tags:[[:space:]]*\[/, "")
+                    gsub(/\].*$/, "")
+                    gsub(/[[:space:]"'"'"']/, "")
+                    n = split($0, parts, ",")
+                    for (i = 1; i <= n; i++) if (parts[i] != "") print "#" parts[i]
+                    next
+                }
+                /^tags:[[:space:]]*$/ { in_tags = 1; next }
+                in_tags && /^[[:space:]]*-[[:space:]]*/ {
+                    gsub(/^[[:space:]]*-[[:space:]]*/, "")
+                    gsub(/[[:space:]"'"'"']/, "")
+                    if ($0 != "") print "#" $0
+                    next
+                }
+                in_tags && /^[^[:space:]-]/ { in_tags = 0 }
+            ' "$note_path" 2>/dev/null >> "$per_note_buf" || true
+
+            # ノート内で重複除去してから master へ追記 (二重計上を防ぐ: 同一タグが本文と
+            # frontmatter 双方にある場合に count が +2 されて threshold 判定が壊れるのを防ぐ)
+            sort -u "$per_note_buf" >> "$tag_count_file" || true
+        done < <(find "$dir" -name "*.md" -not -path "*/.*" -print0 2>/dev/null)
+    done
+
+    # rare tag (使用回数 < threshold) を抽出
+    while IFS= read -r line; do
+        local count tag
+        count=$(echo "$line" | awk '{print $1}')
+        tag=$(echo "$line" | awk '{print $2}')
+        if [[ -n "$count" && -n "$tag" && "$count" -lt "$RARE_TAG_THRESHOLD" ]]; then
+            rare_tags+=("${count}x ${tag}")
+        fi
+    done < <(sort "$tag_count_file" | uniq -c | sort -rn)
+
+    # tempfile cleanup は trap RETURN で実行される
+    echo "[vault-maintenance] Rare tags found: ${#rare_tags[@]}"
+}
+
+# ---------------------------------------------------------------------------
+# check_naming_compliance
+#   CLAUDE.md 規定の naming conventions に違反するファイルを検出する。
+#   - 04-Galaxy/: YYYYMMDDHHMMSS-kebab-case-title.md
+#   - 05-Literature/: lit-<著者>-<タイトル略称>.md
+#   - 01-Projects/proj-*/: YYYY-MM-DD-topic.md
+#   出典: cyrilXBT 2026-05-25 absorb (T1 axis 4)
+# ---------------------------------------------------------------------------
+check_naming_compliance() {
+    echo "[vault-maintenance] Checking naming convention compliance..."
+
+    # 04-Galaxy: 14-digit timestamp + kebab-case
+    if [[ -d "$VAULT_PATH/04-Galaxy" ]]; then
+        while IFS= read -r -d '' note_path; do
+            local basename
+            basename="$(basename "$note_path")"
+            # _templates/ や index 系はスキップ
+            [[ "$note_path" == */_templates/* ]] && continue
+            [[ "$basename" == "index.md" || "$basename" == "README.md" ]] && continue
+            if ! [[ "$basename" =~ ^[0-9]{14}-[a-z0-9][a-z0-9-]*\.md$ ]]; then
+                naming_violations+=("${note_path#"$VAULT_PATH/"} (expected: YYYYMMDDHHMMSS-kebab-case.md)")
+            fi
+        done < <(find "$VAULT_PATH/04-Galaxy" -maxdepth 2 -name "*.md" -print0 2>/dev/null)
+    fi
+
+    # 05-Literature: lit- prefix
+    if [[ -d "$VAULT_PATH/05-Literature" ]]; then
+        while IFS= read -r -d '' note_path; do
+            local basename
+            basename="$(basename "$note_path")"
+            [[ "$note_path" == */_templates/* ]] && continue
+            [[ "$basename" == "index.md" || "$basename" == "README.md" ]] && continue
+            if ! [[ "$basename" =~ ^lit-.+\.md$ ]]; then
+                naming_violations+=("${note_path#"$VAULT_PATH/"} (expected: lit-<author>-<title>.md)")
+            fi
+        done < <(find "$VAULT_PATH/05-Literature" -maxdepth 2 -name "*.md" -print0 2>/dev/null)
+    fi
+
+    # 01-Projects/proj-*/: YYYY-MM-DD- prefix
+    if [[ -d "$VAULT_PATH/01-Projects" ]]; then
+        while IFS= read -r -d '' note_path; do
+            local basename
+            basename="$(basename "$note_path")"
+            [[ "$note_path" == */_templates/* ]] && continue
+            [[ "$basename" == "index.md" || "$basename" == "README.md" ]] && continue
+            # proj-*/ 配下のみ対象 (それ以外の Project 直下ファイルは規約外なのでスキップ)
+            local parent_dir
+            parent_dir="$(basename "$(dirname "$note_path")")"
+            [[ ! "$parent_dir" =~ ^proj- ]] && continue
+            if ! [[ "$basename" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}-.+\.md$ ]]; then
+                naming_violations+=("${note_path#"$VAULT_PATH/"} (expected: YYYY-MM-DD-topic.md)")
+            fi
+        done < <(find "$VAULT_PATH/01-Projects" -maxdepth 3 -name "*.md" -print0 2>/dev/null)
+    fi
+
+    echo "[vault-maintenance] Naming violations found: ${#naming_violations[@]}"
+}
+
+# ---------------------------------------------------------------------------
 # print_results
 #   各チェック結果を整形して stdout に出力する
 # ---------------------------------------------------------------------------
@@ -259,6 +401,28 @@ print_results() {
         echo "  (なし)"
     fi
     echo ""
+
+    # Rare tags
+    echo "## Rare タグ (${#rare_tags[@]} 件, ${RARE_TAG_THRESHOLD}ノート未満で使用)"
+    if [[ "${#rare_tags[@]}" -gt 0 ]]; then
+        for tag in "${rare_tags[@]}"; do
+            echo "  - $tag"
+        done
+    else
+        echo "  (なし)"
+    fi
+    echo ""
+
+    # Naming violations
+    echo "## 命名規約違反 (${#naming_violations[@]} 件)"
+    if [[ "${#naming_violations[@]}" -gt 0 ]]; then
+        for violation in "${naming_violations[@]}"; do
+            echo "  - $violation"
+        done
+    else
+        echo "  (なし)"
+    fi
+    echo ""
 }
 
 # ---------------------------------------------------------------------------
@@ -267,7 +431,7 @@ print_results() {
 #   問題が1件もなければ保存しない
 # ---------------------------------------------------------------------------
 save_report() {
-    local total_issues=$(( ${#orphan_notes[@]} + ${#broken_links[@]} + ${#stale_seeds[@]} + ${#duplicate_pairs[@]} ))
+    local total_issues=$(( ${#orphan_notes[@]} + ${#broken_links[@]} + ${#stale_seeds[@]} + ${#duplicate_pairs[@]} + ${#rare_tags[@]} + ${#naming_violations[@]} ))
 
     if [[ "$total_issues" -eq 0 ]]; then
         echo "[vault-maintenance] No issues found, skipping report creation"
@@ -297,6 +461,8 @@ save_report() {
         echo "| リンク切れ | ${#broken_links[@]} |"
         echo "| Stale Seed | ${#stale_seeds[@]} |"
         echo "| 重複候補 | ${#duplicate_pairs[@]} |"
+        echo "| Rare タグ | ${#rare_tags[@]} |"
+        echo "| 命名規約違反 | ${#naming_violations[@]} |"
         echo ""
 
         if [[ "${#orphan_notes[@]}" -gt 0 ]]; then
@@ -338,6 +504,24 @@ save_report() {
             done
             echo ""
         fi
+
+        if [[ "${#rare_tags[@]}" -gt 0 ]]; then
+            echo "## Rare タグ (${RARE_TAG_THRESHOLD}ノート未満で使用)"
+            echo ""
+            for tag in "${rare_tags[@]}"; do
+                echo "- $tag"
+            done
+            echo ""
+        fi
+
+        if [[ "${#naming_violations[@]}" -gt 0 ]]; then
+            echo "## 命名規約違反"
+            echo ""
+            for violation in "${naming_violations[@]}"; do
+                echo "- $violation"
+            done
+            echo ""
+        fi
     } > "$report_path"
 
     echo "[vault-maintenance] Report saved: $report_path"
@@ -351,6 +535,8 @@ check_orphan_notes
 check_broken_links
 check_stale_seeds
 check_duplicates
+check_rare_tags
+check_naming_compliance
 
 print_results
 
