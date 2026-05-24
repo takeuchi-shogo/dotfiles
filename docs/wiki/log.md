@@ -948,3 +948,15 @@
 - 取り込み: 13 件全採用 — Gap/Partial 7 (#14 cleanup-later 境界, #21 emergency 定義, #25 Large CL exception, #1 Positive principle, #2 evidence-based feedback, #6 design-first gate, #13 pushback-who-is-right) + Already 強化可能 6 (#15 small-CL threshold, #16 splitting patterns, #11 courtesy + Bad/Good, #3 every-line + good-things, #17 refactor mixing block, #18 refactor-only tests nuance)
 - プラン: `docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md` (L 規模、新セッションで /rpi 推奨)
 - 分析レポート: `docs/research/2026-05-24-google-eng-practices-absorb-analysis.md`
+
+## [2026-05-24] ingest | Cursor cursor-team-kit thermo-nuclear-code-quality-review skill
+
+- ソース: https://github.com/cursor/plugins/blob/b8f2564c2e8da66b331c1dd63c2a2925d6739961/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md (Cursor OSS plugin marketplace)
+- 判定: Gap 4 / Partial 6 / 合計 11 手法 (Codex Phase 2.5 で #1 Gap→Partial / #7 Partial→Gap / #9 #10 根拠補強 + 4 件見落とし指摘)
+- Family: code-review-best-practices **4 件目** (Findy + code-review-graph + Google eng-practices 13 件採用 直後)、saturation PASS-warning
+- 取り込み: 3 件採用 (Pruning-First で 11 → 3 に圧縮) — T1 `cross-cutting.md` CC-11 Presumptive Structural Blockers (must 3 / consider 2 + Review Phrases 4 件) / T2 CC-12 1k-crossing review-time check (300 行 edit-time advisory と別軸の review-time presumptive blocker) / T3 CC-13 Canonical helper / layer leak check
+- 棄却: 8 件 — #2 code-judo / #5 phrases / #6 spaghetti / #7 priority / #11 magic mechanism は T1 (CC-11) に吸収、#3 ambitious mindset は Pruning-First で棄却、#9 type cleanliness と #10 sequential orchestration は既存カバー (`review-checklists/typescript.md:17` + Promise.all / asyncio.gather)
+- ユーザー質問への回答: 「/review skill から cursor CLI 呼び出しで使えるか?」→ 技術的可能 (既存 `skills/cursor/SKILL.md` 流用) だが常時 4th reviewer は棄却。opt-in pilot で `strict-maintainability` reviewer を Watch 扱いから 10 回ログ→ capability score 化 → 組み込み判断、が将来候補
+- 分析レポート: `docs/research/2026-05-24-cursor-team-kit-thermo-nuclear-absorb-analysis.md`
+- Phase 2.5 Gemini 省略理由: family saturated + 記事自己完結 + CLI 統合質問は記事内容と独立 (Codex 単独で批評十分)
+- Meta-finding: Codex 批評で Opus Phase 2 の 4 件誤判定を訂正 (#1 `structure-check.py:34` `MAX_FILE_LINES=300` 見落とし / #7 broad→specific→nit は 3 段階で 7 段階と別物 / non-atomic update と magic mechanism 軸の見落とし)。bias mitigation 効果実証 (Google eng-practices で 9 件、本記事で 4 件)
