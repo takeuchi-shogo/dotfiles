@@ -169,7 +169,34 @@ find . -maxdepth 2 -name ".env*" \
 
 ---
 
-## 7. Agent Traps（情報環境攻撃）
+## 6.6 Permission Hygiene（権限の棚卸し）
+
+`permissions.allow` は session 毎に grant を追加していくと放置で増殖する (`Cowork trusted folders` パターンの settings.json 版)。grant 時点では正当でも、対象プロジェクト消滅・MCP 撤去・ツール置換などで「使われない権限」が蓄積する。
+
+### 月次監査
+
+`scripts/lifecycle/permission-audit.py` を月初に実行する (cron 不要、手動 trigger)。
+
+```bash
+python3 ~/dotfiles/scripts/lifecycle/permission-audit.py
+```
+
+出力:
+- `permissions.allow` 件数 + tool 種別ヒストグラム (Bash/Read/Write/mcp__*/その他)
+- `permissions.deny` 件数 (defense-in-depth が薄まっていないか)
+- 該当しそうな pruning 候補 (path-specific grant で、対象 path が現存しない/参照履歴ゼロのもの)
+
+### 採用基準
+
+- 件数が 100 を超えたら必ず通読する
+- mcp__* grant は対応 MCP server が `enabled: true` でなければ削除候補
+- path-specific grant (`Read(~/path/...)`) は path が存在しなければ削除候補
+- `Bash(...:*)` の wildcard 多用は scope creep の signal
+
+### Build to Delete
+
+本機構は「定期的に grant を勘定する」だけで、削除判定は人が行う。telemetry 整備 (実際の grant 使用頻度ログ) が `session_observer` 経由で揃った時点で auto-pruning に進化可能。現状は手動段階。
+
 
 > Franklin et al. (Google DeepMind, 2026) — 自律型エージェントの情報環境を攻撃面とする脅威体系。
 
