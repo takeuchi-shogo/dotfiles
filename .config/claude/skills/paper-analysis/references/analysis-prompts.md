@@ -123,7 +123,7 @@ Format (strict — do not deviate):
 - Supporting Pillars (3-5): well-established sub-claims with paper references
 - Contested Zones (2-3): active debates with both sides named
 - Frontier Questions (1-2): questions nobody has solved yet
-- Must-Read Papers (3): papers a newcomer MUST read first, with WHY
+- Must-Read Papers (5): papers a newcomer MUST read first, with WHY
 
 Output as a clean outline, not prose.
 ```

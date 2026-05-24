@@ -48,6 +48,9 @@ mizchi 個人ブログ向けの文体評価 skill。記事を書いた後、suba
 | 過剰な箇条書き | 文章で書けることを全部 bullet | 主張は文で、列挙が必要な箇所だけ bullet |
 | 結論部の繰り返し | 「以上、本記事では〜について解説しました」 | 「おわり」または最後の主張で締める |
 | ハルシネーション可能な汎用例 | 「例えば、ある会社では〜という取り組みがあります」 | 自分の repo / 実コミット / 実数値で置換 |
+| LinkedIn / corporate blog 調の決まり文句 | 「In today's fast-paced world」「At the end of the day」「It's important to note」 | 削除、または具体的状況 + 数値で置換 |
+| 長い段落 (scan できない) | 1 段落で 5〜10 文に渡る論理展開 | 1 段落 3 文以内に分割。scan しやすさ優先 |
+| 平坦な hook 不在 | 「本記事では〜について説明します」 | 冒頭に bold claim / counter-intuitive な主張を置いて読者を引き込む |
 
 ## 評価ワークフロー (empirical-prompt-tuning 流用)
 

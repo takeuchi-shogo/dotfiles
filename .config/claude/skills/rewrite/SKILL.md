@@ -6,7 +6,7 @@ description: >
   Triggers: 'リライト', 'rewrite', '書き直して', '言い換えて', 'rewrite for', 'この文章を変換'.
   Do NOT use for: 翻訳（直接依頼で十分）、文献ノート作成（use /digest）、コンテンツ生成（use /obsidian-content）。
 origin: self
-argument-hint: "[preset: technical|executive|slack|casual] or [for persona]"
+argument-hint: "[preset: technical|executive|slack|casual|repurpose] or [for persona]"
 allowed-tools: AskUserQuestion
 metadata:
   pattern: transformer
@@ -82,6 +82,7 @@ AskUserQuestion で聞く:
 - `/obsidian-content` → `/rewrite` で Vault コンテンツの多形式展開
 - `/digest summarize` → `/rewrite` で要約のオーディエンス別変換
 - 複数プリセットで連続実行して比較も可能
+- **repurpose chain (1 source → N platform-native pieces)**: 1 つの記事や論文から、X thread (8-12 tweets) / LinkedIn (150-200 words) / newsletter intro (50-75 words) / quote graphic copy (短い bold statement 数本) / YouTube outline (hook + 3 main points + CTA) を連続生成する。各 platform は別構造で出す (cut & paste ではなく rewrite)。`/rewrite repurpose <source>` の形式で呼ぶか、preset を順に複数指定する
 
 ## Anti-Patterns
 
