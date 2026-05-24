@@ -26,8 +26,26 @@ last_reviewed: 2026-04-23
 
 ## CC-4. TODO / FIXME / HACK
 
-- `ask:` 新しく追加された `TODO`, `FIXME`, `HACK` コメントに Issue 番号やオーナーが付いているか
+Google eng-practices `pushback.md` の no-cleanup-later 原則: 「後で直す」を許すと debt が蓄積する。
+本 CL で**新規追加**された TODO と、本 CL では変更されていない**既存**の TODO を区別する。
+
+### 新規 TODO (本 CL で追加されたもの)
+
+- `must:` 新規追加された `TODO` / `FIXME` / `HACK` に Issue 番号・期限・オーナーのいずれかが欠落していないか
+  - 例 NG: `// TODO: refactor later`
+  - 例 OK: `// TODO(#1234): refactor by 2026-06-30 (owner: @takeuchi)`
+- `must:` "cleanup later" を理由に未完成のロジックを merge していないか (no-cleanup-later 原則)
+
+### 既存 TODO (本 CL では変更されていないもの)
+
+- `nit:` 周辺に既存 TODO があれば追跡 issue 化を提案 (本 CL のスコープ外、修正強制はしない)
 - `nit:` 解決済みの TODO が残っていないか
+
+### 検出方法
+
+- `git diff` の `+` 行に `TODO` / `FIXME` / `HACK` が新規追加 → 新規 TODO 扱い
+- diff 外の既存 TODO への言及は nit 扱い
+- 詳細 rubric: `agents/code-reviewer.md` Section A: Cleanup-Later Boundary
 
 ## CC-5. ログ・オブザーバビリティ
 

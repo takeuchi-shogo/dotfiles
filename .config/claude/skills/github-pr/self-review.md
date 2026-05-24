@@ -29,7 +29,8 @@ gh pr diff <URL>
 - 無関係な変更（フォーマッタの自動修正、lock fileの差分）
 - TODO/FIXMEの放置
 
-diffが大きい場合（目安: 400行超） → 分割候補として記録。
+diffが大きい場合（目安: 300行超） → 分割候補として記録。分割パターンは `references/pr-splitting-patterns.md` (5 patterns) を参照。
+emergency 認定時のみ Large CL exception が許容される (`references/emergency-definition.md`)。
 
 ### 3. PR descriptionと実装の整合性
 

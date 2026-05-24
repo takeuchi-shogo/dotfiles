@@ -436,6 +436,71 @@ Advisor (`references/advisor-strategy.md`) の `stop` response type は本ポリ
 
 ---
 
+## 10. Evidence-Based Feedback Rubric (Google eng-practices)
+
+`skills/review/SKILL.md` Principle 2 (Evidence-Based Feedback) の判定基準・escalation パスの詳細版。
+Google eng-practices `standard.md` ("In any conflict on a code review, the first step should always be for the developer and reviewer to try to come to consensus, based on the contents of this document and the other documents in The CL Author's Guide and The Reviewer's Guide") に基づく。
+
+### 10.1 Evidence 種別
+
+review コメントの根拠として認められる Evidence は以下のいずれか:
+
+| 種別 | 例 | 引用形式 |
+|------|-----|---------|
+| **Technical facts** | benchmark / profile / 計測値 / リソース使用量 | "p99 latency が 200ms→500ms に悪化 (cf. `bench_results.txt`)" |
+| **Data** | 過去 incident / regression / production metrics | "CL-1234 で同パターンが incident #5678 を起こした" |
+| **Principles** | language spec / RFC / style guide (`Effective Go`, `Google Go Style Guide`) / GP-NNN | "Go Code Review Comments: Receiver Names — レシーバ名は 1-2 文字" |
+| **Empirical** | 既存 codebase での慣習 (5 箇所以上で同パターン) | "本リポジトリ pkg/auth/ 内 8 ファイルで `errors.New()` を使用" |
+
+### 10.2 NG パターン (Opinion-Only)
+
+以下の表現単独 (Evidence なし) は review コメントとして無効:
+
+- "I think" / "I feel" / "好みの問題"
+- "なんとなく違和感がある"
+- "経験的に良くない" (具体的 incident 参照なし)
+- "もっとこうした方がいい" (代替案の Evidence なし)
+
+**例外**: 明示的に `[NIT]` ラベル + "個人的な好み" 注記を付けた提案は許容 (severity = NIT 限定)。
+
+### 10.3 Pushback 解決フロー
+
+開発者から反論を受けた reviewer の判断手順 (`agents/code-reviewer.md` Section D pushback-who-is-right と連携):
+
+```
+Pushback 受信
+  ├─ Round 1: 開発者の主張に技術的根拠があるか確認
+  │     ├─ Yes → reviewer の指摘を取り下げ
+  │     └─ No → Round 2 へ
+  ├─ Round 2: reviewer が改めて Evidence (§10.1) を提示
+  │     ├─ 開発者納得 → 解決
+  │     └─ 開発者再反論 → Round 3 へ
+  ├─ Round 3: 双方が主張を維持
+  │     └─ Findings 末尾に [NEEDS_HUMAN_REVIEW] を付与し verdict 維持
+  └─ Round 4 以降: 禁止 (escalation paths を消費)
+```
+
+Round 3 で `[NEEDS_HUMAN_REVIEW]` を付けても verdict (PASS/NEEDS_FIX/BLOCK) は変えない (§3 Convergence Stall の判定ロジックと整合)。
+
+### 10.4 Design-First Feedback Gate との関係
+
+`skills/review/SKILL.md` Principle 3 (Design-First) で `[DESIGN_FIRST]` フラグが立った場合の本ポリシーとの統合:
+
+- `[DESIGN_FIRST]` 発動時、specific / nit レベルの Findings は出力しない (designer 検討待ち)
+- `[DESIGN_FIRST]` Findings 自体も Evidence-Based であること (§10.1 のいずれかを引用)
+- 設計問題解消後に再 review した際、Pass 1 Pass 2 の severity 変動は `[BIAS_DETECTED]` ではなく **設計変更の反映** とみなす (`agents/code-reviewer.md` "Requires Escalation" Confirmation Bias 検出ルールの例外)
+
+### 10.5 検証チェックリスト
+
+review 出力前 self-check:
+
+- [ ] 全 `[MUST]` / `[CONSIDER]` Findings に Evidence (§10.1) が引用されている
+- [ ] `[NIT]` で "個人的な好み" 注記なしの主観表現がない
+- [ ] `[DESIGN_FIRST]` 発動時、specific Findings を含めていない
+- [ ] pushback 履歴がある場合、Round 数が 3 以下に収まっている
+
+---
+
 ## References
 
 - arXiv:2603.01213 "Can AI Agents Agree?" (Berdoz et al., 2026)

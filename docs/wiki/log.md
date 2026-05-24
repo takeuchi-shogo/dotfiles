@@ -930,3 +930,21 @@
 - Meta-finding 3: Sonnet imagination 罠再発 (T5 を Partial 強化可能と Sonnet が返したが Cyril 系で棄却済)。Pass 2 で過去 absorb の照合が必要
 - Meta-finding 4: Codex の reasoning depth が同族 absorb 文脈再構築に有効 — bias mitigation だけでなく context recovery としても Phase 2.5 価値あり
 - Gemini grounding: クォータ枯渇 (Free tier) で 3 retry 後 abort、Codex 単独で判定十分
+
+## [2026-05-24] ingest-skip | @cyrilXBT "How to Link Notes Together in Obsidian and Why It Changes Everything"
+
+- ソース: テキスト貼り付け (URL なし)、著者 @cyrilXBT
+- 理由: topic family `obsidian-second-brain` **14 件目 / Cyril 7 本目**、SATURATED-pure-rehash 寄り borderline (採用率 < 20%, delta ≈ 1 novel 候補)
+- 根拠: 直近 3 連続 reference-only (cyril-one-folder 2026-05-22 / cyrilxbt-18-steps 2026-05-23 / damidefi 2026-05-23) + 著者ベース短絡示唆 (Cyril 4 本目以降, cyril-personal-os 2026-05-21 に明記) + Cyril 系 11+ 件で安定的 Reject パターン (cyrilxbt-18-steps Meta-finding 2)
+- 該当 family のキーワード hit: obsidian, linking, backlink, graph view, aliases, MOCs, daily note, vault
+- 手法 delta: Obsidian default 機能 7 項目 ([[Internal/Block/Heading Links]] / backlink panel / graph view / aliases frontmatter / unlinked mentions / MOCs / daily linking hub) は完全に Already (Obsidian built-in、強化対象なし) + novel 候補 1 件 (Claude MCP 3 prompts: connection finder / synthesis / gap finder) は /digest /think /compile-wiki + semantic_search_nodes + code-review-graph MCP で代替可能性高
+- スキップ判定: Phase 1.5 gate (user 選択: skip 推奨)
+- Phase 2-5 + Phase 2.5 + Wiki INDEX / Obsidian Bridge / MEMORY.md ポインタはすべて skip
+
+## [2026-05-24] ingest | Google eng-practices Code Review Guide
+
+- ソース: https://github.com/google/eng-practices (CC-BY 3.0, 20.9k stars)
+- 判定: Gap 1 / Partial 9 / Already 強化可能 9 / Already 強化不要 4 / N/A 3 (合計 26 手法)
+- 取り込み: 13 件全採用 — Gap/Partial 7 (#14 cleanup-later 境界, #21 emergency 定義, #25 Large CL exception, #1 Positive principle, #2 evidence-based feedback, #6 design-first gate, #13 pushback-who-is-right) + Already 強化可能 6 (#15 small-CL threshold, #16 splitting patterns, #11 courtesy + Bad/Good, #3 every-line + good-things, #17 refactor mixing block, #18 refactor-only tests nuance)
+- プラン: `docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md` (L 規模、新セッションで /rpi 推奨)
+- 分析レポート: `docs/research/2026-05-24-google-eng-practices-absorb-analysis.md`

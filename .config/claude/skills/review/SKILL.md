@@ -38,6 +38,44 @@ metadata:
 4.5 Visual Output → 指摘を difit --comment でインライン表示（指摘 1 件以上時）
 ```
 
+## Review Principles (Google eng-practices)
+
+レビューの primary purpose と feedback の規律を定義する。すべての reviewer 起動 (Step 3) に先立ち、本セクションの原則を適用する。
+
+### Principle 1: Positive Principle — Code Health Improvement (#1)
+
+- レビューの **primary purpose** は "overall code health の改善" であり "完璧の追求" ではない
+- **approve 基準**: CL が code health を改善する (= 既存より良い状態にする) なら approve する。完璧である必要はない
+- code health の評価軸: 可読性 / テスト網羅性 / 設計 (結合度・依存方向) / 保守性 / 動作正当性
+- 「完璧でないから block」は anti-pattern。「現状より悪化させる」または「致命的問題がある」ときのみ block する
+- Verdict 計算式 (`agents/code-reviewer.md` "Mandatory Output Format") は本原則の operationalization である
+  - `MUST ≥ 1 → BLOCK` の "MUST" は **致命的問題 = 現状より悪化** (security/bug/GP 違反) の operationalization であり、本原則と矛盾しない
+
+### Principle 2: Evidence-Based Feedback (#2)
+
+- すべての review コメントは以下のいずれかを根拠として引用すること:
+  - **Technical facts**: 計測可能な事実 (benchmark / profile / 仕様書記載)
+  - **Data**: 過去 incident / regression 履歴 / production metrics
+  - **Principles**: spec / RFC / language spec / established best practices (Google style guide, Go Code Review Comments 等)
+- **NG**: "I think" / "feels wrong" / "好みの問題" 単独 (= opinion)
+- **例外**: 明示的に "個人的な好み" と label した提案 → `[NIT]` 扱いに限定
+- 開発者からの pushback (反論) を受けた場合、Evidence を改めて提示する義務を負う (`agents/code-reviewer.md` Section D pushback-who-is-right)
+- 詳細 rubric: `references/review-consensus-policy.md` "Evidence-Based Feedback Rubric"
+
+### Principle 3: Design-First Feedback Gate (#6)
+
+Google eng-practices `navigate.md` の navigate-three-steps を AI review に転用したもの。
+
+- レビュー進行順: **broad** (設計・アーキテクチャ) → **specific** (実装詳細) → **nit** (スタイル)
+- **設計上の重大問題** を発見した場合、詳細コメントより**先に**返却する (design-first gate)
+- design-first gate の発動条件 (いずれか):
+  - アーキテクチャ変更が必要 (層の境界 / 責務分離 / 依存方向)
+  - API 境界の問題 (公開シグネチャ / プロトコル不整合)
+  - 不可逆な設計決定 (DB schema / public API / migration)
+- gate 発動時: Findings 冒頭に `[DESIGN_FIRST]` セクションを置き、specific / nit は返却しない (designer の検討待ち)
+- 例: 「`[DESIGN_FIRST]` 本 CL は `Repository` が `Service` に依存しています (依存方向の逆転)。具体的コメント返却前に設計再検討をお願いします」
+- 設計問題が解消されたら、specific / nit を別 round で返却する
+
 ## Step 1: Pre-analysis
 
 ```bash
