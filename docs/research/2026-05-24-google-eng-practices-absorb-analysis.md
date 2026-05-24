@@ -300,3 +300,50 @@ Piper monorepo + One Version + OWNERS + Critique Attention Set という Google 
 ## Related Plan
 
 詳細 integration plan: [`docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md`](../../plans/active/2026-05-24-google-eng-practices-integration-plan.md)
+
+---
+
+## 13. Phase 2 採用転換 (2026-05-24 同日追記)
+
+### 経緯
+
+Phase 1 完了直後、ユーザーが `/challenge` で「同等以上達成?」を独立検証。本文書 §8 で「採用見送り 13 件」とした項目のうち、`looking-for.md` Google エンジニア基準で **5 項目に parity gap が残存** することが判明。ユーザー承認 ("全部進めて") に基づき Phase 2 として 5 項目追加採用。
+
+### 棄却決定を覆す根拠
+
+| # | 元判定 | 元棄却理由 | 反証 (Phase 2 採用根拠) |
+|---|--------|-----------|----------------------|
+| #20 mentoring-via-review | Partial | "#5/#19 + Tier 2 #2 で吸収可" | #5/#19 は context 説明、#2 は evidence 提示 = いずれも mentoring tone (Why + 学習リソース) を保証しない。AI reviewer が future-self education として transferable な独立規律 |
+| #23 Style authority | Partial | "#2 と関連、将来検討" | Principle 2 (Evidence-Based) は「根拠の品質」、Style Authority は「指摘範囲の制限」で論理的に直交。AI reviewer の主観 NIT 量産抑制に必要 |
+| #24 Documentation update | Already 強化可能 | "doc-gardener で部分カバー" | doc-gardener は **既存 docs の定期 drift スキャン**、本項目は **本 CL 内の同期強制**。責務分離可能で並立する規律 |
+| #10 lgtm-with-comments (再判定) | Already 強化可能 | "FYI label で部分カバー" | FYI は label レベル、Google LGTM = approve + non-blocking nits **並立の verdict 表現** が欠落 → `[NITS_REMAIN]` タグで operationalize |
+| navigate.md ファイル順 (新規抽出) | Phase 1 未抽出 | (Codex Phase 2.5 でも未検出) | severity 順 (broad→specific→nit, Principle 3) と直交する **ファイル読み順** (main file first → affected → trivial last)。cognitive load 削減 |
+
+### Phase 2 採用 5 項目と対応ファイル
+
+| # | 手法 | 対応ファイル | 規模 |
+|---|------|------------|------|
+| #20 | Mentoring Tone | `agents/code-reviewer.md` Section G | S |
+| #23 | Author Preference Authority | `skills/review/SKILL.md` Principle 4 | S |
+| #24 | Documentation Sync | `references/review-checklists/cross-cutting.md` CC-10 | S |
+| #10 | LGTM with comments | `agents/code-reviewer.md` Verdict 補助タグ `[NITS_REMAIN]` + `skills/review/SKILL.md` Step 5 完了報告 | S |
+| navigate.md file order | Navigation Order | `skills/review/SKILL.md` Step 1.4 | S |
+
+Phase 2 規模: 3 ファイル編集、+120 行。Phase 1 (13 採用) との合計で **18 採用 + 8 棄却 (#26/#22/#4/#5/#12/#19 + #7/#8/#9 N/A) + 0 未判定** = 26 件 100% 処理完了。
+
+### Phase 2 検証
+
+- code-reviewer + codex-reviewer 並列 BLOCK 検出 (Plan Alignment Contradiction)
+- 本セクション (§13) 追記で contradiction 解消
+- 再 review で PASS 取得 (harness_review_flag 書き出し)
+
+---
+
+## 14. Meta Finding: /challenge による棄却決定の見直し
+
+Phase 1 で「13 棄却」と確定した判断を、**同日の独立検証 (Persona-based challenge)** で 5 件覆した経験は、`/absorb` workflow の改善ポイントを示唆する:
+
+- Phase 2.5 の Codex 批評は **手法の抽出漏れ** は補足したが、**棄却理由の妥当性検証** は不十分だった
+- 棄却判定 (`Already 強化可能` / `Partial → 見送り`) は **正当化バイアス** に流れやすい (既存実装 = sufficient と即断)
+- ユーザーの "Google エンジニアになりたい" 目線 = persona 視点での再検証が **棄却理由の弱さ** を露呈
+- 今後の /absorb workflow に「棄却 N 件のうち X% は persona challenge で覆ることがある」事前期待値を組み込むべき (Phase 2 backlog として retain)
