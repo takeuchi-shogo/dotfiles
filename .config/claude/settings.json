@@ -11,6 +11,7 @@
     "commit": "",
     "pr": ""
   },
+  "cleanupPeriodDays": 180,
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [

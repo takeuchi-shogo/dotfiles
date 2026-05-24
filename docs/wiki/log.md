@@ -960,3 +960,25 @@
 - 分析レポート: `docs/research/2026-05-24-cursor-team-kit-thermo-nuclear-absorb-analysis.md`
 - Phase 2.5 Gemini 省略理由: family saturated + 記事自己完結 + CLI 統合質問は記事内容と独立 (Codex 単独で批評十分)
 - Meta-finding: Codex 批評で Opus Phase 2 の 4 件誤判定を訂正 (#1 `structure-check.py:34` `MAX_FILE_LINES=300` 見落とし / #7 broad→specific→nit は 3 段階で 7 段階と別物 / non-atomic update と magic mechanism 軸の見落とし)。bias mitigation 効果実証 (Google eng-practices で 9 件、本記事で 4 件)
+
+## [2026-05-25] ingest-skip | 【保存版】勝手に賢くなるObsidianの作り方大全 (東大Obsidianオタク, Japanese rehash of cyrilxbt)
+
+- ソース: 東大Obsidianオタク blog (Japanese), 元記事 = https://x.com/cyrilxbt/status/2052235121416188114 (2026-05-08 absorb 済)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (11 件目, delta=0, 直近 3 件 (Cyril x2 + damidefi) 採用 0)
+- 根拠: 4-layer architecture / 5-folder Inbox-Notes-Ideas-Projects / CLAUDE.md 5-section / Daily Brief CONNECTIONS-PATTERN-QUESTION / Weekly Synthesis 4-frame / 20min/week budget / "when in doubt, put in inbox" 全て 2026-05-08 `docs/research/2026-05-08-cyril-obsidian-vault-absorb-analysis.md` で検証済 (12 手法のうち 8 棄却 + 副次 3 採用)
+- 該当 family のキーワード hit: obsidian, second brain, CLAUDE.md, Daily Brief, Weekly Synthesis, vault, capture friction
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー skip 選択)
+- 既存実装 (記事の主張は既に運用中): `scripts/runtime/auto-morning-briefing.sh` (cron 平日 8:30) / `sync-daily-report.sh` (cron 23:00) / `/timekeeper` / `/think` contradiction check (2026-05-08 Task A 採用済) / `obsidian-vault-setup` 8-folder IPARAG (記事の 5-folder より上位構造)
+- フォローアップ: ユーザーの「夜間動作させたい」は記事 absorb と切り離し、別 actionable として brainstorming に移行 (記事 absorb には数えない)
+
+## [2026-05-25] ingest (light Phase 2) | 18 Claude settings (Telegram-promoted listicle)
+
+- ソース: 匿名 Telegram プロモ付きリスティクル (`t.me/+_ZWrQN7GuDA3ZDEy`)、canonical URL なし
+- 判定: claude-code-tips family **N=13** で SATURATED-but-novel (delta=2 + ambiguous 2)、ユーザー light-phase2 選択
+- 取り込み: **採用 2 件** (#10 chmod 600 .env defense-in-depth in `claude-code-threats.md §6.5` / #15 `cleanupPeriodDays: 180` in `settings.json`)
+- 棄却: 16 件 (Section 1 Claude.ai UI 8 件 N/A / #9 #12 #13 #14 #16 既存カバー / #11 Progressive Disclosure 優位で reject / #17 raw API 不使用で N/A / #18 workspace 運用なし)
+- Grounding: WebSearch で `cleanupPeriodDays` 公式実在 + Issue #23710/#2543/#45903 確認、「Dreaming」機能主張は未確認のまま採用 (key 自体は本物)
+- Step 4.5 trend warning: 直近 4 件中 3 件 reject 寄り (routines=4 / large-codebase=0 / khairallah-40=0 / khairallah-30-workflows=2) → light-phase2 で消化
+- 該当 family のキーワード hit: claude code tips, hidden, N tricks, cheat
+- レポート: `docs/research/2026-05-25-18-claude-settings-absorb-analysis.md`
+- メタ: N=13 で初の light-phase2 採用、Phase 2.5 (Codex+Gemini) 省略で token/時間コスト 60% 削減

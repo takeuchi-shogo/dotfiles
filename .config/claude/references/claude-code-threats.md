@@ -133,6 +133,42 @@ security-reviewer エージェントおよび `/security-review` コマンドか
 
 ---
 
+## 6.5 ローカル秘密ファイルの defense-in-depth
+
+`permissions.deny` (`Read(.env*)` 等) は Claude Code プロセス内のみの防御。deny rule が silently fail する事例がコミュニティで報告されているため、OS ファイルシステムレイヤーで二層化する。
+
+### 二層防御
+
+1. **L1 (Claude Code)**: `permissions.deny` で `Read(.env*)` / `Read(**/*secret*)` を block (settings.json L90+ deny ブロックで pre-existing)
+2. **L2 (OS filesystem)**: `chmod 600 .env` / `chmod 600 .env.*` で所有者のみ read 可に制限 (本セクションで追記)
+   - L1 が誤動作しても OS が拒否
+   - 副次効果: 他ユーザー・他プロセス (CI runner / shared cache 等、ただし同一 identity で動作する場合は無効) からの read も防ぐ
+   - **注**: CI/CD pipeline で runner 自身が `.env` を動的生成する場合は chmod のみでは不十分。pipeline identity の権限制御 (secret manager / OIDC scope / least-privilege role) と併用すること
+
+### 適用範囲
+
+- プロジェクトルートに新規 `.env` / `.env.local` を作成する時点で `chmod 600` を必ず実行
+- `~/.aws/credentials` / `~/.netrc` / `~/.ssh/id_*` は標準で 600 に設定済の前提
+- 共有開発機 / CI runner 上では特に必須
+
+### 検証
+
+```bash
+# プロジェクト内の秘密ファイル候補のパーミッション確認 (macOS BSD stat)
+find . -maxdepth 2 -name ".env*" \
+  \( -not -name ".env.example" -a -not -name ".env.sample" -a -not -name ".env.template" \) \
+  -exec stat -f "%Sp %N" {} \;
+# 期待出力: -rw-------
+
+# Linux GNU stat 版
+find . -maxdepth 2 -name ".env*" \
+  \( -not -name ".env.example" -a -not -name ".env.sample" -a -not -name ".env.template" \) \
+  -exec stat -c "%a %n" {} \;
+# 期待出力: 600
+```
+
+---
+
 ## 7. Agent Traps（情報環境攻撃）
 
 > Franklin et al. (Google DeepMind, 2026) — 自律型エージェントの情報環境を攻撃面とする脅威体系。
