@@ -3,14 +3,16 @@ date: 2026-05-25
 source_type: telegram-promoted-listicle
 source_url: (Telegram CTA only, no canonical URL)
 source_title: "18 Claude settings that change everything. 14 are hidden 3 clicks deep. 4 aren't in any docs."
-status: light-phase2-only
+status: light-phase2-plus-posthoc-refine
 family: claude-code-tips
 saturation_gate: SATURATED-but-novel
 saturation_N: 13
 saturation_adoption_rate_estimate: ~30%
 trend_warning: true (直近 4 件中 3 件 reject 寄り)
 delta: 2 confirmed + 2 ambiguous
-adopt_count: 2
+adopt_count: 4 (initial 2 + post-hoc 2)
+posthoc_refine_date: 2026-05-25
+posthoc_refine_critic: gemini (codex 不可: TTY 不在 + silent exit)
 ---
 
 # /absorb 分析: 18 Claude settings listicle (2026-05-25)
@@ -107,7 +109,49 @@ top-level key として追加。default 30 から 180 へ拡張。
 2. **WebSearch grounding が anti-marketing-fabrication filter として有効** — #15 cleanupPeriodDays の公式 schema + Issue 番号 (#23710 / #2543 / #45903) を 1 query で確認。「Dreaming」機能 (記事主張の根拠) は依然未確認だが、設定 key 自体は実在で採用判断可能。
 3. **claude-code-tips family の trend reject 確度** — 13 件中採用 0 が支配的で、Telegram CTA / 数値煽り (「$340 → $87」等) パターンは Reject 確度 70%+。今後も同パターンは light-phase2 デフォルト推奨。
 
-## Codified (No new memory entries needed)
+## Codified (No new memory entries needed — initial run)
 
 - Phase 1.5 既存ガード (`references/topic-family-saturation.md` Step 3.7) で十分対応できた
 - `feedback_absorb_sonnet_imagination.md` (2026-05-22 新設) も今回は発火せず — Sonnet Explore が「強化余地」を Pass 1 で過大解釈する局面なし
+
+---
+
+## Post-hoc Phase 2.5 Refine (2026-05-25)
+
+light-phase2 で省略した Phase 2.5 を後追い実行。Codex は TTY 不在 + silent exit で両ルート失敗 (cmux Worker / `codex exec`)、Gemini 単独で批評を取得。
+
+### Q1: #11 SessionStart branch-aware の Reject 妥当性
+
+- **Gemini verdict**: adopt (Modified) — 「Progressive Disclosure は検索効率、SessionStart は推論初速 (Zero-shot Accuracy) の話、両者は補完関係」
+- **Gemini meta-critique**: Opus は "Architectural Arrogance" に陥っている — 自分の設計した PD で代替可能と判断する傾向
+- **最終判定**: **Reject 維持** — dotfiles 実質 `master` 1 本運用 + feature branch 短命のため `context-feat-X.md` の長期運用シナリオが乏しい。`context-master.md` ≒ CLAUDE.md 重複。記事の「30% 削減」根拠は提示なし
+- **副次採用**: Gemini の meta-bias 指摘「Efficiency 代替 vs Intent 代替」の区別を feedback memory として codify (`feedback_absorb_architectural_arrogance.md` 新設)
+
+### Q2: Section 1 等 reject 16 件の転用可能原理
+
+| # | 元判定 | Gemini 指摘 | 評価 | Decision |
+|---|---|---|---|---|
+| #1 | N/A | MEMORY.md exclusion patterns | 手動管理で sensitive 流入なし | Reject |
+| #2 | N/A | Thinking budget 動的切替 hook | `references/model-routing.md` (Opus/Haiku 経由) でカバー | Already |
+| #3 | N/A | pre-commit-as-output-contract | lefthook (secretlint/prek) + golden-check 既存カバー | Already |
+| #7 | N/A | Permission grant 棚卸し (Cowork trusted folders の settings.json 版) | 現状機構ゼロ、`permissions.allow` 71 件で増殖リスク | **Adopt** |
+| #18 | N/A | Subagent backoff strategy | 並列度低、現状実害なし | Reject |
+
+### Post-hoc 採用 2 件
+
+#### Task A: `references/claude-code-threats.md` §6.6 新設 + `scripts/lifecycle/permission-audit.py`
+
+- `§6.6 Permission Hygiene` — 月次手動 audit cadence と pruning 基準
+- `permission-audit.py` — 件数 + tool-type ヒストグラム + path missing 検出 + 無効 MCP grant 検出。read-only、auto-delete しない
+- 初回実行: allow 71 / deny 102 / pruning 候補 0 (clean state baseline)
+
+#### Task B: `memory/feedback_absorb_architectural_arrogance.md` 新設
+
+- /absorb Phase 2 で「既存仕組みで代替可能」と判定する時、Efficiency 代替か Intent 代替かを自問するルール
+- Phase 2.5 (Codex/Gemini) で発火する Opus self-preference bias の codification
+
+### Meta-learning
+
+1. **light-phase2 + post-hoc refine の pattern** — 初回コスト 60% 削減 + 後日 Gemini 単独で補完が成立。Codex なし条件でも bias mitigation が部分達成
+2. **Codex 両ルート失敗の再確認** — `Bash` tool 内で `codex exec` は silent exit、`launch-worker.sh` は TTY 不在で fail。Codex Phase 2.5 をやるなら user が cmux pane で手動起動するか、Gemini 単独で済ます
+3. **Architectural Arrogance bias の発見** — `/absorb` の判定 process そのものに bias 検出機構が必要だった。今回の post-hoc 経由でなければ気付かなかった可能性
