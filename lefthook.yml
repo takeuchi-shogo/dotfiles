@@ -36,6 +36,28 @@ pre-commit:
       run: |
         echo "❌ skill folder に README.md は置かない (SKILL.md を使う): {staged_files}"
         exit 1
+    check-new-todo:
+      # Section A: Cleanup-Later Boundary (agents/code-reviewer.md より mechanism 化)
+      # 新規追加された marker (TODO/FIXME/HACK) には issue 番号 / owner / 期限のいずれかが必須
+      # 既存 marker は対象外 (git diff --cached の + 行のみ検査)
+      # 検出対象: `<MARKER>` 直後にコロンまたは開き括弧が続くもの (自然言語中の単語は除外)
+      # 許可形式: TODO(#1234) / TODO(@owner) / TODO(2026-06-30) — qualifier 必須
+      # skip: 一時的に skip するなら `LEFTHOOK_EXCLUDE=check-new-todo git commit ...`
+      run: |
+        NEW_BARE=$(git diff --cached --diff-filter=AM -U0 \
+          | grep -E '^[+]' \
+          | grep -vE '^[+][+][+]' \
+          | grep -E '(TODO|FIXME|HACK)[:(]' \
+          | grep -vE '(TODO|FIXME|HACK)\((#[0-9]+|@[a-zA-Z0-9_-]+|[0-9]{4}-[0-9]{2}-[0-9]{2})\)' \
+          || true)
+        if [ -n "$NEW_BARE" ]; then
+          echo "❌ 新規 TODO/FIXME/HACK には issue 番号 / owner / 期限のいずれかが必要:"
+          echo "$NEW_BARE" | head -10
+          echo ""
+          echo "   許可形式: TODO(#1234) / TODO(@owner) / TODO(2026-06-30)"
+          echo "   根拠: .config/claude/agents/code-reviewer.md Section A (Cleanup-Later Boundary)"
+          exit 1
+        fi
 
 commit-msg:
   commands:
