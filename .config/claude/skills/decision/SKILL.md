@@ -1,7 +1,7 @@
 ---
 name: decision
 description: >
-  設計・ワークフロー決定を構造化記録する軽量決定ジャーナル。対話で5項目を収集し、
+  設計・ワークフロー決定を構造化記録する軽量決定ジャーナル。対話で5-7項目 (状況/選択/根拠/期待結果/撤回条件 + 任意で代替条件/regret 比較) を収集し、
   references/decision-journal.md に追記 + Obsidian Daily Note に同期。
   Triggers: '/decision', '決定記録', 'decision journal', '判断を記録', 'ADR lite'.
   Do NOT use for: アーキテクチャ決定記録（docs/adr/ に直接書く）、思考の壁打ち（use /think）。
@@ -21,11 +21,13 @@ metadata:
 
 ## Workflow
 
-1. **収集**: AskUserQuestion で以下の5項目を対話で収集（一度に全部聞かず、自然な会話で）
+1. **収集**: AskUserQuestion で以下の項目を対話で収集（一度に全部聞かず、自然な会話で）
    - **状況**: 何がきっかけか
    - **選択**: 何を選んだか
    - **根拠**: なぜそれを選んだか
    - **期待結果**: 何が起きると予想するか
+   - **別選択肢が上回る条件**: どの状況下なら別案 (棄却した代替) が上回るか（"under what circumstances would I choose differently?"）
+   - **Regret 比較** (任意、judgment call で迷ったときのみ): 選択 vs 別案、どちらの失敗をより後悔するか（regret asymmetry）
    - **撤回条件**: 何が起きたらこの判断を見直すか（"What would make me change my mind later?" の問い）
 
 2. **記録**: `references/decision-journal.md` の `## ログ` セクションの先頭にエントリを追記
@@ -38,6 +40,8 @@ metadata:
    - **選択**: ...
    - **根拠**: ...
    - **期待結果**: ...
+   - **別選択肢が上回る条件**: ... （省略可: 一意な選択肢で代替検討が不要な場合）
+   - **Regret 比較**: ... （省略可: judgment call で迷ったときのみ）
    - **撤回条件**: ...
    - **実際結果**: _（後で記入: good / bad / mixed + 1行説明）_
    ```
