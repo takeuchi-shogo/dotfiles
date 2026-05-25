@@ -1016,6 +1016,17 @@
 - スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー skip 選択)
 - メタ: 著者 @KanikaBK は generic AI listicle 量産アカウント、MIT/Google Brain 引用も具体出典なし、anecdotal data のみ。Make/n8n SaaS バイアス強。saturation taxonomy が正しく機能し Phase 2 投入前に skip 確定 (N=15 件目で 7 連続 reject 系)
 
+## [2026-05-26] ingest-skip | 【保存版】あなたのObsidianは死んでいる (Nainsi Dwiv tweet 翻訳記事)
+
+- ソース: テキスト貼り付け (元 tweet `https://x.com/NainsiDwiv50980/status/2053498460918485092` の日本語翻案、著者: AI コンサル経営者 anonymous)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (**N=16 件目**, delta=0、ambiguous 2 は harness 化価値なし)
+- 根拠: 10 手法すべて既存 absorb (damidefi 2026-05-23 / Cyril 系 5 件) で完全カバー
+  - Already (10): 4 層 Capture/Automation/Memory/Intelligence (=damidefi 完全カバー) / 5 動作モデル push back・contradiction surface (=damidefi T7) / 4 系統入口 Readwise/Whisper/Telegram/podcast (=damidefi Capture 層) / 夜の装置 cron 最小スクリプト (=damidefi Automation N8N、課金 SaaS 不採用方針) / CLAUDE.md 5 項目 (=damidefi 6 section とほぼ同一) / 朝のブリーフィング 3 カテゴリ (=damidefi Daily 4-section synthesis、Cyril 系で棄却済) / Vault に問う 5 つの問い (=damidefi T7 + /think skill) / 文脈蓄積=moat (=2026-04-24 harness-engineering で批判済、anecdotal) / 眠った Vault 診断 7 項目 (=vault-maintenance.sh 6 軸チェックで代替) / 5 ノート Day 1 手順 (=onboarding cadence、個人運用範囲)
+- 該当 family のキーワード hit: obsidian, vault, second brain, capture, automation, memory, intelligence, claude.md, daily synthesis, moat
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー skip + 現状受容 選択)
+- 副次発見 (記事 absorb と独立): `vault-maintenance.sh --dry-run` 実行で **orphan note 74 件 / 98 ノート中 (orphan 率 76%)**、**04-Galaxy permanent note 1 件のみ**、Rare タグ 164 件を検出。記事の問題提起 (「整理済みだが繋がっていない」) が実際に起きている。命名/リンク/重複/stale は 0 件で構造管理は健全。ユーザー判断: 「Vault は受動アーカイブ、思考接続は MEMORY.md / docs/research/ で継続」既存方針を維持
+- メタ: obsidian-second-brain family は damidefi (2026-05-23 N=10) 以降 6 連続で adopt ≤2 trend (Cyril one-folder=1 / cyrilxbt-organize-vault=2 / 本記事=0)、creator-monetization-driven AI second brain genre saturation 継続
+
 ## [2026-05-26] ingest | 45 AI Automations You Can Actually Build This Weekend With Zero Code
 
 - ソース: テキスト貼り付け（著者不明、Cowork × MCP × 自然言語 listicle）
