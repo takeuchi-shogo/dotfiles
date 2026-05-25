@@ -86,6 +86,27 @@ metadata の任意拡張規約は `references/task-registry-schema.md` 参照。
 > サブタスク**出力**の重複排除には Step 4 Aggregate の類似度ベース重複排除を使用する。
 > 詳細: `references/diversity-selection-guide.md`
 
+### `--template` preset (出力形式の固定化)
+
+`--template=market` / `--template=trend` を指定すると、Aggregate (Step 4) の出力構造を business analyst 向け定型 template に固定する。`--angles` (視点の多様化) とは直交し、組み合わせ可能。
+
+出典: Khairallah "50 Claude Prompts" P31 (Market Research) + P32 (Trend Spotter) verbatim 移植。executive を相手にする research 出力で「何を含むべきか」が毎回 reinvent されるのを防ぐ。
+
+| template | 用途 | 必須セクション | 出力ファイル |
+|---------|------|---------------|-------------|
+| `market` | 市場規模・主要プレイヤー・参入機会の評価 | Market size / Players / 5 emerging trends / Segments / Barriers / Tech shifts / 3 opportunities + Exec summary (3 sentences cap) | `templates/market-report.md` |
+| `trend` | 加速 / ピーク / 萌芽トレンドの整理 (contrarian framing) | 5 accelerating / 3 peaking / 2 emerging — 各エントリは what / evidence / who benefits / who disrupted / timeline | `templates/trend-report.md` |
+
+#### 起動方法
+
+- **明示的指定**: `/research <topic> --template=market` または `--template=trend`
+- **--angles と併用**: `/research <topic> --template=market --angles=academic,practitioner,contrarian` — 視点 × 出力構造を直交させる
+- **デフォルト**: `--template` 省略時は従来通り `templates/research-report-template.md` を使う
+
+#### 適用範囲
+
+template は **Step 4 Aggregate 以降のみ** に作用する。Step 1-3 (Reconnaissance / Plan / Execute) は従来動作。Polish (Step 5) で template の必須セクションが埋まっているかを確認し、未充足セクションは「未解決」「該当なし」と明記する (空セクションは禁止)。
+
 ### `--angles` preset (多角度リサーチ)
 
 `--angles=academic,practitioner,contrarian,historical,empirical` を指定すると、サブ目標を以下の **5 角度テンプレート** で強制展開する。単一視点に偏らないよう多様性を担保するための opt-in オプション。
@@ -342,7 +363,9 @@ reflection で抽出した gap / 矛盾について、synthesis 前に原文 chu
 
 ## Templates
 
-- `templates/research-report-template.md` — リサーチレポート出力テンプレート
+- `templates/research-report-template.md` — リサーチレポート出力テンプレート (デフォルト)
+- `templates/market-report.md` — `--template=market` 用 (Khairallah P31 移植)
+- `templates/trend-report.md` — `--template=trend` 用 (Khairallah P32 移植 / contrarian framing)
 
 ## Decision: research vs gemini vs debate
 
