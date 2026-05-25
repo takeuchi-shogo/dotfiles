@@ -65,9 +65,9 @@ notify_discord() {
         }')
 
     # FM-10: use mktemp for response file (predictable /tmp race)
+    # RETURN trap を使わず explicit cleanup (set -u + 早期 return との相性問題回避)
     local response_file
     response_file=$(mktemp -t "notify-discord-response.XXXXXX")
-    trap 'rm -f "$response_file"' RETURN
 
     local http_code
     http_code=$(curl -s -o "$response_file" -w "%{http_code}" \
@@ -78,8 +78,10 @@ notify_discord() {
 
     if [[ "$http_code" != "204" ]] && [[ "$http_code" != "200" ]]; then
         echo "[notify-discord] WARN: HTTP $http_code, response: $(head -c 200 "$response_file" 2>/dev/null || echo "")" >&2
+        rm -f "$response_file"
         return 0
     fi
 
+    rm -f "$response_file"
     return 0
 }
