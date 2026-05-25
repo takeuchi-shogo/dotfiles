@@ -189,6 +189,53 @@ briefing=$(claude -p "$prompt" --output-format text 2>/dev/null) || {
     exit 1
 }
 
+# --- Prepend Nightly Status (post-processing) ---
+# 仕様: docs/plans/active/2026-05-25-nightly-vault-automation-plan.md Task 11
+# - 前日 JSONL ~/.cache/nightly/status-${YESTERDAY}.jsonl を読み込み
+# - H1 反映: jq parse error 時は fallback (briefing 全死亡 防止)
+# - H5 反映: jq -Rr 'fromjson?' で malformed line tolerant
+prepend_nightly_status() {
+    local original_briefing="$1"
+    local yesterday="${YESTERDAY:-$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d 'yesterday' +%Y-%m-%d)}"
+    local yesterday_jsonl="$HOME/.cache/nightly/status-${yesterday}.jsonl"
+    if [[ ! -f "$yesterday_jsonl" ]]; then
+        echo "$original_briefing"
+        return 0
+    fi
+
+    local status_section
+    if ! status_section=$(jq -Rr '
+        fromjson? |
+        (if .status == "ok" then "✅" else "❌" end)
+        + " " + .task
+        + " (\(.duration_sec)s)"
+        + " → [\(.report // "no-report")]"
+        + (if .metric.msg then " — " + .metric.msg else "" end)
+    ' "$yesterday_jsonl" 2>/dev/null); then
+        echo "[morning-briefing] WARN: jq failed to parse nightly status, skipping prepend" >&2
+        echo "$original_briefing"
+        return 0
+    fi
+
+    if [[ -z "$status_section" ]]; then
+        echo "$original_briefing"
+        return 0
+    fi
+
+    cat <<EOF
+## Nightly Status (${yesterday})
+
+${status_section}
+
+---
+
+${original_briefing}
+EOF
+}
+
+YESTERDAY="${YESTERDAY:-$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d 'yesterday' +%Y-%m-%d)}"
+briefing="$(prepend_nightly_status "$briefing")"
+
 # --- Output to Daily Note (if Vault exists) ---
 if [[ -n "$VAULT_PATH" ]] && [[ -d "$VAULT_PATH" ]]; then
     daily_dir="$VAULT_PATH/$DAILY_NOTE_DIR"
