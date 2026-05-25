@@ -41,7 +41,7 @@ pre-commit:
       # 新規追加された marker (TODO/FIXME/HACK) には issue 番号 / owner / 期限のいずれかが必須
       # 既存 marker は対象外 (git diff --cached の + 行のみ検査)
       # 検出対象: `<MARKER>` 直後にコロンまたは開き括弧が続くもの (自然言語中の単語は除外)
-      # 許可形式: TODO(#1234) / TODO(@owner) / TODO(2026-06-30) — qualifier 必須
+      # 許可形式: TODO(#1234) / FIXME(@owner) / HACK(2026-06-30) — qualifier 必須
       # skip: 一時的に skip するなら `LEFTHOOK_EXCLUDE=check-new-todo git commit ...`
       run: |
         NEW_BARE=$(git diff --cached --diff-filter=AM -U0 \
@@ -52,9 +52,9 @@ pre-commit:
           || true)
         if [ -n "$NEW_BARE" ]; then
           echo "❌ 新規 TODO/FIXME/HACK には issue 番号 / owner / 期限のいずれかが必要:"
-          echo "$NEW_BARE" | head -10
+          echo "$NEW_BARE" | sed 's/^+//' | head -10
           echo ""
-          echo "   許可形式: TODO(#1234) / TODO(@owner) / TODO(2026-06-30)"
+          echo "   許可形式: TODO(#1234) / FIXME(@owner) / HACK(2026-06-30)"
           echo "   根拠: .config/claude/agents/code-reviewer.md Section A (Cleanup-Later Boundary)"
           exit 1
         fi
