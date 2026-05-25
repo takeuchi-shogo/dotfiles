@@ -1004,3 +1004,23 @@
 - 該当 family のキーワード hit: claude code tips, hidden, N tricks, cheat
 - レポート: `docs/research/2026-05-25-18-claude-settings-absorb-analysis.md`
 - メタ: N=13 で初の light-phase2 採用、Phase 2.5 (Codex+Gemini) 省略で token/時間コスト 60% 削減
+
+## [2026-05-26] ingest-skip | How to build a team of AI Agents that actually work together (@KanikaBK Twitter listicle)
+
+- ソース: @KanikaBK Twitter/X listicle (canonical URL なし、テキスト貼り付け)
+- 理由: topic family "multi-agent/subagent" saturated-pure-rehash (15 件目, delta=0)、直近 2026-05-25 `claude-agent-teams-7steps` で公式 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` flag 検証済み + 2026-04-11 Anthropic 公式 `multi-agent-coordination-patterns` で 5-Pattern 統合済み
+- 根拠: 13 手法すべて既存カバー or N/A
+  - Already (9): Think in tasks/not roles (=30-subagents Self-Rejection Rule + single-purpose CONFIRMED) / 4 Core Roles Orchestrator-Researcher-Specialist-Critic (=Anthropic 5-Pattern + code-reviewer/codex-reviewer/silent-failure-hunter) / 3 Architectures Sequential-Parallel-Hierarchical (=parallel-agent-worktrees-orchestration + Anthropic 公式) / Pattern 1 Structured Outputs (=output-format-decision-table.md) / Pattern 2 Quality Gates (=Codex Review Gate + completion-gate hook) / Pattern 3 Minimal Tools (=tool-scoping-guide.md) / Pattern 4 Retry with feedback (=failure-escalation-protocol + retrospective-codify) / Pattern 5 Log Everything (=session_observer + friction-events.jsonl) / 5 Mistakes 全件 (giant agent / no format / skip critic / memory overflow / no human oversight)
+  - N/A (4): Tools stack Make/n8n/Relevance AI/LangGraph/Agno/AutoGen (no-code SaaS 文脈、dotfiles は Claude Code harness + cmux で代替) / 4 Real-world teams Lead gen-Competitive intel-Support triage-Newsletter (business team、個人 dotfiles 範囲外) / Quick start 48h plan (`/init-project` `/onboarding` で代替) / Critic specificity (codex-reviewer / code-reviewer で実装)
+- 該当 family のキーワード hit: multi-agent, agent team, orchestrator, critic, sequential/parallel/hierarchical, structured outputs, quality gates, minimal tools, retry loop
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー skip 選択)
+- メタ: 著者 @KanikaBK は generic AI listicle 量産アカウント、MIT/Google Brain 引用も具体出典なし、anecdotal data のみ。Make/n8n SaaS バイアス強。saturation taxonomy が正しく機能し Phase 2 投入前に skip 確定 (N=15 件目で 7 連続 reject 系)
+
+## [2026-05-26] ingest | 45 AI Automations You Can Actually Build This Weekend With Zero Code
+
+- ソース: テキスト貼り付け（著者不明、Cowork × MCP × 自然言語 listicle）
+- 判定: Gap 0, Partial 0, Already 9 (#22 HN/arXiv/RSS=morning-briefing済, #45 tasks分類=weekly-review済 他), N/A 40+
+- 取り込み: 採用 0 件
+- Codex 誤り訂正: #22 Partial → Already (.config/claude/scripts/runtime/auto-morning-briefing.sh L103-160 に HN+arXiv+RSS 実装済み、Explore が scripts/runtime/ 別ファイルを参照してミス); #45 Partial → Already (weekly-review §2.5.1 Vault Inbox triage で 5 分類済み)
+- Validation-only: docs/specs/2026-05-09-daily-knowledge-routines-design.md が "Design (plan 待ち)" のまま 17 日経過、要フォローアップ
+- メタ: 記事は Claude.ai Cowork (PC 起動前提) 向けの marketing listicle。既存ハーネス (launchd + hooks + Claude Code CLI) が同等以上をカバー
