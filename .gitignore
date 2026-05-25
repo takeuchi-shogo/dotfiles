@@ -98,3 +98,6 @@ tmp/
 .config/zed/prompts/
 # Added by code-review-graph
 .code-review-graph/
+
+# Local notification secrets (nightly Discord webhook etc.)
+.config/notifications/*.env
