@@ -104,6 +104,18 @@ scope: S | M | L
 > **S 規模**: Product Spec / Tech Spec は省略可。Requirements に直接記述する。
 > **M/L 規模**: 分離を推奨。Spec レビューの焦点が「何を作るか」と「どう作るか」に明確化される。
 
+## 90-day Roadmap（L 規模で optional）
+
+複数四半期にまたがる大規模機能 / 新規プロダクトでは、spec に 90-day roadmap を含めることで「次の 3 ヶ月で何を作るか」を明示する。Khairallah P19 移植。
+
+- **Month 1**: theme + 含まれる feature 一覧 (S/M/L サイズ)
+- **Month 2**: theme + 含まれる feature 一覧
+- **Month 3**: theme + 含まれる feature 一覧
+- **Bold bet**: 90 日に 1 つだけ、賭けに値する一発勝負の feature (省略可)
+- **Priority/Impact**: 各 feature に `P0/P1/P2` × `High/Med/Low` を付与
+
+> このセクションは feature-tracker (`feature_list.json` の `roadmap_90_day` フィールド) と 1:1 対応する。spec で大枠を決め、feature-tracker で実行進捗を追う分担。M 規模 spec では省略してよい。
+
 ## PR Split Plan（L 規模で必須）
 
 大規模タスクでは、実装を並列実行可能な PR 単位に分割する計画を記述する。

@@ -1,5 +1,7 @@
 # Codex Rules Operations
 
+> SOP template: `.config/claude/agents/document-factory.md` の SOP / Runbook 型に準拠。`Decision Policy`=Decision Points / `Authoring Rules`+`Common Mistakes`=Common Mistakes / `Verification`=Quality Check / `Rollout`=Step-by-step Procedure の対応関係。
+
 Codex の `Rules` をこの repo で使うときの最小運用メモ。
 
 ## Purpose
@@ -65,6 +67,13 @@ codex execpolicy check --pretty \
 - ただし 2026-03-19 時点の local `codex-cli 0.115.0` で `codex execpolicy check` を試した範囲では、shell wrapper invocation は match を返さなかった
 - そのため、この repo では shell wrapper 分解に依存せず、まず direct command token に対する rule を整備する
 - shell wrapper の挙動は CLI 更新時に再確認する
+
+## Common Mistakes
+
+- ❌ broad allowlist を初回導入で作る → ✅ `allow` は反復度が高く prefix も狭いものに限定し、必要に応じて追加
+- ❌ `prefix_rule()` の `justification` を省略 → ✅ 後から見て意図が分かるよう必ず付ける
+- ❌ shell wrapper invocation (`bash -lc ...`) が分解されると仮定 → ✅ 2026-03 時点では direct command token に対して rule を書く (CLI 更新時に再確認)
+- ❌ `forbidden` に代替行動を書かない → ✅ `justification` に「代わりに何をすべきか」を明示
 
 ## Rollout
 

@@ -144,6 +144,55 @@ Generate subsystem specs, API contracts, ADRs, or migration guides.
 2. **API Contract**: Base URL, Auth, Endpoints (request/response/errors), Rate Limits
 3. **ADR**: Context, Decision, Alternatives, Consequences, Risks
 4. **Migration Guide**: Prerequisites, Steps, Verification, Rollback Plan
+5. **SOP / Runbook**: Purpose, Scope, Prerequisites, Step-by-step Procedure, Decision Points, Common Mistakes, Quality Check
+
+### SOP / Runbook Template (Khairallah P45 verbatim 移植)
+
+オペレーション手順を「初めてやる人が質問なしで follow できる」詳細さで書く。`docs/playbooks/{name}.md` に配置。前提知識を仮定しない (Assume nothing)。
+
+```markdown
+# {手順名}
+
+## Purpose
+<!-- なぜこの手順が存在するか / 何を達成するか — 1-3 文 -->
+
+## Scope
+<!-- Covers: 何をカバーするか / Does not cover: 範囲外 -->
+
+## Prerequisites
+<!-- 実行前に揃えるもの: 権限、依存ツール、前提状態 -->
+- [ ] {前提 1}
+- [ ] {前提 2}
+
+## Step-by-step Procedure
+<!-- 初心者が follow できる詳細さで。各ステップに「期待される観測結果」を含める -->
+
+1. **Step 1**: {action}
+   - Expected: {観測結果}
+2. **Step 2**: {action}
+   - Expected: {観測結果}
+3. ...
+
+## Decision Points
+<!-- 判断が必要な分岐点と判断基準 -->
+- **If X happens**: do Y because Z
+- **If A is true, B is false**: choose C over D
+
+## Common Mistakes
+<!-- 典型的に踏まれる失敗とその回避策 -->
+- ❌ {誤り 1} → ✅ {正しいやり方}
+- ❌ {誤り 2} → ✅ {正しいやり方}
+
+## Quality Check
+<!-- 完了 verification — チェックリスト -->
+- [ ] {検証項目 1}
+- [ ] {検証項目 2}
+```
+
+**設計原則** (Assume nothing):
+- 「これは自明」と思った前提も Prerequisites に書く (新人が躓くポイント)
+- Decision Points は「if X then Y」で網羅。「ケースバイケース」は禁句
+- Common Mistakes は **実際に踏まれた失敗** のみ収録。想像で書かない
 
 ### Analysis Steps
 

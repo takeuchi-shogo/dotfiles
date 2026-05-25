@@ -1,5 +1,23 @@
 # Weekly Report: {week_of}
 
+## Top-line Summary
+<!-- 3 sentences max — overall direction / biggest win / biggest concern -->
+
+## Wins (3)
+1. {win_1}
+2. {win_2}
+3. {win_3}
+
+## Concerns (3)
+1. {concern_1}
+2. {concern_2}
+3. {concern_3}
+
+## Action Items
+- [ ] {action_1}
+- [ ] {action_2}
+- [ ] {action_3}
+
 ## Achievements
 - {achievement_1}
 - {achievement_2}
@@ -12,7 +30,8 @@
 ## Blockers
 - {blocker_1}
 
-## Next Week Plan
+## Next Week Plan (max 5)
+<!-- 5 件まで。優先度順。多すぎると 1 つも完了しない -->
 - [ ] {plan_1}
 - [ ] {plan_2}
 
@@ -31,6 +50,6 @@
 - **倍増すべき活動**: {should_double_down}
 
 ## Metrics
-| Metric | This Week | Last Week | Trend |
-|--------|----------|----------|-------|
-| {metric} | {value} | {prev} | {trend} |
+| Metric | This Week | Last Week | Change % | Trend |
+|--------|----------|----------|---------|-------|
+| {metric} | {value} | {prev} | {pct} | {trend} |

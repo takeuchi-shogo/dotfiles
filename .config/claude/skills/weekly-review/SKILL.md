@@ -52,6 +52,26 @@ gh project item-list {project_number} --owner {owner} --format json --limit 100
 
 ## レビューフロー（対話形式）
 
+### Phase 0: 7-Question Reflection (optional, opt-in)
+
+ユーザーが「今週は深く振り返りたい」「reflection mode」と言った場合、Phase 1 の機械的な集計の前に 7 問の reflection を **1 問ずつ** 聞く。出典: Khairallah P49 verbatim 移植 (Weekly Review 7-question)。
+
+```
+Q1: 今週の wins を 3 つ挙げると？
+Q2: やり残したことは何？
+Q3: 想定より時間がかかったことは？
+Q4: 他人に delegate すべきだったことは？
+Q5: 来週の most important なことは 1 つだけ言うと？
+Q6: 来週、邪魔になりそうな obstacle は何？
+Q7: 何に「No」と言うべきか？
+```
+
+**ルール**:
+- **1 メッセージ 1 質問**。バッチで聞かない (思考の焦点を散らさない)
+- 各回答は 1-3 文程度で OK、深掘りは 1 回まで
+- 終了時、回答を踏まえた **prioritized action plan (max 5)** を提示 → Phase 6 に反映
+- このモードは opt-in。デフォルトは Phase 1 から開始
+
 ### Phase 1: 今週の振り返り
 
 ```
@@ -210,14 +230,16 @@ Q3: 来週、どれか1つだけ継続強化するとしたら何？
 
 ### Phase 6: 来週の計画
 
+**Action plan は max 5 件まで** に絞る (Khairallah P49 verbatim 移植)。5 件超は「すべて重要 = 何も重要でない」状態 — 1 つも完了しない確率が上がる。6 件目以降は Someday に回す。
+
 ```
-## 来週の重点タスク（提案）
+## 来週の重点タスク（提案 — max 5）
 
 1. #20 写真アップロード機能 — 継続、今週中に完了目標
 2. #21 多頭飼い対応 — 新規着手
 3. PR #40 のレビュー — 月曜午前中
 
-来週の重点を調整しますか？
+来週の重点を調整しますか？ (5 件以内に収めること)
 ```
 
 ## 実行サマリー

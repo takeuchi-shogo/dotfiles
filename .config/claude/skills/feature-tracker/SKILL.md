@@ -29,7 +29,21 @@ metadata:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
+  "roadmap_90_day": {
+    "month1": {
+      "theme": "Auth & onboarding",
+      "feature_ids": ["F-001", "F-002"]
+    },
+    "month2": {
+      "theme": "Core data flow",
+      "feature_ids": ["F-003"]
+    },
+    "month3": {
+      "theme": "Bold bet: AI assistant",
+      "feature_ids": ["F-004"]
+    }
+  },
   "features": [
     {
       "id": "F-001",
@@ -40,6 +54,10 @@ metadata:
         "ログインエンドポイント",
         "ミドルウェア認証チェック"
       ],
+      "priority": "P0",
+      "impact": "High",
+      "effort": "M",
+      "bold_bet": false,
       "passes": false,
       "session_completed": null
     }
@@ -55,8 +73,26 @@ metadata:
 | `category` | string | カテゴリ（`core`, `ui`, `infra`, `test`, `docs` 等） |
 | `description` | string | 機能の説明 |
 | `steps` | string[] | 実装ステップ（チェックリスト用） |
+| `priority` | `P0`\|`P1`\|`P2` | P0=必須 / P1=重要 / P2=あれば良い (Khairallah P19 移植) |
+| `impact` | `High`\|`Med`\|`Low` | ユーザー/ビジネスインパクト評価 |
+| `effort` | `S`\|`M`\|`L` | 実装労力 (S=日, M=週, L=月単位) |
+| `bold_bet` | boolean | 賭けに値する一発勝負の機能か (90 日に 1 つだけ) |
 | `passes` | boolean | テスト合格済みか |
 | `session_completed` | string\|null | 完了セッションの日時（ISO 8601） |
+
+### Top-level Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | int | schema バージョン (v2 = 90-day roadmap + priority/impact/effort/bold_bet 追加) |
+| `roadmap_90_day` | object\|null | optional 90-day roadmap (Khairallah P19 移植)。`month1` / `month2` / `month3` の 3 ヶ月単位。各月は `theme` (string) + `feature_ids` (string[]) を持つ |
+
+### Migration from v1
+
+既存 `feature_list.json` (version=1) は **そのまま動作する**:
+- 新フィールド (`priority`, `impact`, `effort`, `bold_bet`, `roadmap_90_day`) はすべて optional
+- `feature-tracker next` / `status` は新フィールド不在でも動作 (priority による並び替えは新フィールドがある場合のみ有効化)
+- `feature-tracker init` で新規生成時は version=2 を出力、新フィールドの入力を促す
 
 ## Subcommands
 

@@ -1,6 +1,10 @@
 # Symlink Management
 
-home 側へ公開する managed symlink を変更するときの playbook。
+> SOP template: `.config/claude/agents/document-factory.md` の SOP / Runbook 型 (Purpose / Scope / Prerequisites / Step-by-step / Decision Points / Common Mistakes / Quality Check) に準拠。`Read First`=Prerequisites / `Typical Scope`=Scope / `Standard Steps`=Step-by-step / `Watchouts`=Common Mistakes / `Minimum Validation`=Quality Check の対応関係。
+
+## Purpose
+
+home 側へ公開する managed symlink を変更するときの playbook。symlink の追加・除外パターン更新・個別公開先 (`~/.claude/` / `~/.codex/` / project-local skill) の運用を一元化する。
 
 ## Read First
 
