@@ -84,7 +84,7 @@
 - **KISS / YAGNI / DRY / 最小インパクト**: シンプルに、必要な箇所だけ触る。3 回繰り返されるまで抽象化しない
 - **search-first (既存探索)**: 既存の解決策・既存スクリプトを必ず確認してから書く。config → エントリポイント → モジュールの順で recall を上げる
 - **CLI-first discovery (未知探索)**: 訓練外 CLI は `--help` で引数・サブコマンドを確認してから使う。発見順: CLI → Skills → MCP
-- **壊れたら即STOP・ごまかし禁止**: 突き進まず再プラン。失敗報告は許される、検証スキップ・結果捏造は許されない
+- **壊れたら即STOP・ごまかし禁止**: 突き進まず再プラン。失敗報告は許される、検証スキップ・結果捏造は許されない。再現性ある harness/tool 失敗は workaround で進めず `references/failure-escalation-protocol.md` に従い Issue + worktree に escalate する
 - **暗黙フォールバック・モック・NO-OP 絶対禁止**: 実装層で「とりあえず動かす」「後で直す」のためのモック残置・NO-OP 実装・暗黙フォールバックを残さない。境界では Fail Fast、内部では Trust。詳細: `silent-failure-hunter` agent + `references/dual-audience-cli-guide.md`
 - **自律的バグ解決 + 3点説明**: 生データ（ログ・スタックトレース・CI出力）を直接分析。修正時は原因・修正内容・効果を必ず明示
 - **ドキュメント＝インフラ**: 仕様書は耐荷重構造物。「2 回説明したら書き下ろせ」。spec/reference に codify する
