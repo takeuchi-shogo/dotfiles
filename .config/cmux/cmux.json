@@ -310,7 +310,7 @@
                   {
                     "type": "terminal",
                     "name": "Setup",
-                    "command": "set -euo pipefail; state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; rm -f \"$state\"; printf '\\033[1;33mPR Review Agent — knowledge-work/knowledgework\\033[0m\\n'; if [[ -n \"${CMUX_PR_NUMBER:-}\" ]]; then pr_num=\"$CMUX_PR_NUMBER\"; echo \"Auto: PR #$pr_num (from CMUX_PR_NUMBER)\"; else printf 'Enter PR number: '; read -r pr_num; fi; if ! [[ \"$pr_num\" =~ ^[0-9]+$ ]]; then echo \"ERROR: invalid PR number: $pr_num\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; ~/dotfiles/scripts/runtime/prepare-pr-review.sh \"$pr_num\" || { echo \"ERROR: prepare-pr-review.sh failed\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; }; worktree=\"$HOME/projects/knowledge-work/knowledgework-review/.claude/worktrees/pr-${pr_num}\"; printf \"%s\\n\" \"$worktree\" > \"$state\"; cd \"$worktree\"; nohup ~/dotfiles/scripts/runtime/inject-review-prompt.sh >/dev/null 2>&1 & disown; echo \"\"; echo \"--- Worktree ready. Claude pane will start automatically. ---\"; exec \"${SHELL:-/bin/zsh}\" -l",
+                    "command": "exec ~/dotfiles/scripts/runtime/pr-review-setup.sh",
                     "focus": true
                   }
                 ]
@@ -322,7 +322,7 @@
                   {
                     "type": "terminal",
                     "name": "Claude Review",
-                    "command": "state=\"${TMPDIR:-/tmp}/cmux-pr-review-${CMUX_WORKSPACE_ID:-manual}.dir\"; echo \"Waiting for PR setup (timeout 300s)...\"; elapsed=0; while [ ! -s \"$state\" ]; do sleep 0.2; elapsed=$((elapsed + 1)); if [ $elapsed -ge 1500 ]; then echo \"ERROR: PR review setup timed out after 300s\" >&2; exec \"${SHELL:-/bin/zsh}\" -l; fi; done; dir=$(cat \"$state\"); cd \"$dir\"; echo \"\"; echo \"================================================\"; echo \"Worktree: $dir\"; echo \"Next: type '@REVIEW_TASK.md' and press Enter\"; echo \"================================================\"; echo \"\"; exec env CLAUDE_SKIP_TEST_GATE=1 claude --permission-mode auto --add-dir \"$HOME/Documents/Obsidian Vault\" --mcp-config \"$dir/.mcp.json\""
+                    "command": "exec ~/dotfiles/scripts/runtime/pr-review-claude.sh"
                   }
                 ]
               }
