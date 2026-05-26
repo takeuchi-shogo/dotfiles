@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # notify-discord.sh — Discord webhook 通知 (curl 片方向)
 # Source from run-*.sh: `source "$(dirname "$0")/lib/notify-discord.sh"`
-# Usage: notify_discord "status" "task" "duration_sec" "report_path" "metric_summary"
+# Usage: notify_discord "status" "task" "duration_sec" "report_path" "metric_summary" "detail_text"
 #
 # Env:
 #   DISCORD_WEBHOOK_URL (from ~/.config/notifications/discord.env)
@@ -43,14 +43,16 @@ notify_discord() {
         emoji="❌"; color=15158332; content="@here"
     fi
 
+    # bash "\n" はリテラル 2 文字のため、$'\n' で実改行を使い jq --arg 経由で Discord に改行として届ける
+    local nl=$'\n'
     local title="${emoji} nightly: ${task} (${duration_sec}s)"
     local description="報告: \`${report_path}\`"
-    [[ -n "$metric_summary" ]] && description="${description}\nメトリクス: ${metric_summary}"
-    # 詳細 (任意): embed description に追加、Discord 4096 char 上限を考慮し 2000 char で切る
+    [[ -n "$metric_summary" ]] && description="${description}${nl}メトリクス: ${metric_summary}"
+    # 詳細 (任意): embed description に追加、Discord 4096 char 上限。合計 ~2000 char に収めるため本体は 1950 で cut
     if [[ -n "$detail_text" ]]; then
-        local truncated="${detail_text:0:2000}"
-        [[ ${#detail_text} -gt 2000 ]] && truncated="${truncated}\n... (truncated, full report in Vault)"
-        description="${description}\n\n**詳細:**\n\`\`\`\n${truncated}\n\`\`\`"
+        local truncated="${detail_text:0:1950}"
+        [[ ${#detail_text} -gt 1950 ]] && truncated="${truncated}${nl}... (truncated, full report in Vault)"
+        description="${description}${nl}${nl}**詳細:**${nl}\`\`\`${nl}${truncated}${nl}\`\`\`"
     fi
 
     local payload
