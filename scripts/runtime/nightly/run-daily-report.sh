@@ -72,6 +72,30 @@ if [[ -n "$SESSION_LIST" ]]; then
     done | head -10)
 fi
 
+# 全セッション詳細 metadata (時刻範囲・cwd・最初の発話・event 数) — 全件、最大 30
+SESSION_DETAILS=""
+if [[ -n "$SESSION_LIST" ]]; then
+    SESSION_DETAILS=$(echo "$SESSION_LIST" | head -30 | while IFS= read -r f; do
+        [[ -z "$f" ]] && continue
+        # 時刻範囲: 最初と最後の timestamp
+        first_ts=$(jq -r 'select(.timestamp) | .timestamp' "$f" 2>/dev/null | head -1)
+        last_ts=$(jq -r 'select(.timestamp) | .timestamp' "$f" 2>/dev/null | tail -1)
+        # cwd (working directory) = project context
+        cwd=$(jq -r 'select(.cwd) | .cwd' "$f" 2>/dev/null | head -1)
+        # 最初の user 発話 (短縮)
+        first_user=$(jq -r 'select(.type == "user") | (.message.content // "") | if type == "array" then .[0].text else . end | tostring | gsub("\n"; " ") | .[0:200]' "$f" 2>/dev/null | grep -v '^null$' | grep -v '^$' | head -1)
+        # event count
+        event_count=$(wc -l < "$f" | tr -d ' ')
+        # 時刻フォーマット: HH:MM
+        first_hm="${first_ts:11:5}"
+        last_hm="${last_ts:11:5}"
+        # cwd を ~ で短縮
+        cwd_short="${cwd/#$HOME/~}"
+        echo "- [${first_hm}-${last_hm}] \`${cwd_short:-?}\` (${event_count} events)"
+        [[ -n "$first_user" ]] && echo "  - 起点: ${first_user}"
+    done)
+fi
+
 # Vault 変更 (06-Nightly 除外)
 VAULT_CHANGED=$(find "$OBSIDIAN_VAULT_PATH" -name "*.md" -mtime -1 \
     -not -path "*06-Nightly*" 2>/dev/null | head -30 || true)
@@ -100,6 +124,11 @@ fi
 PROMPT="$(cat <<PROMPT_EOF
 あなたは今日 (${NIGHTLY_DATE}) の活動を要約する Daily Report エージェントです。
 
+**重要な制約 (必ず守ること)**:
+- 出力は Daily Report のみ。**コードレビュー / verdict / Severity 表 / Findings は禁止**
+- 提供されたデータ (sessions / vault / git / friction) を要約するだけ、独自に file を Read しない
+- 「下記出力フォーマット」セクションの構造を厳守
+
 # 今日のデータ
 
 ## Claude Code セッション
@@ -107,6 +136,11 @@ PROMPT="$(cat <<PROMPT_EOF
 - セッション最初の発話 (top 10):
 \`\`\`
 ${SESSION_TOPICS:-(なし)}
+\`\`\`
+
+### 全セッション詳細 metadata (時刻範囲・cwd・起点発話・event 数)
+\`\`\`
+${SESSION_DETAILS:-(なし)}
 \`\`\`
 
 ## Obsidian Vault 変更
@@ -153,6 +187,13 @@ ${FRICTION_TODAY:-(なし)}
 
 ## 明日へ持ち越し
 - (進行中の話題、未解決の問いから 1-3 個、なければ「特になし」)
+
+## 全セッション一覧
+(上記「全セッション詳細 metadata」を 1 セッション 1-2 行で清書、cwd でプロジェクト推測 + 起点発話から内容を 1 文で要約。時刻順、最大 30 件)
+
+例:
+- **09:00-09:45** \`~/dotfiles\` (43 events) — nightly task の Discord embed 詳細化と daily-report 追加
+- **10:30-11:15** \`~/dev/hearable-app\` (28 events) — PR #1687 のコンフリクト解消
 PROMPT_EOF
 )"
 
