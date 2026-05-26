@@ -85,7 +85,7 @@ status_end() {
 
     # JSONL: detail も含めて永続化 (morning-briefing で活用可能)
     local line
-    line=$(jq -n \
+    line=$(jq -nc \
         --arg ts "$NIGHTLY_TZ_TS" \
         --arg task "$task" \
         --arg status "$status" \
