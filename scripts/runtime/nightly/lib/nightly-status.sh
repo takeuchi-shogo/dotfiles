@@ -53,12 +53,9 @@ status_end() {
         echo "[nightly] WARN: status_end called without status_begin, using fallback task=$task" >&2
     fi
 
-    local duration_sec
-    if [[ "$_NIGHTLY_BEGIN_TS" -gt 0 ]]; then
-        duration_sec=$((SECONDS - _NIGHTLY_BEGIN_TS))
-    else
-        duration_sec=0
-    fi
+    # cron 環境では shell 起動直後に status_begin → SECONDS=0 のため、
+    # `_NIGHTLY_BEGIN_TS -gt 0` 条件にすると常に duration=0 になる bug があった
+    local duration_sec=$((SECONDS - _NIGHTLY_BEGIN_TS))
 
     # extra_kv から report=, detail=, metric.* を抽出
     local report_path=""
