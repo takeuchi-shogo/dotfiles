@@ -14,10 +14,11 @@ hooks:
       hooks:
         - type: prompt
           prompt: >
-            [REVIEW IN PROGRESS] /review スキル実行中の Edit/Write です。
-            Step 1〜4 (Synthesis 出力前) なら待機してレポート完成を優先してください。
-            Step 5 Fix Cycle 中またはユーザー修正指示後なら継続して問題ありません。
-            本当に実行しますか？
+            [REVIEW NOTE] /review スキルセッション中の Edit/Write です。
+            判定ルール:
+            - Synthesis レポート未出力 (Step 1〜4) かつユーザー修正指示なし → 待機してレポートを先に出すこと。
+            - Synthesis 出力済み / Step 5 Fix Cycle / ユーザーから「修正して」等の明示指示あり → 通常通り実行すること（確認不要）。
+            上記いずれかに該当するなら、このメッセージは情報提供のみであり、ブロック扱いしないこと。
 metadata:
   pattern: reviewer
   version: 1.0.0
