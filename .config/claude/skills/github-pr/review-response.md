@@ -2,6 +2,41 @@
 
 レビュワーからのコメントに対応する。フェーズごとにまとめて進め、1件ずつ直列で完了させない。
 
+## コミュニケーション原則
+
+Google eng-practices `handling-comments.md` 準拠。Phase 1–3 の前提として内面化する。
+
+### コードへの指摘として受け取る
+
+レビューコメントはコードの品質向上を意図したもの。「なぜ私が？」ではなく「レビュワーが伝えようとしていることの建設的な意味は何か？」を問い、その意図を前提に行動する。
+
+怒りや苛立ちを感じたまま返信しない。作業から離れて落ち着いてから返す。レビューツールに残った返信は永続する。
+
+### コードで応答する（ツール内説明は最後の手段）
+
+「このコードが分からない」と言われた場合の対応優先順位:
+
+1. **コード自体を書き直す**（最優先）— リネーム・分割・リファクタリングで疑問ごと消す
+2. **コードコメントを追加する** — コードを変えられない場合、なぜそのコードが存在するかを *why* で補足
+3. **レビューツール内で説明する**（最後の手段）— 通常の読者が既知の内容をレビュワーが知らない場合のみ
+
+> レビューツール内の説明は将来のコード読者に届かない。コードとコメントは届く。
+
+### 協調的に返す（防御的にならない）
+
+意見の相違があるときの返信フォーマット（eng-practices 原文引用）:
+
+```
+Bad:  "No, I'm not going to do that."
+
+Good: "I went with X because of [these pros/cons] with [these tradeoffs].
+      My understanding is that using Y would be worse because of [these reasons].
+      Are you suggesting that Y better serves the original tradeoffs, that we should
+      weigh the tradeoffs differently, or something else?"
+```
+
+返信に含める 3 要素: (1) 自分のアプローチの根拠（pros/cons + tradeoffs）、(2) 相手案への懸念（技術的根拠で）、(3) 相手の意図の確認（複数の可能性で問い返す）。
+
 ## Phase 1: 分析（変更なし）
 
 ### 1. 未解決コメントの取得

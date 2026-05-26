@@ -39,8 +39,11 @@ gh pr view <URL> --json body,title
 ```
 
 確認ポイント:
+- タイトルが **命令形（Imperative sentence）** で始まっているか（"Delete X" / "Add Y" / "Fix Z" 形式。"Deleting..." / "Added..." は NG）
+- タイトル単体でバージョン管理履歴に一覧表示されたとき意味が通るか（**stand-alone** 要件）
 - タイトルが変更内容を正確に表しているか
-- 動機（WHY）が明確か
+- Body に **なぜこの変更が必要か（Why）** が記載されているか（Chesterton's fence: 将来の読者がこのコードを安全に変更・削除できるよう判断根拠を残す）
+- 動機（Why）が明確か
 - descriptionが実装内容と矛盾していないか
 - 不要になった記述が残っていないか
 

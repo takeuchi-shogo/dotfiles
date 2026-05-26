@@ -68,7 +68,7 @@ Google eng-practices `comments.md` ([Web](https://google.github.io/eng-practices
 | 本リポジトリ (既存) | Google eng-practices 元用語 | 意味 |
 |-------------------|---------------------------|------|
 | `MUST` | Blocking | 修正必須 (セキュリティ・バグ・GP 違反) |
-| `CONSIDER` | Suggestion | 検討推奨 (設計改善・保守性) |
+| `CONSIDER` | Optional (or Consider) | 検討推奨 (設計改善・保守性) |
 | `NIT` | Nit | 些末な指摘 (スタイル・好み) |
 | `ASK` | Question / 要回答 | 設計意図の質問 |
 | `FYI` | FYI | 参考情報共有 (対応不要) |

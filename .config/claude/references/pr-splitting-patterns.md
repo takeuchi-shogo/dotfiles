@@ -52,6 +52,23 @@ Google eng-practices `small-cls.md` ([Web](https://google.github.io/eng-practice
 | 依存関係が直列 | **stacking** |
 | 機能フラグで段階的有効化したい | **horizontal** |
 
+### horizontal vs vertical の選択基準
+
+**horizontal（layer 軸で分割）を選ぶとき**:
+- layer ごとに reviewer が異なる（DB は DBA、UI は フロントエンド等）
+- 特定 layer（DB migration 等）を先行デプロイする必要がある
+- 共有 proto/stub/interface でlayer 間を抽象化して独立して進めたい
+- 1 つの layer（DB schema 等）が後続 CL の前提になる
+
+**vertical（feature 軸で分割）を選ぶとき**:
+- 機能が互いに独立しており、並列で実装できる（multiplication と division を別々に）
+- 一部の機能を先にリリースしたい
+- 機能単位でロールバック可能にしたい
+
+**grid（両軸）を選ぶとき**:
+- 機能も layer も両方多い大規模実装（認証システム全面刷新等）
+- horizontal と vertical 両方の理由が同時に成立するとき
+
 ## 3. Anti-Patterns
 
 - **「後でまとめて PR」**: no-cleanup-later 原則違反 (`references/review-checklists/cross-cutting.md` CC-4 + `agents/code-reviewer.md` Section A)

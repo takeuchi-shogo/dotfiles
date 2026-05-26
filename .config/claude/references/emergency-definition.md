@@ -58,7 +58,27 @@ follow-up CL は emergency 解消後 **3 営業日以内** に作成すること
 - 種別が §2 に該当 → `[MUST]` emergency 認定の取り下げ + splitting pattern 適用を要求
 - follow-up 記載なし → `[MUST]` follow-up 計画の追記を要求
 
-## 5. 参照
+## 5. Emergency Review での基準緩和範囲
+
+Emergency CL は速度と正確性を最優先にレビューする（eng-practices `emergencies.md`）。緩和してよい範囲と維持すべき範囲を明確にする。
+
+### 緩和してよい基準
+- **設計の完璧さ**: 理想的な設計より「emergency を実際に解決するか」を優先する
+- **テストの完全性**: 最低限のテストで可。包括的なテストは follow-up CL で追加する
+- **スタイルの一貫性**: style guide 違反を単独理由に block しない
+- **コードの洗練度**: 過度な refactoring 要求より最小限の修正を受け入れる
+
+### 維持すべき基準
+- **正確性**: emergency を実際に解決するか
+- **セキュリティ**: 新たなセキュリティホールを開かないか
+- **データ整合性**: データ損失・破損を引き起こさないか
+
+### 事後の thorough review 義務
+
+Emergency 解消後は必ず emergency CL を改めて通常基準でレビューし直す。  
+緩和を受けた箇所（テスト不足・設計妥協など）は follow-up CL で修正する（§3 の follow-up 義務と同じ CL）。
+
+## 6. 参照
 
 - `references/pr-splitting-patterns.md` — 300 行超の分割パターン (5 種)
 - `skills/github-pr/SKILL.md` — Size & Splitting > Large CL Exception

@@ -8,6 +8,19 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-05-27] ingest-skip (light Phase 2, adopt=0) | How to Build a Software Factory with Claude Code (Sai Rahul / @sairahul1)
+
+- ソース: テキスト貼り付け (creator-monetization framing: Follow @sairahul1, "save months" hype, listicle)
+- 判定: light-phase2 で 10 手法 → Already 8 / N/A 2 = **採用 0 件** (Phase 2 まで検証したが novel 候補 2 件 (Backend/Frontend folder scoping, Backend→Frontend API summary handoff) 両者とも N/A 判定)
+- Family: 「multi-agent orchestration / role-split」 (informal、registered taxonomy 未登録だが同分野 30+ 件 absorb 済で functional saturation)、saturation-by-spirit (formal PASS) → ユーザー light-phase2 選択
+- 直近 baseline: 2026-05-02 30-subagents (採用 4) / 2026-05-04 Distribution vs Escalation (Bundle 採用) / 2026-04-11 Multi-Agent Coordination (5-pattern view)
+- novel 候補 2 件の判定根拠:
+  - N1 (folder scoping): dotfiles は 23 agent を「機能で分離」運用、path 競合シナリオが定型化されていない YAGNI。30-subagents absorb 時にも同判断
+  - N2 (API summary handoff): `agents/backend-architect.md:44-51` で「API endpoint definitions」出力 spec 化済 + cross-file-reviewer が事後整合性検出担当、handoff document 化は single-session-sequential スタイルとミスマッチ
+- スキップ判定: Phase 1.5 gate saturation-by-spirit → ユーザー選択で light-phase2 → adopt 0 確定で ingest-skip 同等扱い
+- レポート: `docs/research/2026-05-27-sairahul-7agent-software-factory-absorb-analysis.md` (status: light-phase2-only)
+- Meta-finding: 「multi-agent orchestration / role-split」family を `references/topic-family-saturation.md` に追加候補 (30+ 件累積実績、creator-monetization listicle が 3 週間以内に再投入される popularization velocity)
+
 ## [2026-05-25] ingest (light Phase 2, adopt=2 S) | How to Organize Your Obsidian Vault So You Can Always Find What You Need (cyrilXBT)
 
 - ソース: テキスト貼り付け (@cyrilXBT, follow @cyrilXBT 誘導つき full course 形式)
