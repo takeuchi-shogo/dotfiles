@@ -101,6 +101,13 @@ TO_UPDATE=$(grep -c '^- 判定: 更新' "$REPORT_PATH" 2>/dev/null || true)
 TO_DELETE="${TO_DELETE:-0}"
 TO_UPDATE="${TO_UPDATE:-0}"
 
+# Discord 詳細: stale docs パス top 5 (フルパスは長いので basename)
+DETAIL="stale=$STALE_COUNT to_delete=$TO_DELETE to_update=$TO_UPDATE"
+if [[ -n "$STALE_DOCS" ]]; then
+    DETAIL+=$'\n\nStale docs (top 5):\n'"$(echo "$STALE_DOCS" | head -5 | sed "s|$HOME|~|g")"
+fi
+
 status_end ok "stale=$STALE_COUNT to_delete=$TO_DELETE to_update=$TO_UPDATE" \
     "report=06-Nightly/${NIGHTLY_DATE}-health.md" \
-    "metric.stale=$STALE_COUNT" "metric.to_delete=$TO_DELETE" "metric.to_update=$TO_UPDATE"
+    "metric.stale=$STALE_COUNT" "metric.to_delete=$TO_DELETE" "metric.to_update=$TO_UPDATE" \
+    "detail=$DETAIL"

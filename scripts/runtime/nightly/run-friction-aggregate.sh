@@ -91,6 +91,13 @@ TOTAL_COUNT="${TOTAL_COUNT:-0}"
 
 mv "$REPORT_TMP" "$REPORT_PATH"
 
+# Discord 詳細: friction class breakdown top 5
+DETAIL="total=$TOTAL_COUNT"
+if [[ -n "$CLASS_COUNTS" ]]; then
+    DETAIL+=$'\n\nTop classes:\n'"$(echo "$CLASS_COUNTS" | head -5)"
+fi
+
 status_end ok "total=$TOTAL_COUNT" \
     "report=06-Nightly/${NIGHTLY_DATE}-friction.md" \
-    "metric.total=$TOTAL_COUNT"
+    "metric.total=$TOTAL_COUNT" \
+    "detail=$DETAIL"

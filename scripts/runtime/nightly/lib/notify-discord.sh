@@ -29,7 +29,7 @@ if [[ -f "$_DISCORD_ENV_PATH" ]]; then
 fi
 
 notify_discord() {
-    local status="$1" task="$2" duration_sec="$3" report_path="$4" metric_summary="${5:-}"
+    local status="$1" task="$2" duration_sec="$3" report_path="$4" metric_summary="${5:-}" detail_text="${6:-}"
 
     if [[ -z "${DISCORD_WEBHOOK_URL:-}" ]]; then
         echo "[notify-discord] WARN: DISCORD_WEBHOOK_URL not set, skipping notification for task=$task" >&2
@@ -46,6 +46,12 @@ notify_discord() {
     local title="${emoji} nightly: ${task} (${duration_sec}s)"
     local description="報告: \`${report_path}\`"
     [[ -n "$metric_summary" ]] && description="${description}\nメトリクス: ${metric_summary}"
+    # 詳細 (任意): embed description に追加、Discord 4096 char 上限を考慮し 2000 char で切る
+    if [[ -n "$detail_text" ]]; then
+        local truncated="${detail_text:0:2000}"
+        [[ ${#detail_text} -gt 2000 ]] && truncated="${truncated}\n... (truncated, full report in Vault)"
+        description="${description}\n\n**詳細:**\n\`\`\`\n${truncated}\n\`\`\`"
+    fi
 
     local payload
     payload=$(jq -n \

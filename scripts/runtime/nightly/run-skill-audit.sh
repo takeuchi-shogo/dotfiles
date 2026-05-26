@@ -66,6 +66,12 @@ CONFLICTS=$(grep -cE '衝突|conflict' "$REPORT_PATH" 2>/dev/null || true)
 DORMANT="${DORMANT:-0}"
 CONFLICTS="${CONFLICTS:-0}"
 
+# Discord 詳細: dormant / conflicts 該当行 top 5
+DETAIL="dormant=$DORMANT conflicts=$CONFLICTS"
+TOP_FINDINGS=$(grep -E 'dormant|未使用|0 calls|衝突|conflict' "$REPORT_PATH" 2>/dev/null | head -5 || true)
+[[ -n "$TOP_FINDINGS" ]] && DETAIL+=$'\n\nTop findings:\n'"$TOP_FINDINGS"
+
 status_end ok "dormant=$DORMANT conflicts=$CONFLICTS" \
     "report=06-Nightly/${NIGHTLY_DATE}-skill.md" \
-    "metric.dormant=$DORMANT" "metric.conflicts=$CONFLICTS"
+    "metric.dormant=$DORMANT" "metric.conflicts=$CONFLICTS" \
+    "detail=$DETAIL"

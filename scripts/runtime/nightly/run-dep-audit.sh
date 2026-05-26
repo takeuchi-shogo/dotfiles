@@ -111,6 +111,13 @@ MANIFEST_COUNT=$(echo "$MANIFESTS" | grep -cE '^[^[:space:]]' 2>/dev/null || tru
 VULN_LINES="${VULN_LINES:-0}"
 MANIFEST_COUNT="${MANIFEST_COUNT:-0}"
 
+# Discord 詳細: detected manifests + vuln summary
+DETAIL="manifests=$MANIFEST_COUNT vuln_lines=$VULN_LINES"
+if [[ -n "$MANIFESTS" ]]; then
+    DETAIL+=$'\n\nDetected manifests:\n'"$(echo "$MANIFESTS" | sed "s|$HOME|~|g" | head -10)"
+fi
+
 status_end ok "manifests=$MANIFEST_COUNT vuln_lines=$VULN_LINES" \
     "report=06-Nightly/${NIGHTLY_DATE}-dep.md" \
-    "metric.manifests=$MANIFEST_COUNT" "metric.vuln_lines=$VULN_LINES"
+    "metric.manifests=$MANIFEST_COUNT" "metric.vuln_lines=$VULN_LINES" \
+    "detail=$DETAIL"

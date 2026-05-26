@@ -115,6 +115,11 @@ mv "$REPORT_TMP" "$REPORT_PATH"
 VIOLATIONS=$(grep -cE '^### F-' "$REPORT_PATH" 2>/dev/null || true)
 VIOLATIONS="${VIOLATIONS:-0}"
 
+# === Discord 詳細: 違反 top 5 (F-N タイトル行) ===
+DETAIL=$(grep -E '^### F-[0-9]+' "$REPORT_PATH" 2>/dev/null | head -5 || true)
+[[ -z "$DETAIL" ]] && DETAIL="クリーン状態 (違反 0 件)"
+
 status_end ok "violations=$VIOLATIONS" \
     "report=06-Nightly/${NIGHTLY_DATE}-golden.md" \
-    "metric.violations=$VIOLATIONS"
+    "metric.violations=$VIOLATIONS" \
+    "detail=$DETAIL"

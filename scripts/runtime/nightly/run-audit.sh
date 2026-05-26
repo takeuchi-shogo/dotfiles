@@ -99,6 +99,12 @@ QUESTIONS=$(grep -cE '^### Q-[0-9]+' "$REPORT_PATH" 2>/dev/null || true)
 TOTAL="${TOTAL:-0}"
 QUESTIONS="${QUESTIONS:-0}"
 
+# Discord 詳細: issue タイトル top 5
+DETAIL="total=$TOTAL questions=$QUESTIONS"
+TOP_ISSUES=$(grep -E '^### A-[0-9]+' "$REPORT_PATH" 2>/dev/null | head -5 || true)
+[[ -n "$TOP_ISSUES" ]] && DETAIL+=$'\n\nTop issues:\n'"$TOP_ISSUES"
+
 status_end ok "total=$TOTAL q=$QUESTIONS" \
     "report=06-Nightly/${NIGHTLY_DATE}-audit.md" \
-    "metric.total=$TOTAL" "metric.questions=$QUESTIONS"
+    "metric.total=$TOTAL" "metric.questions=$QUESTIONS" \
+    "detail=$DETAIL"

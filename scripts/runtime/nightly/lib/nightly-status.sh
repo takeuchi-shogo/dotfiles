@@ -60,8 +60,9 @@ status_end() {
         duration_sec=0
     fi
 
-    # extra_kv から report=, metric.* を抽出
+    # extra_kv から report=, detail=, metric.* を抽出
     local report_path=""
+    local detail_text=""
     local metric_obj="{}"
     local kv k v mk
     if [[ ${#extra_kv[@]} -gt 0 ]]; then
@@ -70,6 +71,7 @@ status_end() {
             v="${kv#*=}"
             case "$k" in
                 report) report_path="$v" ;;
+                detail) detail_text="$v" ;;
                 metric.*)
                     mk="${k#metric.}"
                     metric_obj=$(echo "$metric_obj" | jq --arg k "$mk" --arg v "$v" '. + {($k): $v}')
@@ -84,6 +86,7 @@ status_end() {
     # message も metric に含める
     [[ -n "$msg" ]] && metric_obj=$(echo "$metric_obj" | jq --arg msg "$msg" '. + {msg: $msg}')
 
+    # JSONL: detail も含めて永続化 (morning-briefing で活用可能)
     local line
     line=$(jq -n \
         --arg ts "$NIGHTLY_TZ_TS" \
@@ -91,15 +94,16 @@ status_end() {
         --arg status "$status" \
         --argjson duration_sec "$duration_sec" \
         --arg report "$report_path" \
+        --arg detail "$detail_text" \
         --argjson metric "$metric_obj" \
-        '{ts: $ts, task: $task, status: $status, duration_sec: $duration_sec, report: $report, metric: $metric}')
+        '{ts: $ts, task: $task, status: $status, duration_sec: $duration_sec, report: $report, detail: $detail, metric: $metric}')
 
     echo "$line" >> "$NIGHTLY_STATUS_JSONL"
 
-    # Discord 通知
+    # Discord 通知 (detail を 6th arg として渡す)
     local metric_summary
     metric_summary=$(echo "$metric_obj" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(", ")' 2>/dev/null || echo "")
-    notify_discord "$status" "$task" "$duration_sec" "$report_path" "$metric_summary"
+    notify_discord "$status" "$task" "$duration_sec" "$report_path" "$metric_summary" "$detail_text"
 
     # Q9 (Codex C6): fail でも mark_run_today を呼ぶ (catch-up 再試行防止)
     mark_run_today "$task"
