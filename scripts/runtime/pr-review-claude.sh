@@ -5,6 +5,11 @@
 
 set -euo pipefail
 
+# cmux pane は zsh の login/interactive init を通らないため、mise shims が PATH に
+# 入らず codex / gh / node などが解決できない。明示的に PATH を補強する。
+# Refs: REVIEW_TASK.md.tpl 観点②.5 (Codex 深掘り) が "codex not found" で SKIP される問題
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 : "${TMPDIR:?TMPDIR must be set (run via cmux)}"
 : "${CMUX_WORKSPACE_ID:?CMUX_WORKSPACE_ID must be set (run via cmux)}"
 [[ -O "$TMPDIR" && -d "$TMPDIR" && ! -L "$TMPDIR" ]] || {
