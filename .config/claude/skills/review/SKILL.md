@@ -14,11 +14,23 @@ hooks:
       hooks:
         - type: prompt
           prompt: >
-            [REVIEW NOTE] /review スキルセッション中の Edit/Write です。
-            判定ルール:
-            - Synthesis レポート未出力 (Step 1〜4) かつユーザー修正指示なし → 待機してレポートを先に出すこと。
-            - Synthesis 出力済み / Step 5 Fix Cycle / ユーザーから「修正して」等の明示指示あり → 通常通り実行すること（確認不要）。
-            上記いずれかに該当するなら、このメッセージは情報提供のみであり、ブロック扱いしないこと。
+            [REVIEW PHASE GATE] /review skill 進行中の Edit/Write です。
+            以下の **どちらか 1 つでも明確に該当すれば継続 OK**、両方とも該当しない場合のみ待機:
+
+            (A) 直前 (直近 1-2 通) の assistant message に **"## Verdict"** または
+                **"verdict: (PASS|BLOCK|NEEDS_FIX|NEEDS_HUMAN_REVIEW)"** が文字列として
+                既に出力されている (= Synthesis Step 4 完了済み)。
+
+            (B) 直近 (直近 1-2 通) の user message に **修正 / fix を承認・指示する明示的な
+                文言** がある。例: 「修正して」「fix して」「fix を実行して」「Step 5 に進んで」
+                「apply」「適用して」「BLOCK を解消して」。
+                単なる質問や確認ではなく、**実行を指示する文言** が必須。
+
+            両方とも該当しない (= Step 1-3 探索中、Synthesis 未出力、user 指示なし) なら
+            **待機を選んでください** — レポート完成を優先します。
+
+            判定に迷ったら "待機" を選ぶ (false negative の方が安全)。
+            本当に実行しますか？
 metadata:
   pattern: reviewer
   version: 1.0.0
