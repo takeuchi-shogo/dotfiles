@@ -229,6 +229,28 @@ Google eng-practices `standard.md` "Mentoring" 原則。コードレビューは
 - **Tone**: 「教える」ではなく「共有する」姿勢。"You should ~" より "~ を検討してください / ~ の理由は ~"
 - 検証: 出力前の内部確認として `[MUST]` / `[CONSIDER]` 全件に Why (1 文以上) が含まれているかをエージェント側でセルフチェックする (Mandatory Output Format の構造変更なし、self-check 結果を出力テキストに追記しない)
 
+### Section H: Rejected-Finding Inline Comment (autoreview)
+
+棄却 finding を inline code comment として残すか否かの判定 rubric。
+
+開発者 (or reviewer 本人) が finding を「intentional / not worth fixing」として棄却した場合、inline code comment を **追加するか** は以下で判定する。
+
+- **追加する条件 (必須要件 — 両方満たす場合のみ)**:
+  1. その棄却が **real invariant** (型・契約・並行制約・performance budget 等) を future reviewer に伝える
+  2. その invariant が **コードから自明ではない** (関数名・型・既存 comment では読み取れない暗黙の制約)
+  - 例 (OK): `// HACK(2026-12-31): この順序を維持しないと SchemaValidator が pre-init で動くと panic する (期限: schema v2 migration 完了時に削除) (invariant: schema load 前に lazy init)`
+  - 例 (OK): `// 本キャッシュは process lifetime に縛る (ownership: scheduler-owned, not request-owned)`
+- **追加しない条件 (棄却理由が以下のいずれかなら inline comment 不要)**:
+  - 単なる preference / 主観 ("私はこの書き方が好み")
+  - NIT-level rejection (style / 些末)
+  - 現状維持の選択を理由化したいだけ ("ここはこのままでいい")
+  - 「reviewer が確認した」ことの記録 (= PR review コメントで足りる、コードを汚染しない)
+- **判定の根拠**: 棄却理由を inline で残すと **code noise** が増え、後の reviewer が「なぜこれが無視されたか」を判断するコストが上がる。real invariant ではない棄却理由は PR description / review コメントに留め、コードからは省く。
+- **既存セクションとの関係**:
+  - Section A (Cleanup-Later Boundary): 新規 TODO/FIXME には issue 番号・期限・オーナーが必須。本 Section H は「棄却された finding」全般に適用 (TODO/FIXME 以外も含む、棄却決定のメタコメント)
+  - Section G (Mentoring Tone): 棄却を inline comment で残す場合も Why を 1 文で記す
+- **出典**: openclaw/agent-skills `autoreview` SKILL "If rejecting a finding as intentional/not worth fixing, add a brief inline code comment only when it explains a real invariant or ownership decision that future reviewers should know"
+
 ## Review Checklist
 
 ### 基本品質

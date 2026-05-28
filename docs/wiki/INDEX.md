@@ -111,6 +111,7 @@
 - **Tech-Debt-Skill absorb (2026-04-26)** — ksimback/tech-debt-skill を `/audit` に統合。Orient Gate・Severity×Effort 2軸・Hallucination Defense・Output Contract など 9 点強化（新規スキル作成なし） → 参照: [2026-04-26-tech-debt-skill-absorb-analysis](../research/2026-04-26-tech-debt-skill-absorb-analysis.md)
 - [Erukiti フルAIコーディング (2026-05-21)](../research/2026-05-21-zenn-erukiti-full-ai-coding-absorb-analysis.md) — LLM の原理的欠陥前提でメカニズム強制 (linter/レイヤー/結合テスト/フェイズ分割) を提案。dotfiles では暗黙フォールバック禁止/見積もりプロンプト/テストコメント TSDoc/eslint-plugin-boundaries/vitest 推奨を採用
 - [Code Review Best Practices (Google eng-practices)](../research/2026-05-24-google-eng-practices-absorb-analysis.md) — Google 公式 Code Review Guide (Reviewer + Developer + Emergencies)。13 件採用、L 規模 integration plan あり
+- [openclaw/agent-skills autoreview (2026-05-28)](../research/2026-05-28-openclaw-autoreview-absorb-analysis.md) — Peter Steinberger autoreview SKILL.md (code-review-best-practices family 5 件目, saturated-but-novel)。Gap 4 / Partial 7 / Already 3 / N/A 6。即実装 5 件 (`/review` Anti-Patterns #6 nested reviewer ban + #7 cosmetic re-review ban / Step 5 cycle rule 8 focused test+review rerun / Step 1.1 diff scope mode 表 + "clean local review only proves no local patch" caveat / code-reviewer.md Section H rejected-finding inline comment rule)、保留 Plan 4 件 (T6 security suppression auditability M / T7 synthesis-report tests S / T8 parallel closeout pipeline M / T9 cmux 30min SLA S)。Phase 2.5: Codex 両ルート (cmux worker TTY + codex exec stall) 失敗 → Gemini grounding (5 主張 HIGH) + Opus self-critique で代替
 
 ### evaluation — 評価・観測
 

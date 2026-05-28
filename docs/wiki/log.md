@@ -1048,3 +1048,26 @@
 - Codex 誤り訂正: #22 Partial → Already (.config/claude/scripts/runtime/auto-morning-briefing.sh L103-160 に HN+arXiv+RSS 実装済み、Explore が scripts/runtime/ 別ファイルを参照してミス); #45 Partial → Already (weekly-review §2.5.1 Vault Inbox triage で 5 分類済み)
 - Validation-only: docs/specs/2026-05-09-daily-knowledge-routines-design.md が "Design (plan 待ち)" のまま 17 日経過、要フォローアップ
 - メタ: 記事は Claude.ai Cowork (PC 起動前提) 向けの marketing listicle。既存ハーネス (launchd + hooks + Claude Code CLI) が同等以上をカバー
+
+## [2026-05-28] ingest | openclaw/agent-skills autoreview SKILL.md
+
+- ソース: https://github.com/openclaw/agent-skills/blob/main/skills/autoreview/SKILL.md
+- 著者: Peter Steinberger (@steipete), OpenClaw ecosystem
+- Topic family: code-review-best-practices (5 件目, saturated-but-novel)
+- 判定: Gap 4 / Partial 7 / Already 3 / N/A 6
+- 取り込み: Bundle A+B 即実装 (S × 5)
+  - `/review` SKILL.md Anti-Patterns #6 (nested reviewer ban) + #7 (cosmetic re-review ban)
+  - `/review` SKILL.md Step 5 サイクルルール 8 (focused test rerun + review rerun)
+  - `/review` SKILL.md Step 1.1 (diff scope mode 表 + "A clean local review only proves there is no local patch" caveat)
+  - `agents/code-reviewer.md` Section H (rejected-finding inline comment rule)
+- 保留: Plan 4 件 `docs/plans/active/2026-05-28-autoreview-absorb-plan.md` (T6 security suppression auditability M / T7 synthesis-report tests section S / T8 parallel closeout pipeline M / T9 cmux 30min SLA 弱 S)
+- Phase 2.5 特記: Codex 両ルート (cmux worker TTY + codex exec stall) 失敗、Gemini grounding (5 主張 HIGH 確認: openclaw + agent-scripts + clawsweeper + gitcrawl + crabbox) + Opus self-critique で代替
+- 分析レポート: `docs/research/2026-05-28-openclaw-autoreview-absorb-analysis.md`
+
+## [2026-05-28] ingest | Codex Research Agent ワークフロー (中国語記事)
+
+- ソース: 中国語記事「从0开始,十分钟搭建一个帮你筛选优质信息的Codex Research Agent工作流」
+- 判定: Gap 3 / Partial 2 / Already 5 / N/A 1 (11 手法)
+- 取り込み: T1 brief annotation 欄 (S) / T2 negative filter (S) / T3 weekly-review annotation 集計 + diff 提案 (M)
+- 重要 safety: Codex 指摘で T3 は auto-update せず「diff 提案止まり、user 承認制」に降格
+- レポート: docs/research/2026-05-28-codex-research-agent-workflow-absorb-analysis.md
