@@ -18,3 +18,10 @@
 ## 🧭 メモ
 - friction events since 昨日 17:00: {{FRICTION_COUNT}} 件
 - 入力: `~/.claude/agent-memory/learnings/friction-events.jsonl`, `gh pr/issue`, `~/dotfiles/docs/plans/active/`
+
+## 📝 Notes (読了後 30 秒で記入 — `/weekly-review` で集計)
+- useful: <今日の brief で役立った項目>
+- noise: <不要だった項目 / 既知の重複>
+- missing: <欲しかったが無かった情報>
+
+<!-- 全部空欄でも OK。継続的に記入された noise/missing は次回の prompt 更新候補になる。 -->

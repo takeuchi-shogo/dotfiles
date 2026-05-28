@@ -176,6 +176,81 @@ ls -lt "$VAULT_PATH/00-Inbox/vault-maintenance-"*.md 2>/dev/null | head -3
 
 Phase 2.5 の結果は Phase 6「来週の計画」で Horizon 1 タスクとして組み込む。
 
+### Phase 2.7: Morning Brief Annotation 集計 (opt-in)
+
+`~/daily-reports/morning/YYYY-MM-DD.md` の `## Notes` セクションに記入された useful/noise/missing を集計し、prompt 改善の **提案** を出す。
+
+> **重要 (Codex safety 指摘)**: ここは **提案までで止める**。CLAUDE.md / `auto-morning-briefing.sh` の prompt を自動更新しない。差分提案 → user が手動承認して反映する。
+
+#### 2.7.1 過去 7 日分の集計
+
+```bash
+# 過去 7 日の morning brief から annotation 行を直接抽出
+# 注: section 範囲抽出 (awk '/^## 📝 Notes/,/^## /') は emoji header (U+1F4DD) を
+#     macOS awk が安定して扱えないため使えない。template 設計上、annotation 行は
+#     `- (useful|noise|missing): ...` の形式でしか出現しないため直接 grep で十分。
+#     この前提を守るため、templates/briefing.md の `## 📝 Notes` セクションは
+#     ファイル末尾の最終セクションとし、これ以降に同形式の bullet を増やさないこと。
+for d in $(seq 0 6); do
+    DATE=$(date -v-${d}d +%Y-%m-%d 2>/dev/null || date -d "${d} days ago" +%Y-%m-%d)
+    BRIEF="$HOME/daily-reports/morning/${DATE}.md"
+    [[ -f "$BRIEF" ]] || continue
+    grep -E "^- (useful|noise|missing):" "$BRIEF" || true
+done
+```
+
+記入が **3 日未満** (= 7 日中 0-2 日) なら「サンプル不足、来週まで継続記入」と表示してスキップ。
+
+#### 2.7.2 パターン抽出と提案生成
+
+集計結果から以下を抽出して提示:
+
+```
+## Annotation Summary (過去 7 日 / 記入: N 日)
+
+### 頻出 noise (≥3 回)
+- "Bump 系コミット" — 5 回 → prompt 除外候補
+- "stale Issue の再掲" — 3 回 → prompt 除外候補
+
+### 頻出 missing (≥2 回)
+- "前日の test 失敗状況" — 4 回 → 入力データに追加候補
+- "今週の calendar" — 2 回 → 入力データに追加候補
+
+### useful パターン (継続)
+- "Today's Focus セクション" — 6 回言及
+```
+
+#### 2.7.3 Diff 提案 (auto-update 禁止)
+
+各パターンについて、user に「どこに反映するか」を提案:
+
+```
+## 反映先の提案
+
+1. 頻出 noise "Bump 系コミット":
+   提案: `auto-morning-briefing.sh` の prompt 除外ルールに追記
+   diff:
+   - 既知の長期 stale Issue
+   + 既知の長期 stale Issue / 単一 dependency bump コミット
+
+2. 頻出 missing "前日 test 失敗":
+   提案: `collect_raw_data()` に `gh run list --status=failure` を追加
+   ※スコープが S を超えるため別途 plan 化推奨
+
+→ どれを反映しますか？ (番号選択 / なし)
+```
+
+**ルール**:
+- 反映する場合も **Edit 提案のみ**。実際の編集は user 承認後に別 step で行う
+- 反映しない場合は理由を 1 行記録（次週同じ noise が来たら判断材料になる）
+- 集計結果は `~/.claude/skill-data/weekly-review/annotation-history.jsonl` に append
+  - **初回実行時**は `mkdir -p "$HOME/.claude/skill-data/weekly-review"` を先行する (ディレクトリ未作成時の append 失敗を防ぐ)
+
+#### 2.7.4 サンプル不足時の挙動
+
+- 記入が **3 日未満** → 「`## Notes` 欄の記入を継続してください」と促して終了
+- 全 noise/missing が 1 回ずつ → 「パターン化されたものなし」で終了（単発はノイズの可能性）
+
 ### Phase 3: 進行中タスクの確認
 
 In Progress のタスクを確認:

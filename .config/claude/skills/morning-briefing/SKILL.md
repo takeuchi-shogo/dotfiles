@@ -139,6 +139,8 @@ claude -p '/morning-briefing'
 | `yesterday_report_path: null` のときに昨日の振り返りを想像で書く | 推測で埋めると briefing 全体の信頼が落ちる |
 | `stale_plans_over_7d` を全件列挙する | 14 日以上のみ URGENT、それ以外は件数のみ表示で十分 |
 | Discord 通知失敗で skill を fail させる | 通知は副作用。本体 (ファイル保存) が成功すれば OK |
+| シグナルなしでも「今日のフォーカス」を捻り出す | "Today's One Thing" は字義通り 1 つ、該当なしは「該当なし」と書く |
+| `## Notes` 欄を「自動生成のサマリ」で埋める | annotation は **読み手 (ユーザー) が書く欄**。AI が事前に埋めると weekly-review の signal 価値が消える |
 
 ## Data Storage
 
