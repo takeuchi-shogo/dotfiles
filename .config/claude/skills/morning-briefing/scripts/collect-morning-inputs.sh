@@ -37,29 +37,24 @@ if [ -z "$CUTOFF_UTC" ]; then
 fi
 
 if [ -f "$FRICTION_FILE" ]; then
-    friction=$(jq -c --arg cutoff "$CUTOFF_UTC" '
-        select(.timestamp >= $cutoff) |
+    friction=$(jq -s --arg cutoff "$CUTOFF_UTC" '[
+        .[] | select(.timestamp >= $cutoff) |
         {timestamp, friction_class, severity, target_hint, evidence}
-    ' "$FRICTION_FILE" 2>/dev/null | jq -s '.' 2>/dev/null || echo "[]")
+    ]' "$FRICTION_FILE" 2>/dev/null || echo "[]")
 else
     friction="[]"
 fi
 
-# --- open PRs involving me ---
+# --- open PRs involving me / open issues assigned to me ---
 if command -v gh >/dev/null 2>&1; then
     open_prs=$(gh pr list --search "involves:@me state:open" \
         --json number,title,url,headRepository,updatedAt,statusCheckRollup \
         --limit 20 2>/dev/null || echo "[]")
-else
-    open_prs="[]"
-fi
-
-# --- open issues assigned to me ---
-if command -v gh >/dev/null 2>&1; then
     open_issues=$(gh issue list --assignee=@me --state=open \
         --json number,title,url,repository,updatedAt \
         --limit 20 2>/dev/null || echo "[]")
 else
+    open_prs="[]"
     open_issues="[]"
 fi
 

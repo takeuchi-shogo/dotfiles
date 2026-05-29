@@ -1,6 +1,6 @@
 ---
 name: github-pr
-description: "GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。未解決コメント検出 → 修正 → 再レビューの cycle を回す。Triggers: 'セルフレビュー', 'PR確認', 'PR チェック', 'コメント対応', 'コメント返す', 'マージしていい', 'マージ判断', 'PR review', 'merge check', 'unresolved コメント', 'レビューに返信'. Do NOT use for: PR作成（use /pull-request or /create-pr-wait）、コードレビュー（use /review）、CI修正（use /create-pr-wait）。"
+description: "GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。未解決コメント検出 → 修正 → 再レビューの cycle を回す。Triggers: 'PR セルフレビュー', 'PR確認', 'PR チェック', 'コメント対応', 'コメント返す', 'マージしていい', 'マージ判断', 'PR review', 'merge check', 'unresolved コメント', 'レビューに返信'. Do NOT use for: PR作成（use /pull-request or /create-pr-wait）、コードレビュー（use /review）、CI修正（use /create-pr-wait）。"
 origin: self
 user-invocable: true
 allowed-tools: Bash(*gh-unresolved-threads*), Bash(gh pr *), Bash(gh api graphql *)
