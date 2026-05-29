@@ -30,7 +30,7 @@ zodchixquant (Telegram 宣伝 listicle、claude-code-tips family 15 件目、同
 
 ## Phase 1.5: Saturation Gate
 
-- Family: **claude-code-tips** (N=13+: Boris 30 Tips / zodchixquant 15 / Khairallah ×3 / 18 settings 等)
+- Family: **claude-code-tips** (N=14: Boris 30 Tips / zodchixquant 15 / Khairallah ×3 / 18 settings 等)
 - 採用率 >20% (Khairallah Routines 4・18 settings 4・30 Workflows 2 等) → **PASS (warning)**: 重複領域だが skip せず
 - delta >= 2 の novel 論点あり (effort control / fast mode / dynamic workflows = Opus 4.8 実プラットフォーム機能、
   generic listicle と異なり「私が今走っている環境そのもの」)
