@@ -203,10 +203,83 @@ _POST_TOOL_TARGETS = (
     "references/",
 )
 
+# The retired-concepts registry itself enumerates the ids — never flag it.
+_RETIRED_REGISTRY = "references/retired-concepts.md"
+
+
+def _load_confirmed_retired(repo_root: str) -> List[str]:
+    """Parse retired-concepts.md and return ids whose status is 確定.
+
+    曖昧 (ambiguous) entries are documentation-only and intentionally
+    excluded — their concept may still live under a relocated name, so
+    flagging references would be a false positive.
+    """
+    registry = os.path.join(repo_root, ".config/claude", _RETIRED_REGISTRY)
+    try:
+        content = Path(registry).read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return []
+
+    ids: List[str] = []
+    for line in content.splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) < 2:
+            continue
+        id_cell = cells[0].strip("`").strip()
+        status_cell = cells[-1]
+        # skip header / separator rows
+        if id_cell in ("id", "") or set(id_cell) <= {"-", ":"}:
+            continue
+        if status_cell.startswith("確定") and id_cell:
+            ids.append(id_cell)
+    return ids
+
+
+def check_retired_concepts(repo_root: str, file_path: str) -> List[str]:
+    """PostToolUse mode: warn if an edited live doc references a retired
+    concept (status=確定 in retired-concepts.md). Negative Constraints
+    pattern — prevents hallucinated regression to deleted skills/commands.
+    """
+    rel = os.path.relpath(file_path, repo_root)
+
+    if not any(t in rel for t in _POST_TOOL_TARGETS):
+        return []
+    # never flag the registry that defines the ids
+    if (
+        rel.endswith(_RETIRED_REGISTRY)
+        or os.path.basename(rel) == "retired-concepts.md"
+    ):
+        return []
+    if not os.path.isfile(file_path):
+        return []
+
+    confirmed = _load_confirmed_retired(repo_root)
+    if not confirmed:
+        return []
+
+    try:
+        content = Path(file_path).read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return []
+
+    warnings: List[str] = []
+    for token in confirmed:
+        if token in content:
+            warnings.append(
+                f"退役済み概念 `{token}` への参照 (retired-concepts.md 参照)"
+            )
+    return warnings
+
+
 # Files known to produce false positives (inline mentions, not refs)
 _SKIP_FILES = {
     "cross-model-insights.md",
     "tool-scoping-guide.md",
+    # registry lists concept ids + cross-subdir filenames as data, not live refs
+    "retired-concepts.md",
 }
 
 
@@ -287,6 +360,15 @@ def _run_post_tool_use() -> None:
             f"[doc-garden] {os.path.basename(file_path)} のパス参照に問題:",
         ]
         for w in warns[:5]:
+            lines.append(f"  - {w}")
+        print("\n".join(lines))
+
+    retired = check_retired_concepts(repo_root, file_path)
+    if retired:
+        lines = [
+            f"[doc-garden] {os.path.basename(file_path)} に退役済み概念への参照:",
+        ]
+        for w in retired[:5]:
             lines.append(f"  - {w}")
         print("\n".join(lines))
 
