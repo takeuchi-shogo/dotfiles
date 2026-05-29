@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Tests for checkpoint_recover.py."""
+
 import json
 import os
 import sys
@@ -8,11 +9,10 @@ import unittest
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "runtime"))
 
 
 class TestCheckpointRecover(unittest.TestCase):
-
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
         self.state_dir = Path(self.tmpdir) / "session-state"
@@ -21,16 +21,19 @@ class TestCheckpointRecover(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.tmpdir, ignore_errors=True)
         os.environ.pop("CLAUDE_SESSION_STATE_DIR", None)
 
     def test_no_checkpoint_no_output(self):
         from checkpoint_recover import check_recovery
+
         result = check_recovery(self.state_dir)
         self.assertIsNone(result)
 
     def test_normal_exit_no_recovery(self):
         from checkpoint_recover import check_recovery
+
         now = datetime.now(timezone.utc)
         cp = {"timestamp": now.isoformat(), "trigger": "manual", "working_on": "test"}
         (self.state_dir / "last-checkpoint.json").write_text(json.dumps(cp))
@@ -42,6 +45,7 @@ class TestCheckpointRecover(unittest.TestCase):
 
     def test_abnormal_exit_triggers_recovery(self):
         from checkpoint_recover import check_recovery
+
         now = datetime.now(timezone.utc)
         cp = {
             "timestamp": now.isoformat(),
@@ -61,6 +65,7 @@ class TestCheckpointRecover(unittest.TestCase):
 
     def test_old_checkpoint_ignored(self):
         from checkpoint_recover import check_recovery
+
         old = datetime.now(timezone.utc) - timedelta(hours=25)
         cp = {"timestamp": old.isoformat(), "trigger": "manual", "working_on": "old"}
         (self.state_dir / "last-checkpoint.json").write_text(json.dumps(cp))
