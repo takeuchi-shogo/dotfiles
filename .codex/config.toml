@@ -64,6 +64,11 @@ command = "echo '[codex hook pilot] apply_patch completed; consider running lint
 timeout = 5
 statusMessage = "Pilot hook firing"
 
+[hooks.state]
+
+[hooks.state."/Users/shogo_takeuchi/.codex/config.toml:post_tool_use:0:0"]
+trusted_hash = "sha256:1c240a504f27189f09e938e7fb71dffb87fed1399e74d45d1f8553fbf55bfab6"
+
 [memories]
 use_memories = true
 generate_memories = true
@@ -111,6 +116,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/shogo_takeuchi/projects/knowledge-work/knowledgework-review"]
+trust_level = "trusted"
+
+[projects."/Users/shogo_takeuchi/projects/knowledge-work/knowledgework2"]
 trust_level = "trusted"
 
 [agents]

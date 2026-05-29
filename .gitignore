@@ -56,6 +56,9 @@ skills-lock.json.bak-*
 skills-lock-history/
 .skill-eval/
 
+# Editor/tool backup files
+*.bak
+
 # Benchmark/research artifacts (skill-audit等で生成される一時ファイル)
 .claude/react/
 .claude/research/
