@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -140,9 +141,12 @@ def _detect_test_command() -> str | None:
 def _run_tests(cmd: str) -> tuple[bool, str]:
     """Run tests and return (success, output)."""
     try:
+        # shell=False + shlex.split: 検出される test コマンドは単純な argv
+        # (npm test / go test ./... / pytest ...) でシェルメタ文字を含まないため、
+        # シェル注入面を排除しても挙動は不変。
         result = subprocess.run(
-            cmd,
-            shell=True,
+            shlex.split(cmd),
+            shell=False,
             capture_output=True,
             text=True,
             timeout=120,
