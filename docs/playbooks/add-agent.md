@@ -15,6 +15,17 @@ last_reviewed: 2026-04-23
 
 ## 6-step
 
+### 0. Go/No-go preflight（作るべきか判定）
+
+新規 agent は 1 起動 ~20K token のオーバーヘッドを背負う。作る前に以下を確認し、1 つでも該当したら **作らない**:
+
+- [ ] 決定的 CLI（`npm audit` / `tsc` / formatter / scanner）で 80% 済む → CLI を直接実行する
+- [ ] 親セッションが既に文脈を持っている（実装直後の要約等）→ 親が直接処理する
+- [ ] 逐次依存タスク（step N が N-1 に依存）→ context 保持が要る、subagent 化しない（`subagent-delegation-guide.md` Sequential 原則）
+- [ ] 既存 22 agent と責務重複（`agent-design-lessons.md` Subagent Count Ceiling）→ 既存を拡張する
+
+判断基準の詳細は `subagent-delegation-guide.md`（invocation 判断）を参照。本 playbook は通過後の作成手順。
+
 ### 1. Mode 決定
 
 | Mode | 用途 | 例 |

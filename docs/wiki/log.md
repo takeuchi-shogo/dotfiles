@@ -1137,3 +1137,22 @@
 - 先行裏付け: 同 300-agent swarm トピックは 2026-05-30 damidefi stack absorb でも「Subagent Count Ceiling で警戒済」N/A 判定済
 - meta: `multi-agent-orchestration` を topic-family-saturation.md taxonomy 追加候補 (別 skill 改善タスク)。ただし採用率高 family なので gate 主目的の永続ループ検出には合致しにくい
 - 該当 family のキーワード hit: orchestrator, swarm, sub-agent, parallel, auto-recovery, decompose, scoped memory, job shape
+
+## [2026-05-30] ingest | 14 sub-agents I built in 60 days, 4 survived
+
+- ソース: 個人ブログ/listicle (subagent 60日実験記録)
+- 判定: Gap(modest) 1 / Partial 1 / Already 10 / N/A 2 + drift 訂正 1
+- 取り込み (S×2 実装済): #10 決定的CLIラッパー禁止を subagent-delegation-guide.md anti-pattern 表に1行 / #6 add-agent.md に Step 0 go/no-go preflight 統合
+- Validation-only: agent count drift 33→22 を agent-design-lessons.md (3箇所) + docs/wiki/INDEX.md:37 で訂正 (Count Ceiling 判断材料の腐敗)
+- Phase 2.5: Codex (read-only) +Gemini (grounding) 並列。Codex「厳密には採用0+drift訂正、最大でも#10を1行」で Pass2 over-judgment を修正。add-agent.md 存在 + INDEX.md 2箇所目 drift を発見
+- レポート: docs/research/2026-05-30-14-subagents-4-survived-absorb-analysis.md
+
+## [2026-05-30] ingest (light Phase 2) | How to Build an Obsidian System That Turns Every Note You Take Into Something You Actually Use (@cyrilXBT)
+
+- ソース: @cyrilXBT 記事 (direct text paste)。`@cyrilXBT` follow 誘導で締める常連 listicle author
+- 判定: obsidian-second-brain family **16 件目 / Cyril 6 件目**。PASS-warning (採用率 >= 20%) + delta=2 → light-phase2 (user 選択)
+- 採用 **2 件 (S)**: (A1) `templates/obsidian-vault/00-Inbox/_templates/capture.md` 新設 — Three Capture Conventions (CONNECTS TO / MIGHT USE FOR / RAISES QUESTION / COULD APPLY / ACTION) を optional セクション化、/note の即時性は不変 / (A2) `obsidian-knowledge` skill に機能8「意思決定フィード」追加 — decision → vault scan → Supports/Challenges/Adds nuance brief、vault 外情報を加えない制約明記、/decision・/think decision と責務分離
+- Reject 6 件: Three Zones=IPARAG 既採用 / Output フォルダ=docs+git 管理 / CLAUDE.md テンプレート=既存 / Weekly Note Audit=vault-maintenance.sh / Daily Processing・Connection Surface・Output Generator=timekeeper+obsidian-knowledge+digest 代替済 / contribution rate=harness 化過大 YAGNI
+- 検証: `task validate-configs` ok
+- レポート: docs/research/2026-05-30-cyrilxbt-notes-into-output-absorb-analysis.md
+- meta: delta=2 が2件とも真の Gap (organize-vault delta=1 に続く novel 実在)。Five Workflows を rehash と切らず1つ1つ既存 skill 照合した結果 Decision Feeder/Capture Conventions だけ空白確定。新 skill 化せず obsidian-knowledge 拡張に倒した

@@ -366,13 +366,13 @@ agent.md / SKILL.md の 3 種の境界記述は完全に直交する。重複さ
 
 ### 現状
 
-- dotfiles の `.config/claude/agents/` 実数: **33 個** (2026-05-02 時点)
-- 警戒ラインまで残り **17 個**
+- dotfiles の `.config/claude/agents/` 実数: **22 個** (2026-05-30 時点、`_archived/` 除外)
+- 警戒ラインまで残り **28 個**
 - 直近 absorb で新規 subagent を追加していないのは正解 (例: 30-subagents-2026 absorb は採用 0 件)
 
 ### ガード
 
-- 新規 subagent 追加前に **既存 33 個との責務重複チェック**を行う
+- 新規 subagent 追加前に **既存 22 個との責務重複チェック**を行う
 - 既存 subagent の prompt 拡張で達成できる場合、新規追加より優先する (Pruning-First)
-- 警戒ライン 50 個 (現在 33 個、余裕 17 個)。**40 個到達時に新規追加モラトリアム開始**、50 個到達時に削除候補を `/skill-audit` で洗い出す (Build to Delete 原則)
-- subagent 数の単純集計は `ls .config/claude/agents/*.md | wc -l` で随時確認できる
+- 警戒ライン 50 個 (現在 22 個、余裕 28 個)。**40 個到達時に新規追加モラトリアム開始**、50 個到達時に削除候補を `/skill-audit` で洗い出す (Build to Delete 原則)
+- subagent 数の単純集計は `ls .config/claude/agents/*.md | wc -l` で随時確認できる (`_archived/` は対象外)
