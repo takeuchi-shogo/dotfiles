@@ -775,7 +775,8 @@
     "ralph-loop@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
     "terraform-skill@antonbabenko-terraform": true,
-    "warp@claude-code-warp": true
+    "warp@claude-code-warp": true,
+    "mattpocock-skills@mattpocock-skills": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -800,6 +801,12 @@
       "source": {
         "source": "github",
         "repo": "warpdotdev/claude-code-warp"
+      }
+    },
+    "mattpocock-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/takeuchishougo/dotfiles/.config/claude/marketplaces/mattpocock-skills"
       }
     }
   },
