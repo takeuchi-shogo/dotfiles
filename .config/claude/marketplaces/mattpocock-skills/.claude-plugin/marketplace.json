@@ -1,0 +1,15 @@
+{
+  "name": "mattpocock-skills",
+  "owner": { "name": "Matt Pocock", "url": "https://github.com/mattpocock" },
+  "metadata": {
+    "description": "Local wrapper marketplace for mattpocock/skills (upstream lacks marketplace.json). Plugin fetched from github.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "mattpocock-skills",
+      "description": "Matt Pocock's skills for real engineering (grill-me, tdd, prototype, diagnose, etc.)",
+      "source": { "source": "github", "repo": "mattpocock/skills" }
+    }
+  ]
+}

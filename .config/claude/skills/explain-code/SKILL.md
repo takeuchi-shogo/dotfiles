@@ -1,6 +1,6 @@
 ---
 name: explain-code
-description: Explain code as a scannable blog post
+description: コード・関数・モジュールを、スキャンしやすいブログ記事形式 (見出し + 要点 + 図解的説明) で解説する。ユーザーが /explain-code で明示起動する。Do NOT use for: コードレビュー (use /review)、アーキテクチャ監査 (use /audit)。
 origin: self
 disable-model-invocation: true
 ---

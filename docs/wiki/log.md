@@ -1071,3 +1071,18 @@
 - 取り込み: T1 brief annotation 欄 (S) / T2 negative filter (S) / T3 weekly-review annotation 集計 + diff 提案 (M)
 - 重要 safety: Codex 指摘で T3 は auto-update せず「diff 提案止まり、user 承認制」に降格
 - レポート: docs/research/2026-05-28-codex-research-agent-workflow-absorb-analysis.md
+
+## [2026-05-29] ingest-skip | How to Build an Obsidian Second Brain With AI: The Complete Guide Based on Karpathy's Framework
+- ソース: @cyrilXBT (X creator, direct text paste, no URL)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (16 件目 / Cyril 著者 7 件目, delta=0)
+- 根拠: 全8手法が過去 absorb で評価済。特に damidefi (2026-05-23, family 10件目) が同型 (4-layer model + type-of-thinking folders + Six Claude Integrations + vault CLAUDE.md + daily synthesis) で adopted_count=0。T1(type-folders=N/A) / T4(CLAUDE.md=Already) / T5(daily synthesis=Sonnet imagination 棄却) / T7(contradiction=Partial 常時化禁止) は既決。Literature/Permanent note 区別は karpathy-second-brain-modified (2026-04-14) で既出
+- 該当 family のキーワード hit: obsidian, second brain, vault, PARA, Map of Content, permanent note
+- スキップ判定: Phase 1.5 gate (user 承認, skip 推奨)
+- Stale-Plan Audit (Step 7): 直近3件 (organize-vault 2026-05-25 / damidefi 2026-05-23 / one-folder 2026-05-22) すべて 30 日未満 → audit skip (実装猶予期間内)
+
+## [2026-05-30] ingest-skip | Claude Can Do All of This. Most People Have No Idea.
+- ソース: generic feature listicle (direct text paste, no URL)
+- 理由: topic family "claude-code-tips" saturated-pure-rehash (14 件目, delta=0)
+- 根拠: 同型記事 12-claude-features-top-operators (2026-04-04) が既存。17項目すべて N/A か Already — consumer機能(#1 Projects/#2 Artifacts/#5-9 役割プロンプト/#10 Chrome/#16 Design)=N/A、harness系(#3 Thinking/#4 Memory/#11 Cowork/#12 Scheduled/#13 Skills/#14 CLAUDE.md/#15 Claude Code)=Already、#17 Prompt Caching=Already深掘り済(2026-05-22 Anthropic Engineers Token Savings で TTL三層/cache_control/model switch invalidation まで absorb)。新規論点ゼロ
+- 該当 family のキーワード hit: claude features, projects, artifacts, memory, skills, CLAUDE.md, scheduled tasks, prompt caching
+- スキップ判定: Phase 1.5 gate (user 承認, skip 推奨)
