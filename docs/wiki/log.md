@@ -1156,3 +1156,27 @@
 - 検証: `task validate-configs` ok
 - レポート: docs/research/2026-05-30-cyrilxbt-notes-into-output-absorb-analysis.md
 - meta: delta=2 が2件とも真の Gap (organize-vault delta=1 に続く novel 実在)。Five Workflows を rehash と切らず1つ1つ既存 skill 照合した結果 Decision Feeder/Capture Conventions だけ空白確定。新 skill 化せず obsidian-knowledge 拡張に倒した
+
+## [2026-05-30] ingest | How Claude Code Harness turns agent coding into a contract-first delivery loop (AlphaSignal / Chachamaru127)
+
+- ソース: https://github.com/Chachamaru127/claude-code-harness
+- family: harness-engineering (N≥5, PASS-warning), focused absorb (手法 delta≫2)
+- 判定: Gap 4 (#3/#4/#5/#6), Partial-drop 1 (#2 codegen), N/A 2 (#1 Go runtime/#7 release), Already強化不要 3 (#8/#9/#10)
+- 取り込み: 「config codegen ではなく auditability」に収束。#6 retired-concepts registry (P1/S) / #5 doctor:stale inventory-only (P2/S-M) / #4 fail-open/closed 一覧 (P3/S) / #3 deny rules カタログ (P4/M)
+- Phase 2.5: Codex (2回目で実批評、AGENTS.md swallow 回避は prompt 冒頭で「doc 読込不要」明示) + Gemini grounding (projen/KCL/eslint-plugin-deprecation)
+- 特記: ユーザー指摘「該当するから省略は違う」で全 10 項目を Pass 2 対象に。exists 項目も強化分析必須を再確認
+- レポート: docs/research/2026-05-30-claude-code-harness-absorb-analysis.md
+- プラン: docs/plans/active/2026-05-30-harness-auditability-absorb-plan.md (全件 /rpi 予定)
+
+## [2026-05-30] ingest (light Phase 2) | Hermes Harness Architecture
+
+- ソース: Hermes Harness Architecture (記事テキスト貼り付け、Hermes = NousResearch)
+- 判定: Gap 1 / N/A 1 / Already 3 (novel 5 項目中)
+- 採用: 1 件 — T1 cwd context ファイル injection スキャン (SessionStart hook `scan-context-files.py`)
+- Saturation: harness-engineering family 6 件目 (N=5, 採用率 ~40% PASS warning, delta 高 → light-phase2)
+- Stale-Plan Audit: cursor-harness → retired (採用0) / self-healing → implemented (Tri-judge=Phase 2.5)
+- Phase 2.5: 省略 (light-phase2、Gap が bounded security のためユーザー判断で省略)
+- 特記: 記事は OSS harness 内部解剖。大半は Claude Code 上で再実装不能 (N/A)。「best open harness」ベンダートーンは単独採用根拠にせず threat model 実在性で item 1 のみ採用。記事が挙げる Hermes の欠陥 (durable child-run) は cmux Worker で既に保有
+- レポート: docs/research/2026-05-30-hermes-harness-architecture-absorb-analysis.md
+- 実装: scan-context-files.py 作成 + settings.json SessionStart 登録 (検証済: ruff/validate-configs)
+- Review Gate: 3-way (code/codex/security) で HIGH 1 + MEDIUM 2 修正 → codex 再レビュー PASS。U+202E Trojan Source (CVE-2021-42574) 取りこぼしを bidi/format 広域化で修正、prompt-injection-detector.py も同期。shell base64 + symlink 拒否追加。codex「未登録」指摘は False Positive 却下

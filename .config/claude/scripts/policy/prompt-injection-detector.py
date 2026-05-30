@@ -27,7 +27,13 @@ from hook_utils import (
 # Detection patterns
 # ---------------------------------------------------------------------------
 
-ZERO_WIDTH_RE = re.compile(r"[\u200b\u200c\u200d\ufeff]")
+# zero-width + bidi/format \u5236\u5fa1\u6587\u5b57 (U+202E RTL override = Trojan Source
+# CVE-2021-42574 \u3092\u542b\u3080)\u3002scan-context-files.py \u3068\u540c\u671f\u3002
+ZERO_WIDTH_RE = re.compile(
+    r"[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u206a-\u206f"
+    r"\u061c\u180e\ufeff]"
+    r"|[\U000e0000-\U000e007f]"
+)
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[|\\033\[|\\x1b\[")
 
@@ -36,7 +42,22 @@ NULL_BYTE_RE = re.compile(r"\x00|\\x00|\\0(?![0-9])")
 # Base64: 20+ contiguous ASCII alphanumeric / +/= characters
 BASE64_CANDIDATE_RE = re.compile(r"[A-Za-z0-9+/=]{20,}")
 
-SUSPICIOUS_DECODED = ("eval(", "exec(", "import os", "subprocess", "__import__")
+# Python 系 + shell 系 payload (scan-context-files.py と同期)
+SUSPICIOUS_DECODED = (
+    "eval(",
+    "exec(",
+    "import os",
+    "subprocess",
+    "__import__",
+    "curl ",
+    "wget ",
+    "| sh",
+    "|sh",
+    "bash -c",
+    "chmod +x",
+    "os.system",
+    "/bin/",
+)
 
 # Nested command substitution: $( ... $( ... $( ... ) ... ) ... )
 # We detect 3+ levels of nesting.
