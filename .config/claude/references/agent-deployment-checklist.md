@@ -37,7 +37,7 @@ enterprise の stakeholder/legal/compliance 儀式を削ぎ、単一ユーザー
 - **Phase 1**: 新規ハーネスは過渡的技術。「何が改善されればこれは不要か?」を導入時に書き残す。
 - **Phase 2**: plugin + standalone 重複導入による MCP prefix collision の手動確認も含む (`mcp-audit.py` 冒頭コメント参照)。
 - **Phase 3-5**: 「Impossible vs Inconvenient」design test = 制限の強度 (Hard block / Soft warning / Budget limit, 3 段階) を選ぶ。`agency-safety-framework.md` の 3 段階モデルが上位概念。
-- **Phase 5 注意**: security-gate hook (`docker-safety` / `mcp-audit` / `prompt-injection-detector`) の block は `force_block=True` で `HOOK_GUARD_MODE` から独立させる。観測用の soft hook のみ env で audit/warn に切替可。
+- **Phase 5 注意**: hard block を保証する hook (`docker-safety` / `mcp-audit`) は `force_block=True` で `HOOK_GUARD_MODE` から独立。`prompt-injection-detector` は default block だが運用デバッグ用に `HOOK_GUARD_MODE` で audit/warn へ切替可能。どの hook がどちらの扱いかは **`hook-failure-policy.md` と `rg force_block` で確認** する (この一覧をここで二重管理しない)。
 - **Phase 8**: `session-bom.jsonl` は「実行時にロードされ得た構成」(model/skills/MCP/tools/memory surfaces/repo trust) の snapshot、`security-guard.jsonl` は「許可/ブロックの理由」の decision log。supply-chain 事故の事後 forensics はこの 2 つを起点にする。
 
 ## 関連
