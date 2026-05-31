@@ -34,6 +34,13 @@ You operate in two modes based on your task:
 - 既存テストの変更は行わない（新規追加のみ）
 - Output: 生成テストファイル + カバレッジ変化レポート
 
+### On Test Failure (Role Boundary)
+- テスト失敗を観測したら原因を切り分ける。**確信が持てなくても推定原因を添えて進め、判定に stuck しない**:
+  - **テスト側のバグ**（誤った期待値・セットアップ漏れ）→ テストを修正する
+  - **仕様解釈の相違**（テストは仕様を正当に表現しているが prod が別解釈で実装）→「仕様確認が必要」と明記して IMPLEMENT Mode に戻す
+  - **production コード側のバグ**（typo・logic error・null 参照等、修正が自明でも）→ production コードは**自分で直さない**。失敗内容（再現手順・期待値 vs 実値・推定原因）を報告して **STOP**（IMPLEMENT Mode に戻す）
+- 根拠: `references/trust-verification-policy.md`（テスト失敗は reviewer PASS に優先して BLOCK）+ core principle「壊れたら即STOP・ごまかし禁止」。テスト実行者が production を黙って patch すると検証と修正の分離が壊れる。自明な修正に見えても自分で patch しないのは、silent-patch による traceability 喪失を防ぐ意図的な選択
+
 ## Workflow
 
 When invoked:
