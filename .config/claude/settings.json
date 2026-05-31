@@ -279,7 +279,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/lifecycle/session-bom.py",
+            "command": "python3 $HOME/.claude/scripts/lifecycle/session-bom.py || true",
             "timeout": 3
           }
         ]

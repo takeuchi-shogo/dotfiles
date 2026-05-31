@@ -192,7 +192,22 @@ def guard_action(
     if revocation_trigger:
         record["revocation_trigger"] = revocation_trigger
     if metadata:
-        record.update(metadata)
+        # Core audit fields must not be overwritten by callers (forensic integrity)
+        reserved = {
+            "timestamp",
+            "hook",
+            "pattern",
+            "detail",
+            "mode",
+            "decision",
+            "configured_mode",
+            "force_block",
+            "schema_version",
+            "revocation_trigger",
+        }
+        for key, value in metadata.items():
+            if key not in reserved:
+                record[key] = value
     rotate_and_append(log_path, json.dumps(record))
 
     msg = f"[{hook_name}] {pattern}: {detail}"
