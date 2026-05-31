@@ -85,6 +85,8 @@
 
 - [エージェントセキュリティ](concepts/agent-security.md) — プロンプトインジェクション・エージェントトラップ対策
 - [敵対的評価](concepts/adversarial-evaluation.md) — Generator-Evaluator 分離と greybox ファジング
+- [Cursor Auto Review absorb (2026-05-31)](../research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md) — ツール実行ガバナンス (allowlist/sandbox/分類サブエージェント三値判定)。LLM 分類器による allow/別アプローチ/ask 判定は determinism boundary 違反 + prompt injection リスクで**意図的非採用**。dotfiles は static allowlist 71 + deny 102 + hook で対応。採用 0 + permission-audit 棚卸し実施 (クリーン)
+- [Zero Trust for AI Agents (Anthropic eBook, 2026-05-31)](../research/2026-05-31-zero-trust-ai-agents-absorb-analysis.md) — agentic-security family、運用メタ層 3 タスク採用 → Agent-BOM-lite / why observability decision log / 個人版 8-phase checklist
 
 ### ml-rl — 機械学習・強化学習
 
