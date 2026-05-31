@@ -58,7 +58,20 @@ HARNESS_PATH_MARKERS = [
     "CLAUDE.md",
     "/agents/",
 ]
-HARNESS_REVIEW_FLAG_DIR = os.path.join(tempfile.gettempdir(), "claude-harness-review")
+# NOTE: Must NOT use tempfile.gettempdir(). The flag is written by
+# harness_review_flag.py (run via /review's sandboxed Bash, TMPDIR=/tmp/claude-*)
+# but read here in the unsandboxed Stop hook (macOS default /var/folders/.../T).
+# Those resolve to different dirs, so a tempfile-keyed flag is never found and the
+# gate blocks forever after a legitimate PASS. Key it to the stable session-state
+# dir (same pattern as EDIT_COUNTER_FILE) so both contexts agree.
+# Must stay in sync with harness_review_flag.py:FLAG_DIR.
+HARNESS_REVIEW_FLAG_DIR = os.path.join(
+    os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+    ),
+    "harness-review",
+)
 
 # Review Gate — edit count threshold for review reminder
 REVIEW_EDIT_THRESHOLD = 10
