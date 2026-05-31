@@ -46,6 +46,13 @@
 
 </important>
 
+<important if="the user is thinking through a judgment/decision or continuing prior research, and this is NOT already part of an active implementation/investigation task (those are covered by the blocks above)">
+
+- 回答前に Obsidian Vault (`~/Documents/Obsidian Vault`) の関連フォルダ (`06-Areas/`, `05-Literature/`) を **shallow grep** で参照する（skill 起動を待たない）。深い集約 (`obsidian-knowledge` decision-feeder の Explore scan) は判断材料が薄いとき or ユーザーが明示要求したときのみ
+- 読み取った vault 内容は **ephemeral な参照に留める**（agent-memory に再記録しない）。Vault は単方向同期 (memory→Vault) のスナップショット (`references/cc-7-layer-memory-model.md`) で、現行コード/事実と矛盾したら現状を優先する
+
+</important>
+
 <important if="you are modifying hooks, scripts, settings.json, or harness files">
 
 - Harness contract: `docs/agent-harness-contract.md`

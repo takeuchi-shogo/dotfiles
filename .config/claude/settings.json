@@ -257,6 +257,15 @@
         ]
       },
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/scan-context-files.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "startup",
         "hooks": [
           {

@@ -1,6 +1,8 @@
 ---
-status: active
-last_reviewed: 2026-04-29
+status: implemented
+implemented-by: 2026-05-30
+implemented-note: "Tri-judge panel が /absorb Phase 2.5 (Codex + Gemini 異モデルファミリ並列批評) として実装済み。2026-05-30 Hermes absorb の Stale-Plan Audit で implemented 確定。"
+last_reviewed: 2026-05-30
 ---
 
 # Self-Healing Agent Harness 記事分析レポート

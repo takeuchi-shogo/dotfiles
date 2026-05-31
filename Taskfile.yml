@@ -212,6 +212,11 @@ tasks:
     cmds:
       - bash scripts/lifecycle/doctor.sh brew
 
+  doctor:stale:
+    desc: Inventory stale state (orphaned codex job state, backup residue) — read-only, deletes nothing
+    cmds:
+      - bash scripts/lifecycle/doctor-stale.sh
+
   upgrade-claude:
     desc: Upgrade Claude Code and apply system prompt patches
     cmds:

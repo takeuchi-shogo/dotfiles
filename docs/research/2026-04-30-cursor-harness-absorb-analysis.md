@@ -4,7 +4,9 @@ title: "Continually Improving Cursor's Agent Harness"
 author: "Stefan Heule & Jediah Katz (Cursor Engineering)"
 date: 2026-04-30
 fetched: 2026-05-01
-status: analyzed
+status: retired
+retired-by: 2026-05-30
+retired-reason: "採用 0 件で確定。harness-engineering family 5 本目の飽和 (採用トレンド 6→3→1→4→0) により全手法が既存カバー or N/A。実装すべきタスクが存在しないため backlog 不要。2026-05-30 Hermes absorb の Stale-Plan Audit で retired 確定。"
 accepted_count: 0
 source-trust: "Trusted (Cursor 公式エンジニアリングブログ)"
 ---

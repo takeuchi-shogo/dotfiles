@@ -12,25 +12,10 @@ hooks:
   PreToolUse:
     - matcher: "Edit|Write"
       hooks:
-        - type: prompt
-          prompt: >
-            [REVIEW PHASE GATE] /review skill 進行中の Edit/Write です。
-            以下の **どちらか 1 つでも明確に該当すれば継続 OK**、両方とも該当しない場合のみ待機:
-
-            (A) 直前 (直近 1-2 通) の assistant message に **"## Verdict"** または
-                **"verdict: (PASS|BLOCK|NEEDS_FIX|NEEDS_HUMAN_REVIEW)"** が文字列として
-                既に出力されている (= Synthesis Step 4 完了済み)。
-
-            (B) 直近 (直近 1-2 通) の user message に **修正 / fix を承認・指示する明示的な
-                文言** がある。例: 「修正して」「fix して」「fix を実行して」「Step 5 に進んで」
-                「apply」「適用して」「BLOCK を解消して」。
-                単なる質問や確認ではなく、**実行を指示する文言** が必須。
-
-            両方とも該当しない (= Step 1-3 探索中、Synthesis 未出力、user 指示なし) なら
-            **待機を選んでください** — レポート完成を優先します。
-
-            判定に迷ったら "待機" を選ぶ (false negative の方が安全)。
-            本当に実行しますか？
+        # 決定論ゲート (旧 type:prompt LLM judge は Verdict/承認済みでも
+        # false-block したため command 化。詳細: scripts/policy/review-phase-gate.py)
+        - type: command
+          command: python3 $HOME/.claude/scripts/policy/review-phase-gate.py
 metadata:
   pattern: reviewer
   version: 1.0.0
