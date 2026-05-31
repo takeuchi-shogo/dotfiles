@@ -8,6 +8,18 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-05-31] ingest-skip | How to Build Your First Claude Code Subagent in 15 Minutes (5 templates)
+
+- ソース: テキスト貼り付け (beginner tutorial / creator listicle: "5 ready-to-use templates", "Thanks for reading!")
+- 理由: topic family "subagent/agent-template" SATURATED-pure-rehash (N≥3: 30-subagents 2026-05-02 / Multi-Agent Coordination 2026-04-10 / PostHog Agent-First / Claude Agent Teams 7steps 2026-05-25 / Anthropic Token Savings 2026-05-22 / opus48 setup 2026-05-30、delta=0)
+- 根拠 (Step 3.5 delta=0 evidence): 記事7手法すべて Already かつ既存上位互換 —
+  - 5テンプレートは全て既存 agents の上位互換: reviewer→`code-reviewer.md`(29.3K) / test-writer→`test-engineer.md` / doc-writer→`document-factory.md`+`doc-gardener.md` / security→`security-reviewer.md`(17.1K) / pr-writer→`github-pr` skill + `pull-request` command
+  - subagent anatomy (frontmatter) → `references/agent-config-standard.md` 既存
+  - `CLAUDE_CODE_SUBAGENT_MODEL` → 2回 N/A 判定済 (2026-05-25 / 2026-05-30、Opus 1M lock-in + per-agent frontmatter model 指定)
+  - description=trigger / tools 制限 / 呼び出し3方式 / 配置場所 → 全て既存22 agents で実践済 + `subagent-delegation-guide.md`(72.5K) でカバー
+- 該当 family のキーワード hit: subagent, agent template, code reviewer, test writer, doc writer, security scanner, CLAUDE_CODE_SUBAGENT_MODEL
+- スキップ判定: Phase 1.5 gate (ユーザー選択 skip)。MEMORY.md 索引追記なし、Phase 5.5-5.7 実行なし
+
 ## [2026-05-31] ingest (light Phase 2, adopt=1 S) | 32 Claude Code hacks (movez.substack)
 
 - ソース: "32 Claude Code hacks that take you from beginner to PRO" (movez.substack.com, creator-monetization listicle)
@@ -1272,3 +1284,12 @@
 - 取り込み: 運用メタ層 3 タスク全採用 (L) — Agent-BOM-lite / why observability decision log / 個人版 8-phase checklist。Phase 2.5 で Codex が Opus の 1st-party 過小評価 self-bias を修正
 - プラン: docs/plans/active/2026-05-31-zero-trust-absorb-plan.md (Codex Spec/Plan Gate + 新セッション /rpi)
 - レポート: docs/research/2026-05-31-zero-trust-ai-agents-absorb-analysis.md
+
+## [2026-05-31] ingest-skip | The Exact Obsidian Daily Note System I Use to Never Lose an Idea Again
+
+- ソース: テキスト貼り付け (@damidefi on X, 直 URL なし)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (15 件目, delta=0)
+- 根拠: @damidefi 本人の 2 件目 — 前回 2026-05-23 (family 10 件目) は reference-only / 採用0。本記事の手法はすべて既出 or N/A: Telegram bot/N8N synthesis/Evening review prompt/Weekly rollup は前回 damidefi T2/T3/T5/T6 で既判定、新ツール名 Templater 自動 daily / QuickAdd 4-capture の 2 件 (ambiguous) も harness 範囲外の個人 Obsidian plugin 設定で /note + auto-morning-briefing.sh に意味的同等
+- 該当 family のキーワード hit: obsidian, daily note, quickadd, templater, vault, second brain, weekly rollup
+- スキップ判定: Phase 1.5 gate (user choice: skip 推奨)
+- 直近トレンド: Cyril 系 + damidefi の連続 reference-only ストリーク継続 (前回 meta-finding「trending reject 閾値」シグナルの再確認)
