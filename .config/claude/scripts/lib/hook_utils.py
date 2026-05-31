@@ -141,33 +141,59 @@ def emit_audit_event(audit_type: str, data: dict) -> None:
 # ============================================================================
 
 
-def guard_action(hook_name: str, pattern: str, detail: str) -> bool:
-    """Apply HOOK_GUARD_MODE policy. Returns True if caller should block.
+def guard_action(
+    hook_name: str,
+    pattern: str,
+    detail: str,
+    *,
+    revocation_trigger: str | None = None,
+    metadata: dict | None = None,
+    force_block: bool = False,
+) -> bool:
+    """Apply HOOK_GUARD_MODE, record the decision, block via return value.
 
-    Modes:
+    Modes (HOOK_GUARD_MODE env, default "block"):
         audit — log only, no output, no block
         warn  — log + stderr warning, no block
         block — log + stderr + return True (caller should sys.exit(2))
+
+    force_block=True overrides HOOK_GUARD_MODE and ALWAYS blocks. Use for
+    security-gate hooks (docker-safety / mcp-audit) whose block must NOT be
+    relaxable via env — see references/hook-failure-policy.md.
+
+    Optional forensic fields recorded to security-guard.jsonl:
+        revocation_trigger — short string: under what condition this re-blocks
+        metadata — extra keys merged into the entry (e.g. session_id, tool_name)
+
+    All decisions (block/warn/audit) are appended to security-guard.jsonl so the
+    log doubles as the unified "why allowed/blocked" decision record.
     """
     import os
     from datetime import datetime, timezone
 
-    mode = os.environ.get("HOOK_GUARD_MODE", "block")
+    configured_mode = os.environ.get("HOOK_GUARD_MODE", "block")
+    mode = "block" if force_block else configured_mode
 
-    # Always log
+    # Always log the decision (security-guard.jsonl = unified decision log)
     log_dir = os.path.expanduser("~/.claude/agent-memory/logs")
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "security-guard.jsonl")
-    entry = json.dumps(
-        {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "hook": hook_name,
-            "pattern": pattern,
-            "detail": detail,
-            "mode": mode,
-        }
-    )
-    rotate_and_append(log_path, entry)
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "hook": hook_name,
+        "pattern": pattern,
+        "detail": detail,
+        "mode": mode,
+        "decision": mode,
+        "configured_mode": configured_mode,
+        "force_block": force_block,
+        "schema_version": 2,
+    }
+    if revocation_trigger:
+        record["revocation_trigger"] = revocation_trigger
+    if metadata:
+        record.update(metadata)
+    rotate_and_append(log_path, json.dumps(record))
 
     msg = f"[{hook_name}] {pattern}: {detail}"
     if mode == "audit":
@@ -175,7 +201,7 @@ def guard_action(hook_name: str, pattern: str, detail: str) -> bool:
     if mode == "warn":
         print(msg, file=sys.stderr)
         return False
-    # block (default)
+    # block (default or forced)
     print(f"BLOCKED: {msg}", file=sys.stderr)
     return True
 

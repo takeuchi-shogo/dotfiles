@@ -274,6 +274,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/lifecycle/session-bom.py",
+            "timeout": 3
+          }
+        ]
       }
     ],
     "Stop": [

@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from hook_utils import load_hook_input, run_hook
+from hook_utils import guard_action, load_hook_input, run_hook
 
 
 def _has_rm_flag(command: str) -> bool:
@@ -39,22 +39,38 @@ def _check_docker(data: dict) -> None:
     if "docker" not in command:
         return
 
-    # Check: docker run without --rm (re.DOTALL for multiline commands)
-    if re.search(
-        r"(?<![a-zA-Z0-9_-])docker\s+run(?=[^a-zA-Z0-9]|$)", command, re.DOTALL
-    ) and not _has_rm_flag(command):
-        print(
-            "BLOCKED: docker run without --rm detected. Add --rm to auto-remove container after exit.",
-            file=sys.stderr,
+    session_id = data.get("session_id", "unknown")
+
+    # Check: docker run without --rm (re.DOTALL for multiline commands).
+    # force_block=True: security-gate, must NOT be relaxable via HOOK_GUARD_MODE
+    # (see references/hook-failure-policy.md).
+    if (
+        re.search(
+            r"(?<![a-zA-Z0-9_-])docker\s+run(?=[^a-zA-Z0-9]|$)", command, re.DOTALL
         )
+        and not _has_rm_flag(command)
+        and guard_action(
+            "docker-safety",
+            "docker-run-without-rm",
+            "docker run without --rm — add --rm to auto-remove container after exit",
+            force_block=True,
+            revocation_trigger="docker run always requires --rm",
+            metadata={"session_id": session_id},
+        )
+    ):
         sys.exit(2)
 
     # Check: docker with --privileged (re.DOTALL for multiline commands)
-    if re.search(r"(?<![a-zA-Z0-9_-])docker\b.*?--privileged", command, re.DOTALL):
-        print(
-            "BLOCKED: Privileged Docker container detected. Remove --privileged flag.",
-            file=sys.stderr,
-        )
+    if re.search(
+        r"(?<![a-zA-Z0-9_-])docker\b.*?--privileged", command, re.DOTALL
+    ) and guard_action(
+        "docker-safety",
+        "docker-privileged",
+        "privileged Docker container — remove --privileged flag",
+        force_block=True,
+        revocation_trigger="--privileged is always blocked",
+        metadata={"session_id": session_id},
+    ):
         sys.exit(2)
 
 
