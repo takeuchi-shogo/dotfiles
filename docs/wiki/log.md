@@ -1181,6 +1181,7 @@
 - 実装: scan-context-files.py 作成 + settings.json SessionStart 登録 (検証済: ruff/validate-configs)
 - Review Gate: 3-way (code/codex/security) で HIGH 1 + MEDIUM 2 修正 → codex 再レビュー PASS。U+202E Trojan Source (CVE-2021-42574) 取りこぼしを bidi/format 広域化で修正、prompt-injection-detector.py も同期。shell base64 + symlink 拒否追加。codex「未登録」指摘は False Positive 却下
 
+<<<<<<< HEAD
 ## [2026-05-30] ingest-skip (validation-only) | damidefi: I Connected Hermes Agent to My Obsidian Vault
 - ソース: damidefi (X), Hermes Agent × Obsidian Vault 体験談
 - 判定: topic family "obsidian-second-brain" saturated-pure-rehash (N=15+, 採用率 ~0%, delta=0)。同記事は 2026-05-23 absorb 済・採用0。記事 absorb は skip。
@@ -1189,3 +1190,14 @@
 - Explore 誤報訂正: 「skill は仕様のみ実装なし」は誤り。SKILL.md (allowed-tools: Read) 自体が実装、別途 .sh 不要。
 - 採用: CLAUDE.md (.config/claude/CLAUDE.md) に <important if="design/judgment/research 継続"> ブロック追加 (proactive vault 参照指示、関連フォルダ限定、snapshot caveat 付き)。option A=instruction-first。検証: task validate-configs PASS。
 - 昇格トリガー: instruction で vault 参照が安定しなければ option B (SessionStart hint hook) に昇格。
+||||||| parent of 65e8326 (📝 docs(absorb): personal-agent-stack — tool-surface + action-trust ladders)
+=======
+## [2026-05-31] ingest | My Agent Stack For Automating My Personal Life (Nicolas Bustamante)
+
+- ソース: Nicolas Bustamante 記事（貼り付けテキスト）
+- family: personal-life-automation（新分野 N=1, Saturation Gate PASS）
+- 判定: Gap 2（A 信頼性ラダー / E 操作信頼ティア）, Already 5, N/A 2
+- 取り込み: cli-discovery.md に「2 つの直交ラダー」セクション追加（ツール表面信頼性 × 操作信頼ティア）
+- メタ: Opus の Already ハロシネーション罠を検出 → feedback_absorb_already_hallucination.md 新設
+- レポート: docs/research/2026-05-31-personal-agent-stack-absorb-analysis.md
+>>>>>>> 65e8326 (📝 docs(absorb): personal-agent-stack — tool-surface + action-trust ladders)
