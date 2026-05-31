@@ -1180,3 +1180,12 @@
 - レポート: docs/research/2026-05-30-hermes-harness-architecture-absorb-analysis.md
 - 実装: scan-context-files.py 作成 + settings.json SessionStart 登録 (検証済: ruff/validate-configs)
 - Review Gate: 3-way (code/codex/security) で HIGH 1 + MEDIUM 2 修正 → codex 再レビュー PASS。U+202E Trojan Source (CVE-2021-42574) 取りこぼしを bidi/format 広域化で修正、prompt-injection-detector.py も同期。shell base64 + symlink 拒否追加。codex「未登録」指摘は False Positive 却下
+
+## [2026-05-30] ingest-skip (validation-only) | damidefi: I Connected Hermes Agent to My Obsidian Vault
+- ソース: damidefi (X), Hermes Agent × Obsidian Vault 体験談
+- 判定: topic family "obsidian-second-brain" saturated-pure-rehash (N=15+, 採用率 ~0%, delta=0)。同記事は 2026-05-23 absorb 済・採用0。記事 absorb は skip。
+- ただしユーザー引数「保存はできているが参照しているか怪しい」で article-triggered の実 gap 調査に pivot。
+- 調査結果: Vault WRITE 経路は機能 (/note, /digest, /timekeeper, sync-memory-to-vault.sh)。READ は MANUAL のみ機能 (/think→06-Areas/thinking-context.md, obsidian-knowledge, /timekeeper)。PROACTIVE read = 0 件 (SessionStart は agent-memory のみ、vault 未ロード)。memory→Vault 単方向 (cc-7-layer-memory-model.md:70,79)。
+- Explore 誤報訂正: 「skill は仕様のみ実装なし」は誤り。SKILL.md (allowed-tools: Read) 自体が実装、別途 .sh 不要。
+- 採用: CLAUDE.md (.config/claude/CLAUDE.md) に <important if="design/judgment/research 継続"> ブロック追加 (proactive vault 参照指示、関連フォルダ限定、snapshot caveat 付き)。option A=instruction-first。検証: task validate-configs PASS。
+- 昇格トリガー: instruction で vault 参照が安定しなければ option B (SessionStart hint hook) に昇格。
