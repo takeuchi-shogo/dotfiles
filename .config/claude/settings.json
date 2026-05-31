@@ -307,7 +307,7 @@
           },
           {
             "type": "command",
-            "command": "(python3 $HOME/.claude/scripts/learner/session-learner.py && python3 $HOME/.claude/scripts/learner/failure-clusterer.py) >> /tmp/claude-learner.log 2>&1 &",
+            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py >> /tmp/claude-learner.log 2>&1 &",
             "timeout": 5
           },
           {

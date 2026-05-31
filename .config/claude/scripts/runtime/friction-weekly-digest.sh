@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# DECOMMISSIONED 2026-06-01: friction-events.jsonl 入力枯渇のため退役。
+# 後継は learned-nudge.sh。30日評価後(2026-07-01以降)に削除可。
+# 早期 exit で no-op 化する。
+echo "[decommissioned] friction-weekly-digest.sh は learned-nudge.sh に置換されました" >&2
+exit 0
+
 # Weekly friction-events digest (manual execution; no LaunchAgent).
 #
 # Reads ~/.claude/agent-memory/learnings/friction-events.jsonl, aggregates the
