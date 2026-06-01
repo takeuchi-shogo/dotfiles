@@ -197,7 +197,6 @@
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
-    "alphaxiv",
     "code-review-graph"
   ],
   "hooks": {
