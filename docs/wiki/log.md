@@ -1328,3 +1328,29 @@
 - 該当 family のキーワード hit: multi-agent, orchestrat, subagent, agent loop, shared task list, permissions, eval, trajectory
 - スキップ判定: Phase 1.5 gate (SATURATED, user choice: skip 推奨)
 - borderline 論点 (将来 revisit 用、今回不採用): Stage 8 trajectory_must_include = ツール呼び出し順序の sequence assertion。session-trace-store.py は順序を記録するが「正しい sequence であるべき」の assert は未実装。個人 harness では AutoEvolve reactive ループが既存 analog のため Gap 価値低
+
+## [2026-06-02] ingest | コードレビュー6段階と AI/人間の境界
+
+- ソース: https://zenn.dev/kenimo49/articles/code-review-6-stages-ai-human-boundary
+- 判定: Gap 0, Partial→採用 2 (手法5,8), Already 4, N/A 多数 (チーム前提手法)
+- 取り込み: review skill に Negative Signal Review Rule (AI 沈黙=盲点シグナル) + ADR template に機械照合フィールド (Verification: affected paths/invariants/verification command)
+- 分析レポート: docs/research/2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md
+
+## [2026-06-02] ingest-skip (light Phase 2, adopt=0) | How to actually use Claude: 14 steps
+
+- ソース: movez (Substack) — "How to actually use Claude: 14 steps that unlock 100% of its potential and replace 10 apps"
+- 理由: topic family "claude-code-tips" generic-listicle 12 件目。SATURATED-but-novel (採用率 < 20%、初期 delta=2)。Khairallah 40 features (2026-05-22) とほぼ同一ジャンル・同一機能群で採用 0 を再現
+- 根拠: Phase 2 (light) まで検証したが novel 2 件 (Voice mode + Quick Entry / Microsoft 365 add-ins) は両方 consumer GUI 機能で dotfiles harness にスコープ外 → N/A 確定。修正後 delta=0 (2026-03-25 everything-guide で既に同 N/A 判定済み、初期 delta 計算は直近 3 レポートのみ照合の盲点)
+- 該当 family のキーワード hit: claude-code-tips, generic listicle, how to use claude, N steps/features, projects/artifacts/connectors/memory/styles/cowork/routines/api
+- スキップ判定: Phase 1.5 gate → light-phase2 (user choice) → adopt=0
+- 分析レポート: docs/research/2026-06-02-how-to-actually-use-claude-14-steps-absorb-analysis.md
+
+## [2026-06-02] ingest-skip | Obsidian×Claude Skillsで第二の脳を勝手に構築する方法 (東大Obsidianオタク)
+
+- ソース: テキスト貼り付け / 出典 x.com/polydao/status/2042203352054771748 (creator-monetization 系, フォロー誘導・「1%以下」煽り)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (N=19件目, 採用率 <15%, delta=0)
+- 根拠: 7 手法すべて既知。中核の Karpathy compiler/librarian 方法論は 2026-04-12-karpathy-skills-analysis.md で既 absorb。3-folder minimal=cyril one-folder/damidefi delete-90%、整理するなクリップしろ=/note inbox、6ステップ運用=obsidian-claude-code-meta、Claude Skills 型化=dotfiles skill 群、MCP for Obsidian=既存 obsidian plugin + mcp__obsidian (mcp-audit.py enforced)、週次 Health Check=damidefi pruning-first + check-health + memory-pruning playbook
+- 該当 family のキーワード hit: obsidian, vault, second brain, karpathy, raw/wiki/reports, claude skills, mcp obsidian, health check
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, user choice: skip)
+- user 関心 (記事と独立): Slack 情報散乱の実課題 → 記事 absorb とは別途、既存仕組みでの提案を実施 (採用件数には数えない)
+- 直近トレンド: obsidian-second-brain family の skip ストリーク継続 (cyril → damidefi×2 → 本記事)。記事側に新規論点ゼロ

@@ -422,6 +422,28 @@ Ref: `references/trust-verification-policy.md`
 
 根拠: コードレビューは構造的正しさを検証するが、ユーザーから見た振る舞いの検証は別プロセスが必要（Warp "Spec & Verify"）。
 
+### Negative Signal Review Rule（AI 沈黙 = 盲点シグナル）
+
+verdict が **PASS** かつ Critical/Important 指摘が **0 件** の変更のうち、以下を**すべて**満たす場合、合成レポートに `[NEGATIVE SIGNAL]` 推奨を付加する:
+
+- 変更規模が **M/L**（S は免除）
+- 変更が **logic / security / API 境界 / harness** のいずれかを触る
+- spec file (`docs/specs/*.prompt.md`) または番号付き ADR (`docs/adr/[0-9]*.md`、`template.md`/`README.md` は除く) が存在する、または comprehension_confidence < 4（Coverage Check 算出後に判定）
+
+出力する推奨:
+
+```
+## Negative Signal Review
+⚠️ AI レビューは指摘ゼロでしたが、対象が <logic/security/API/harness> です。
+「AI が何も言わなかった箇所」こそ仕様由来の盲点が残りやすい。
+PASS で閉じる前に、仕様書/ADR/要件と実装の整合を 5-10 分かけて確認してください。
+- 確認軸の例: 空配列/境界値の扱い、リトライ/エラー条件、ページネーション境界が仕様どおりか
+```
+
+- **verdict は PASS のまま**（新ステータスは作らない）。これは block ではなく、人間の注意配分を促す推奨
+- AI のカバー率が中途半端に高い領域（Logic 層、バグ検出 recall ~50-60%）ほど「AI が見たから大丈夫」という自動承認の油断が生じる、という認知バイアス（automation complacency）への対策
+- 出典: 「コードレビューの6段階と AI/人間の境界」(2026-06, zenn/kenimo49)。Stage4 (Logic, AI 60%) の中間ゾーンが最も油断を生むという知見
+
 ### Coverage Check
 
 レビューの網羅性を検証し、見落としを防ぐ。
