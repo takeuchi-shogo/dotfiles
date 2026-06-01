@@ -8,6 +8,23 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-01] ingest-skip | Opus 4.8: same price, you pay double
+
+- ソース: "Opus 4.8: same price, you pay double" (Telegram-promo listicle, t.me/+JmDeelv5UCwwMTcy)
+- 理由: topic family "claude-code-tips" saturated-pure-rehash (N=20+, delta=0)
+- 根拠: 2026-05-30 `opus48-setup-guide` absorb (status:implemented) で本記事の全論点を処理済み — effort control=Already (effortLevel:"xhigh" settings.json:822 + Stage別 reasoning budget) / fast mode 用途指針=Gap 採用済 (resource-bounds.md) / dynamic workflows=Already (Workflow tool + cmux) / settings.json テンプレ=N/A / benchmark 数値・"route effort per task" thesis=N/A (マーケ主張)。drift 検証 (debug-thinking-summary / qualitative-signals-spec / agent-sdk-credit) も 2026-05-30 に完了。新 framing なし
+- 該当 family のキーワード hit: claude code, opus 4.8, effort control, fast mode, dynamic workflow
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, skip 推奨 → user 承認)
+
+## [2026-05-31] ingest-skip (light Phase 2, adopt=0) + validation-only 1 | @damidefi Delete 90% of Your Obsidian Notes
+
+- ソース: テキスト貼り付け (@damidefi, X creator, follower 100K 目標 + Bookmark/Share 誘導)
+- 判定: topic family "obsidian-second-brain" SATURATED-but-novel (N=17, delta≈2) → light-phase2。記事 vault tactic 採用 **0 件** (全 Already/Partial + 前提不一致: Vault は memory→Vault 単方向同期で AI reasoning input ではない)
+- validation-only 1 件実施: 記事の signal-density lens で MEMORY.md bloat 検出 (223行/48K > 閾値 180行/23KB) → archive-before-delete 適用で外部知見索引 79 行を `memory/archive/2026-05.md` に退避 + family 横断教訓 12 行に圧縮。**MEMORY.md 223→154行/16K** (`MEMORY.md.bak-2026-05-31` バックアップ済)
+- 副次検出: `memory-archive.py` のロジック不整合 (「ファイル順=古さ」前提で前半コア知識を archive する逆効果) を実行前シミュレーションで発見し盲目実行を中止。pruning mechanism 群 (memory-archive/eviction/dead-weight-scan/doc-status-audit) は全て disconnected → 別タスク候補
+- レポート: docs/research/2026-05-31-damidefi-delete-90-vault-absorb-analysis.md
+- MEMORY.md 索引: 外部知見索引圧縮で family 教訓に反映済 (obsidian N=16→17)
+
 ## [2026-05-31] ingest-skip | How to Build Your First Claude Code Subagent in 15 Minutes (5 templates)
 
 - ソース: テキスト貼り付け (beginner tutorial / creator listicle: "5 ready-to-use templates", "Thanks for reading!")
@@ -1293,3 +1310,21 @@
 - 該当 family のキーワード hit: obsidian, daily note, quickadd, templater, vault, second brain, weekly rollup
 - スキップ判定: Phase 1.5 gate (user choice: skip 推奨)
 - 直近トレンド: Cyril 系 + damidefi の連続 reference-only ストリーク継続 (前回 meta-finding「trending reject 閾値」シグナルの再確認)
+
+## [2026-06-01] ingest-skip | Claude Code + NotebookLM + Obsidian: Research Monster That Gets Smarter Every Time You Use It
+
+- ソース: テキスト貼り付け (creator-monetization listicle, 直 URL なし)
+- 理由: topic family "obsidian-second-brain" saturated (18 件目, 採用率 <20%, delta≈0-1)
+- 根拠: 中核 2 機構が両方とも過去 absorb で明示却下済み — ①NotebookLM offload (notebooklm-py 非公式 API) は `2026-04-10-notebooklm-claude-extend-sessions` で「非公式API / Master Brain 採用却下」、②「Vault=記憶層 / claude.md が好みを学習」は記事が memory→Vault 同期を逆方向に主張するが `cc-7-layer-memory-model.md` で Vault は単方向同期スナップショット (AI reasoning input ではない) と確定済み。Skill Creator / pipeline skill 統合 / 週次 claude.md 更新は Already (skill-creator + /epd /rpi /dispatch + AutoEvolve + /profile-drip の上位互換)。唯一の未実装手法 yt-dlp YouTube engagement 検索は content-creator/niche 分析特化で Go/TS harness-engineering 文脈に N/A
+- 該当 family のキーワード hit: obsidian, vault, second brain, notebooklm, claude.md learns preferences, pipeline skill
+- スキップ判定: Phase 1.5 gate (user choice: skip 推奨)
+- 直近トレンド: obsidian-second-brain family の reference-only/skip ストリーク継続 (Cyril → damidefi×2 → 本記事)。creator-monetization 系「使うほど賢くなる」framing は構造的低収率の再確認
+
+## [2026-06-01] ingest-skip | How to build a team of AI agents: 9 stages from first agent to production crew
+
+- ソース: movez.substack.com (creator-monetization 系 generic listicle, "fresh AI alpha")
+- 理由: topic family "multi-agent-orchestration" saturated (7+ 件目)。9 ステージ全てが既存実装に 1:1 マッピング (Pass 1 Explore で実ファイル裏付け済: 8 stage exists / Stage 6 shared task list partial / Stage 8 trajectory sequence assertion のみ not_found だが単一ユーザー harness では AutoEvolve + session-trace-store が analog で N/A)
+- 根拠: 過去 absorb — Multi-Agent Coordination Patterns (2026-04-10) / 30 Sub-Agents (2026-05-02 採用4) / MoE / PostHog Agent-First / CORAL / Khairallah 40 Features (採用0)。記事は Claude Agent SDK 自作製品向けで dotfiles harness と前提相違 (loop 制御 / context engineering / permissions は CC runtime + 既存 hook が機構として保有)
+- 該当 family のキーワード hit: multi-agent, orchestrat, subagent, agent loop, shared task list, permissions, eval, trajectory
+- スキップ判定: Phase 1.5 gate (SATURATED, user choice: skip 推奨)
+- borderline 論点 (将来 revisit 用、今回不採用): Stage 8 trajectory_must_include = ツール呼び出し順序の sequence assertion。session-trace-store.py は順序を記録するが「正しい sequence であるべき」の assert は未実装。個人 harness では AutoEvolve reactive ループが既存 analog のため Gap 価値低
