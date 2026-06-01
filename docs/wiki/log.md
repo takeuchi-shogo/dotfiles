@@ -1385,3 +1385,12 @@
 - 該当 family のキーワード hit: building an agent, architecture, feedback loop, skill bundling, memory persistence, echo chamber
 - レポート: docs/research/2026-06-02-hermes-60-days-6-lessons-absorb-analysis.md
 - メタ: 採用は記事の novelty ではなく「未解決問題が現ブランチ feat/learned-promotion-loop に直接該当した」タイミング由来
+
+## [2026-06-02] ingest (adopt=1) | Suzanne teach-back prompt (Anthropic, via Thariq)
+
+- ソース: https://gist.github.com/ThariqS/1389dcdff9eba4789887a2211370f06b (Claude の作業を本人に教え返す teacher-mode prompt)
+- 判定: 新 family "agent-comprehension"。9手法中 Gap 4 / Partial 3 / Already 2。既存 deep-read(外部記事)/quiz(CC知識)/think/recall いずれも「このセッションで Claude が行った作業の理解検証」責務を持たず = クリーン Gap
+- 取り込み: 1 件 (S) — `/teachback` 軽量コマンド新設 (.config/claude/commands/teachback.md)。3階層チェックリスト+restate-first+why深掘り+クイズ(シャッフル/非開示)+ELI5/14/intern+debugger 統合、`--strict` で /goal hard gate opt-in
+- Codex 補正: deep-read 拡張は反対(trigger濁る)/重いskillは時期尚早→reusable prompt で開始(Pruning-First)/完了ゲートは opt-in
+- 副次 (Validation-only): Phase 2.5 で cmux Worker (launch-worker.sh) のバグ発見・修正。surface ref がグローバルなのに surface:1 ハードコード→Surface not found で codex/gemini worker 全失敗。動的解決に修正、ライブ検証済。/absorb 正規パス復旧
+- レポート: docs/research/2026-06-02-suzanne-teachback-absorb-analysis.md
