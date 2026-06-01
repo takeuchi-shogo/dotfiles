@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
-"""MEMORY.md archive — 180行超過時に古いセクションをアーカイブに退避する。
+"""[DEPRECATED 2026-06-01 / 削除予定 2026-07-01] MEMORY.md archive。
+
+⚠️ 使用禁止。archive ロジック (keep_sections で後半半分を保持し前半を archive) は
+「ファイル位置=古さ」を仮定するが、MEMORY.md はトピック別構造
+(前半=コア恒久知識 / 中盤=外部知見索引 bloat / 末尾=TELOS) のため、実行すると
+**前半のコア知識を archive し肥大化した索引を残す逆効果**になる (2026-05-31 検出)。
+退役理由・代替は references/retired-concepts.md と
+docs/playbooks/memory-pruning.md を参照。
+MEMORY.md の bloat 検知は claudemd-size-check.py (PostToolUse hook)、
+pruning は「information か thinking か」の手動 judgment で行う (determinism boundary)。
+
+--- 以下、退役までに残す旧 docstring ---
+MEMORY.md archive — 180行超過時に古いセクションをアーカイブに退避する。
 
 Claude Code のハード上限は 200行/25KB。180行で proactive にアーカイブを発動し、
 サイレント切り捨てを防ぐ。
