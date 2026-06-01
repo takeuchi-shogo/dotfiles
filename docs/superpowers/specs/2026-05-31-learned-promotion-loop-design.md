@@ -118,7 +118,11 @@ learnings/promoted-ledger.jsonl  (新規・追記専用)
 
 - **リスク1**: skill を結局起動せず candidates が溜まる → nudge の N件表示で気づける設計。3ヶ月起動0なら本ループ自体が死蔵と判断し退役を再評価
 - **リスク2**: scope→artifact マップが実態と乖離 → マップ外は手動 fallback があるので破綻しない。乖離が頻発したらマップを更新
+- **リスク3 (echo chamber / self-reinforcing)**: 昇格は `importance` 降順 + **完全一致 (SHA1) dedup** のみ。完全一致でない *semantic に近い* learned が同じ結論を反復昇格すると、memory が monoculture 化し、既存の前提を強化する方向だけに偏りうる(出典: 0xJeff "60 Days with Hermes Analyst" 2026-06-02 absorb。feedback loop の未解決問題として提起 "outputs tend to gravitate towards existing holdings... haven't solved this yet")。
+  - **今は自動ガードを置かない (YAGNI)**: 本ループは稼働前で echo chamber は未観測。`contradiction-scanner.py`(矛盾検出)・`submodular_selection.py`/`diversity-selection-guide.md`(多様性選択)という部品は既存だが**未配線**。観測なしに昇格ゲートへ配線するのは premature scaffolding。
+  - **代わりに heuristic を skill に置く**: `/promote-learnings` の採否判断に「多様性チェック」を1項追加(下記 skill 参照)。設計段階の risk として codify するに留める。
+  - **watch 条件 (これが観測されたら配線を再検討)**: (a) 同一 `scope` の learned が**3 連続バッチ以上**昇格を占有、または (b) 既存 memory に**矛盾/反証する** learned が恒常的に reject され続ける。いずれかを観測したら `contradiction-scanner.py` / `submodular_selection.py` の昇格ゲート統合(M 規模)を起票する。
 - **撤退条件**: learned の流入が枯れる(session-learner が patterns を書かなくなる)なら、このループの前提が崩れるので停止して再調査
 
 ## 未解決事項
-なし(self-review で確認済み)。
+- **echo chamber の自動ガード**: リスク3 の watch 条件を満たすまで意図的に未実装(YAGNI)。観測トリガーで再検討する。

@@ -23,6 +23,7 @@ description: patterns.jsonl の learned (運用ログから自動抽出された
    - `recommended_target` が `(手動判断...)` なら、detail を読んで適切な昇格先(skill / references / CLAUDE.md rule / policy script)を Claude が提案し、ユーザーが承認する。
    - 採用なら実際に該当 artifact へ追記/編集する(該当ファイルを Read してから Edit)。
    - **誤爆防止**: 既存 artifact に同等内容が既にある場合は採用せず `decision:"rejected"`(理由: already covered)。
+   - **多様性チェック (echo chamber 抑制)**: バッチの昇格候補が**同一 scope / 同じ結論に偏っている**場合、その方向だけを強化していないか一度立ち止まる。既存 memory に**矛盾・反証する** learned が混じっていたらそれを優先的に採否検討する(反証は monoculture を崩す価値が高い)。同一 scope の連続昇格が 3 バッチ以上続く、または反証 learned を恒常 reject していると気づいたら、design doc(`docs/superpowers/specs/2026-05-31-learned-promotion-loop-design.md` リスク3)の watch 条件に従い自動ガード配線を起票する。
 
 4. **ledger 追記**: 各候補の採否を記録する(冪等性のため必須)。
    ```bash
