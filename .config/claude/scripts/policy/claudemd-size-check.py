@@ -11,9 +11,10 @@ Budgets (file size in bytes; read as UTF-8 byte count):
   - CLAUDE.md          : ≤ 4096
   - AGENTS.md          : ≤ 4096
   - references/*.md    : ≤ 8192
-  - MEMORY.md          : ≤ 23000 bytes / ≤ 180 lines
-                         (Claude Code ハード上限 200行/25KB の 90%。pruning は
-                          docs/playbooks/memory-pruning.md の手動手順で行う)
+  - MEMORY.md          : ≤ 23000 bytes (25KB の 92%) / ≤ 180 lines (200行の 90%)
+                         (Claude Code ハード上限 200行/25KB の手前で proactive 警告。
+                          byte と行数は独立に判定し、どちらか超過で警告する。
+                          pruning は docs/playbooks/memory-pruning.md の手動手順)
 
 Disable with env var: CLAUDEMD_SIZE_CHECK=0
 """
@@ -79,7 +80,8 @@ def main() -> int:
                 f"[claudemd-size-check] MEMORY.md byte budget exceeded: "
                 f"{size}B > {budget}B  ({rel})\n"
                 f"  手動 pruning を検討 (docs/playbooks/memory-pruning.md): "
-                f"information を archive 退避し thinking のみ残す"
+                f"過去要約を別ファイルへ退避し恒久知見のみ残す "
+                f"(memory-archive.py は retired、実行しないこと)"
             )
         else:
             msg = (
@@ -93,7 +95,7 @@ def main() -> int:
     if label == "MEMORY.md":
         try:
             line_count = len(target.read_text(encoding="utf-8").splitlines())
-        except OSError:
+        except (OSError, UnicodeDecodeError):
             line_count = 0
         if line_count > 180:
             print(

@@ -107,17 +107,17 @@ def archive_memory(memory_path: Path) -> str | None:
 
 
 def main() -> None:
-    results: list[str] = []
-    for memory_path in find_memory_files():
-        result = archive_memory(memory_path)
-        if result:
-            results.append(result)
-
-    if results:
-        for r in results:
-            print(r)
-    else:
-        print("No MEMORY.md files exceed the threshold.")
+    # [DEPRECATED 2026-06-01 / 削除予定 2026-07-01] fail-fast で盲目実行を防止する。
+    # archive_memory() のロジックは MEMORY.md のトピック構造に対し逆効果のため、
+    # 退役期間中は実行を拒否する (本体ロジックは歴史記録として削除日まで残す)。
+    raise SystemExit(
+        "memory-archive.py は retired です (2026-06-01, 削除予定 2026-07-01)。\n"
+        "archive ロジックは「ファイル位置=古さ」を仮定するが MEMORY.md は\n"
+        "トピック別構造のため、実行すると前半のコア知識を退避する逆効果になる。\n"
+        "MEMORY.md の pruning は docs/playbooks/memory-pruning.md の手動手順で、\n"
+        "bloat 検知は claudemd-size-check.py (PostToolUse hook) で行うこと。\n"
+        "詳細: references/retired-concepts.md"
+    )
 
 
 if __name__ == "__main__":
