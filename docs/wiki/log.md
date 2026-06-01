@@ -1354,3 +1354,14 @@
 - スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, user choice: skip)
 - user 関心 (記事と独立): Slack 情報散乱の実課題 → 記事 absorb とは別途、既存仕組みでの提案を実施 (採用件数には数えない)
 - 直近トレンド: obsidian-second-brain family の skip ストリーク継続 (cyril → damidefi×2 → 本記事)。記事側に新規論点ゼロ
+
+## [2026-06-02] ingest-skip | THE 30-MINUTE OBSIDIAN SYSTEM (retrieval-first second brain)
+
+- ソース: 貼り付けテキスト (creator-monetization 系 second-brain ガイド、著者不明)
+- 理由: topic family "obsidian-second-brain" 18 件目、SATURATED-borderline (delta≈1)。記事 absorb は skip、user choice = skill-validation のみ
+- 根拠: 全手法既知。3 properties=PKM 定番 / 7秒キャプチャ=/note / Decision Feeder=obsidian-knowledge §8 + CLAUDE.md:51 判断時 shallow grep + /think decision / Weekly review+update CLAUDE.md=前提衝突 (Vault は memory→Vault 単方向スナップショットで AI reasoning input ではない、cc-7-layer-memory-model.md:70) / contribution-rate=damidefi signal-density・pruning-first と意味的同値で既 internalize
+- 記事核心の前提不一致: 「Claude が vault 全体に read access を持つ queryable layer」＝ Vault live read。dotfiles は wiki/log.md:1229 で「READ は MANUAL のみ、PROACTIVE read=0 件、vault 未ロード」と既結論。記事の批判 (capture はできるが retrieval 自動化されない) は既知
+- 該当 family のキーワード hit: obsidian, second brain, vault, PARA, wikilinks, retrieval, contribution rate, decision feeder
+- スキップ判定: Phase 1.5 gate (SATURATED-borderline, user choice: skip article + skill-validation only)
+- 直近トレンド: obsidian-second-brain skip ストリーク継続 (cyril → damidefi×2 → karpathy → 本記事)
+- **validation-only follow-up (記事と独立、採用件数に数えない)**: 既存 obsidian skill 群の retrieval 点検で latent drift 1 件検出 → `06-Areas` 参照不一致 (CLAUDE.md:51 + think/SKILL.md ×5 が `06-Areas/` を読み書きするが、正準 PARA 構造は `02-Areas`、`06` は `06-Archive`)。実 Vault が `02-Areas` の場合、判断時 shallow grep が空振り + /think が `06-Areas` フォルダ誤生成 (SKILL.md:278 で存在しなければ新規作成)。実 Vault が permission denied で確定不可 → user verification 待ち
