@@ -31,6 +31,20 @@ def candidate_key(rec: dict) -> str:
     return hashlib.sha1(basis.encode("utf-8")).hexdigest()
 
 
+def _to_float(value: object, default: float) -> float:
+    """importance を数値に強制。文字列/None/非数値は default を返し sort を壊さない。"""
+    if isinstance(value, bool):
+        return default  # bool は int 扱いされるため除外
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return default
+    return default
+
+
 def recommend_target(scope: str | None) -> str:
     return SCOPE_ARTIFACT_MAP.get(
         scope or "", "(手動判断: Claude が候補内容を読んで提案)"
@@ -69,10 +83,10 @@ def extract(patterns_path: Path, ledger_path: Path) -> list[dict]:
                 "scope": rec.get("scope"),
                 "detail": rec.get("generalized_detail") or rec.get("detail") or "",
                 "recommended_target": recommend_target(rec.get("scope")),
-                "importance": rec.get("importance", 0.5),
+                "importance": _to_float(rec.get("importance"), 0.5),
             }
         )
-    candidates.sort(key=lambda c: -(c.get("importance") or 0.0))
+    candidates.sort(key=lambda c: -c["importance"])
     return candidates
 
 

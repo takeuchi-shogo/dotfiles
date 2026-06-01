@@ -86,3 +86,67 @@ def test_falls_back_to_detail_when_no_generalized(tmp_path):
     ledger.write_text("", encoding="utf-8")
     out = epc.extract(patterns, ledger)
     assert out[0]["detail"] == "only detail"
+
+
+def test_sorted_by_importance_desc(tmp_path):
+    patterns = tmp_path / "patterns.jsonl"
+    ledger = tmp_path / "promoted-ledger.jsonl"
+    _write(
+        patterns,
+        [
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "low",
+                "importance": 0.1,
+            },
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "high",
+                "importance": 0.9,
+            },
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "mid",
+                "importance": 0.5,
+            },
+        ],
+    )
+    ledger.write_text("", encoding="utf-8")
+    out = epc.extract(patterns, ledger)
+    assert [c["detail"] for c in out] == ["high", "mid", "low"]
+
+
+def test_string_importance_does_not_crash_sort(tmp_path):
+    patterns = tmp_path / "patterns.jsonl"
+    ledger = tmp_path / "promoted-ledger.jsonl"
+    _write(
+        patterns,
+        [
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "numeric str",
+                "importance": "0.8",
+            },
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "garbage",
+                "importance": "high",
+            },
+            {
+                "type": "learned",
+                "scope": "s",
+                "generalized_detail": "none",
+                "importance": None,
+            },
+        ],
+    )
+    ledger.write_text("", encoding="utf-8")
+    out = epc.extract(patterns, ledger)
+    # "0.8"(=0.8) > "high"/None(=default 0.5) でクラッシュせず数値ソートされる
+    assert out[0]["detail"] == "numeric str"
+    assert all(isinstance(c["importance"], float) for c in out)

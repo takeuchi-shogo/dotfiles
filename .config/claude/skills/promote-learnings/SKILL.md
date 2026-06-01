@@ -38,7 +38,14 @@ description: patterns.jsonl の learned (運用ログから自動抽出された
    })
    PYEOF
    ```
-   `decision` は `adopted` / `rejected` / `deferred`。`deferred` は「今回保留」(次回また候補に出る — 冪等キーは記録するが skip 扱いにしない場合は ledger に書かない選択も可。原則 deferred は書かず次回再提示)。
+   `decision` は `adopted` / `rejected` の2値のみ。**今回保留したい候補は ledger に書かない**(次回 /promote-learnings で再提示される。コアは ledger の key を見て skip するため、deferred を書くと永久に再提示されなくなる)。
+
+   **書き込み検証 (Fail Fast)**: `append_to_learnings` は失敗を握り潰すため、追記後に必ず確認する:
+   ```bash
+   grep -q "\"$CC_KEY\"" ~/.claude/agent-memory/learnings/promoted-ledger.jsonl \
+     || { echo "ledger 追記失敗: $CC_KEY"; exit 1; }
+   ```
+   見つからなければ即中断しユーザーに報告する(冪等性が壊れ、採用済み報告が嘘になるのを防ぐ)。
 
 5. **報告**: 採用 N 件 / 棄却 M 件 / 各昇格先を要約する。artifact を変更したら `/review` を案内する。
 

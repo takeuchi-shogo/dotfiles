@@ -5,11 +5,18 @@ LOG=/tmp/learned-nudge.log
 CORE="$HOME/.claude/scripts/learner/extract-promotion-candidates.py"
 
 if [[ ! -f "$CORE" ]]; then
+  # core 不在は best-effort 通知の範囲外(インフラ破損)。exit 1 で上位に知らせる。
   echo "[$(date -Iseconds)] core missing: $CORE" >> "$LOG"
-  exit 0
+  exit 1
 fi
 
-SUMMARY="$(python3 "$CORE" 2>>"$LOG" | python3 -c '
+# core の出力を明示捕捉し、失敗を握り潰さない(空 stdin で下流 json.load がクラッシュするのを防ぐ)。
+if ! RAW="$(python3 "$CORE" 2>>"$LOG")"; then
+  echo "[$(date -Iseconds)] core failed: extract-promotion-candidates.py" >> "$LOG"
+  exit 1
+fi
+
+SUMMARY="$(printf '%s' "$RAW" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 n = d["count"]
@@ -26,7 +33,12 @@ else:
 
 if [[ -n "$SUMMARY" ]]; then
   echo "[$(date -Iseconds)] $SUMMARY" >> "$LOG"
-  # macOS 通知(失敗は無視・best-effort)
-  osascript -e "display notification \"$SUMMARY\" with title \"learned 昇格\"" 2>/dev/null || true
+  # macOS 通知(失敗は無視・best-effort)。$SUMMARY は argv 経由で AppleScript の
+  # 文字列値として渡し、構文層への注入(detail/scope のモデル生成テキスト由来)を防ぐ。
+  osascript - "$SUMMARY" <<'APPLESCRIPT' 2>/dev/null || true
+on run argv
+  display notification (item 1 of argv) with title "learned 昇格"
+end run
+APPLESCRIPT
 fi
 exit 0
