@@ -1365,3 +1365,23 @@
 - スキップ判定: Phase 1.5 gate (SATURATED-borderline, user choice: skip article + skill-validation only)
 - 直近トレンド: obsidian-second-brain skip ストリーク継続 (cyril → damidefi×2 → karpathy → 本記事)
 - **validation-only follow-up (記事と独立、採用件数に数えない)**: 既存 obsidian skill 群の retrieval 点検で latent drift 1 件検出 → `06-Areas` 参照不一致 (CLAUDE.md:51 + think/SKILL.md ×5 が `06-Areas/` を読み書きするが、正準 PARA 構造は `02-Areas`、`06` は `06-Archive`)。実 Vault が `02-Areas` の場合、判断時 shallow grep が空振り + /think が `06-Areas` フォルダ誤生成 (SKILL.md:278 で存在しなければ新規作成)。実 Vault が permission denied で確定不可 → user verification 待ち
+
+## [2026-06-02] ingest (light Phase 2, adopt=0, reference-pointer) | agents-best-practices (DenisSergeevitch)
+
+- ソース: https://github.com/DenisSergeevitch/agents-best-practices (provider-neutral Agent Skill, MIT, ⭐1486)
+- 判定: harness-engineering family 飽和 (N≥5, 直近2件連続 reject: Cursor harness + Hermes)。Step 4.5 連続 reject trend 発火。user choice = light-phase2
+- 検証: novel 3点のみ Phase 2 (Phase 2.5 省略)。#1 provider-neutral×非コーディング多ドメイン MVP-blueprint=Partial(Gap寄り) / #2 coverage-audit=Already(/skill-audit) / #3 external skill 管理=Already(skills-lock.json)。8原則本体は全 Already
+- 取り込み: 0 件。user choice = reference pointer のみ (Pruning-First: 90% 既実装スキルを 67 個目に追加せず、MEMORY.md 外部参照に1行記録)
+- 使い道: チーム/非コーディング/多プロバイダ agent 設計時に repo or `npx skills add` を参照
+- レポート: docs/research/2026-06-02-agents-best-practices-absorb-analysis.md
+- メタ: agent-harness-contract.md が Claude-specific であることが #1 で明示確認 (drift ではなく意図的境界)
+
+## [2026-06-02] ingest (light Phase 2, adopt=1) | Hermes 60 Days / 6 Lessons (0xJeff)
+
+- ソース: "6 Workflows, 6 Lessons, 60 Days with Hermes Analyst" (0xJeff, vendor newsletter)
+- 判定: harness-engineering family SATURATED-borderline (N=12+、直近の Hermes/harness content は採用0圏: Cursor harness 0 / How To Fix AI Slop-Hermes delta=0 0)。手法 delta=1。user choice = light-phase2 → A (design note のみ)
+- 検証: 6 lessons 中 5 つ Already (provider routing / skill auto-create / memory persistence / feedback loop / skill bundling)、lesson 5 (x402 crypto)=N/A。唯一 novel = lesson 4b「feedback loop の echo chamber / self-reinforcing」(著者 "haven't solved this yet")
+- 取り込み: 1 件 (S, design note のみ) — 学習昇格ループに echo-chamber リスクが該当 (importance 降順 + 完全一致 dedup のみで monoculture 抑制なし、部品 contradiction-scanner/submodular_selection は未配線)。design doc にリスク3 + watch 条件追記 + promote-learnings SKILL に多様性チェック heuristic 1項追加。自動ガード配線は YAGNI で見送り (稼働前/未観測)、watch トリガーで再検討
+- 該当 family のキーワード hit: building an agent, architecture, feedback loop, skill bundling, memory persistence, echo chamber
+- レポート: docs/research/2026-06-02-hermes-60-days-6-lessons-absorb-analysis.md
+- メタ: 採用は記事の novelty ではなく「未解決問題が現ブランチ feat/learned-promotion-loop に直接該当した」タイミング由来
