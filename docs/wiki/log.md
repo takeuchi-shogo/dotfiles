@@ -8,6 +8,15 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-03] ingest-skip | Claude Code + NotebookLM + Obsidian: 2 Weeks → 6 Minutes, $200/hr → $0
+
+- ソース: creator-monetization listicle (3-tool stack pitch, テキスト貼付)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (N=16+, delta=0)
+- 根拠: 中核手法は全て過去 absorb 済み — NotebookLM CLI 化 (notebooklm-py) は **2回明示却下** (2026-03-16-notebooklm-obsidian-claude-integration + 2026-04-10-notebooklm-claude-extend-sessions、理由: 非公式 API = Google 内部プロトコル reverse-engineering を production harness に入れるのは blocker 級リスク) / Vault-as-context-layer 主張は「Vault は memory→Vault 単方向同期スナップショットで AI reasoning input ではない」MEMORY 核心訂正と矛盾 / Skill Creator・pipeline は skill-creator + /research + /digest + /absorb で既存カバー
+- 該当 family のキーワード hit: obsidian, notebooklm, vault, claude.md compounding, second brain
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, skip 推奨 → user 承認)
+- フォローアップ: user は記事 absorb とは別軸で notebooklm-py の実地検証を希望 → 別途 /spike (worktree 隔離・非公式 API リスク承知の実験、production harness 非統合)
+
 ## [2026-06-03] ingest | 私の最強のMac開発環境 2026: Nixとmiseで育てる (tyPhoon)
 
 - ソース: https://qiita.com/tyPhoon/items/f1855ff508f4268df5b5
@@ -1414,3 +1423,19 @@
 - Phase 2.5: Codex が bounded-edit を Already→Partial 降格・Gap を optimizer eligibility classifier に改名。Gemini が SkillOpt 実在 + OPRO 系譜を grounding
 - drift 露出: empirical-prompt-tuning absorb(2026-04-19) の T1/T2/T4 が /improve retire で孤児化
 - 分析: docs/research/2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md / プラン: docs/plans/active/2026-06-02-skillopt-objective-lane-optimization-plan.md
+
+## [2026-06-03] ingest-skip | How to Use Claude Cowork to Automate Your Entire Day (Full Course)
+
+- ソース: marketing growth-hacker listicle (「Day 1-14 Cowork コース」, "single most underrated AI feature in 2026" 煽り)
+- 理由: topic family "claude-code-tips" saturated-pure-rehash (11件目超, 採用率 <20%, delta=0)
+- 根拠: 全手法が既存 absorb でカバー済み — Cowork tab/folder/connectors/file-processing は `2026-05-22-khairallah-40-features` (採用0) / 構造同一の `2026-06-02-how-to-actually-use-claude-14-steps` (昨日, delta=0 で ingest-skip) / Dispatch(スマホ→PC) は `2026-04-04-12-claude-features-top-operators` #6 で既出。Cowork drift は `docs/guides/2026-05-09-claude-cowork-equivalents.md` で 2026-05-22 訂正済み (新規 validation-only なし)
+- 該当 family のキーワード hit: cowork, connector, dispatch, scheduled tasks, file processing, automate
+- スキップ判定: Phase 1.5 gate (ユーザー確認: skip 選択)
+
+## [2026-06-03] ingest (default 強化 1件) | ThariqS gist "Learn Quiz" (teach-back skill)
+
+- ソース: https://gist.github.com/ThariqS/1389dcdff9eba4789887a2211370f06b (15行/1500字の教師ロール prompt skill)
+- 判定: Gap 0 / Already 9 / N/A 0 — `/teachback` (commit 231be94) がこの gist をほぼ逐語ローカライズしたもの (出自と推定)
+- 採用: 1件 (S) — teachback の通常モードを「ソフトゲート」に強化。gist の核心 `/goal: 理解実証までセッションを終えない` (hard-gate default) を dotfiles は `--strict` opt-in に弱めていた。中間策として通常モードでも「未確認項目があれば終了前に一度確認 (受動的に終わらせない)」を追加。完全 hard-gate は --strict 維持
+- 教訓: 初回「dotfiles は gist より強化」と誤判定 → Already 項目で Intent(hard-gate) を Efficiency(摩擦削減) にすり替える `feedback_absorb_architectural_arrogance.md` の罠を踏みかけた。ユーザー指摘で訂正
+- Phase 2.5 (Codex+Gemini): 省略 (15行 prompt の逐語一致 case で overkill、ユーザー合意済)
