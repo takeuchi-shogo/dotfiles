@@ -10,11 +10,29 @@
   // ===================
   // Appearance
   // ===================
+  "agent_servers": {
+    "kimi": {
+      "type": "registry"
+    },
+    "github-copilot-cli": {
+      "type": "registry"
+    },
+    "cursor": {
+      "type": "registry"
+    },
+    "codex-acp": {
+      "type": "registry"
+    },
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
   "proxy": "",
   "outline_panel": {
     "dock": "right"
   },
   "git_panel": {
+    "tree_view": true,
     "dock": "right"
   },
   "theme": "Vesper Blur",
@@ -73,6 +91,8 @@
   "default_dock_anchor": "expanded",
   "project_panel": {
     // ディレクトリの中に一つしかディレクトリがない場合、ネスト構造にしない
+    "git_status_indicator": true,
+    "bold_folder_labels": true,
     "dock": "right",
     "auto_fold_dirs": true
   },
@@ -90,6 +110,7 @@
     "button": false
   },
   "status_bar": {
+    "show_active_file": true,
     "active_language_button": true,
     "cursor_position_button": false,
     // NOTE: This might change in the future.
