@@ -1404,3 +1404,13 @@
 - Codex 補正: deep-read 拡張は反対(trigger濁る)/重いskillは時期尚早→reusable prompt で開始(Pruning-First)/完了ゲートは opt-in
 - 副次 (Validation-only): Phase 2.5 で cmux Worker (launch-worker.sh) のバグ発見・修正。surface ref がグローバルなのに surface:1 ハードコード→Surface not found で codex/gemini worker 全失敗。動的解決に修正、ライブ検証済。/absorb 正規パス復旧
 - レポート: docs/research/2026-06-02-suzanne-teachback-absorb-analysis.md
+
+## [2026-06-02] ingest | Microsoft SkillOpt (自己進化スキル / text-space optimizer)
+
+- ソース: SkillOpt 解説記事 (arXiv:2605.23904 / github.com/microsoft/SkillOpt)
+- 判定: Gap 1, Partial 5, Already 2, N/A 2
+- 取り込み: 4件採用 (L規模, plan化) — #1 optimizer eligibility classifier (objective lane vs judgement lane 入口分類), #2 objective-lane held-out strict accept gate (split_holdout.py 再利用, /improve 復活せず), #3 rejected-edit buffer per-lane 再配線, VO validation-only 訂正
+- 診断: SkillOpt の概念は dotfiles に設計済みだが「配線切れ + 入口判別欠如」が evolving 実感なしの根因。判断タスクの自動最適化は block (SkillOpt が "間違ったツール" と明言)
+- Phase 2.5: Codex が bounded-edit を Already→Partial 降格・Gap を optimizer eligibility classifier に改名。Gemini が SkillOpt 実在 + OPRO 系譜を grounding
+- drift 露出: empirical-prompt-tuning absorb(2026-04-19) の T1/T2/T4 が /improve retire で孤児化
+- 分析: docs/research/2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md / プラン: docs/plans/active/2026-06-02-skillopt-objective-lane-optimization-plan.md
