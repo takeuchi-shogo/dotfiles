@@ -1,0 +1,27 @@
+# mise グローバル設定 — 言語ランタイム & 更新頻度の高い開発者ツールを一元管理する。
+#
+# 役割分担 (Nix と mise):
+#   - Nix (home-manager): OS 横断で安定させたい CLI 本体 + 設定配布 + macOS 設定 (= 土台)
+#   - mise (ここ):        言語ランタイム + バージョン追従が頻繁なツール (= プロジェクトの道具)
+#   - mise (各リポの mise.toml): プロジェクト固有の版固定 (このグローバル設定を上書き)
+#
+# 二重管理を避けるルール: 言語ランタイムは Nix home.packages に入れない。
+# mise activate が PATH 末尾 (.config/zsh/tools/mise.zsh) のため mise shims が優先される。
+#
+# 背景・設計判断: docs/research/2026-06-02-typhoon-nix-mise-absorb-analysis.md
+
+[tools]
+node = "lts"      # 現行は野良 brew の v25 (非LTS)。再現性のため LTS に固定。最新が要れば "25"
+go = "1.25"       # 野良 brew が amd64(Rosetta) だった → mise で arm64 ネイティブ化
+python = "3.13"   # brew 実体 3.14 / 旧 .tool-versions 3.12 から安定版 3.13 に集約
+uv = "latest"     # Nix home.packages から移管 (Intel brew の /usr/local/bin/uv 二重管理を解消)
+
+# rust は当面 rustup (~/.cargo) 維持 — mise の rust backend は rustup を内部利用するため
+# 共存が複雑。シンプルさ優先で現状維持。mise に寄せたくなったら rust = "1.85" を追加。
+
+[settings]
+# 既存 ~/.config/mise/config.toml (実ファイル) から引き継いだ設定:
+ignored_config_paths = ["~/dotfiles/sample-dotfiles"]  # サンプル dotfiles の mise 設定を無視
+experimental = true                                    # experimental 機能を有効化
+# プロジェクト直下の mise.toml / .tool-versions を信頼して自動適用
+idiomatic_version_file_enable_tools = ["node", "python"]

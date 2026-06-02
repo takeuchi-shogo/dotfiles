@@ -34,7 +34,8 @@ in
     neovim
     # Tier 2 tooling (Phase B1 Step 4)
     atuin
-    uv
+    # uv は mise (.config/mise/config.toml) に移管。言語ランタイム系は二重管理を
+    # 避けるため Nix home.packages に入れない (Intel brew /usr/local/bin/uv 事故の解消)。
     nb
     ripgrep
     tree-sitter
@@ -65,14 +66,19 @@ in
     ".claude/skills"               = outLink ".config/claude/skills";
 
     # block 3: Codex (.codex → ~/.codex)
-    ".codex/config.toml" = outLink ".codex/config.toml";
+    # NOTE: .codex/config.toml は Codex.app/cmux が起動時に自己書き換え (notify / node_repl
+    # MCP / plugins / marketplaces / hooks trust hash を注入) するため home.file 管理外。
+    # symlink 管理すると実ファイル化で nix:switch が clobber する (cmux と同じ
+    # self-rewriting app パターン)。初期設定はアプリが生成する。
     ".codex/AGENTS.md"   = outLink ".codex/AGENTS.md";
 
     # block 4: Gemini
     ".gemini/GEMINI.md" = outLink ".gemini/GEMINI.md";
 
     # block 5: Cursor
-    ".cursor/hooks.json" = outLink ".cursor/hooks.json";
+    # NOTE: .cursor/hooks.json は cmux が起動時に自己書き換え (afterAgentResponse /
+    # beforeShellExecution 等のフックを注入) するため home.file 管理外
+    # (.codex/config.toml と同じ self-rewriting app パターン)。
     ".cursor/rules"      = outLink ".cursor/rules";
     ".cursor/skills"     = outLink ".cursor/skills";
     ".cursor/agents"     = outLink ".cursor/agents";
@@ -113,9 +119,10 @@ in
     ".config/wezterm"     = outLink ".config/wezterm";
     ".config/zed"         = outLink ".config/zed";
 
-    # .config single-file (2)
-    ".config/starship.toml"   = outLink ".config/starship.toml";
-    ".config/rtk/config.toml" = outLink ".config/rtk/config.toml";
+    # .config single-file (3)
+    ".config/starship.toml"    = outLink ".config/starship.toml";
+    ".config/rtk/config.toml"  = outLink ".config/rtk/config.toml";
+    ".config/mise/config.toml" = outLink ".config/mise/config.toml";  # mise グローバル設定 (言語ランタイム集約)
   };
 
   # Phase B2.2: skill-sharing を home-manager activation script に移植。

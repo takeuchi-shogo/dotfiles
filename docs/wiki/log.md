@@ -8,6 +8,16 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-03] ingest | 私の最強のMac開発環境 2026: Nixとmiseで育てる (tyPhoon)
+
+- ソース: https://qiita.com/tyPhoon/items/f1855ff508f4268df5b5
+- topic family: nix-mise-dotfiles-environment (新分野 N=1, PASS)
+- 判定: Already 多数 (Nix土台/Homebrew GUI/役割分担思想/AeroSpace/borders/Ghostty/Yazi/Karabiner/jj/direnv/zoxide/bat/eza/starship), Gap中核 1 (mise でランタイム管理), Gap小 2 (carapace/espanso), N/A 4 (Nixvim化/core分離/Nushell/Zellij)
+- 取り込み: **mise 言語ランタイム集約** (`.config/mise/config.toml` 新規 + nix home.packages から uv 移管)。検証済: node 24LTS/go 1.25.4 arm64/python 3.13.6/uv 0.9.7 arm64 が mise グローバル有効化、PATH 優先
+- 重大発見: 記事アーキテクチャは大半 Already (Phase B2)。真の Gap は「mise にツール install 済だがグローバル config に [tools] 無く有効化ゼロ + 野良 brew で go=Rosetta 等散在」。Codex は launch-worker.sh:134 `-q` バグで失敗 → Gemini+自己分析で代替
+- 残課題: nix:switch は .cursor/.codex の clobber(自己書き換えアプリ drift, 本変更と無関係)でブロック → 別タスク。手動 symlink で mise は有効
+- レポート: docs/research/2026-06-02-typhoon-nix-mise-absorb-analysis.md
+
 ## [2026-06-01] ingest-skip | Opus 4.8: same price, you pay double
 
 - ソース: "Opus 4.8: same price, you pay double" (Telegram-promo listicle, t.me/+JmDeelv5UCwwMTcy)
