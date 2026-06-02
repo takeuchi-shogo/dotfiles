@@ -838,5 +838,6 @@
   },
   "effortLevel": "xhigh",
   "plansDirectory": "./tmp/plans",
-  "theme": "light-daltonized"
+  "theme": "light-daltonized",
+  "skipWorkflowUsageWarning": true
 }
