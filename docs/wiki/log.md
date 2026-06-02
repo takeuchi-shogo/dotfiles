@@ -8,6 +8,57 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-03] ingest | 私の最強のMac開発環境 2026: Nixとmiseで育てる (tyPhoon)
+
+- ソース: https://qiita.com/tyPhoon/items/f1855ff508f4268df5b5
+- topic family: nix-mise-dotfiles-environment (新分野 N=1, PASS)
+- 判定: Already 多数 (Nix土台/Homebrew GUI/役割分担思想/AeroSpace/borders/Ghostty/Yazi/Karabiner/jj/direnv/zoxide/bat/eza/starship), Gap中核 1 (mise でランタイム管理), Gap小 2 (carapace/espanso), N/A 4 (Nixvim化/core分離/Nushell/Zellij)
+- 取り込み: **mise 言語ランタイム集約** (`.config/mise/config.toml` 新規 + nix home.packages から uv 移管)。検証済: node 24LTS/go 1.25.4 arm64/python 3.13.6/uv 0.9.7 arm64 が mise グローバル有効化、PATH 優先
+- 重大発見: 記事アーキテクチャは大半 Already (Phase B2)。真の Gap は「mise にツール install 済だがグローバル config に [tools] 無く有効化ゼロ + 野良 brew で go=Rosetta 等散在」。Codex は launch-worker.sh:134 `-q` バグで失敗 → Gemini+自己分析で代替
+- 残課題: nix:switch は .cursor/.codex の clobber(自己書き換えアプリ drift, 本変更と無関係)でブロック → 別タスク。手動 symlink で mise は有効
+- レポート: docs/research/2026-06-02-typhoon-nix-mise-absorb-analysis.md
+
+## [2026-06-01] ingest-skip | Opus 4.8: same price, you pay double
+
+- ソース: "Opus 4.8: same price, you pay double" (Telegram-promo listicle, t.me/+JmDeelv5UCwwMTcy)
+- 理由: topic family "claude-code-tips" saturated-pure-rehash (N=20+, delta=0)
+- 根拠: 2026-05-30 `opus48-setup-guide` absorb (status:implemented) で本記事の全論点を処理済み — effort control=Already (effortLevel:"xhigh" settings.json:822 + Stage別 reasoning budget) / fast mode 用途指針=Gap 採用済 (resource-bounds.md) / dynamic workflows=Already (Workflow tool + cmux) / settings.json テンプレ=N/A / benchmark 数値・"route effort per task" thesis=N/A (マーケ主張)。drift 検証 (debug-thinking-summary / qualitative-signals-spec / agent-sdk-credit) も 2026-05-30 に完了。新 framing なし
+- 該当 family のキーワード hit: claude code, opus 4.8, effort control, fast mode, dynamic workflow
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, skip 推奨 → user 承認)
+
+## [2026-05-31] ingest-skip (light Phase 2, adopt=0) + validation-only 1 | @damidefi Delete 90% of Your Obsidian Notes
+
+- ソース: テキスト貼り付け (@damidefi, X creator, follower 100K 目標 + Bookmark/Share 誘導)
+- 判定: topic family "obsidian-second-brain" SATURATED-but-novel (N=17, delta≈2) → light-phase2。記事 vault tactic 採用 **0 件** (全 Already/Partial + 前提不一致: Vault は memory→Vault 単方向同期で AI reasoning input ではない)
+- validation-only 1 件実施: 記事の signal-density lens で MEMORY.md bloat 検出 (223行/48K > 閾値 180行/23KB) → archive-before-delete 適用で外部知見索引 79 行を `memory/archive/2026-05.md` に退避 + family 横断教訓 12 行に圧縮。**MEMORY.md 223→154行/16K** (`MEMORY.md.bak-2026-05-31` バックアップ済)
+- 副次検出: `memory-archive.py` のロジック不整合 (「ファイル順=古さ」前提で前半コア知識を archive する逆効果) を実行前シミュレーションで発見し盲目実行を中止。pruning mechanism 群 (memory-archive/eviction/dead-weight-scan/doc-status-audit) は全て disconnected → 別タスク候補
+- レポート: docs/research/2026-05-31-damidefi-delete-90-vault-absorb-analysis.md
+- MEMORY.md 索引: 外部知見索引圧縮で family 教訓に反映済 (obsidian N=16→17)
+
+## [2026-05-31] ingest-skip | How to Build Your First Claude Code Subagent in 15 Minutes (5 templates)
+
+- ソース: テキスト貼り付け (beginner tutorial / creator listicle: "5 ready-to-use templates", "Thanks for reading!")
+- 理由: topic family "subagent/agent-template" SATURATED-pure-rehash (N≥3: 30-subagents 2026-05-02 / Multi-Agent Coordination 2026-04-10 / PostHog Agent-First / Claude Agent Teams 7steps 2026-05-25 / Anthropic Token Savings 2026-05-22 / opus48 setup 2026-05-30、delta=0)
+- 根拠 (Step 3.5 delta=0 evidence): 記事7手法すべて Already かつ既存上位互換 —
+  - 5テンプレートは全て既存 agents の上位互換: reviewer→`code-reviewer.md`(29.3K) / test-writer→`test-engineer.md` / doc-writer→`document-factory.md`+`doc-gardener.md` / security→`security-reviewer.md`(17.1K) / pr-writer→`github-pr` skill + `pull-request` command
+  - subagent anatomy (frontmatter) → `references/agent-config-standard.md` 既存
+  - `CLAUDE_CODE_SUBAGENT_MODEL` → 2回 N/A 判定済 (2026-05-25 / 2026-05-30、Opus 1M lock-in + per-agent frontmatter model 指定)
+  - description=trigger / tools 制限 / 呼び出し3方式 / 配置場所 → 全て既存22 agents で実践済 + `subagent-delegation-guide.md`(72.5K) でカバー
+- 該当 family のキーワード hit: subagent, agent template, code reviewer, test writer, doc writer, security scanner, CLAUDE_CODE_SUBAGENT_MODEL
+- スキップ判定: Phase 1.5 gate (ユーザー選択 skip)。MEMORY.md 索引追記なし、Phase 5.5-5.7 実行なし
+
+## [2026-05-31] ingest (light Phase 2, adopt=1 S) | 32 Claude Code hacks (movez.substack)
+
+- ソース: "32 Claude Code hacks that take you from beginner to PRO" (movez.substack.com, creator-monetization listicle)
+- 判定: topic family "claude-code-tips" SATURATED-but-novel (N=8+, delta=2) → light-phase2
+- hacks 01-30 = Already (過去 family レポート + 既存 harness で照合済)、novel 2 件のみ Phase 2 検証
+- novel 2 件: hack 31 Dynamic Workflows (Gap だが deliberate non-adopt: tool desc 注入 + opt-in gated) / **hack 32 /effort ultracode = Partial→Adopt (S)**
+- 採用 1 件: `references/workflow-guide.md` の Effort Level テーブルに `ultracode` (xhigh) 行 + session-scoped 注記を追記 (新 tier 出荷で表が stale だったため鮮度維持)
+- grounding: ultracode 挙動は低信頼記事ではなく注入済み Workflow tool description を一次情報源とした
+- 隣接観測 (未編集): `workflow-guide.md:724` "max は Opus 4.6 専用" は現行 4.8 で stale 疑い → model-version drift audit 候補
+- meta: 調査中 `model-routing.md` 等を表示欠落で「未検出」と誤記録 → 実在確認し撤回 (honesty 原則)
+- レポート: docs/research/2026-05-31-32-claude-code-hacks-absorb-analysis.md
+
 ## [2026-05-27] ingest-skip (light Phase 2, adopt=0) | How to Build a Software Factory with Claude Code (Sai Rahul / @sairahul1)
 
 - ソース: テキスト貼り付け (creator-monetization framing: Follow @sairahul1, "save months" hype, listicle)
@@ -1181,7 +1232,6 @@
 - 実装: scan-context-files.py 作成 + settings.json SessionStart 登録 (検証済: ruff/validate-configs)
 - Review Gate: 3-way (code/codex/security) で HIGH 1 + MEDIUM 2 修正 → codex 再レビュー PASS。U+202E Trojan Source (CVE-2021-42574) 取りこぼしを bidi/format 広域化で修正、prompt-injection-detector.py も同期。shell base64 + symlink 拒否追加。codex「未登録」指摘は False Positive 却下
 
-<<<<<<< HEAD
 ## [2026-05-30] ingest-skip (validation-only) | damidefi: I Connected Hermes Agent to My Obsidian Vault
 - ソース: damidefi (X), Hermes Agent × Obsidian Vault 体験談
 - 判定: topic family "obsidian-second-brain" saturated-pure-rehash (N=15+, 採用率 ~0%, delta=0)。同記事は 2026-05-23 absorb 済・採用0。記事 absorb は skip。
@@ -1190,8 +1240,7 @@
 - Explore 誤報訂正: 「skill は仕様のみ実装なし」は誤り。SKILL.md (allowed-tools: Read) 自体が実装、別途 .sh 不要。
 - 採用: CLAUDE.md (.config/claude/CLAUDE.md) に <important if="design/judgment/research 継続"> ブロック追加 (proactive vault 参照指示、関連フォルダ限定、snapshot caveat 付き)。option A=instruction-first。検証: task validate-configs PASS。
 - 昇格トリガー: instruction で vault 参照が安定しなければ option B (SessionStart hint hook) に昇格。
-||||||| parent of 65e8326 (📝 docs(absorb): personal-agent-stack — tool-surface + action-trust ladders)
-=======
+
 ## [2026-05-31] ingest | My Agent Stack For Automating My Personal Life (Nicolas Bustamante)
 
 - ソース: Nicolas Bustamante 記事（貼り付けテキスト）
@@ -1200,4 +1249,158 @@
 - 取り込み: cli-discovery.md に「2 つの直交ラダー」セクション追加（ツール表面信頼性 × 操作信頼ティア）
 - メタ: Opus の Already ハロシネーション罠を検出 → feedback_absorb_already_hallucination.md 新設
 - レポート: docs/research/2026-05-31-personal-agent-stack-absorb-analysis.md
->>>>>>> 65e8326 (📝 docs(absorb): personal-agent-stack — tool-surface + action-trust ladders)
+
+## [2026-05-31] ingest-skip | I Searched the Whole Claude Skills Ecosystem - These Are the Ones That Matter (@polydao)
+- ソース: @polydao (X/Buzzoni Notes), Claude skills ecosystem listicle（32 リポジトリ/skill リンク集）
+- 判定: topic family "skill-catalog-listicle" (taxonomy 未登録だが MEMORY.md 実績で N>=7 飽和) saturated-pure-rehash (delta=0)
+- 根拠: 過去事例 — Top 67 Skills (4-19, 2 採用) / 100+ Best 6 (5-06, 5 採用) / 30 Sub-Agents (5-02, 4 採用) / SKILL.md 15min Guide (4-26, 採用0) / Claude Skills 6 法則 (4-29, 既実装) / mattpocock (4-29, chain) / Anthropic Complete Guide (5-23, 5 採用)
+- delta=0 理由: 提唱 skill は全て dotfiles 既存 — skill-creator/skill-audit (作成・検査) / AutoEvolve (self-improving) / worktree workflow / /audit (tech-debt) / document-factory (doc-coauthoring) / /research+recall+docs/plans (persistent research) / MCP 統合済み。外部 skill (Composio connect-apps, Apollo, email triage, rag-architect, observability-designer 等) は personal/business automation 領域で coding harness 範囲外 (N/A)
+- 質的評価: 純粋な monetization-driven リンク集 ($95K vs $300K / Telegram channel 誘導 / Like+Repost 依頼)、具体的 rubric ゼロ。Boris 30 Tips / Khairallah 40 Features と同型 (採用 0 パターン)
+- キーワード hit: skills / ecosystem / catalog / stack
+- スキップ判定: Phase 1.5 gate (ユーザー明示選択 skip)
+- 副次: 追記時に log.md 行 1184-1203 の未解決 git コンフリクトマーカー (commit 65e8326 由来) を発見・解消 (両エントリ damidefi/personal-agent-stack を保持)
+
+## [2026-05-31] ingest (採用 0) | How To Fix AI Slop (Using Hermes)
+- ソース: How To Fix AI Slop (Using Hermes) — ベンダーマーケティング記事 (Hermes 2 件目)
+- 判定: Already 2 / Partial 4 / N/A 2 / (採用 0)
+- 結論: Reference-Only。dotfiles の eval 基盤 (5 reviewer + consensus + benchmark-dimensions + skill-audit + scripts/eval/) は Hermes primitive より成熟。最重要 move (#10 auto-close-loop) は /improve として 2026-05-03 意図的 retire 済み
+- Phase 2.5: Codex が Opus の Already 過大評価 3 件是正 (#2/#8 →Partial, #5 "より高度"削除) / Gemini grounding が auto-loop の Self-Preference Bias・Model Collapse・Oracle 問題で棄却根拠を補強
+- レポート: docs/research/2026-05-31-hermes-ai-slop-eval-loop-absorb-analysis.md
+
+## [2026-05-31] ingest | How To Fix AI Slop (Using Hermes)
+
+- ソース: Hermes vendor marketing article (pasted text)
+- 判定: Gap 0 / Partial 0 / Already 7 (3層: Primitives稼働/Active loop Retired/Signal-to-action Partial) / N/A 1
+- 取り込み: 0 件 (全 primitives 実装済み、eval loop は 2026-05-03 /improve retire で意図的無効化、gap は observability-signals.md で文書化済み)
+- family: eval-loop / harness-quality-gate (SATURATED-pure-rehash, delta=0)
+- 反証データ記録: 自動 self-improvement loop = false-positive slop 製造機、approval button は precision を解決せず noise を UX に転嫁。次回 eval-loop 系 absorb の judgment anchor
+- レポート: docs/research/2026-05-31-hermes-eval-loop-absorb-analysis.md
+
+## [2026-05-31] ingest-skip | Hermes Agent Masterclass: The Complete Course From Zero to Full Autonomous Agent Operation
+- ソース: Hermes vendor marketing article (pasted text), URL記載 github.com/hermes-agent/hermes は実在せず
+- 理由: topic family "hermes" saturated-pure-rehash (8 件目, 直近 3 件採用 0, delta=0)
+- 根拠: 記事の全機能 (CLAUDE.md constitution / Markdown skills / SQLite memory / cron scheduler / MCP / 4-agent pipeline / quality gates / weekly review / 90-day build) は Claude Code + dotfiles に既存。Section 5 morning-briefing は 2026-04-14 personal-analyst absorb で auto-morning-briefing.sh 実装済み
+- 実在性 grounding (Gemini): hermes-agent/hermes は不在、実在は NousResearch/hermes-agent = 「Claude Code 機能セットのリブランド/進化版クローン」。差別化は model provider 非依存 (Ollama) と Telegram/Slack のみ、本 harness では二重管理負債
+- 導入判断: 不要 (新規 capability ゼロ、成熟 harness の後退)。creator-marketing パターン (claude-opus-4-5 旧モデル名 / FOMO 煽り / moat 連呼 / cyrilXBT format 言及)
+- 該当 family のキーワード hit: hermes / autonomous agent / CLAUDE.md / skill / memory / scheduler / MCP / multi-agent
+- スキップ判定: Phase 1.5 gate (ユーザー明示選択: log.md 1行で閉じる)
+
+## [2026-05-31] ingest (light Phase 2, adopt=1) | 4-Agent Pipeline (Planner→Coder→Tester→Reviewer)
+
+- ソース: "How to build a 4-agent team that ships a feature while you sleep" (zodchixquant, Telegram-promoted / Teamly SaaS 集客)
+- family: multi-agent-orchestration (N≥5, delta≈0 pure-rehash、user continue 選択)
+- 判定: Gap 0 / Partial 0 / Already 4 / N/A by design 3
+- 採用 (1, S): test-engineer.md に `### On Test Failure (Role Boundary)` 追加 (prod バグ起因のテスト失敗は自分で直さず報告して STOP)
+- 不採用: 固定 4-agent pipeline / `.pipeline/` shared folder / `/ship` orchestrator (Implicit Coordinator + S/M/L 動的分岐と衝突) / cross-link (verification-before-completion+/review 連鎖で冗長と実証)
+- Phase 2.5: Codex (exit 0)「採用0が妥当」→ user「手抜きしてない？」challenge で /rpi・test-engineer.md 実読し採用1に精緻化。Gemini quota 枯渇で Codex 単独判定
+- レポート: docs/research/2026-05-31-4-agent-pipeline-absorb-analysis.md
+
+## [2026-05-31] ingest | Cursor Auto Review 実行モード
+
+- ソース: https://cursor.com/ja/changelog/auto-review (Cursor 3.6 changelog, 2026-05-29)
+- 判定: Gap 0 / Partial 2 (低優先) / Already 3 / N/A 1 (意図的 Reject)
+- 取り込み: 新規採用 0 件 (Codex+Gemini+Opus 三者一致)。validation-only follow-up として permission-audit 棚卸し実施 (結果クリーン: allow 71/deny 102、pruning candidate なし、scope-creep なし)
+- 核心 #4 分類サブエージェント三値判定 (allow/別アプローチ/ask) は determinism boundary 違反 + prompt injection リスクで意図的 Reject。記事タイトル "auto-review" だが内容は permission/autonomy/sandbox で code-review-best-practices family と誤分類回避
+- family: none (permission/autonomy/sandbox、既存 taxonomy 4族に非該当、新分野扱いで PASS)
+- レポート: docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md
+
+## [2026-05-31] ingest | Zero Trust for AI Agents (Anthropic 公式 eBook)
+
+- ソース: https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a1611a04085d7cd3dadc924_Claude-eBook-Zero-Trust-for-AI-Agents-05182026.pdf
+- 判定: Gap 1 (observability why→ops層), Partial→Agent-BOM-lite 1, N/A 7 (暗号系/SOAR/AI-BOM完全版), Already 6 (全12原則 exists)
+- 取り込み: 運用メタ層 3 タスク全採用 (L) — Agent-BOM-lite / why observability decision log / 個人版 8-phase checklist。Phase 2.5 で Codex が Opus の 1st-party 過小評価 self-bias を修正
+- プラン: docs/plans/active/2026-05-31-zero-trust-absorb-plan.md (Codex Spec/Plan Gate + 新セッション /rpi)
+- レポート: docs/research/2026-05-31-zero-trust-ai-agents-absorb-analysis.md
+
+## [2026-05-31] ingest-skip | The Exact Obsidian Daily Note System I Use to Never Lose an Idea Again
+
+- ソース: テキスト貼り付け (@damidefi on X, 直 URL なし)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (15 件目, delta=0)
+- 根拠: @damidefi 本人の 2 件目 — 前回 2026-05-23 (family 10 件目) は reference-only / 採用0。本記事の手法はすべて既出 or N/A: Telegram bot/N8N synthesis/Evening review prompt/Weekly rollup は前回 damidefi T2/T3/T5/T6 で既判定、新ツール名 Templater 自動 daily / QuickAdd 4-capture の 2 件 (ambiguous) も harness 範囲外の個人 Obsidian plugin 設定で /note + auto-morning-briefing.sh に意味的同等
+- 該当 family のキーワード hit: obsidian, daily note, quickadd, templater, vault, second brain, weekly rollup
+- スキップ判定: Phase 1.5 gate (user choice: skip 推奨)
+- 直近トレンド: Cyril 系 + damidefi の連続 reference-only ストリーク継続 (前回 meta-finding「trending reject 閾値」シグナルの再確認)
+
+## [2026-06-01] ingest-skip | Claude Code + NotebookLM + Obsidian: Research Monster That Gets Smarter Every Time You Use It
+
+- ソース: テキスト貼り付け (creator-monetization listicle, 直 URL なし)
+- 理由: topic family "obsidian-second-brain" saturated (18 件目, 採用率 <20%, delta≈0-1)
+- 根拠: 中核 2 機構が両方とも過去 absorb で明示却下済み — ①NotebookLM offload (notebooklm-py 非公式 API) は `2026-04-10-notebooklm-claude-extend-sessions` で「非公式API / Master Brain 採用却下」、②「Vault=記憶層 / claude.md が好みを学習」は記事が memory→Vault 同期を逆方向に主張するが `cc-7-layer-memory-model.md` で Vault は単方向同期スナップショット (AI reasoning input ではない) と確定済み。Skill Creator / pipeline skill 統合 / 週次 claude.md 更新は Already (skill-creator + /epd /rpi /dispatch + AutoEvolve + /profile-drip の上位互換)。唯一の未実装手法 yt-dlp YouTube engagement 検索は content-creator/niche 分析特化で Go/TS harness-engineering 文脈に N/A
+- 該当 family のキーワード hit: obsidian, vault, second brain, notebooklm, claude.md learns preferences, pipeline skill
+- スキップ判定: Phase 1.5 gate (user choice: skip 推奨)
+- 直近トレンド: obsidian-second-brain family の reference-only/skip ストリーク継続 (Cyril → damidefi×2 → 本記事)。creator-monetization 系「使うほど賢くなる」framing は構造的低収率の再確認
+
+## [2026-06-01] ingest-skip | How to build a team of AI agents: 9 stages from first agent to production crew
+
+- ソース: movez.substack.com (creator-monetization 系 generic listicle, "fresh AI alpha")
+- 理由: topic family "multi-agent-orchestration" saturated (7+ 件目)。9 ステージ全てが既存実装に 1:1 マッピング (Pass 1 Explore で実ファイル裏付け済: 8 stage exists / Stage 6 shared task list partial / Stage 8 trajectory sequence assertion のみ not_found だが単一ユーザー harness では AutoEvolve + session-trace-store が analog で N/A)
+- 根拠: 過去 absorb — Multi-Agent Coordination Patterns (2026-04-10) / 30 Sub-Agents (2026-05-02 採用4) / MoE / PostHog Agent-First / CORAL / Khairallah 40 Features (採用0)。記事は Claude Agent SDK 自作製品向けで dotfiles harness と前提相違 (loop 制御 / context engineering / permissions は CC runtime + 既存 hook が機構として保有)
+- 該当 family のキーワード hit: multi-agent, orchestrat, subagent, agent loop, shared task list, permissions, eval, trajectory
+- スキップ判定: Phase 1.5 gate (SATURATED, user choice: skip 推奨)
+- borderline 論点 (将来 revisit 用、今回不採用): Stage 8 trajectory_must_include = ツール呼び出し順序の sequence assertion。session-trace-store.py は順序を記録するが「正しい sequence であるべき」の assert は未実装。個人 harness では AutoEvolve reactive ループが既存 analog のため Gap 価値低
+
+## [2026-06-02] ingest | コードレビュー6段階と AI/人間の境界
+
+- ソース: https://zenn.dev/kenimo49/articles/code-review-6-stages-ai-human-boundary
+- 判定: Gap 0, Partial→採用 2 (手法5,8), Already 4, N/A 多数 (チーム前提手法)
+- 取り込み: review skill に Negative Signal Review Rule (AI 沈黙=盲点シグナル) + ADR template に機械照合フィールド (Verification: affected paths/invariants/verification command)
+- 分析レポート: docs/research/2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md
+
+## [2026-06-02] ingest-skip (light Phase 2, adopt=0) | How to actually use Claude: 14 steps
+
+- ソース: movez (Substack) — "How to actually use Claude: 14 steps that unlock 100% of its potential and replace 10 apps"
+- 理由: topic family "claude-code-tips" generic-listicle 12 件目。SATURATED-but-novel (採用率 < 20%、初期 delta=2)。Khairallah 40 features (2026-05-22) とほぼ同一ジャンル・同一機能群で採用 0 を再現
+- 根拠: Phase 2 (light) まで検証したが novel 2 件 (Voice mode + Quick Entry / Microsoft 365 add-ins) は両方 consumer GUI 機能で dotfiles harness にスコープ外 → N/A 確定。修正後 delta=0 (2026-03-25 everything-guide で既に同 N/A 判定済み、初期 delta 計算は直近 3 レポートのみ照合の盲点)
+- 該当 family のキーワード hit: claude-code-tips, generic listicle, how to use claude, N steps/features, projects/artifacts/connectors/memory/styles/cowork/routines/api
+- スキップ判定: Phase 1.5 gate → light-phase2 (user choice) → adopt=0
+- 分析レポート: docs/research/2026-06-02-how-to-actually-use-claude-14-steps-absorb-analysis.md
+
+## [2026-06-02] ingest-skip | Obsidian×Claude Skillsで第二の脳を勝手に構築する方法 (東大Obsidianオタク)
+
+- ソース: テキスト貼り付け / 出典 x.com/polydao/status/2042203352054771748 (creator-monetization 系, フォロー誘導・「1%以下」煽り)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (N=19件目, 採用率 <15%, delta=0)
+- 根拠: 7 手法すべて既知。中核の Karpathy compiler/librarian 方法論は 2026-04-12-karpathy-skills-analysis.md で既 absorb。3-folder minimal=cyril one-folder/damidefi delete-90%、整理するなクリップしろ=/note inbox、6ステップ運用=obsidian-claude-code-meta、Claude Skills 型化=dotfiles skill 群、MCP for Obsidian=既存 obsidian plugin + mcp__obsidian (mcp-audit.py enforced)、週次 Health Check=damidefi pruning-first + check-health + memory-pruning playbook
+- 該当 family のキーワード hit: obsidian, vault, second brain, karpathy, raw/wiki/reports, claude skills, mcp obsidian, health check
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, user choice: skip)
+- user 関心 (記事と独立): Slack 情報散乱の実課題 → 記事 absorb とは別途、既存仕組みでの提案を実施 (採用件数には数えない)
+- 直近トレンド: obsidian-second-brain family の skip ストリーク継続 (cyril → damidefi×2 → 本記事)。記事側に新規論点ゼロ
+
+## [2026-06-02] ingest-skip | THE 30-MINUTE OBSIDIAN SYSTEM (retrieval-first second brain)
+
+- ソース: 貼り付けテキスト (creator-monetization 系 second-brain ガイド、著者不明)
+- 理由: topic family "obsidian-second-brain" 18 件目、SATURATED-borderline (delta≈1)。記事 absorb は skip、user choice = skill-validation のみ
+- 根拠: 全手法既知。3 properties=PKM 定番 / 7秒キャプチャ=/note / Decision Feeder=obsidian-knowledge §8 + CLAUDE.md:51 判断時 shallow grep + /think decision / Weekly review+update CLAUDE.md=前提衝突 (Vault は memory→Vault 単方向スナップショットで AI reasoning input ではない、cc-7-layer-memory-model.md:70) / contribution-rate=damidefi signal-density・pruning-first と意味的同値で既 internalize
+- 記事核心の前提不一致: 「Claude が vault 全体に read access を持つ queryable layer」＝ Vault live read。dotfiles は wiki/log.md:1229 で「READ は MANUAL のみ、PROACTIVE read=0 件、vault 未ロード」と既結論。記事の批判 (capture はできるが retrieval 自動化されない) は既知
+- 該当 family のキーワード hit: obsidian, second brain, vault, PARA, wikilinks, retrieval, contribution rate, decision feeder
+- スキップ判定: Phase 1.5 gate (SATURATED-borderline, user choice: skip article + skill-validation only)
+- 直近トレンド: obsidian-second-brain skip ストリーク継続 (cyril → damidefi×2 → karpathy → 本記事)
+- **validation-only follow-up (記事と独立、採用件数に数えない)**: 既存 obsidian skill 群の retrieval 点検で latent drift 1 件検出 → `06-Areas` 参照不一致 (CLAUDE.md:51 + think/SKILL.md ×5 が `06-Areas/` を読み書きするが、正準 PARA 構造は `02-Areas`、`06` は `06-Archive`)。実 Vault が `02-Areas` の場合、判断時 shallow grep が空振り + /think が `06-Areas` フォルダ誤生成 (SKILL.md:278 で存在しなければ新規作成)。実 Vault が permission denied で確定不可 → user verification 待ち
+
+## [2026-06-02] ingest (light Phase 2, adopt=0, reference-pointer) | agents-best-practices (DenisSergeevitch)
+
+- ソース: https://github.com/DenisSergeevitch/agents-best-practices (provider-neutral Agent Skill, MIT, ⭐1486)
+- 判定: harness-engineering family 飽和 (N≥5, 直近2件連続 reject: Cursor harness + Hermes)。Step 4.5 連続 reject trend 発火。user choice = light-phase2
+- 検証: novel 3点のみ Phase 2 (Phase 2.5 省略)。#1 provider-neutral×非コーディング多ドメイン MVP-blueprint=Partial(Gap寄り) / #2 coverage-audit=Already(/skill-audit) / #3 external skill 管理=Already(skills-lock.json)。8原則本体は全 Already
+- 取り込み: 0 件。user choice = reference pointer のみ (Pruning-First: 90% 既実装スキルを 67 個目に追加せず、MEMORY.md 外部参照に1行記録)
+- 使い道: チーム/非コーディング/多プロバイダ agent 設計時に repo or `npx skills add` を参照
+- レポート: docs/research/2026-06-02-agents-best-practices-absorb-analysis.md
+- メタ: agent-harness-contract.md が Claude-specific であることが #1 で明示確認 (drift ではなく意図的境界)
+
+## [2026-06-02] ingest (light Phase 2, adopt=1) | Hermes 60 Days / 6 Lessons (0xJeff)
+
+- ソース: "6 Workflows, 6 Lessons, 60 Days with Hermes Analyst" (0xJeff, vendor newsletter)
+- 判定: harness-engineering family SATURATED-borderline (N=12+、直近の Hermes/harness content は採用0圏: Cursor harness 0 / How To Fix AI Slop-Hermes delta=0 0)。手法 delta=1。user choice = light-phase2 → A (design note のみ)
+- 検証: 6 lessons 中 5 つ Already (provider routing / skill auto-create / memory persistence / feedback loop / skill bundling)、lesson 5 (x402 crypto)=N/A。唯一 novel = lesson 4b「feedback loop の echo chamber / self-reinforcing」(著者 "haven't solved this yet")
+- 取り込み: 1 件 (S, design note のみ) — 学習昇格ループに echo-chamber リスクが該当 (importance 降順 + 完全一致 dedup のみで monoculture 抑制なし、部品 contradiction-scanner/submodular_selection は未配線)。design doc にリスク3 + watch 条件追記 + promote-learnings SKILL に多様性チェック heuristic 1項追加。自動ガード配線は YAGNI で見送り (稼働前/未観測)、watch トリガーで再検討
+- 該当 family のキーワード hit: building an agent, architecture, feedback loop, skill bundling, memory persistence, echo chamber
+- レポート: docs/research/2026-06-02-hermes-60-days-6-lessons-absorb-analysis.md
+- メタ: 採用は記事の novelty ではなく「未解決問題が現ブランチ feat/learned-promotion-loop に直接該当した」タイミング由来
+
+## [2026-06-02] ingest (adopt=1) | Suzanne teach-back prompt (Anthropic, via Thariq)
+
+- ソース: https://gist.github.com/ThariqS/1389dcdff9eba4789887a2211370f06b (Claude の作業を本人に教え返す teacher-mode prompt)
+- 判定: 新 family "agent-comprehension"。9手法中 Gap 4 / Partial 3 / Already 2。既存 deep-read(外部記事)/quiz(CC知識)/think/recall いずれも「このセッションで Claude が行った作業の理解検証」責務を持たず = クリーン Gap
+- 取り込み: 1 件 (S) — `/teachback` 軽量コマンド新設 (.config/claude/commands/teachback.md)。3階層チェックリスト+restate-first+why深掘り+クイズ(シャッフル/非開示)+ELI5/14/intern+debugger 統合、`--strict` で /goal hard gate opt-in
+- Codex 補正: deep-read 拡張は反対(trigger濁る)/重いskillは時期尚早→reusable prompt で開始(Pruning-First)/完了ゲートは opt-in
+- 副次 (Validation-only): Phase 2.5 で cmux Worker (launch-worker.sh) のバグ発見・修正。surface ref がグローバルなのに surface:1 ハードコード→Surface not found で codex/gemini worker 全失敗。動的解決に修正、ライブ検証済。/absorb 正規パス復旧
+- レポート: docs/research/2026-06-02-suzanne-teachback-absorb-analysis.md

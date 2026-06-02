@@ -46,13 +46,29 @@ if ! "$CMUX_CLI" ping &>/dev/null; then
 fi
 
 # --- ワークスペース作成 ---
-WS_RAW=$("$CMUX_CLI" new-workspace "${WORKER_ID}")
+WS_RAW=$("$CMUX_CLI" new-workspace --name "${WORKER_ID}")
 WS=$(echo "$WS_RAW" | awk '{print $NF}')
 if [[ ! "$WS" =~ ^workspace:[0-9]+$ ]]; then
   echo "[launch-worker] new-workspace returned unexpected output: ${WS_RAW}" >&2
   exit 1
 fi
 echo "[launch-worker] Created workspace: ${WS}" >&2
+
+# --- surface ref の解決 ---
+# cmux の surface ref はグローバル (surface:1 等の固定ではない)。新ワークスペースの
+# 実際の surface ref を解決する。即座に ready になるが、念のため数回リトライする。
+SURFACE=""
+for _ in 1 2 3 4 5; do
+  # grep no-match (exit 1) で set -e/pipefail に捕まらないよう || true で空文字に倒す
+  SURFACE=$("$CMUX_CLI" list-pane-surfaces --workspace "$WS" 2>/dev/null \
+    | grep -oE 'surface:[0-9]+' | head -1 || true)
+  [[ -n "$SURFACE" ]] && break
+  sleep 0.3
+done
+if [[ -z "$SURFACE" ]]; then
+  echo "[launch-worker] failed to resolve surface for ${WS}" >&2
+  exit 1
+fi
 
 dispatch_log_state "$WORKER_ID" "pending" "launching"
 
@@ -65,14 +81,14 @@ if [[ "$MODEL" == "claude" && -n "$WORKTREE" ]]; then
       echo "[launch-worker] Failed to create worktree for branch: cmux/${WORKTREE}" >&2
       exit 1
     }
-  "$CMUX_CLI" send --workspace "$WS" --surface surface:1 "cd '${WORK_DIR}'\n"
+  "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" "cd '${WORK_DIR}'\n"
   sleep 1
 fi
 
 # --- モデル別起動 ---
 case "$MODEL" in
   claude)
-    "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
+    "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
       "claude --dangerously-skip-permissions\n"
     echo "[launch-worker] Waiting for Claude Code to start..." >&2
     sleep 5
@@ -109,16 +125,16 @@ ${TASK}
 # --- プロンプト送信 ---
 case "$MODEL" in
   claude)
-    "$CMUX_CLI" send --workspace "$WS" --surface surface:1 "$PROMPT"
-    "$CMUX_CLI" send-key --workspace "$WS" --surface surface:1 return
+    "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" "$PROMPT"
+    "$CMUX_CLI" send-key --workspace "$WS" --surface "$SURFACE" return
     ;;
   codex)
     # タスクはファイル経由で渡す（cmux send のシェル再解釈によるインジェクション防止）
-    "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
+    "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
       "codex exec --skip-git-repo-check -q \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
     ;;
   gemini)
-    "$CMUX_CLI" send --workspace "$WS" --surface surface:1 \
+    "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
       "gemini -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
     ;;
 esac

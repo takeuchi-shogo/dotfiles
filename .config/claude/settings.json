@@ -197,7 +197,6 @@
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
-    "alphaxiv",
     "code-review-graph"
   ],
   "hooks": {
@@ -274,6 +273,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/lifecycle/session-bom.py || true",
+            "timeout": 3
+          }
+        ]
       }
     ],
     "Stop": [
@@ -298,7 +306,7 @@
           },
           {
             "type": "command",
-            "command": "(python3 $HOME/.claude/scripts/learner/session-learner.py && python3 $HOME/.claude/scripts/learner/failure-clusterer.py) >> /tmp/claude-learner.log 2>&1 &",
+            "command": "python3 $HOME/.claude/scripts/learner/session-learner.py >> /tmp/claude-learner.log 2>&1 &",
             "timeout": 5
           },
           {

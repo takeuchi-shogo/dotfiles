@@ -193,6 +193,10 @@ adversarial framing を使うべきか迷った場合:
 - [ ] 制限の強度は適切か（過剰でも不足でもないか）
 - [ ] ロールバック可能か
 
+> 新しい agent/skill/hook を **導入する時** の包括的な 8-phase self-check は
+> [agent-deployment-checklist.md](agent-deployment-checklist.md) を参照
+> (supply chain / boundaries / injection / credentials / memory / measure)。
+
 ---
 
 ## Tool-Use Safety Taxonomy

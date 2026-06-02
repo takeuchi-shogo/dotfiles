@@ -85,6 +85,8 @@
 
 - [エージェントセキュリティ](concepts/agent-security.md) — プロンプトインジェクション・エージェントトラップ対策
 - [敵対的評価](concepts/adversarial-evaluation.md) — Generator-Evaluator 分離と greybox ファジング
+- [Cursor Auto Review absorb (2026-05-31)](../research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md) — ツール実行ガバナンス (allowlist/sandbox/分類サブエージェント三値判定)。LLM 分類器による allow/別アプローチ/ask 判定は determinism boundary 違反 + prompt injection リスクで**意図的非採用**。dotfiles は static allowlist 71 + deny 102 + hook で対応。採用 0 + permission-audit 棚卸し実施 (クリーン)
+- [Zero Trust for AI Agents (Anthropic eBook, 2026-05-31)](../research/2026-05-31-zero-trust-ai-agents-absorb-analysis.md) — agentic-security family、運用メタ層 3 タスク採用 → Agent-BOM-lite / why observability decision log / 個人版 8-phase checklist
 
 ### ml-rl — 機械学習・強化学習
 
@@ -112,6 +114,7 @@
 - [Erukiti フルAIコーディング (2026-05-21)](../research/2026-05-21-zenn-erukiti-full-ai-coding-absorb-analysis.md) — LLM の原理的欠陥前提でメカニズム強制 (linter/レイヤー/結合テスト/フェイズ分割) を提案。dotfiles では暗黙フォールバック禁止/見積もりプロンプト/テストコメント TSDoc/eslint-plugin-boundaries/vitest 推奨を採用
 - [Code Review Best Practices (Google eng-practices)](../research/2026-05-24-google-eng-practices-absorb-analysis.md) — Google 公式 Code Review Guide (Reviewer + Developer + Emergencies)。13 件採用、L 規模 integration plan あり
 - [openclaw/agent-skills autoreview (2026-05-28)](../research/2026-05-28-openclaw-autoreview-absorb-analysis.md) — Peter Steinberger autoreview SKILL.md (code-review-best-practices family 5 件目, saturated-but-novel)。Gap 4 / Partial 7 / Already 3 / N/A 6。即実装 5 件 (`/review` Anti-Patterns #6 nested reviewer ban + #7 cosmetic re-review ban / Step 5 cycle rule 8 focused test+review rerun / Step 1.1 diff scope mode 表 + "clean local review only proves no local patch" caveat / code-reviewer.md Section H rejected-finding inline comment rule)、保留 Plan 4 件 (T6 security suppression auditability M / T7 synthesis-report tests S / T8 parallel closeout pipeline M / T9 cmux 30min SLA S)。Phase 2.5: Codex 両ルート (cmux worker TTY + codex exec stall) 失敗 → Gemini grounding (5 主張 HIGH) + Opus self-critique で代替
+- [コードレビュー6段階と AI/人間の境界 (2026-06-02)](../research/2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md) — code-review-best-practices family 6 件目。Gap 0 / Partial→採用 2 / Already 4 / N/A 多数 (チーム前提手法)。採用: `/review` skill に Negative Signal Review Rule (AI 沈黙=盲点シグナル) + ADR template に機械照合フィールド (Verification: affected paths/invariants/verification command)
 
 ### evaluation — 評価・観測
 

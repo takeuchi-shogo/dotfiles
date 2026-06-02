@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from hook_utils import (
     get_emitter,
+    guard_action,
     load_hook_input,
     rotate_and_append,
     run_hook,
@@ -239,8 +240,13 @@ def _summarize_input(tool_input: object) -> dict[str, str] | str:
 
 def _audit(data: dict) -> None:
     tool_name = data.get("tool_name", "")
+    # Normalize once for all case-insensitive security checks: "MCP__github__Delete"
+    # must not bypass the gate; strip() also drops a trailing newline that would
+    # loosen the regex "$" anchor below (security review 2026-05-31). Forensic
+    # records still log the raw tool_name.
+    tool_name_norm = tool_name.strip().lower()
 
-    if not tool_name.startswith("mcp__"):
+    if not tool_name_norm.startswith("mcp__"):
         return
 
     tool_input = data.get("tool_input", {})
@@ -259,17 +265,24 @@ def _audit(data: dict) -> None:
     log_path = os.path.join(log_dir, "mcp-audit.jsonl")
     rotate_and_append(log_path, json.dumps(audit_entry))
 
-    # Check for dangerous operations (startswith or regex)
+    # Check for dangerous operations (startswith or regex).
+    # force_block=True: this is a security-gate; the block must NOT be relaxable
+    # via HOOK_GUARD_MODE (see references/hook-failure-policy.md).
+    session_id = data.get("session_id", "unknown")
     for prefix, reason in DANGEROUS_MCP_PREFIXES:
-        if prefix.startswith("^"):
-            if re.match(prefix, tool_name):
-                print(
-                    f"BLOCKED: MCP audit block — {reason} ({tool_name})",
-                    file=sys.stderr,
-                )
-                sys.exit(2)
-        elif tool_name.startswith(prefix):
-            print(f"BLOCKED: MCP audit block — {reason} ({tool_name})", file=sys.stderr)
+        matched = (
+            re.fullmatch(prefix, tool_name_norm)
+            if prefix.startswith("^")
+            else tool_name_norm.startswith(prefix)
+        )
+        if matched and guard_action(
+            "mcp-audit",
+            "dangerous-mcp-tool",
+            f"{reason} ({tool_name})",
+            force_block=True,
+            revocation_trigger=f"MCP tool matching '{prefix}' is always blocked",
+            metadata={"session_id": session_id, "tool_name": tool_name},
+        ):
             sys.exit(2)
 
     # Warn on unknown MCP servers
@@ -290,7 +303,19 @@ def _audit(data: dict) -> None:
         if scope_violated:
             audit_entry["scope_violation"] = True
             rotate_and_append(log_path, json.dumps(audit_entry))
-            sys.exit(2)
+            if guard_action(
+                "mcp-audit",
+                "skill-mcp-scope-violation",
+                f"{tool_name} outside MCP scope for skill '{skill_name}'",
+                force_block=True,
+                revocation_trigger=f"tool outside skill '{skill_name}' MCP allow-list",
+                metadata={
+                    "session_id": session_id,
+                    "tool_name": tool_name,
+                    "skill": skill_name,
+                },
+            ):
+                sys.exit(2)
 
     # Sequence anomaly detection (VeriGrey arXiv:2603.17639)
     _check_sequence_anomaly(tool_name, data.get("session_id", "unknown"), log_path)
