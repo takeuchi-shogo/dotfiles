@@ -308,7 +308,7 @@ Failing/Degraded スキルに対する修正案の生成手順:
 ### Tournament Mode（CQS Stagnant 時）
 
 CQS が Stagnant (0.0-2.0) かつ前回 improve が neutral の場合、tournament mode を提案する。
-詳細手順は `skills/improve/instructions/tournament-mode.md` を参照。
+詳細手順は `references/best-of-n-guide.md`（N 並列実行 + スコアリング / Pruning / Escalation）を参照。
 
 判定:
 - CQS Stagnant AND 前回 neutral → 「tournament mode を推奨。実行しますか？」

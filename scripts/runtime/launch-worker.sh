@@ -131,7 +131,7 @@ case "$MODEL" in
   codex)
     # タスクはファイル経由で渡す（cmux send のシェル再解釈によるインジェクション防止）
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "codex exec --skip-git-repo-check -q \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
+      "codex exec --skip-git-repo-check --color never \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
     ;;
   gemini)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \

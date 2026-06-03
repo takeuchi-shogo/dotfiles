@@ -1439,3 +1439,12 @@
 - 採用: 1件 (S) — teachback の通常モードを「ソフトゲート」に強化。gist の核心 `/goal: 理解実証までセッションを終えない` (hard-gate default) を dotfiles は `--strict` opt-in に弱めていた。中間策として通常モードでも「未確認項目があれば終了前に一度確認 (受動的に終わらせない)」を追加。完全 hard-gate は --strict 維持
 - 教訓: 初回「dotfiles は gist より強化」と誤判定 → Already 項目で Intent(hard-gate) を Efficiency(摩擦削減) にすり替える `feedback_absorb_architectural_arrogance.md` の罠を踏みかけた。ユーザー指摘で訂正
 - Phase 2.5 (Codex+Gemini): 省略 (15行 prompt の逐語一致 case で overkill、ユーザー合意済)
+
+## [2026-06-03] ingest (採用0 / drift修正1) | dynamic workflows in Claude Code (Anthropic 公式)
+
+- ソース: Anthropic 公式ブログ (Thariq Shihipar / Sid Bidasaria) — Workflow tool (動的 harness 生成) の 12 パターン紹介
+- 判定: Already 4 (fan-out/loop-until-done/model-routing/worktree) / Partial 5 (adversarial=security限定/tournament/token=effort間接/quarantine/generate-and-filter) / Gap 1 (Workflow tool 本体=deliberate non-adopt 維持)
+- 取り込み: 新規 instruction **採用 0**。記事の主眼 (harness を作る) は `2026-05-31-32-hacks` で deliberate non-adopt 済 (tool description 自動注入+opt-in gated で redundant)
+- Validation-only Follow-up (drift 1件): `improve-policy.md:503` + `autoevolve-core.md:311` が参照する `tournament-mode.md` が孤児欠損 (2026-03-19 プランで作成予定→未作成) → ユーザー判断で `best-of-n-guide.md` に付替修正
+- Phase 2.5: Codex は launch-worker.sh の `-q` フラグバグで起動失敗 (要修正) → Opus 代行。Gemini の具体採用事例/CVE番号は hallucination 懸念で不採用、定性洞察 (LangGraph対比/quarantine引数解釈差バイパス) のみ採用
+- レポート: `docs/research/2026-06-03-dynamic-workflows-absorb-analysis.md`
