@@ -8,6 +8,14 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-04] ingest-skip | I Tested Every Claude Code Feature, These 12 Are the Best (500h Tier List)
+
+- ソース: Claude Code feature tier list (knowledge-work/automation 視点, D→S, テキスト貼付)
+- 理由: topic family "claude-code-tips" saturated-pure-rehash (N≈16, 採用率 <20%, delta=0)
+- 根拠: 全機能が既存マッピングで決着 — Already 採用済 (CLAUDE.md / Skills / Subagents / worktrees / **status line=statusline.sh+settings.json:775** / auto memory / /loop / ultra review / themes / hooks / effort levels / agent teams / /clear /compact) / Native 機能で dotfiles 作業不要 (/goal / ultraplan / /insights / /rewind / routines→/schedule / recap / /btw / voice / charts / desktop app / dispatch) / dynamic workflows は **deliberate non-adopt 維持** (memory 記録: opt-in gated で redundant) / Cowork・M365・Chrome・Google Workspace CLI は著者固有スタックで N/A。唯一の drift 候補 status line (#2「最も過小評価」) も既設定で delta=0
+- 該当 family のキーワード hit: every feature, tier list, best, claude code features, status line, skills
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, skip 推奨 → user 承認)
+
 ## [2026-06-03] ingest-skip | Claude Code + NotebookLM + Obsidian: 2 Weeks → 6 Minutes, $200/hr → $0
 
 - ソース: creator-monetization listicle (3-tool stack pitch, テキスト貼付)
