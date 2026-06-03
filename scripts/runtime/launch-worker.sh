@@ -3,8 +3,11 @@
 #
 # Usage:
 #   launch-worker.sh --model claude --task "タスク内容" [--worktree branch-name]
-#   launch-worker.sh --model codex --task "タスク内容"
-#   launch-worker.sh --model gemini --task "タスク内容"
+#   launch-worker.sh --model codex --task "タスク内容" [--keep]
+#   launch-worker.sh --model gemini --task "タスク内容" [--keep]
+#
+# 単発 worker (codex/gemini) は成功完了後に使い捨て workspace を自動 close する。
+# --keep で自動 close を無効化 (失敗時は --keep なしでも観察用に残る)。
 #
 # Output: workspace_id worker_id (space-separated)
 
@@ -19,6 +22,7 @@ CMUX_CLI="$(_resolve_cmux_cli)" || { echo "[launch-worker] cmux not found" >&2; 
 MODEL=""
 TASK=""
 WORKTREE=""
+KEEP=""
 DONE_SIGNAL="${DISPATCH_DONE_SIGNAL}"
 
 # --- 引数パース ---
@@ -27,6 +31,7 @@ while [[ $# -gt 0 ]]; do
     --model)   MODEL="$2"; shift 2 ;;
     --task)    TASK="$2"; shift 2 ;;
     --worktree) WORKTREE="$2"; shift 2 ;;
+    --keep)    KEEP=1; shift ;;
     *) echo "[launch-worker] Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -122,6 +127,16 @@ ${TASK}
 1. 結果を ${RESULT_FILE} に書き出してください
 2. 最後に「${DONE_SIGNAL}」と出力してください"
 
+# --- 自動 close suffix の構築 ---
+# 単発 worker (codex/gemini) は完了後に使い捨ての workspace を自動 close する。
+# 成功時のみ (&& チェーン) close するため、codex/gemini が失敗した場合は
+# workspace が残り画面で観察・デバッグできる。--keep で自動 close を無効化。
+# RESULT_FILE は workspace 外 (${DISPATCH_RESULT_DIR}) なので close 後も読める。
+CLOSE_SUFFIX=""
+if [[ -z "$KEEP" ]]; then
+  CLOSE_SUFFIX=" && '${CMUX_CLI}' close-workspace --workspace '${WS}'"
+fi
+
 # --- プロンプト送信 ---
 case "$MODEL" in
   claude)
@@ -131,11 +146,11 @@ case "$MODEL" in
   codex)
     # タスクはファイル経由で渡す（cmux send のシェル再解釈によるインジェクション防止）
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "codex exec --skip-git-repo-check --color never \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
+      "codex exec --skip-git-repo-check --color never \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'${CLOSE_SUFFIX}\n"
     ;;
   gemini)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "gemini -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'\n"
+      "gemini -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'${CLOSE_SUFFIX}\n"
     ;;
 esac
 
