@@ -1503,3 +1503,20 @@
   - (rehash 除外: #1 lifecycle=AutoEvolve / #4 progressive-disclosure / #6 context compression=context-constitution P3)
 - スキップ判定: light Phase 2 で検証後 adopt=0 (skip 同等)。MEMORY.md 索引・wiki INDEX・Obsidian は更新せず
 - レポート: docs/research/2026-06-05-muse-autoskill-self-evolving-agents-absorb-analysis.md
+
+## [2026-06-05] ingest-skip | I Connected Claude to Obsidian 90 Days Ago (cyrilXBT)
+- ソース: cyrilXBT note 記事「I Connected Claude to Obsidian 90 Days Ago. Here Is What Happened to How I Work.」(テキスト貼付)
+- 理由: topic family "obsidian-second-brain" saturated-pure-rehash (N=18 件目, 著者 cyrilXBT は family 4 本目, コア主張採用率 <10%, delta=0)
+- 根拠: 全 9 手法が prior レポートに matched_prior 名指し済み。新規論点ゼロの完全再パッケージ (90日 narrative 形式のみ新規)。中心思想「Vault=双方向 AI 思考パートナー」は dotfiles の「Vault=memory→Vault 単方向スナップショット」と矛盾し family 横断で deliberate non-adopt 済
+- per-method 照合台帳 (delta=0 の立証 — 全 current 手法 → matched_prior):
+  - Filesystem MCP で Vault 接続 → `2026-05-25-cyrilxbt-organize-vault` "Filesystem MCP integration" (rehash, obsidian-knowledge/cli/digest/note で接続済)
+  - Morning briefing 自動生成 → `2026-05-08-cyril` #4 "Daily Brief automation" + `2026-05-19-dashboard` T1 = auto-morning-briefing.sh (rehash)
+  - CLAUDE.md=living doc / 月曜更新 → `2026-05-08-cyril` #3 "Vault CLAUDE.md template" + #6 "Weekly CLAUDE.md refresh (Monday 5min)" (rehash, Already/N/A 確定済)
+  - 5 workflows に絞る → `2026-05-31-damidefi` signal-density + KISS/YAGNI/Pruning-First (rehash, 過剰生成削減で同一)
+  - Connection finder=最高レバレッジ → `2026-05-08-cyril` #12 "Cross-vault auto-link discovery" (rehash, obsidian-knowledge リンク候補、自動化は Reject 済)
+  - Decision support (vault 履歴) → `2026-05-08-cyril` #A "Contradiction detection / /think" + /decision + decision-feeder (rehash)
+  - Vault quality cleanup (接続前) → `2026-05-31-damidefi` "Delete 90% / signal-density pruning" 記事全体 (rehash)
+  - 過剰自動化を避ける (12→5) → `2026-05-31-damidefi` attention budget + KISS (rehash, #4 と同一)
+  - 蓄積データからパターン抽出(90日) → `2026-05-08-cyril` #4 "PATTERN output" + #5 "Weekly Synthesis" (rehash, 90日 anecdote 3件は personal finding で手法でない)
+- 該当 family のキーワード hit: obsidian / vault / second brain / CLAUDE.md / morning brief
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー選択 skip)
