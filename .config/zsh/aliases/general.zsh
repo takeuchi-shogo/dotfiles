@@ -28,3 +28,8 @@ alias mkdir='mkdir -p'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
+
+# notebooklm-py (非公式 NotebookLM CLI / personal 用途。認証 state は ~/.notebooklm/ に一元管理・git 管理外)
+if [[ -x "$HOME/.notebooklm/.venv/bin/python" ]]; then
+  alias nblm="$HOME/.notebooklm/.venv/bin/python -m notebooklm"
+fi
