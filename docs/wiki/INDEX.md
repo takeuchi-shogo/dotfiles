@@ -151,6 +151,8 @@
 - **Build to Delete wiring (AutoEvolve との接続)** — ハーネス・フック・スクリプトを設計時から「何が改善されれば不要か」を明記し、AutoEvolve の廃止サイクルに接続する運用方針。"Build to Delete" 原則の実装化 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
 - **規範的フレーミング (Constitutional AI 根拠)** — 「〇〇を禁止する」より「〇〇を推奨する」形式で指示を書くことで Constitutional AI の規範遵守率を高める原則。Gemini 補完で得られた知見 → 参照: [2026-04-21-obsidian-claudecode-absorb-analysis](../research/2026-04-21-obsidian-claudecode-absorb-analysis.md)
 
+- [AI tech researcher 自己進化型情報収集 (2026-06-04)](../research/2026-06-04-ai-tech-researcher-self-evolving-absorb-analysis.md) — tokium_dev/Zenn 記事。morning-briefing + 2層オーケストレーションの延長線上に RSS 自動収集→absorb パイプラインを構築する L プラン。評価ゲーミング・コールドスタート対策として採用実績を補助指標限定に封じ、MAB探索/MMR多様性/時間減衰/human-in-loop の安全設計で自己進化を運用する → プラン: [docs/plans/active/2026-06-04-ai-tech-researcher-self-evolving-plan.md](../plans/active/2026-06-04-ai-tech-researcher-self-evolving-plan.md)
+
 ### research — リサーチ設計
 
 - **Deep Researcher (Onyx+CrewAI+Voxtral, 2026-04-24)** — Akshay Pachaar による深層リサーチエージェント設計。Partial 6, Already 3 強化, N/A 2 → 参照: [2026-04-24-deep-researcher-absorb-analysis](../research/2026-04-24-deep-researcher-absorb-analysis.md)

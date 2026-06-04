@@ -1448,6 +1448,13 @@
 - 教訓: 初回「dotfiles は gist より強化」と誤判定 → Already 項目で Intent(hard-gate) を Efficiency(摩擦削減) にすり替える `feedback_absorb_architectural_arrogance.md` の罠を踏みかけた。ユーザー指摘で訂正
 - Phase 2.5 (Codex+Gemini): 省略 (15行 prompt の逐語一致 case で overkill、ユーザー合意済)
 
+## [2026-06-04] ingest | 「勝手に賢くなる」AI情報収集基盤 (tokium_dev/Zenn)
+
+- ソース: https://zenn.dev/tokium_dev/articles/20260427_ai_tech_researcher
+- 判定: Gap 0 / Partial 2 (情報源自己進化=source特化のみ, 下流採用評価=補助指標限定) / Already 3 (morning-briefing=Experiment only, 2層オーケストレーション=強化不要, cron配信=drift audit Partial) / N/A 1 (Slack 4軸)
+- 取り込み: 新規 AI tech researcher 構築を L プラン化 (docs/plans/active/2026-06-04-ai-tech-researcher-self-evolving-plan.md)。A(RSS候補read-only集計)/B(下流採用補助指標)/C(drift audit) を段階ロードマップに統合。Codex+Gemini一致警告(評価ゲーミング+コールドスタート)を受け、採用実績は補助指標限定+MAB探索/MMR多様性/時間減衰/human-in-loopで封じる安全設計。
+- 分析レポート: docs/research/2026-06-04-ai-tech-researcher-self-evolving-absorb-analysis.md
+
 ## [2026-06-03] ingest (採用0 / drift修正1) | dynamic workflows in Claude Code (Anthropic 公式)
 
 - ソース: Anthropic 公式ブログ (Thariq Shihipar / Sid Bidasaria) — Workflow tool (動的 harness 生成) の 12 パターン紹介
