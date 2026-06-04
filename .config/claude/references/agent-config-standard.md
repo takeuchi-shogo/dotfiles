@@ -43,8 +43,8 @@ max_tokens: 16384
 | model | model | （暗黙: 親セッション継承） | 明示化推奨 |
 | system_prompt | developer_instructions | Markdown 本文 | フォーマット変換 |
 | tools | sandbox_mode で暗黙制御 | （制限なし） | スコープ明示化 |
-| skills | — | — | 将来対応 |
-| mcp_servers | — | — | 将来対応 |
+| skills | — | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
+| mcp_servers | — | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
 | max_tokens | — | — | 将来対応 |
 
 ## 統合ビジョン
@@ -58,6 +58,7 @@ max_tokens: 16384
 ### 中期（Managed Agents 導入時）
 
 1. **エクスポートスクリプト**: agents/*.md → Managed Agents API 形式の変換ツール
+   - **自前実装は不要 (2026-06)**: `agentlift` (MIT, github.com/phuryn/agentlift) が `.managed-agents/` folder から Anthropic Managed Agents / Google Vertex Agent Engine / OpenAI Agents SDK への cross-provider compiler (deploy/export/audit) を提供。将来 managed deploy 時はまずこれを評価する。ローカル `.config/claude/agents/*.md` は触らず別レイヤーとして共存する設計
 2. **CLI for setup, SDK for runtime** パターンの採用
 3. **Agent Template の git 管理**: YAML 形式で agents/ 配下にバージョン管理
 

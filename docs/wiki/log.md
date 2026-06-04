@@ -8,6 +8,25 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-05] ingest-skip | How to Run 300 AI Agents From One Prompt (10 Workflows Most People Skip)
+
+- ソース: Kimi K2.6 agent swarm 啓蒙記事 (vendor-biased, テキスト貼付)
+- 理由: topic family "multi-agent-orchestration" saturated-borderline (N>>3, delta=1, 唯一の delta は repo bookmark で adoption path なし → 実質 pure-rehash)
+- 根拠: 既存2件のほぼ完全な再パッケージ — `2026-05-30-single-threaded-300-agents` (同一タイトル "Commanding 300 Agents", 採用0) + `2026-04-30-three-model-stack` (同一三モデルルーティング+同一ベンチ数値 SWE80.2/BrowseComp90.1/OSWorld78.7, 採用1=R-005 watch行 既実装)
+- per-method 照合台帳 (10手法中9件 pure rehash, 名指し済み):
+  - 1. Fan-out parallelism → `single-threaded-300-agents` 手法1 Orchestrator + Workflow tool (fan-out/parallel/pipeline) (rehash)
+  - 2. Coordinator/sub-agent/validator 3-prompt → `three-model-stack` 手法6 Three-prompt 三役分け (N/A 済) + absorb Phase 2.5 tri-judge (rehash)
+  - 3. Model routing per layer (Opus/K2.6/GPT-5.5) → `three-model-stack` 手法1 → `model-routing.md` 5層 carve-out (rehash)
+  - 4. Skills as reusable templates → `three-model-stack` 手法7 Document-to-Skill (N/A, skill-creator 代替) (rehash)
+  - 5. Cost math / 8x cheaper → `three-model-stack` 手法11 Cost-as-PrimaryDriver (N/A, End-to-End>Per-Call 原則) (rehash)
+  - 6. Job-shape triage / honest caveats → `single-threaded-300-agents` 手法9+14 → Task Parallelizability Gate (rehash)
+  - 7. Kimi K2.6 native 300-agent swarm → `three-model-stack` 手法5 (N/A, agency-safety blast radius) + R-005 watch行 (rehash)
+  - 8. claude-code-router / LangGraph / crewAI / autogen → `three-model-stack` 手法9 Claude Code Router (N/A, direct CLI 路線) (rehash)
+  - 9. 10 workflow recipes → fan-out application 集, dispatch skill + Workflow examples (rehash)
+  - 10. system_prompts_leaks repo を研究する angle → **ambiguous** (名指し prior なし, ただし手法でなく bookmark で adoption path なし)
+- 該当 family のキーワード hit: multi-agent / parallel agent / orchestration / swarm / fan-out / model-routing / kimi
+- スキップ判定: Phase 1.5 gate (ユーザー選択: skip 推奨)
+
 ## [2026-06-04] ingest-skip | I Tested Every Claude Code Feature, These 12 Are the Best (500h Tier List)
 
 - ソース: Claude Code feature tier list (knowledge-work/automation 視点, D→S, テキスト貼付)
@@ -1463,3 +1482,24 @@
 - Validation-only Follow-up (drift 1件): `improve-policy.md:503` + `autoevolve-core.md:311` が参照する `tournament-mode.md` が孤児欠損 (2026-03-19 プランで作成予定→未作成) → ユーザー判断で `best-of-n-guide.md` に付替修正
 - Phase 2.5: Codex は launch-worker.sh の `-q` フラグバグで起動失敗 (要修正) → Opus 代行。Gemini の具体採用事例/CVE番号は hallucination 懸念で不採用、定性洞察 (LangGraph対比/quarantine引数解釈差バイパス) のみ採用
 - レポート: `docs/research/2026-06-03-dynamic-workflows-absorb-analysis.md`
+
+## [2026-06-05] ingest (validation-only) | Managed Agents Have a Portability Problem (agentlift, phuryn)
+
+- ソース: agentlift 紹介記事 (github.com/phuryn/agentlift, MIT) — managed runtime portability compiler
+- family: multi-agent-orchestration (managed-agents サブ)、Saturation PASS(warning) = 重複領域
+- 判定: Already 中心 (核心原則「Own the definition, rent the runtime」は `agent-portability.md` 2026-04 で codify 済)。新規構成 **採用 0**
+- ユーザー問い「今の構成 (.claude/agents/) vs 記事の構成 (.managed-agents/) どちらか」→ **乗り換え不要**。記事の `.managed-agents/` は置き換えでなくデプロイ専用の追加レイヤー (記事自身 "local agents are left alone")。dotfiles は managed runtime 未デプロイ = "own the runtime" 側で agentlift 対象外
+- Validation-only Follow-up (stale 2件): `agent-config-standard.md` の対応表「skills/mcp_servers → 将来対応」を「Managed Agents native 対応済 (2026-06、shared/private wiring 可)」へ更新 / 「エクスポートスクリプト自前実装」構想に agentlift reference pointer 追加 (max_tokens は記事に言及なく未変更)
+- Phase 2.5: 結論が Already 中心で Gap なしのため Codex/Gemini 批評はユーザー選択に委譲 (stale 修正のみ選択)
+
+## [2026-06-05] ingest-skip (light Phase 2, adopt=0) | MUSE-Autoskill: Self-Evolving Agents via Skill Creation, Memory, Management, and Evaluation
+- ソース: arXiv 2605.27366 (Huawei Lin et al.)
+- 理由: de-facto family "self-evolving-skills" N>=7 (taxonomy 未登録) の隣接対象。Saturation=SATURATED-but-novel (delta=4)。ユーザー選択 light-phase2 → Phase 2 まで検証したが全て Already/N/A/掘り下げ見送りで採用 0
+- per-method 照合台帳 (delta_methods 4件の Pass2 着地):
+  - #2 skill-level memory (`.memory.md` per-skill) → novel/Gap だが single-user harness で価値薄く adopt=0 (現状 topic-keyed feedback_*.md で per-skill 経験は蓄積済、差は co-located 自動 surface 配線のみ)
+  - #3 test-gated registration → N/A (MUSE は runtime 自動生成ゆえ必須、dotfiles は作成時に skill-creator/skill-audit/Codex Gate 済)
+  - #5 transfer-excludes-memory → Already (memory が agent-memory/ 別 namespace で skills-lock.json 配布に構造的非混入。MUSE が設計で達成する分離をアーキで無料取得)
+  - #7 source-trajectory overfit → Already (Rule 40/47 holdout + anti-goodhart Rule 43 + SkillOpt 分析でカバー)
+  - (rehash 除外: #1 lifecycle=AutoEvolve / #4 progressive-disclosure / #6 context compression=context-constitution P3)
+- スキップ判定: light Phase 2 で検証後 adopt=0 (skip 同等)。MEMORY.md 索引・wiki INDEX・Obsidian は更新せず
+- レポート: docs/research/2026-06-05-muse-autoskill-self-evolving-agents-absorb-analysis.md
