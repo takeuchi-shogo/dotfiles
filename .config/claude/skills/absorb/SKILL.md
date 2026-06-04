@@ -17,6 +17,7 @@ metadata:
 記事の主張を helpful に取り込まない。網羅的な検証の上で取捨選択する。
 
 - 既存仕組みの存在確認だけで Already と判定しない (Pass 2 + Phase 2.5 で強化可能性を検証する)
+- **skip は許容するが「似ている」という類似度だけで skip しない** — Saturation Gate の skip は各手法を prior と1対1照合 (per-method 台帳) して立証する。照合先を名指しできない手法は novel 扱いで skip 不可 (立証責任は採用判断だけでなく skip 判断にも課す)
 - 取捨選択は **Pruning-First** — 新規追加より既存強化を優先する
 - ベンチマーク数値や「best X」主張は単独の採用根拠にしない (評価バイアス前提で読む)
 - 記事著者のベンダーバイアス（自社製品優位の前提）を常に想定する
@@ -154,15 +155,23 @@ N >= 3 かつ採用率 < 20% で SATURATED 候補となった場合、**skip 判
 
 > **本セクションと reference の Step 3.7 は同一手順を指す。** SKILL.md は workflow 内の挿入位置を強調するため Step 3.5、reference は既存 Step 3.5/3.6 (証拠記録/件数集計) と並べるため Step 3.7。両ファイル実装は同一。
 
-1. Phase 1 抽出結果の **手法リスト** を抽出 (Phase 1 出力 JSON の `手法` フィールド、list of strings)
-2. 同 family の直近 3 件の analysis report (`docs/research/*-absorb-analysis.md`) を Read し、各レポートの「手法」「主張」セクションから既知手法 set を構築
+1. Phase 1 抽出結果の **手法リスト** (current_methods) を抽出 (Phase 1 出力 JSON の `手法` フィールド、list of strings)
+2. 同 family の直近 3 件の analysis report (`docs/research/*-absorb-analysis.md`) を Read し、各レポートの「手法」「主張」セクションから prior 手法 set を構築
    - **Read 失敗 / 「手法」セクション欠落の場合**: `prior_methods = unknown` として記録し、Step 4 で `AskUserQuestion` 経由 manual override 強制 (空集合扱いで false-novel 過大評価防止)
-3. novel_methods = current_methods - union(prior_methods)
-   - **意味的同等** で判定 (例: 「IPARAG 採用」と「9-folder 構造採用」は同一)
-   - **ambiguous (半 novel 等) は novel に倒す** が、`ambiguous_count` を別途記録して Step 4 提示時に明示
+3. **per-method 照合台帳を作る (集合演算で丸めない — skip の立証責任)**:
+   current_methods の **各手法を1行ずつ** 次の表に分類する。「全部似てる」と一括で丸める判断は禁止。
+
+   | current 手法 | verdict | matched_prior (rehash のみ必須・3点セット) |
+   |--------------|---------|---------------|
+   | <手法名> | rehash / novel / ambiguous | `<report ファイル名>` の `<prior heading か引用句>` + 同等性の理由1文 |
+
+   - **rehash** (= 既出ゆえ delta から除外): prior のどの手法と意味的同等かを `matched_prior` に**名指しで**書く。必須3点: (1) レポートのファイル名 (2) prior の heading か引用句 (3) なぜ同等かの理由1文。**次のいずれかなら rehash 無効 → `novel` か `ambiguous` に倒す**: `matched_prior` が空欄 / family label だけの広い一致 (例「どちらも second-brain 系」) / 引用句が出せない。「似ている」という類似度の主観だけで rehash にしない (例: 「IPARAG 採用」を rehash にするなら「`2026-XX-cyril.md` の "9-folder 構造採用" / 両者とも PARA 派生の固定フォルダ階層で同一」と名指す)。迷ったら ambiguous
+   - **ambiguous** (半 novel): novel に計上しつつ `ambiguous_count` に別途記録し Step 4 提示時に明示
+   - **novel**: prior に対応物を名指しできない
    - 過去 absorb で **明示的に Reject 済み** の手法 (rejection registry: `references/rejected-techniques.md` 参照、存在しなければ analysis report の "Reject" 明示記載) は **再評価対象** として novel に含める。ただし bounded recursion 条件:
      - 同一手法で **直近 12 ヶ月以内に 3 回以上** light-phase2 で Reject 再確認済なら novel から **除外** (永続ループ防止)
-4. `delta = |novel_methods|` を **整数**で記録。**非整数値は禁止** — Opus は list length を返す
+4. `delta_methods` = verdict が `novel` または `ambiguous` の行集合。`delta = |delta_methods|` を整数で記録 (**Step 4 の閾値判定・Step 5/5.5 の検証対象は常にこの `delta_methods` = novel + ambiguous**。ambiguous を落とさない)。**非整数値は禁止** — Opus は台帳の行数を返す。各 rehash 行に `matched_prior` 3点が揃って初めて delta から除外できる (名指しなき rehash は無効 → novel)
+5. **台帳を保持する** — Step 6 (skip) / Step 5.5 (light-phase2) で skip/絞り込みの立証根拠として log・mini report に残す
 
 判定への影響 (Step 4 参照):
 - delta >= 2 → **SATURATED-but-novel** → `light-phase2` 強制提示
@@ -183,7 +192,7 @@ N >= 3 かつ採用率 < 20% で SATURATED 候補となった場合、**skip 判
 
 ### Step 5: SATURATED 時の AskUserQuestion
 
-novel_methods の有無で提示内容を切り替える。
+delta_methods (novel + ambiguous) の有無で提示内容を切り替える。**どちらのテンプレも Step 3.5 の per-method 照合台帳を選択肢の前に必ず提示する** — 台帳を見せずに skip/light-phase2 の選択肢を出すのは禁止 (skip の立証は事後ログではなく user が判断する前提条件)。台帳が未完成なら選択肢を出さず先に台帳を埋める。
 
 **SATURATED-but-novel / SATURATED-borderline / DELTA-UNKNOWN (delta >= 1 or unknown):**
 
@@ -191,14 +200,17 @@ novel_methods の有無で提示内容を切り替える。
 この記事は topic family "<family>" の N 件目です:
   過去事例: <最新 3 件のファイル名>
   採用率: X% (Y 件中 Z 件で採用あり)
-  検出された新規論点 (delta=D): <novel_methods のリスト>
+  検証対象 delta_methods (delta=D, novel + ambiguous): <delta_methods のリスト>
   ambiguous (半 novel 判定): <ambiguous_count> 件
   prior_methods 取得: <ok | unknown (理由: Read 失敗 / セクション欠落 等)>
 
+  per-method 照合台帳 (全 current 手法、rehash は matched_prior 3点付き):
+  <台帳をそのまま貼る — rehash 行は matched_prior の引用句+理由まで見せる>
+
 選択肢:
-  - light-phase2: 新規論点 D 件だけ Phase 2 で検証 (Phase 2.5 省略可、mini レポート作成)
+  - light-phase2: delta_methods D 件だけ Phase 2 で検証 (Phase 2.5 省略可、mini レポート作成)
   - continue: フル workflow (Phase 2-5 + Phase 2.5) に進む
-  - skip: log.md 1 行で閉じる (新規論点も無視)
+  - skip: log.md 1 行で閉じる (delta_methods も無視)
 ```
 
 **SATURATED-pure-rehash (delta == 0):**
@@ -208,23 +220,27 @@ novel_methods の有無で提示内容を切り替える。
   過去事例: <最新 3 件のファイル名>
   採用率: X%
 
-skip にしますか？ (推奨: skip)
+  per-method 照合台帳 (全 current 手法が rehash であることの立証 — これを見て skip を判断する):
+  <台帳をそのまま貼る。各行に matched_prior (ファイル名 + 引用句 + 同等性の理由) が埋まっていること。
+   1 行でも matched_prior が空 / family label だけ / 引用句なし なら delta>=1 となりこのテンプレは使わない>
+
+skip にしますか？ (台帳の各 rehash に納得できれば skip 推奨)
 
 選択肢:
-  - skip: Wiki Log に 1 行だけ追記して終了 (推奨)
-  - continue: 念のため Phase 2 へ進む (新角度の取りこぼし疑いがある場合のみ)
+  - skip: Wiki Log に台帳付きで追記して終了
+  - continue: 念のため Phase 2 へ進む (台帳の照合に疑いがある場合)
 ```
 
 ### Step 5.5: light-phase2 選択時のショートカット [Opus]
 
-Step 3.5 で抽出した novel_methods だけを対象に絞り込み Phase 2 を実行する:
+Step 3.5 で抽出した delta_methods (novel + ambiguous) だけを対象に絞り込み Phase 2 を実行する。**ただし全 current 手法の照合台帳 (rehash として除外した分も含む) を mini report に必須セクションとして残す** — 除外側の立証が成果物から消えると light-phase2 が「最も楽な抜け道」になるため:
 
-1. **Phase 2 Pass 1 (Sonnet Explore)** — novel_methods のキーワードだけを渡す (full method list ではなく)
+1. **Phase 2 Pass 1 (Sonnet Explore)** — delta_methods のキーワードだけを渡す (full method list ではなく)
 2. **Phase 2 Pass 2 (Opus)** — Already/Partial/Gap/N/A 判定
 3. **Phase 2.5 (Codex+Gemini) は省略可** — light flag。Gap 判定 >= 1 件出た場合は自動昇格で continue (フル workflow) に切り替えるかを `AskUserQuestion` で確認
 4. **Phase 3 (Triage)** — adopt 候補があれば AskUserQuestion で選別
 5. **Phase 4 (Plan + mini report)** — `docs/research/YYYY-MM-DD-{slug}-absorb-analysis.md` を作成、frontmatter に `status: light-phase2-only` を明記
-   - **mini レポート定義**: frontmatter + Source Summary + Pass 1/Pass 2 judgment table + adopted/rejected decisions のみ。Phase 2.5 セクションは省略可
+   - **mini レポート定義**: frontmatter + Source Summary + Pass 1/Pass 2 judgment table + adopted/rejected decisions + **per-method 照合台帳 (全 current 手法、rehash として除外した分も `excluded as rehash` として matched_prior 付きで残す)** のみ。Phase 2.5 セクションは省略可
 6. **Phase 5 (Handoff)** — 採用候補が S 規模なら即実行、それ以上は通常 handoff
 
 log.md 追記時の operation 表記:
@@ -241,6 +257,10 @@ Phase 2-5 をスキップして以下のみ実行:
    - ソース: <URL or タイトル>
    - 理由: topic family "<family>" saturated-pure-rehash (N 件目, 採用率 X%, delta=0)
    - 根拠: <Step 3.5 で記録した evidence (採用ありエントリの grep ヒット文字列リスト)>
+   - per-method 照合台帳 (delta=0 の立証 — 各 current 手法 → matched_prior の名指し):
+     - <current 手法 A> → `<report ファイル名>` の <prior 手法名> (rehash)
+     - <current 手法 B> → `<report ファイル名>` の <prior 手法名> (rehash)
+     - (全 current 手法を列挙。名指しできない手法が1つでもあれば delta>=1 となり skip しない)
    - 該当 family のキーワード hit: <Step 1 で照合したキーワード>
    - スキップ判定: Phase 1.5 gate
    ```
@@ -544,6 +564,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 | **subagent (Sonnet BG / general-purpose) から `Skill` tool で obsidian skill を呼び出す** | **実測で 600s no progress stall (2026-04-19)。skill ネスト呼び出しは Opus main session で実行する。Phase 5.6 Obsidian Bridge は Opus 直接実行が原則** |
 | **trusted 外ドメイン (Zenn/Qiita/note/Wikipedia 等) で WebFetch を直接使う** | **Claude Code v2.1.126 の WebFetch は内部 Haiku 要約 + 100k chars truncation がある (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。引用 faithfulness が壊れるため `obsidian:defuddle` / Jina Reader / Gemini grounding に切替。詳細: `references/web-fetch-policy.md`** |
 | **Phase 1.5 (Saturation Gate) をスキップする** | **同分野 absorb 3 件目以降の永続ループを防ぐ唯一の mechanism。Phase 1 完了後に必ず実行する。判定基準: `references/topic-family-saturation.md`** |
+| **「似ているから」と類似度だけで rehash 判定し delta=0 で skip する** | **skip は「事実 (per-method 照合済み)」なら許容するが「似ている」という主観では不可。rehash には `matched_prior` (prior レポートのファイル名 + 手法名) の名指しを必須にし、名指しできない手法は novel に倒す。skip ログに照合台帳を残し「楽な skip」を後から検証可能にする (Step 3.5 / Step 6)** |
 | **Pass 1 で Sonnet が返した「強化余地メモ」を Pass 2 で検証せず採用候補に昇格させる** | **Sonnet は generic feature noun (例: "Extended Thinking", "Bulk Processing", "Session History") から実装機会を想像で膨らませる傾向がある (Gap fabrication)。Pass 2 で必ず「記事原文に specific 提案があるか」を引用照合し、Sonnet imagination は除外する。Pass 1 出力の「強化余地メモ」は Pass 2 で照合される候補リストであり、line 54 の Pass 2「強化判断」(Opus 委譲不可) で確定する。詳細: `memory/feedback_absorb_sonnet_imagination.md`** |
 | **未知の用語 (Cowork / Cloud Agents / Connectors 等) を grounding せずに "factually dubious" と即断する** | **Anthropic 公式機能は 2025-2026 で急速に追加されている。dotfiles の前提知識が stale な可能性。Phase 1 出力 (Haiku/Sonnet 抽出結果) を Opus がレビューするタイミングで未知の用語が含まれていた場合、Phase 2 に入る前に Gemini grounding で公式 docs 確認を先行する。実例: 2026-05-22 absorb で "Cowork tab" を dubious 判定したが公式実在を確認、dotfiles 内の stale guide が露出した** |
 | **採用 0 = 記事から得るものなし、と即終了する** | **記事の framing が dotfiles 内の stale fact / drift を露出することがある (validation-only follow-up)。"article-backed novel instruction" と "platform drift validation triggered by article" を別 ledger で扱う。後者は採用件数に数えないが、分析レポートに `## Validation-only Follow-up` セクションを追記し、対象ファイル + drift 内容 + 訂正方針を明記して actionable にする (`docs/research/2026-05-22-khairallah-40-features-absorb-analysis.md` の "Validation-only Follow-up" 表を参考にする)** |
