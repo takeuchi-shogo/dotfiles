@@ -22,6 +22,11 @@ source "${SCRIPT_DIR}/lib/feed.sh"
 TASK="tech-researcher"
 SOURCES_FILE="${TECH_RESEARCHER_SOURCES:-${SCRIPT_DIR}/sources.txt}"
 DATA_DIR="${TECH_RESEARCHER_DATA_DIR:-$HOME/.cache/tech-researcher}"
+# DRY_RUN は全件採用の stub データを書くため、明示 override が無いまま実行されると
+# 実測定 ledger/report を汚染する。override 不在の DRY_RUN は dry-run/ に自動隔離する。
+if [[ "${TECH_RESEARCHER_DRY_RUN:-0}" == "1" && -z "${TECH_RESEARCHER_DATA_DIR:-}" ]]; then
+    DATA_DIR="$HOME/.cache/tech-researcher/dry-run"
+fi
 LEDGER="${DATA_DIR}/adoption-ledger.jsonl"
 REPORTS_DIR="${DATA_DIR}/reports"
 PER_FEED_MAX="${TECH_RESEARCHER_PER_FEED_MAX:-5}"
@@ -218,7 +223,7 @@ fi
 # OBSIDIAN_VAULT_PATH 設定時のみ。書き出しは副作用なので失敗しても task は ok 継続
 # (run-daily-report.sh の vault 書き出しと同じ best-effort 方針)。
 # 配置: 09-TechTrends/<date>.md。frontmatter で Obsidian の tag/graph に載せる。
-if [[ -n "${OBSIDIAN_VAULT_PATH:-}" && -d "${OBSIDIAN_VAULT_PATH}" ]]; then
+if [[ "${TECH_RESEARCHER_DRY_RUN:-0}" != "1" && -n "${OBSIDIAN_VAULT_PATH:-}" && -d "${OBSIDIAN_VAULT_PATH}" ]]; then
     VAULT_DIR="${OBSIDIAN_VAULT_PATH}/09-TechTrends"
     if mkdir -p "$VAULT_DIR" 2>/dev/null; then
         if ! { printf -- '---\ndate: %s\ntags: [tech-trends, ai]\nsource: tech-researcher\n---\n\n' "$NIGHTLY_DATE"; cat "$REPORT_PATH"; } > "${VAULT_DIR}/${NIGHTLY_DATE}.md" 2>/dev/null; then
