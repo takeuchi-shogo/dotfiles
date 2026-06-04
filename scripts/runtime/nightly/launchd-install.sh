@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# launchd-install.sh — 7 nightly task の launchd LaunchAgent plist を生成 + load
+# launchd-install.sh — nightly task の launchd LaunchAgent plist を生成 + load
 # 理由: cron は Aqua session 外で起動 → Keychain access 不可 → claude -p が Execution error で fail
 # launchd LaunchAgent (~/Library/LaunchAgents/) は user の Aqua session 内で起動 → Keychain OK
 set -euo pipefail
@@ -18,6 +18,9 @@ TASKS=(
     "daily-report|23|35|run-daily-report.sh"
     "audit|23|45|run-audit.sh"
     "skill-audit|23|45|run-skill-audit.sh"
+    # tech-researcher: nightly ゲート相乗り (別ディレクトリ、.. は exec 時に解決)。
+    # audit/skill-audit (23:45) の後に置き claude lock 競合を避ける。
+    "tech-researcher|23|55|../tech-researcher/run-tech-researcher.sh"
 )
 
 generate_plist() {
@@ -71,7 +74,7 @@ PLIST
     echo "[install] ${task}: ${hour}:${minute} → $(basename "$plist")"
 }
 
-echo "=== Installing 7 nightly LaunchAgents ==="
+echo "=== Installing ${#TASKS[@]} nightly LaunchAgents ==="
 for entry in "${TASKS[@]}"; do
     IFS='|' read -r task hour minute script <<< "$entry"
     generate_plist "$task" "$hour" "$minute" "$script"
@@ -82,5 +85,5 @@ echo "=== Verification: launchctl list (nightly entries) ==="
 launchctl list | grep "com.user.nightly." || echo "(no nightly entries found)"
 
 echo
-echo "次の手順: crontab -e で 'scripts/runtime/nightly/' を含む 7 行を削除"
+echo "次の手順: crontab -e で 'scripts/runtime/nightly/' を含む旧 cron 行を削除 (移行済みなら不要)"
 echo "確認: crontab -l | grep nightly  (削除後は何も出ないはず)"

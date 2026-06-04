@@ -1,0 +1,18 @@
+# tech-researcher Phase 1 固定シードソース (Atom/RSS feed URL)
+# 1 行 1 URL。# 始まりと空行は無視。https?:// のみ許可 (SSRF guard)。
+# 各 URL は 2026-06-04 に curl で feed 取得を実地検証済み。
+# Phase 2 で sources-ledger.jsonl に移行し、ここは初期シードとして残す。
+#
+# 不採用 (推測 URL が 404): openai.com/blog/rss.xml, anthropic.com/rss.xml, blog.google AI rss
+#   → 正しい feed URL が判明したら追記する (捏造で埋めない)。
+
+# Zenn トピックフィード
+https://zenn.dev/topics/ai/feed
+https://zenn.dev/topics/生成ai/feed
+https://zenn.dev/topics/llm/feed
+
+# Qiita タグフィード
+https://qiita.com/tags/ai/feed.atom
+
+# AI 各社・コミュニティブログ
+https://huggingface.co/blog/feed.xml
