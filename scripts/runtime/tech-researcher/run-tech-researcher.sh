@@ -205,8 +205,13 @@ else
 fi
 
 # --- 30日採用集計を read-only でレポート末尾に追記 ---
-if AGG=$(python3 "${SCRIPT_DIR}/aggregate.py" "$LEDGER" --asof "$NIGHTLY_DATE" 2>/dev/null); then
+# 失敗 (python3 不在/syntax/不正 ledger) を 2>/dev/null で握り潰さず警告に残す。
+# 集計欠落でもレポート本体は valid なので exit はしない (graceful degrade)。
+AGG_ERR=$(mktemp -t "tr-agg-err.XXXXXX"); _TMPFILES+=("$AGG_ERR")
+if AGG=$(python3 "${SCRIPT_DIR}/aggregate.py" "$LEDGER" --asof "$NIGHTLY_DATE" 2>"$AGG_ERR"); then
     { echo ""; echo "---"; echo ""; echo "$AGG"; } >> "$REPORT_PATH"
+else
+    echo "[tech-researcher] WARN: aggregate.py failed: $(head -c 200 "$AGG_ERR" 2>/dev/null)" >&2
 fi
 
 # --- status 記録 (実行が ~/.cache/nightly/status-*.jsonl に残り Phase4 drift 監視の素地に) ---
