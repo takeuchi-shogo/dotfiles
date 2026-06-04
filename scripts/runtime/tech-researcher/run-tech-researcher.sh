@@ -82,9 +82,10 @@ while IFS= read -r feed_url || [[ -n "$feed_url" ]]; do
     while IFS=$'\t' read -r url title; do
         [[ -z "$url" || -z "$title" ]] && continue
         [[ "$url" =~ ^https?:// ]] || continue       # article url も検証
-        # host のみ抽出: userinfo (user:pass@) と port (:8080) を除く。
+        # host のみ抽出: userinfo (user:pass@)・port (:8080)・fragment (#)・query (?) を除く。
         # markdown table 破壊 (| 混入) と計測歪み (同 host が別キー化) を防ぐ。
-        domain=$(printf '%s' "$url" | sed -E 's#^https?://([^@/]+@)?([^/:]+).*#\2#')
+        # untrusted feed が url の #fragment に汚染文字を仕込む面を char class で遮断。
+        domain=$(printf '%s' "$url" | sed -E 's#^https?://([^@/]+@)?([^/:#?]+).*#\2#')
         title=$(sanitize_title "$title")
         idx=$((idx + 1))
         printf '%d\t%s\t%s\t%s\n' "$idx" "$domain" "$url" "$title" >> "$CANDIDATES"
@@ -188,12 +189,18 @@ else
     while IFS=$'\t' read -r i domain url title; do
         if [[ "$adopted_set" == *" $i "* ]]; then adopted=true; ADOPTED_COUNT=$((ADOPTED_COUNT + 1));
         else adopted=false; fi
-        jq -nc \
+        # jq 失敗 (feed 由来の不正バイト/NULL 等) は当該レコードのみ skip。
+        # set -e でループ全体を「trapped exit_code=1」で中断させず、原因 (url) を残す。
+        if ! jq -nc \
             --arg ts "$NIGHTLY_TZ_TS" --arg date "$NIGHTLY_DATE" \
             --arg domain "$domain" --arg url "$url" --arg title "$title" \
             --argjson adopted "$adopted" \
             '{ts:$ts, date:$date, domain:$domain, url:$url, title:$title, adopted:$adopted}' \
-            >> "$LEDGER"
+            >> "$LEDGER"; then
+            [[ "$adopted" == "true" ]] && ADOPTED_COUNT=$((ADOPTED_COUNT - 1))  # 行頭で計上した分を戻す
+            echo "[tech-researcher] WARN: jq failed, skipped ledger record: $url" >&2
+            continue
+        fi
     done < "$CANDIDATES"
 fi
 
