@@ -214,6 +214,21 @@ else
     echo "[tech-researcher] WARN: aggregate.py failed: $(head -c 200 "$AGG_ERR" 2>/dev/null)" >&2
 fi
 
+# --- Obsidian Vault へ閲覧用コピー (正本は ~/.cache 側) ---
+# OBSIDIAN_VAULT_PATH 設定時のみ。書き出しは副作用なので失敗しても task は ok 継続
+# (run-daily-report.sh の vault 書き出しと同じ best-effort 方針)。
+# 配置: 09-TechTrends/<date>.md。frontmatter で Obsidian の tag/graph に載せる。
+if [[ -n "${OBSIDIAN_VAULT_PATH:-}" && -d "${OBSIDIAN_VAULT_PATH}" ]]; then
+    VAULT_DIR="${OBSIDIAN_VAULT_PATH}/09-TechTrends"
+    if mkdir -p "$VAULT_DIR" 2>/dev/null; then
+        if ! { printf -- '---\ndate: %s\ntags: [tech-trends, ai]\nsource: tech-researcher\n---\n\n' "$NIGHTLY_DATE"; cat "$REPORT_PATH"; } > "${VAULT_DIR}/${NIGHTLY_DATE}.md" 2>/dev/null; then
+            echo "[tech-researcher] WARN: vault write failed: ${VAULT_DIR}/${NIGHTLY_DATE}.md" >&2
+        fi
+    else
+        echo "[tech-researcher] WARN: cannot create vault dir: $VAULT_DIR" >&2
+    fi
+fi
+
 # --- status 記録 (実行が ~/.cache/nightly/status-*.jsonl に残り Phase4 drift 監視の素地に) ---
 DETAIL=$(head -12 "$REPORT_PATH" 2>/dev/null || echo "")
 status_end ok "collected=$COLLECTED adopted=$ADOPTED_COUNT${LEDGER_NOTE:+ ($LEDGER_NOTE)}" \
