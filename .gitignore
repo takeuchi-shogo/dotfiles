@@ -30,6 +30,7 @@ CLAUDE.local.md
 !.config/claude/data/trusted-domains.json
 __pycache__/
 .worktrees/
+.triage/
 
 # Raycast secrets
 .config/raycast/**/secrets*
