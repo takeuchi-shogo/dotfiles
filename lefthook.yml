@@ -36,6 +36,13 @@ pre-commit:
       run: |
         echo "❌ skill folder に README.md は置かない (SKILL.md を使う): {staged_files}"
         exit 1
+    publicity-review:
+      # Public-repo leak gate: block high-severity credential leaks in staged content.
+      # Reuses scan-jsonl-secrets.py PATTERNS (DRY). Added-lines only (legacy unaffected).
+      # Scope: credentials only — 絶対パス/username は accepted-in-repo (script docstring 参照)。
+      # Origin: /absorb sonicgarden self-improving-loop (2026-06-05), publicity-review adapted.
+      # skip: 誤検知時は `LEFTHOOK_EXCLUDE=publicity-review git commit ...`
+      run: python3 scripts/security/publicity-scan.py
     check-new-todo:
       # Section A: Cleanup-Later Boundary (agents/code-reviewer.md より mechanism 化)
       # 新規追加された marker (TODO/FIXME/HACK) には issue 番号 / owner / 期限のいずれかが必須
