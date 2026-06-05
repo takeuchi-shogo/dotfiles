@@ -29,6 +29,9 @@ CLAUDE.local.md
 .config/claude/data/*
 # 例外: 公開 OK な設定データ
 !.config/claude/data/trusted-domains.json
+# Private overlay (実体は ~/dotfiles-private、symlink は install.sh が管理)
+# trailing slash を付けない: overlay は symlink (= git 的にはファイル) のため dir/ パターンに match しない
+.config/claude/skills/pr-review-routine
 __pycache__/
 .worktrees/
 .triage/

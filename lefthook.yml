@@ -5,6 +5,10 @@
 
 pre-commit:
   commands:
+    company-content-guard:
+      # dotfiles は PUBLIC repo — 会社関連文言の commit をブロックする
+      # (2026-06-04 push 寸前で取り消したインシデントの mechanism 化)
+      run: bash scripts/security/check-company-content.sh
     biome-format:
       glob: "*.{ts,tsx,js,jsx,css}"
       run: npx --yes @biomejs/biome@latest format --write {staged_files}
