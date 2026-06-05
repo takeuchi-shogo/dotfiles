@@ -264,6 +264,9 @@ def _cleanup_old_traces() -> None:
 
 
 def main() -> None:
+    # DECOMMISSIONED 2026-06-05: /improve (retire 2026-05-03) 退役で
+    # traces/ の reader が消失。Stop hook からも除去済み。削除評価日 2026-07-05。
+    raise SystemExit(0)
     data = sys.stdin.read()
     try:
         _store_trace(data)

@@ -207,6 +207,7 @@ MTI の理論的基盤: Agent = Core (architecture + trained weights) + Shell (s
 
 > Hyperagents (arXiv:2603.19461): ドメイン固有の改善パターンが別ドメインに60-80%転移する。
 > `scripts/learner/cross-domain-mapper.py` の出力を手動レビューし、有効な転移候補をここに記録する。
+> ⚠ 2026-06-05 退役: cross-domain-mapper.py は no-op 化（/improve retire 下流の孤児）。decommission-log.md 参照。
 
 | date | source_domain | target_domain | pattern | status |
 |------|--------------|---------------|---------|--------|

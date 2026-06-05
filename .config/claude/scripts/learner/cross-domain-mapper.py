@@ -293,6 +293,9 @@ def scan_meta_patterns(data_dir: Path) -> list[dict]:
 
 
 def main() -> None:
+    # DECOMMISSIONED 2026-06-05: /improve (retire 2026-05-03) 下流の孤児。
+    # reader 不在のため無効化。30日評価後(2026-07-05 以降)に削除可。
+    raise SystemExit(0)
     parser = argparse.ArgumentParser(
         description=(
             "Cross-Domain Failure Mapper: "

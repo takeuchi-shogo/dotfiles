@@ -305,93 +305,6 @@ def _record_improve_adoption(summary: dict, logger: logging.Logger) -> None:
         logger.warning("session-learner: failed to record improve adoption: %s", e)
 
 
-def _classify_approach(events: list[dict]) -> str:
-    """セッションイベントからアプローチ分類を推論する (EvoX Task B)。
-
-    Returns: refinement / structural / exploratory /
-             codex-deep / gemini-research
-    """
-    skill_names = {
-        e.get("skill_name", "") for e in events if e.get("category") == "skill"
-    }
-    if skill_names & {"codex-reviewer"}:
-        return "codex-deep"
-    if "gemini-explore" in skill_names:
-        return "gemini-research"
-
-    # exploratory: 検索系イベントが多い
-    search_tools = {"Read", "Grep", "Glob", "WebSearch"}
-    search_count = sum(1 for e in events if e.get("tool_name") in search_tools)
-    if events and search_count > len(events) * 0.5:
-        return "exploratory"
-
-    # structural: 3+ ファイルへの言及
-    files_mentioned = {
-        e.get("file", e.get("path", ""))
-        for e in events
-        if e.get("file") or e.get("path")
-    }
-    if len(files_mentioned) >= 3:
-        return "structural"
-
-    return "refinement"
-
-
-def _classify_data_domain(events: list[dict]) -> str:
-    """セッションイベントからデータドメインを分類する。
-
-    Nemotron post-training の4カテゴリに対応:
-    - structured_conversation: 通常の対話・構造化レスポンス
-    - math_reasoning: 数学・論理・証明
-    - tool_use: ツール呼び出し・エージェント連携
-    - swe: コード生成・編集・テスト
-
-    Returns: ドメイン文字列
-    """
-    tool_names = {e.get("tool_name", "") for e in events if e.get("tool_name")}
-    code_tools = {"Edit", "Write", "NotebookEdit"}
-    agent_tools = {"Agent", "SendMessage"}
-
-    code_ratio = sum(1 for e in events if e.get("tool_name") in code_tools) / max(
-        len(events), 1
-    )
-    agent_ratio = sum(1 for e in events if e.get("tool_name") in agent_tools) / max(
-        len(events), 1
-    )
-
-    # SWE: コード編集が30%以上
-    if code_ratio >= 0.3:
-        return "swe"
-
-    # tool_use: エージェント/ツール連携が多い
-    if agent_ratio >= 0.2 or len(tool_names) >= 6:
-        return "tool_use"
-
-    # math_reasoning: 数学・推論関連キーワード
-    math_keywords = {"math", "proof", "calculate", "theorem", "logic"}
-    text_content = " ".join(
-        str(e.get("message", "")) + str(e.get("data", "")) for e in events[:20]
-    ).lower()
-    if any(kw in text_content for kw in math_keywords):
-        return "math_reasoning"
-
-    return "structured_conversation"
-
-
-def _classify_task_type(summary: dict) -> str:
-    """セッションのタスクタイプを推論する (EvoX Task B)。
-
-    Returns: "debug" | "implement" | "refactor" | "investigate"
-    """
-    if summary["errors_count"] > 0 and summary["corrections"] > 0:
-        return "debug"
-    if summary["quality_issues"] > summary["errors_count"]:
-        return "refactor"
-    if summary["total_events"] < 5 and summary["errors_count"] == 0:
-        return "investigate"
-    return "implement"
-
-
 def _detect_repeated_topics(summary: dict, logger: logging.Logger) -> None:
     """Detect topics that appear repeatedly across sessions.
 
@@ -839,34 +752,6 @@ def process_session(cwd: str | None = None) -> None:
 
     # Repeated topic detection (Codified Context G4)
     _detect_repeated_topics(summary, logger)
-
-    # Strategy Outcomes Database (EvoX Task B)
-    approach = _classify_approach(events)
-    task_type = _classify_task_type(summary)
-    data_domain = _classify_data_domain(events)
-    append_to_learnings(
-        "strategy-outcomes",
-        {
-            "project": summary["project"],
-            "task_type": task_type,
-            "approach": approach,
-            "data_domain": data_domain,
-            "context": {
-                "error_count": summary["errors_count"],
-                "quality_issues": summary["quality_issues"],
-                "total_events": summary["total_events"],
-            },
-            "outcome": summary["outcome"],
-            "improvement_delta": 0.0,
-            "notes": "",
-        },
-    )
-    logger.info(
-        "session-learner: strategy outcome: %s/%s -> %s",
-        task_type,
-        approach,
-        summary["outcome"],
-    )
 
     # Stagnation / friction state cleanup
     for state_dir in [

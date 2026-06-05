@@ -311,11 +311,6 @@
           },
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/scripts/learner/session-trace-store.py >> /tmp/claude-learner.log 2>&1 &",
-            "timeout": 5
-          },
-          {
-            "type": "command",
             "command": "OBSIDIAN_VAULT_PATH=\"${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}\" bash $HOME/.claude/scripts/runtime/sync-memory-to-vault.sh >> /tmp/obsidian-sync.log 2>&1 &",
             "timeout": 5
           },

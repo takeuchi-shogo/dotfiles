@@ -103,7 +103,8 @@ def finding_to_tip(finding: dict) -> dict:
         "source_finding_id": finding.get("id", finding.get("finding_id", "")),
         "l1_category": category,
         "reviewer_id": reviewer,
-        "human_verdict": finding.get("outcome") or finding.get("human_verdict", "UNKNOWN"),
+        "human_verdict": finding.get("outcome")
+        or finding.get("human_verdict", "UNKNOWN"),
     }
 
 
@@ -143,6 +144,9 @@ def generate_advisory(promoted: list[dict], skipped: int) -> str:
 
 
 def main() -> None:
+    # DECOMMISSIONED 2026-06-05: /improve (retire 2026-05-03) 下流の孤児。
+    # reader 不在のため無効化。30日評価後(2026-07-05 以降)に削除可。
+    raise SystemExit(0)
     parser = argparse.ArgumentParser(description="R-11: findings → AutoEvolve L1")
     parser.add_argument(
         "--dry-run", action="store_true", help="Show advisory without writing"
