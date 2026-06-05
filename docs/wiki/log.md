@@ -1520,3 +1520,13 @@
   - 蓄積データからパターン抽出(90日) → `2026-05-08-cyril` #4 "PATTERN output" + #5 "Weekly Synthesis" (rehash, 90日 anecdote 3件は personal finding で手法でない)
 - 該当 family のキーワード hit: obsidian / vault / second brain / CLAUDE.md / morning brief
 - スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー選択 skip)
+
+## [2026-06-05] ingest | Claude Code 自己改善ループ (sonicgarden)
+- ソース: https://zenn.dev/sonicgarden/articles/claude-code-self-improving-loop
+- family: self-evolving/self-improving (実装手法側 N=10), Saturation PASS (warning, 非飽和)
+- 判定: Gap 1 (publicity-review) / Already 1 強化 (Routines liveness) / N/A 3 (JSONL pipeline, Issue自動起票, Routines定期実行) / 不採用 1 (無人triage復活)
+- 取り込み (採用2件 S+S):
+  - publicity-review gate: scripts/security/publicity-scan.py 新設 + lefthook pre-commit 配線。scan-jsonl-secrets.py PATTERNS を DRY 再利用、staged added-lines の credential leak を block (high+medium、low は warning)。絶対パス/username は accepted-in-repo (constant-fail NO-OP 回避のスコープ翻訳)
+  - routine-prompt-rubric.md に無人実行 liveness 対策5点 + Pre-flight 1項目
+- Phase 2.5: Codex (採用1推奨→medium block 昇格指摘) + Gemini grounding (報酬ハッキング/Goodhart で /improve retire 裏付け)
+- レポート: docs/research/2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md
