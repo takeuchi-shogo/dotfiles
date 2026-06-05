@@ -8,6 +8,8 @@ Usage (from other hooks):
     emit_event("error", {"message": "TypeError", "command": "npm test"})
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import os
