@@ -77,6 +77,16 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
 - 並列で別 task を進めるときは worktree で filesystem を分離する
 - frontmatter に `success_criteria:` を 1 行で書くと `.config/claude/scripts/policy/completion-gate.py` が Ralph Loop 継続時に参照する (任意)。本文の `## Success Criteria` は required、frontmatter は optional な補助索引。
 
+### frontmatter 完了判定欄 (推奨)
+
+plan-close-detector (`scripts/lifecycle/plan-close-detector.py`) が走査して close 候補を機械判定するための欄。simple `key: value` parser 互換 (1行・カンマ区切り、detector が outer quote を strip する)。
+
+- `lifecycle: active` — plan の生存状態 (active/completed/deferred/paused/pending)。`status:` とは別名前空間 (status は doc-status-audit の active/reference/archive 用)。
+- `artifacts: "path/a.py, path/b.sh"` — 成果物パス列挙。全実在で **Tier2 (ARTIFACTS_PRESENT, 報告のみ)**。「作成済み」の弱い証拠であり、これだけでは自動クローズしない。
+- `asserts: "validate-configs, plan-close-tests"` — detector の固定 allowlist (`ASSERTS` map) のキー列挙。全 assert が exit 0 かつ working tree clean で **Tier1 (VERIFIED_DONE, 自動 PR 提案)**。任意コマンドは書けない (allowlist 外のキーは無視)。
+
+何も書かない plan は stale + checkbox の Tier2/3 報告のみ対象。
+
 ## Compound Plan Ceiling
 
 Skill Graphs 2.0 ([docs/research/2026-04-23-skill-graphs-2.0-absorb-analysis.md](docs/research/2026-04-23-skill-graphs-2.0-absorb-analysis.md)) の実証と $0.9^n$ の指数減衰モデルから、compound skill / plan の Success Criteria は **≤ 8 molecules (step)** を推奨する。9 step 以上は以下のいずれかを選ぶ:
