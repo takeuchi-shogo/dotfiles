@@ -1,6 +1,8 @@
 ---
 topic: nix-migration-phase-b1
-status: active
+status: completed
+completed: 2026-06-06
+completion_note: "Brewfile 46→10 行に縮退済み (CLI は nix 移植完了)。checkbox は未更新だが実装は稼働済み"
 scope: M
 parent: 2026-04-24-nix-migration-plan.md
 prev_phase: 2026-04-24-nix-migration-phase-0a-plan.md

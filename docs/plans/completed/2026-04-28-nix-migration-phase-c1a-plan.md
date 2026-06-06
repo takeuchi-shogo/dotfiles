@@ -1,6 +1,8 @@
 ---
 topic: nix-migration
-status: active
+status: completed
+completed: 2026-06-06
+completion_note: "multi-host 分離完了 (darwin/{private,work}.nix 実在・稼働)。checkbox 未更新だが実装は稼働済み"
 scope: S (multi-host 構造分割のみ、attribute 追加なし)
 parent: docs/plans/active/2026-04-26-nix-migration-phase-c-plan.md
 created: 2026-04-28

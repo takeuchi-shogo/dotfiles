@@ -1,6 +1,8 @@
 ---
 topic: nix-migration
-status: active
+status: deferred
+deferred: 2026-06-06
+defer_reason: "真に未着手 (AppleShowAllExtensions のみ反映、残り 2 属性は未実装)。NSGlobalDomain 属性宣言は低 ROI・致命 risk。Codex Plan Gate review 済みなので再開は容易"
 scope: M (NSGlobalDomain 属性 2 個追加 + assert-defaults.sh full 版実装)
 parent: docs/plans/active/2026-04-26-nix-migration-phase-c-plan.md
 created: 2026-04-28

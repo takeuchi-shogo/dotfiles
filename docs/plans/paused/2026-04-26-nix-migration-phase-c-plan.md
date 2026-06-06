@@ -1,6 +1,8 @@
 ---
 topic: nix-migration
-status: active
+status: deferred
+deferred: 2026-06-06
+defer_reason: "system.defaults 宣言化は致命 risk・低 ROI。実用ベネフィット (パッケージ/symlink/multi-host) は C1a までで取得済み。再開したくなったら paused/ から復帰"
 scope: L (system.defaults 段階的宣言、致命 risk あり)
 parent: docs/plans/active/2026-04-24-nix-migration-plan.md
 created: 2026-04-26

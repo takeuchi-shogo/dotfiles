@@ -1,6 +1,7 @@
 ---
 topic: nix-migration-phase-0a
-status: active
+status: completed
+completed: 2026-06-06
 scope: M
 parent: 2026-04-24-nix-migration-plan.md
 owner: takeuchi-shogo

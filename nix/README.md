@@ -2,9 +2,9 @@
 
 ## 位置づけ
 
-このディレクトリは [docs/plans/active/2026-04-24-nix-migration-plan.md](../docs/plans/active/2026-04-24-nix-migration-plan.md) に従って dotfiles を Nix (flake + nix-darwin + home-manager) に段階的に移行するための作業領域。
+このディレクトリは [docs/plans/completed/2026-04-24-nix-migration-plan.md](../docs/plans/completed/2026-04-24-nix-migration-plan.md) に従って dotfiles を Nix (flake + nix-darwin + home-manager) に移行した作業領域。
 
-**現状 (2026-05-20)**: Phase B2 完了 (`.bin/symlink.sh` 廃止、19+22 paths を home-manager 管理下に移行)、Phase C1a 完了 (`darwin/{private,work}.nix` で multi-host 分離)。Phase C1b (NSGlobalDomain attribute 宣言) と Phase D (HIToolbox) は未着手。詳細進捗は `RUNNING_BRIEF.md` の Progress Log を参照。
+**現状 (2026-06-06)**: 主要部 (Phase 0+A〜C1a) 完了・稼働中 — `.bin/symlink.sh` 廃止、home-manager 管理に移行、Brewfile 46→10 縮退、`darwin/{private,work}.nix` で multi-host 分離。残務の Phase C1b (NSGlobalDomain attribute 宣言) と Phase D (HIToolbox) は [paused/](../docs/plans/paused/) に deferred (低 ROI・致命 risk)。
 
 ## 構成
 
@@ -25,7 +25,7 @@ nix/
 1. **Pre-install snapshot** (Phase 0+A Step 2):
    ```sh
    task nix:snapshot PHASE=pre
-   # → docs/plans/active/2026-04-24-phase-0a-pre-install-snapshot.txt
+   # → docs/plans/completed/2026-04-24-phase-0a-pre-install-snapshot.txt
    ```
    Xcode CLT 欠如の場合は `xcode-select --install` を先に実行。snapshot.sh の詳細: [`nix/scripts/snapshot.sh`](./scripts/snapshot.sh)
 
@@ -39,7 +39,7 @@ nix/
    ```sh
    curl -fsSL https://install.determinate.systems/nix | sh -s -- install
    task nix:snapshot PHASE=post
-   # → docs/plans/active/2026-04-24-phase-0a-post-install-snapshot.txt
+   # → docs/plans/completed/2026-04-24-phase-0a-post-install-snapshot.txt
    ```
 
 4. **Bootstrap** (初回のみ — `darwin-rebuild` がまだ存在しないため):
@@ -95,8 +95,8 @@ ls ~/.config/zsh-test-nix 2>&1  # 消える
 
 ## 撤退 (Nix を完全に剥がす)
 
-[Master plan: Abort & Rollback Criteria](../docs/plans/active/2026-04-24-nix-migration-plan.md#abort--rollback-criteria) の「全面撤退」手順に従う。uninstaller だけでは APFS volume / Keychain secret / `/etc/synthetic.conf` / launchd residue が残る場合があるため best-effort + residual check の流れで実施。
+[Master plan: Abort & Rollback Criteria](../docs/plans/completed/2026-04-24-nix-migration-plan.md#abort--rollback-criteria) の「全面撤退」手順に従う。uninstaller だけでは APFS volume / Keychain secret / `/etc/synthetic.conf` / launchd residue が残る場合があるため best-effort + residual check の流れで実施。
 
 ## 次 Phase への遷移
 
-Phase 0+A の Exit 条件を全て満たした後、[2026-04-24-nix-migration-phase-0a-plan.md](../docs/plans/active/2026-04-24-nix-migration-phase-0a-plan.md) の Outcome を記入し、Phase B1 plan (Brewfile → flake 移植) を起こす。
+Phase 0+A の Exit 条件を全て満たした後、[2026-04-24-nix-migration-phase-0a-plan.md](../docs/plans/completed/2026-04-24-nix-migration-phase-0a-plan.md) の Outcome を記入し、Phase B1 plan (Brewfile → flake 移植) を起こす。

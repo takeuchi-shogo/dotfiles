@@ -1,6 +1,8 @@
 ---
 topic: nix-migration
-status: active
+status: completed
+completed: 2026-06-06
+completion_note: "主要部 (Phase 0+A〜C1a) 実装完了・稼働中。darwin-rebuild switch で再現可能。残務 system.defaults 宣言化 (Phase C/C1b) は paused/ へ deferred (低 ROI・致命 risk)。Phase W (work プロファイル検証) は仕事用 Mac 入手後の外部条件待ち。checkbox は実態未反映だが実装は稼働済み"
 scope: L
 owner: takeuchi-shogo
 created: 2026-04-24
