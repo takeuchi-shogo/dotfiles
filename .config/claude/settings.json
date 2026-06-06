@@ -393,6 +393,17 @@
         ]
       },
       {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/policy/comment-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Comment guard..."
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
