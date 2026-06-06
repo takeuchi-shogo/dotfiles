@@ -135,6 +135,13 @@ def test_classify_healthy_recent():
     assert pcd.classify(s, stale_days=3, tree_clean=True).result == "HEALTHY"
 
 
+def test_git_stale_days_handles_untracked(tmp_path, monkeypatch):
+    monkeypatch.setattr(pcd, "REPO_ROOT", tmp_path)
+    f = tmp_path / "x.md"
+    f.write_text("---\nstatus: active\n---\n")
+    assert pcd.git_stale_days(f) >= 0
+
+
 if __name__ == "__main__":
     import pytest
 

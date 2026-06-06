@@ -8,10 +8,13 @@ eligible; Tier2/3 are report-only. Default mode is dry-run (no file moves).
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
+import json
 import re
 import subprocess
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -154,3 +157,121 @@ def classify(
     if stale_days >= stale_threshold:
         return Verdict("STALE", 3)
     return Verdict("HEALTHY", 0)
+
+
+def git_stale_days(path: Path) -> int:
+    """Days since the last commit touching path; falls back to mtime if untracked."""
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%cI", "--", str(path)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        out = ""
+    if out:
+        last = datetime.fromisoformat(out)
+        return (datetime.now(timezone.utc) - last).days
+    try:
+        mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        return (datetime.now(timezone.utc) - mtime).days
+    except OSError:
+        return 0
+
+
+def tree_clean_for(artifacts: str | None) -> bool:
+    """True if the declared artifact paths have no uncommitted changes.
+
+    When no artifacts are declared the tree condition is neutral (True) and
+    Tier1 is gated by asserts instead. If git cannot be queried, return False
+    as a fail-safe so an undeterminable state never gets promoted to Tier1.
+    """
+    paths = _csv(artifacts) if artifacts else []
+    if not paths:
+        return True
+    try:
+        rc = subprocess.run(
+            ["git", "diff", "--quiet", "--", *paths], cwd=REPO_ROOT, timeout=30
+        ).returncode
+        rc2 = subprocess.run(
+            ["git", "diff", "--cached", "--quiet", "--", *paths],
+            cwd=REPO_ROOT,
+            timeout=30,
+        ).returncode
+        return rc == 0 and rc2 == 0
+    except (subprocess.SubprocessError, OSError):
+        return False
+
+
+def scan(active_dir: Path = ACTIVE_DIR) -> list[dict]:
+    rows = []
+    for f in sorted(active_dir.glob("*.md")):
+        sig = extract_signals(f)
+        stale = git_stale_days(f)
+        verdict = classify(sig, stale, tree_clean=tree_clean_for(sig.artifacts))
+        if verdict.tier == 0:
+            continue
+        rows.append(
+            {
+                "file": str(f.relative_to(REPO_ROOT)),
+                "result": verdict.result,
+                "tier": verdict.tier,
+                "lifecycle": sig.lifecycle,
+                "artifacts": sig.artifacts,
+                "asserts": sig.asserts,
+                "checkboxes": f"{sig.checkboxes_done}/{sig.checkboxes_total}",
+                "stale_days": stale,
+            }
+        )
+    return rows
+
+
+def render_report(rows: list[dict], today: str) -> str:
+    lines = [f"# Plan close-candidate report — {today}", ""]
+    for tier in (1, 2, 3):
+        group = [r for r in rows if r["tier"] == tier]
+        label = {
+            1: "Tier1 (auto-PR 対象)",
+            2: "Tier2 (報告のみ)",
+            3: "Tier3 (stale のみ)",
+        }[tier]
+        lines.append(f"## {label} — {len(group)} 件")
+        for r in group:
+            lines.append(
+                f"- `{r['file']}` — {r['result']} "
+                f"(lifecycle={r['lifecycle']}, checkbox={r['checkboxes']}, "
+                f"stale={r['stale_days']}d)"
+            )
+        lines.append("")
+    return "\n".join(lines)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--apply-tier1",
+        action="store_true",
+        help="Tier1 候補を PR 提案として生成 (calibration 後のみ、直接 move しない)",
+    )
+    ap.add_argument("--out", default=str(REPO_ROOT / "docs" / "plan-close"))
+    args = ap.parse_args()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    rows = scan()
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / f"{today}-close-report.md").write_text(
+        render_report(rows, today), encoding="utf-8"
+    )
+    with (out_dir / "candidates.jsonl").open("a", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps({**r, "scanned": today}, ensure_ascii=False) + "\n")
+    if args.apply_tier1:
+        raise SystemExit("--apply-tier1 is gated; see Task 5/6 calibration milestone")
+    print(f"scanned: {len(rows)} candidates → {out_dir}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
