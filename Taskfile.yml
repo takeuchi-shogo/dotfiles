@@ -58,13 +58,16 @@ tasks:
       Post-clone / post-nix:switch orchestration. Idempotent — safe to re-run.
       Pre-req: `task nix:bootstrap PROFILE=...` (first machine) or `task nix:switch PROFILE=...`.
       Chains the steps that are NOT covered by nix-darwin / init-install.sh:
-        build-hooks → lefthook:install → build-claude → patch-claude → doctor
+        build-hooks → lefthook:install → build-claude → patch-claude → claude:plugins → doctor
+      Skills are vendored in the repo (symlinked by nix), so nix:switch already
+      provides them; claude:plugins fetches the plugin payloads that are machine-local.
       Excluded (run manually if needed): cmux:link, cmux:worktree-daemon:install.
     cmds:
       - task: build-hooks
       - task: lefthook:install
       - task: build-claude
       - task: patch-claude
+      - task: claude:plugins
       - task: doctor
 
   brew:
@@ -212,6 +215,11 @@ tasks:
     cmds:
       - bash scripts/lifecycle/doctor.sh brew
 
+  doctor:plugins:
+    desc: Check Claude Code plugins declared in settings.json vs installed (delegates to claude:plugins:check)
+    cmds:
+      - task: claude:plugins:check
+
   doctor:stale:
     desc: Inventory stale state (orphaned codex job state, backup residue) — read-only, deletes nothing
     cmds:
@@ -260,6 +268,20 @@ tasks:
     desc: Check if CLAUDE.md matches templates (no write)
     cmds:
       - bash ~/.claude/scripts/lifecycle/build-claude.sh --check
+
+  claude:plugins:
+    desc: |
+      Install Claude Code marketplaces + plugins declared in settings.json
+      (enabledPlugins + extraKnownMarketplaces). Idempotent. Run on a fresh
+      clone so user-scope plugins present on other machines are materialized.
+      Skills are vendored in the repo (nix symlink) and need no install step.
+    cmds:
+      - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh install
+
+  claude:plugins:check:
+    desc: 'Read-only: report plugins declared in settings.json but not installed (exit 1 if any missing)'
+    cmds:
+      - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh check
 
   codex-janitor:
     desc: Run the repo-local Codex janitor workflow runner
