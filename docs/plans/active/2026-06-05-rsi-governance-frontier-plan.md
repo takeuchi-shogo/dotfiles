@@ -1,5 +1,24 @@
 # RSI Governance Frontier Plan (A+B+C)
 
+> **⚠️ RETARGETED 2026-06-06** — 実装着手時に、本プランの接続先 (旧 AutoEvolve /improve ループ) が
+> **同日まさに退役・解体中** と判明 (`docs/decommission-log.md`: findings-to-autoevolve no-op化 / autoevolve-runner は死んだ /improve を呼ぶ / autoevolve/* ブランチ不生成)。
+> 死んだパイプラインに B2/B3/C2 を配線するのは NO-OP 残置になるため停止。
+> 同時にユーザーが**後継ループ (learned 昇格 → `auto-triage` dry-run cron) を配線** (commit a3e8c8e/7a1c556/78cc902)。
+> ガバナンスをこの **live ループ**に再標的化し、段階導入に合わせて分割した:
+>
+> | タスク | 状態 | 行き先 |
+> |---|---|---|
+> | **A 判断 frontier 計測** | ✅ **実装済 (2026-06-06)** | `scripts/learner/calibration-verdict-logger.py` + test。auto-triage calibration の人間裁定 (agree/disagree) を記録し agreement rate (個人版 Mythos) と Wave3 allowlist を出す。元の「trigger 無き手動 duel」を calibration (摩擦ゼロの判断 duel) に再標的化 |
+> | **B1 メタ安全保護** | 📋 **Wave3 要件に codify** | design doc `2026-05-31-learned-promotion-loop-design.md` の Wave3 entry requirements |
+> | **B2 drift audit** | 📋 Wave3 要件 (dry-run 期は対象 PR 無し) | 同上 |
+> | **B3 circuit-breaker** | 📋 Wave3 出荷時に実証 (auto-triage-runner 対象) | 同上 |
+> | **C1 捕捉率** | 📋 Wave3 要件 (無人 PR への自動レビュー対象) | 同上 |
+> | **C2 checklist→Analyze** | ❌ **棄却** | 接続先 (findings-to-autoevolve / Analyze→Improve) が /improve 退役で死亡 |
+> | **C3 gaming ガード** | 📋 Wave3 要件 (mechanical/advisory 比率水増し監視) | 同上 |
+>
+> 教訓: ガバナンスは**後付けでなくループ設計に統合**する。dry-run 期は設計上安全なので機構を今ビルドせず Wave3 ゲートに codify した。
+> 以下は再標的化前の原案 (provenance として保持)。
+
 - **Date**: 2026-06-05
 - **Source**: `docs/research/2026-06-05-recursive-self-improvement-anthropic-absorb-analysis.md`
 - **Scale**: L (A=S, B=M, C=M / 計 6+ ファイル)
