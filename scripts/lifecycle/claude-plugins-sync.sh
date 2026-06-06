@@ -37,6 +37,14 @@ SETTINGS="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
 INSTALLED="${CLAUDE_INSTALLED_PLUGINS:-$HOME/.claude/plugins/installed_plugins.json}"
 MODE="${1:-install}"
 
+# Requires bash 4.0+ (declare -A, mapfile). macOS ships /bin/bash 3.2, which
+# would die on `declare -A` with a cryptic "invalid option". Fail fast with a
+# legible message — the nix-managed bash is expected to be ahead in PATH.
+if ((BASH_VERSINFO[0] < 4)); then
+  echo "[plugins] ERROR: requires bash 4.0+ (found $BASH_VERSION). Install a modern bash via nix/brew and ensure it precedes /bin/bash in PATH." >&2
+  exit 2
+fi
+
 # Built-in marketplaces not declared in extraKnownMarketplaces.
 # name → github repo passed to `claude plugin marketplace add`.
 declare -A DEFAULT_MARKETPLACES=(
@@ -134,12 +142,12 @@ for entry in "${ENABLED[@]}"; do
   mp="${entry##*@}"
   [ -n "${seen_mp[$mp]:-}" ] && continue
   seen_mp["$mp"]=1
-  if ! source=$(resolve_marketplace "$mp"); then
+  if ! mp_source=$(resolve_marketplace "$mp"); then
     warn "marketplace '$mp' unresolvable — plugins from it will be skipped"
     continue
   fi
-  log "marketplace add: $mp ($source)"
-  if ! claude plugin marketplace add "$source" >/dev/null 2>&1; then
+  log "marketplace add: $mp ($mp_source)"
+  if ! claude plugin marketplace add "$mp_source" >/dev/null 2>&1; then
     log "  marketplace '$mp' already present (continuing)"
   fi
 done
