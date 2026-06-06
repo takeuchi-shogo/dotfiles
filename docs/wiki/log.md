@@ -8,6 +8,22 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-06] ingest-skip | 【完全保存版】トップ層が使うClaude Skills 72選 (東大Claude Code研究所/Buzzoni 67選 翻案)
+
+- ソース: 東大Claude Code研究所 (note, Buzzoni "67 Skills" 420万view 記事の日本ビジネス向け翻案, テキスト貼付)
+- 理由: topic family "claude-code-tips/skills-listicle" saturated-pure-rehash (N≥10, 採用率≈0%, delta=0)
+- 根拠: 外部スキル 67-72個へのポインタ集。直近の純 listicle 2件 (Khairallah 40 Features="11件目"/採用0, SKILL.md 15min Guide/採用0) と同型。platform drift 露出なし (star数等は dotfiles 内検証対象外)
+- per-method 照合台帳 (delta=0 の立証 — 各 current 手法 → matched_prior 名指し):
+  - Skills=「一度教えたら永久に覚える」仕組み → `skill-inventory.md` (90 skills 運用中) + skills-family 全 absorb (rehash)
+  - 組み合わせ workflow パック (Brainstorm→Grill→PRD 連鎖) → `skill-invocation-patterns.md` chaining 事例集 + `skill-conflict-resolution.md` (rehash)
+  - メタスキル先行 (skill-creator/write-a-skill/find-skills) → `skill-creator/` skill + `skill-audit/` + Tan absorb `skill-writing-principles.md` (rehash)
+  - Grill Me (敵対的質問インタビュー) → `grill-interview/` skill + Codex Spec/Plan Gate (rehash)
+  - Doc Co-Authoring 別セッション読者テスト=役割分担ハーネス → multi-agent review (codex-reviewer+code-reviewer 並列)。記事自身が「ハーネスに近い」と認める (rehash)
+  - 非公式スキル無闇導入のセキュリティリスク → `agentic_security_insights.md` + `mcp-audit.py` + skills-lock.json vetting (rehash)
+  - Edit Article (240字/段落・依存グラフ再構成) → N/A 文脈不一致: 外部skill install推奨であり harness提案でない。執筆経路は digest+obsidian+`concise.md` でカバー
+- 該当 family のキーワード hit: skills, listicle, 72選, skill-creator, find-skills, workflow pack
+- スキップ判定: Phase 1.5 gate (ユーザー確認: skip 推奨を承認)
+
 ## [2026-06-05] ingest-skip | How to Run 300 AI Agents From One Prompt (10 Workflows Most People Skip)
 
 - ソース: Kimi K2.6 agent swarm 啓蒙記事 (vendor-biased, テキスト貼付)
