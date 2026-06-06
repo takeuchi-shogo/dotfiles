@@ -43,6 +43,31 @@ def test_extract_signals_falls_back_to_status(tmp_path):
     assert pcd.extract_signals(f).lifecycle == "completed"
 
 
+def test_artifacts_present_all_exist(tmp_path, monkeypatch):
+    (tmp_path / "a.py").write_text("x")
+    (tmp_path / "b.sh").write_text("y")
+    monkeypatch.setattr(pcd, "REPO_ROOT", tmp_path)
+    assert pcd.artifacts_present('"a.py, b.sh"') is True
+
+
+def test_artifacts_present_missing_one(tmp_path, monkeypatch):
+    (tmp_path / "a.py").write_text("x")
+    monkeypatch.setattr(pcd, "REPO_ROOT", tmp_path)
+    assert pcd.artifacts_present("a.py, b.sh") is False
+
+
+def test_asserts_satisfied_allowlisted(monkeypatch):
+    monkeypatch.setattr(pcd, "ASSERTS", {"ok": ["true"], "ng": ["false"]})
+    assert pcd.asserts_satisfied("ok") is True
+    assert pcd.asserts_satisfied("ok, ng") is False
+
+
+def test_asserts_satisfied_rejects_non_allowlisted(monkeypatch):
+    monkeypatch.setattr(pcd, "ASSERTS", {"ok": ["true"]})
+    assert pcd.asserts_satisfied("rm -rf /") is False
+    assert pcd.asserts_satisfied("! task validate-configs") is False
+
+
 if __name__ == "__main__":
     import pytest
 

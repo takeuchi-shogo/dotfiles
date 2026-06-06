@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -51,3 +52,60 @@ def extract_signals(path: Path) -> Signals:
         checkboxes_total=done + todo,
         checkboxes_done=done,
     )
+
+
+ASSERTS: dict[str, list[str]] = {
+    "validate-configs": ["task", "validate-configs"],
+    "validate-symlinks": ["task", "validate-symlinks"],
+    "plan-close-tests": [
+        "uv",
+        "run",
+        "pytest",
+        "scripts/tests/test_plan_close_detector.py",
+        "-q",
+    ],
+}
+"""Fixed allowlist mapping an assert key to its argv (run with shell=False).
+
+Plan frontmatter can only reference keys, never arbitrary commands — this is
+the prompt-injection boundary: LLM or external text mixed into a plan cannot
+smuggle a command into the nightly scanner. Keys absent from this map are
+silently ignored, so an unknown or hostile key yields zero valid asserts.
+"""
+
+
+def _csv(field: str) -> list[str]:
+    """Strip outer quotes and split a comma-separated frontmatter field."""
+    v = field.strip().strip('"').strip("'")
+    return [x.strip() for x in v.split(",") if x.strip()]
+
+
+def artifacts_present(artifacts: str) -> bool:
+    """Weak signal: every declared artifact path exists. None or empty is False."""
+    paths = _csv(artifacts)
+    return bool(paths) and all((REPO_ROOT / p).exists() for p in paths)
+
+
+def asserts_satisfied(asserts: str) -> bool:
+    """Strong signal: every allowlisted assert key exits 0 (shell=False).
+
+    Keys not in ASSERTS are ignored; if no valid assert remains, return False
+    (absence of evidence is not evidence of completion).
+    """
+    keys = [k for k in _csv(asserts) if k in ASSERTS]
+    if not keys:
+        return False
+    for k in keys:
+        try:
+            rc = subprocess.run(
+                ASSERTS[k],
+                cwd=REPO_ROOT,
+                timeout=120,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+        except (subprocess.SubprocessError, OSError):
+            return False
+        if rc != 0:
+            return False
+    return True
