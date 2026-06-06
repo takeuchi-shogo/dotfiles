@@ -22,7 +22,11 @@ ACTIVE_DIR = REPO_ROOT / "docs" / "plans" / "active"
 
 # Reuse the frontmatter parser from doc-status-audit.py (DRY — no third parser).
 _audit_path = Path(__file__).resolve().parent / "doc-status-audit.py"
+if not _audit_path.exists():
+    raise ImportError(f"doc-status-audit.py not found: {_audit_path}")
 _spec = importlib.util.spec_from_file_location("doc_status_audit", _audit_path)
+if _spec is None or _spec.loader is None:
+    raise ImportError(f"Cannot load spec from {_audit_path}")
 _audit = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_audit)
 parse_frontmatter = _audit.parse_frontmatter
