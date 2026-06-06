@@ -151,24 +151,32 @@ wait
 
 **トリガー**: ユーザーが「改善ループ回して」「self-improve」等と言ったとき。
 
-**Step 1: 3 軸を並列起動**（cmux 内のみ。外なら各 Skill を順次手動実行にフォールバック）。各 Worker は提案を返し、末尾を短い JSON で閉じる（liveness + 集約のため）:
+**提案は stdout でなく JSON ファイルで受け渡す**。stdout 回収 (collect-result) は worker のサイレント終了や長文埋もれで不確実なため、各 worker は固定パスに提案を Write し、オーケストレーターはそのファイルを読む (あれば成功 / なければ失敗が明示的)。出力先は `.triage/self-improve/` (`.triage/` は .gitignore 済)。
 
+**Step 0: 出力ディレクトリを用意**:
 ```bash
-HC=$(scripts/runtime/launch-worker.sh --model claude --task '/check-health を実行し doc 鮮度・参照整合性の問題を検出する。**提案を返すだけ。ファイルを編集・commit しない。** 末尾を JSON で閉じる: {"axis":"check-health","proposals":[{"target":"<path>","change":"<何を直すか>","evidence":"<file:line>"}],"status":"complete"}')
-SA=$(scripts/runtime/launch-worker.sh --model claude --task '/skill-audit を実行し skill の health・description 衝突を検出する。**提案を返すだけ。編集しない。** 末尾を JSON で閉じる: {"axis":"skill-audit","proposals":[...],"status":"complete"}')
-PL=$(scripts/runtime/launch-worker.sh --model claude --task '/auto-triage を実行し learned 昇格候補を分類する。**提案を返すだけ。昇格 (artifact 編集) は人間が /promote-learnings で確定。** 末尾を JSON で閉じる: {"axis":"promote-learnings","proposals":[...],"status":"complete"}')
+DATE=$(date +%F); OUT=".triage/self-improve/$DATE"; mkdir -p "$OUT"; rm -f "$OUT"/*.json
 ```
 
-**Step 2: 結果回収**（各 Worker を collect-result.sh で並列回収）:
+**Step 1: 3 軸を並列起動**（cmux 内のみ。外なら各 Skill を順次手動実行にフォールバック）。各 worker は提案を **JSON ファイルに Write** し、完了したら stdout に `DONE <path>` だけ出す:
+
+```bash
+HC=$(scripts/runtime/launch-worker.sh --model claude --task "/check-health を実行し doc 鮮度・参照整合性の問題を検出する。**ファイルを編集・commit しない (提案のみ)。** 提案を $PWD/$OUT/check-health.json に Write せよ (形式: {\"axis\":\"check-health\",\"proposals\":[{\"target\":\"<path>\",\"change\":\"<何を直すか>\",\"evidence\":\"<file:line>\"}],\"status\":\"complete\"})。Write 後 stdout に 'DONE $OUT/check-health.json' とだけ出す。")
+SA=$(scripts/runtime/launch-worker.sh --model claude --task "/skill-audit を実行し skill の health・description 衝突を検出する。**編集しない (提案のみ)。** 提案を $PWD/$OUT/skill-audit.json に Write (同形式, axis=skill-audit)。Write 後 'DONE' を出す。")
+PL=$(scripts/runtime/launch-worker.sh --model claude --task "/auto-triage を実行し learned 昇格候補を分類する。**昇格 (artifact 編集) は人間が /promote-learnings で確定 (提案のみ)。** 提案を $PWD/$OUT/promote-learnings.json に Write (同形式, axis=promote-learnings)。Write 後 'DONE' を出す。")
+```
+
+**Step 2: 完了待ち**（collect-result で各 worker の DONE を待つ。stdout は短いので埋もれない）:
 
 ```bash
 for WS in "$HC" "$SA" "$PL"; do
   scripts/runtime/collect-result.sh --workspace "$(echo "$WS" | cut -d' ' -f1)" --worker "$(echo "$WS" | cut -d' ' -f2)" --timeout 1800 &
 done
 wait
+ls -1 "$OUT"/*.json   # 揃った提案ファイルを確認 (3 つ揃わなければ欠けた軸が失敗)
 ```
 
-**Step 3: メイン Claude が集約** — 3 軸の JSON `proposals` を統合し、重複・矛盾を整理してユーザーに提示する。
+**Step 3: メイン Claude が集約** — `$OUT/*.json` を Read して 3 軸の `proposals` を統合し、重複・矛盾を整理してユーザーに提示する。**ファイルが欠けている軸は「失敗」として明示する** (sailent fail 禁止)。stdout が DONE でも JSON が無ければ worker が Write に失敗している。
 
 **Step 4: 人間が採否** — ユーザーが採用する提案を選ぶ。採用分のみメイン Claude が確定（Edit/commit/PR）。
 
