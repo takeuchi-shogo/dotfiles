@@ -228,35 +228,19 @@ setup_claude_plugins() {
     return
   fi
 
-  # Marketplaces
-  local marketplaces=(
-    "anthropics/claude-code"
-    "anthropics/claude-plugins-official"
-    "obra/superpowers-marketplace"
-  )
-
-  for mp in "${marketplaces[@]}"; do
-    log "Adding marketplace: $mp"
-    if ! claude plugin marketplace add "$mp" >> "$LOG_FILE" 2>&1; then
-      log "Marketplace $mp already exists (continuing)"
+  # Single source of truth: settings.json (enabledPlugins + extraKnownMarketplaces).
+  # The sync script adds marketplaces and installs every enabled plugin, so the
+  # list does not drift from what Claude actually has enabled. (Was a hardcoded
+  # marketplace/plugin list here — removed to avoid drift.)
+  local sync_script="$DOTFILES_DIR/scripts/lifecycle/claude-plugins-sync.sh"
+  if [ -x "$sync_script" ]; then
+    log "Installing Claude Code plugins from settings.json..."
+    if ! "$sync_script" install >> "$LOG_FILE" 2>&1; then
+      warn "Plugin sync reported problems (see $LOG_FILE)"
     fi
-  done
-
-  # Plugins
-  local plugins=(
-    "superpowers@superpowers-marketplace"
-    "frontend-design@claude-code-plugins"
-    "code-simplifier@claude-plugins-official"
-    "playground@claude-plugins-official"
-    "pr-review-toolkit@claude-code-plugins"
-  )
-
-  for plugin in "${plugins[@]}"; do
-    log "Installing plugin: $plugin"
-    if ! claude plugin install "$plugin" >> "$LOG_FILE" 2>&1; then
-      warn "Failed to install plugin: $plugin"
-    fi
-  done
+  else
+    warn "plugin sync script not found at $sync_script — skipping plugin install"
+  fi
 
   log "Claude Code plugin setup complete"
 
