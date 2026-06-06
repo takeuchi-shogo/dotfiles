@@ -142,6 +142,18 @@ def test_git_stale_days_handles_untracked(tmp_path, monkeypatch):
     assert pcd.git_stale_days(f) >= 0
 
 
+def test_plan_moves_misplaced_to_correct_dir(tmp_path, monkeypatch):
+    active = tmp_path / "docs/plans/active"
+    active.mkdir(parents=True)
+    (active / "x.md").write_text("---\nlifecycle: deferred\n---\n# x\n")
+    monkeypatch.setattr(pcd, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(pcd, "ACTIVE_DIR", active)
+    moves = pcd.plan_moves()
+    assert any(
+        m["to"].endswith("paused/x.md") and m["result"] == "MISPLACED" for m in moves
+    )
+
+
 if __name__ == "__main__":
     import pytest
 

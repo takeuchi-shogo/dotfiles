@@ -248,6 +248,67 @@ def render_report(rows: list[dict], today: str) -> str:
     return "\n".join(lines)
 
 
+_LIFECYCLE_TO_DIR = {
+    "completed": "completed",
+    "archive": "completed",
+    "done": "completed",
+    "deferred": "paused",
+    "paused": "paused",
+}
+
+
+def plan_moves() -> list[dict]:
+    """Pure planner: return the move plan for Tier1 candidates (no git side effects).
+
+    Kept side-effect-free so the move targets can be unit-tested without
+    touching the index or working tree.
+    """
+    moves = []
+    for f in sorted(ACTIVE_DIR.glob("*.md")):
+        sig = extract_signals(f)
+        verdict = classify(
+            sig, git_stale_days(f), tree_clean=tree_clean_for(sig.artifacts)
+        )
+        if verdict.tier != 1:
+            continue
+        if verdict.result == "MISPLACED":
+            dest_dir = _LIFECYCLE_TO_DIR.get(sig.lifecycle or "", "completed")
+            new_lifecycle = sig.lifecycle
+        else:
+            dest_dir, new_lifecycle = "completed", "completed"
+        moves.append(
+            {
+                "from": str(f.relative_to(REPO_ROOT)),
+                "to": f"docs/plans/{dest_dir}/{f.name}",
+                "result": verdict.result,
+                "new_lifecycle": new_lifecycle,
+                "rationale": (
+                    f"{verdict.result}: lifecycle={sig.lifecycle}, "
+                    f"asserts={sig.asserts}"
+                ),
+            }
+        )
+    return moves
+
+
+def apply_via_pr() -> int:
+    """Safety-layered auto-apply: preflight, then move on a branch and open a PR.
+
+    This never commits or moves on the current branch directly: a human merge
+    of the PR is the final gate. The actual PR creation stays disabled until
+    the 30-day calibration milestone proves a Tier1 human-agree rate >= 0.9.
+    """
+    if subprocess.run(["git", "diff", "--quiet"], cwd=REPO_ROOT).returncode != 0:
+        raise SystemExit("[plan-close] working tree dirty; abort (preflight)")
+    moves = plan_moves()
+    if not moves:
+        print("[plan-close] no Tier1 candidates")
+        return 0
+    raise SystemExit(
+        "apply_via_pr: PR 化手順は pr-review-*.sh パターンで実装する (calibration 後)"
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -268,7 +329,7 @@ def main() -> int:
         for r in rows:
             fh.write(json.dumps({**r, "scanned": today}, ensure_ascii=False) + "\n")
     if args.apply_tier1:
-        raise SystemExit("--apply-tier1 is gated; see Task 5/6 calibration milestone")
+        return apply_via_pr()
     print(f"scanned: {len(rows)} candidates → {out_dir}")
     return 0
 
