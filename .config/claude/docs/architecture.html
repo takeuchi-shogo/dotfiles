@@ -659,7 +659,8 @@
     </div>
   </div>
 
-  <h3>Plugins（16）— カテゴリ別</h3>
+  <h3>Plugins — user scope 16 + project scope（dotfiles）+1</h3>
+  <p class="muted">plugin は 2 scope に分かれる: <b>user/global</b>（<code>.config/claude/settings.json</code> = <code>~/.claude</code>、全プロジェクト共有）= 16 個。<b>project</b>（<code>dotfiles/.claude/settings.json</code>、dotfiles repo 作業時のみ）= superpowers（user と重複）+ <b>discord</b>（正味 +1）。</p>
   <div class="grid g3">
     <div class="card accent-purple"><h4>🔄 Workflow / Process</h4>
       <p><span class="pill">superpowers</span><span class="pill">ralph-loop</span><span class="pill">claude-md-management</span></p>
@@ -671,8 +672,8 @@
       <p><span class="pill">frontend-design</span><span class="pill">playground</span></p>
       <p class="muted" style="margin-top:6px;">高品質 UI 生成、HTML プレイグラウンド</p></div>
     <div class="card accent-teal"><h4>🤝 External / Integration</h4>
-      <p><span class="pill">codex</span><span class="pill">obsidian</span><span class="pill">datadog</span><span class="pill">warp</span></p>
-      <p class="muted" style="margin-top:6px;">Codex 連携、Obsidian、Datadog、Warp。<b>Discord</b> は enabledPlugins 外（skills として利用）→ section 07 参照</p></div>
+      <p><span class="pill">codex</span><span class="pill">obsidian</span><span class="pill">datadog</span><span class="pill">warp</span><span class="pill">discord ※</span></p>
+      <p class="muted" style="margin-top:6px;">Codex 連携、Obsidian、Datadog、Warp（user scope）。<b>※ discord</b> は project scope（<code>dotfiles/.claude/settings.json</code>）で有効 → section 07 参照</p></div>
     <div class="card accent-amber"><h4>🧩 Domain Skills</h4>
       <p><span class="pill">mattpocock-skills</span><span class="pill">terraform-skill</span></p>
       <p class="muted" style="margin-top:6px;">TDD/triage/prototype、Terraform 支援</p></div>
