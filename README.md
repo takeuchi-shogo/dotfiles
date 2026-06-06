@@ -28,46 +28,46 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 
 ### シェル・ターミナル
 
-| ディレクトリ | 説明 | キーバインド |
-|---|---|---|
-| [.config/zsh/](.config/zsh/) | シェル設定・エイリアス | [README](.config/zsh/README.md) |
-| [.config/wezterm/](.config/wezterm/) | WezTerm ターミナル | [README](.config/wezterm/README.md) |
-| [.config/ghostty/](.config/ghostty/) | Ghostty ターミナル | |
-| [.config/starship.toml](.config/starship.toml) | プロンプト (Starship) | |
-| [.config/sheldon/](.config/sheldon/) | zsh プラグインマネージャ | |
+| ディレクトリ                                   | 説明                     | キーバインド                        |
+| ---------------------------------------------- | ------------------------ | ----------------------------------- |
+| [.config/zsh/](.config/zsh/)                   | シェル設定・エイリアス   | [README](.config/zsh/README.md)     |
+| [.config/wezterm/](.config/wezterm/)           | WezTerm ターミナル       | [README](.config/wezterm/README.md) |
+| [.config/ghostty/](.config/ghostty/)           | Ghostty ターミナル       |                                     |
+| [.config/starship.toml](.config/starship.toml) | プロンプト (Starship)    |                                     |
+| [.config/sheldon/](.config/sheldon/)           | zsh プラグインマネージャ |                                     |
 
 ### エディタ
 
-| ディレクトリ | 説明 |
-|---|---|
+| ディレクトリ                   | 説明               |
+| ------------------------------ | ------------------ |
 | [.config/nvim/](.config/nvim/) | Neovim (AstroNvim) |
-| [.config/zed/](.config/zed/) | Zed エディタ |
+| [.config/zed/](.config/zed/)   | Zed エディタ       |
 
 ### ウィンドウマネージャ・UI
 
-| ディレクトリ | 説明 | キーバインド |
-|---|---|---|
-| [.config/aerospace/](.config/aerospace/) | AeroSpace (タイル型 WM) | [README](.config/aerospace/README.md) |
-| [.hammerspoon/](.hammerspoon/) | wake / unlock 自動化 | [README](.hammerspoon/README.md) |
-| [.config/karabiner/](.config/karabiner/) | キーリマッピング | [README](.config/karabiner/README.md) |
-| [.config/sketchybar/](.config/sketchybar/) | ステータスバー | |
-| [.config/borders/](.config/borders/) | ウィンドウボーダー | |
+| ディレクトリ                               | 説明                    | キーバインド                          |
+| ------------------------------------------ | ----------------------- | ------------------------------------- |
+| [.config/aerospace/](.config/aerospace/)   | AeroSpace (タイル型 WM) | [README](.config/aerospace/README.md) |
+| [.hammerspoon/](.hammerspoon/)             | wake / unlock 自動化    | [README](.hammerspoon/README.md)      |
+| [.config/karabiner/](.config/karabiner/)   | キーリマッピング        | [README](.config/karabiner/README.md) |
+| [.config/sketchybar/](.config/sketchybar/) | ステータスバー          |                                       |
+| [.config/borders/](.config/borders/)       | ウィンドウボーダー      |                                       |
 
 ### Git・開発ツール
 
-| ディレクトリ | 説明 |
-|---|---|
-| [.config/git/](.config/git/) | Git 設定 |
-| [.config/gh/](.config/gh/) | GitHub CLI |
+| ディレクトリ                         | 説明        |
+| ------------------------------------ | ----------- |
+| [.config/git/](.config/git/)         | Git 設定    |
+| [.config/gh/](.config/gh/)           | GitHub CLI  |
 | [.config/lazygit/](.config/lazygit/) | lazygit TUI |
 
 ### AI エージェント
 
-| ディレクトリ | 説明 | symlink 先 |
-|---|---|---|
+| ディレクトリ                       | 説明                 | symlink 先   |
+| ---------------------------------- | -------------------- | ------------ |
 | [.config/claude/](.config/claude/) | Claude Code ハーネス | `~/.claude/` |
-| [.codex/](.codex/) | Codex CLI (OpenAI) | `~/.codex/` |
-| [.cursor/](.cursor/) | Cursor エディタ | `~/.cursor/` |
+| [.codex/](.codex/)                 | Codex CLI (OpenAI)   | `~/.codex/`  |
+| [.cursor/](.cursor/)               | Cursor エディタ      | `~/.cursor/` |
 
 ## AI エージェント基盤
 
@@ -144,26 +144,26 @@ Cursor エディタの AI 設定。rules・skills・agents・hooks で構成。
 
 ## ツール
 
-| ディレクトリ | 説明 |
-|---|---|
-| [tools/claude-hooks/](tools/claude-hooks/) | Claude Code hooks の Rust 実装 |
+| ディレクトリ                                                 | 説明                                     |
+| ------------------------------------------------------------ | ---------------------------------------- |
+| [tools/claude-hooks/](tools/claude-hooks/)                   | Claude Code hooks の Rust 実装           |
 | [tools/system-prompt-patcher/](tools/system-prompt-patcher/) | Claude Code システムプロンプトパッチャー |
-| [tools/codex-janitor/](tools/codex-janitor/) | Codex janitor ワークフローランナー |
-| [tools/half-clone/](tools/half-clone/) | Half-Clone (軽量リポジトリクローン) |
-| [tools/safeclaw/](tools/safeclaw/) | SafeClaw (安全なコマンド実行) |
+| [tools/codex-janitor/](tools/codex-janitor/)                 | Codex janitor ワークフローランナー       |
+| [tools/half-clone/](tools/half-clone/)                       | Half-Clone (軽量リポジトリクローン)      |
+| [tools/safeclaw/](tools/safeclaw/)                           | SafeClaw (安全なコマンド実行)            |
 
 ## 運用ガイド
 
 この repo は単なる設定置き場ではなく、設定の変更・検証・再開方法まで管理する運用 repo。
 
-| ドキュメント | 内容 |
-|---|---|
-| [AGENTS.md](AGENTS.md) | エージェント向け contract |
-| [PLANS.md](PLANS.md) | 長時間・複数ステップ作業の plan contract |
-| [docs/agent-harness-contract.md](docs/agent-harness-contract.md) | Claude / Codex 共通ハーネス contract |
-| [docs/guides/ai-workflow-audit.md](docs/guides/ai-workflow-audit.md) | AI workflow の監査と昇格基準 |
-| [docs/playbooks/](docs/playbooks/) | 変更手順の playbook |
-| [docs/adr/](docs/adr/) | Architecture Decision Records |
+| ドキュメント                                                         | 内容                                     |
+| -------------------------------------------------------------------- | ---------------------------------------- |
+| [AGENTS.md](AGENTS.md)                                               | エージェント向け contract                |
+| [PLANS.md](PLANS.md)                                                 | 長時間・複数ステップ作業の plan contract |
+| [docs/agent-harness-contract.md](docs/agent-harness-contract.md)     | Claude / Codex 共通ハーネス contract     |
+| [docs/guides/ai-workflow-audit.md](docs/guides/ai-workflow-audit.md) | AI workflow の監査と昇格基準             |
+| [docs/playbooks/](docs/playbooks/)                                   | 変更手順の playbook                      |
+| [docs/adr/](docs/adr/)                                               | Architecture Decision Records            |
 
 非自明な変更では、まず `PLANS.md` に従って `docs/plans/` へ plan を残し、
 変更後は `task validate` を実行する。
@@ -172,8 +172,8 @@ Cursor エディタの AI 設定。rules・skills・agents・hooks で構成。
 
 Prefix: `Ctrl+Q`
 
-| キー | 動作 |
-|---|---|
-| `Prefix` → `h/j/k/l` | ペイン移動 |
-| `Prefix` → `r` | 設定リロード |
-| `Alt+Arrow` | ペインサイズ調整 |
+| キー                 | 動作             |
+| -------------------- | ---------------- |
+| `Prefix` → `h/j/k/l` | ペイン移動       |
+| `Prefix` → `r`       | 設定リロード     |
+| `Alt+Arrow`          | ペインサイズ調整 |

@@ -180,13 +180,13 @@ diff を読み、独立した第2パスとして盲点を検出する。
 
 ### カテゴリ
 
-| # | カテゴリ | チェック対象 |
-|---|---------|------------|
-| 1 | 型安全性 | `any`/`as any`、object wrapper types、unsafe キャスト、型注釈の欠落 |
-| 2 | エラーハンドリング | domain 層 throw、空 catch、握り潰し、Result 型未使用、floating promise |
-| 3 | レイヤー境界 | 外部 SDK の domain 漏れ、ACL 不在、eslint-plugin-boundaries 違反 |
-| 4 | React/hooks | useEffect 濫用、key=index、条件付き hooks、props 過多 |
-| 5 | 境界バリデーション | API/フォーム/env の Zod 欠如、process.env 直接参照 |
+| #   | カテゴリ           | チェック対象                                                           |
+| --- | ------------------ | ---------------------------------------------------------------------- |
+| 1   | 型安全性           | `any`/`as any`、object wrapper types、unsafe キャスト、型注釈の欠落    |
+| 2   | エラーハンドリング | domain 層 throw、空 catch、握り潰し、Result 型未使用、floating promise |
+| 3   | レイヤー境界       | 外部 SDK の domain 漏れ、ACL 不在、eslint-plugin-boundaries 違反       |
+| 4   | React/hooks        | useEffect 濫用、key=index、条件付き hooks、props 過多                  |
+| 5   | 境界バリデーション | API/フォーム/env の Zod 欠如、process.env 直接参照                     |
 
 ### 手順
 
