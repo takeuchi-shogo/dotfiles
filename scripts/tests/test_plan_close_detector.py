@@ -142,6 +142,29 @@ def test_git_stale_days_handles_untracked(tmp_path, monkeypatch):
     assert pcd.git_stale_days(f) >= 0
 
 
+def test_artifacts_present_rejects_path_traversal(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (tmp_path / "secret.txt").write_text("x")
+    monkeypatch.setattr(pcd, "REPO_ROOT", repo)
+    assert pcd.artifacts_present("../secret.txt") is False
+    (repo / "ok.py").write_text("y")
+    assert pcd.artifacts_present("ok.py") is True
+
+
+def test_classify_none_lifecycle_stale_is_reported():
+    s = pcd.Signals(
+        path=Path("x.md"),
+        lifecycle=None,
+        artifacts=None,
+        asserts=None,
+        checkboxes_total=0,
+        checkboxes_done=0,
+    )
+    assert pcd.classify(s, stale_days=40, tree_clean=True).result == "STALE"
+    assert pcd.classify(s, stale_days=3, tree_clean=True).result == "HEALTHY"
+
+
 def test_plan_moves_misplaced_to_correct_dir(tmp_path, monkeypatch):
     active = tmp_path / "docs/plans/active"
     active.mkdir(parents=True)

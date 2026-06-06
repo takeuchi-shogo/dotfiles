@@ -83,10 +83,28 @@ def _csv(field: str) -> list[str]:
     return [x.strip() for x in v.split(",") if x.strip()]
 
 
+def _within_repo(p: str) -> Path | None:
+    """Resolve p under REPO_ROOT, returning None if it escapes the repo.
+
+    artifacts come from plan frontmatter, which the threat model treats as
+    untrusted; a `../` traversal must never let an out-of-repo path count as a
+    present artifact (and, once apply lands, become a move target).
+    """
+    resolved = (REPO_ROOT / p).resolve()
+    try:
+        resolved.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        return None
+    return resolved
+
+
 def artifacts_present(artifacts: str) -> bool:
     """Weak signal: every declared artifact path exists. None or empty is False."""
     paths = _csv(artifacts)
-    return bool(paths) and all((REPO_ROOT / p).exists() for p in paths)
+    if not paths:
+        return False
+    resolved = [_within_repo(p) for p in paths]
+    return all(r is not None and r.exists() for r in resolved)
 
 
 def asserts_satisfied(asserts: str) -> bool:
@@ -140,7 +158,7 @@ def classify(
     s = signals
     if s.lifecycle in _CLOSED_LIFECYCLES:
         return Verdict("MISPLACED", 1)
-    if s.lifecycle != "active":
+    if s.lifecycle is not None and s.lifecycle != "active":
         return Verdict("HEALTHY", 0)
     if s.asserts and asserts_satisfied(s.asserts) and tree_clean:
         return Verdict("VERIFIED_DONE", 1)
@@ -298,8 +316,14 @@ def apply_via_pr() -> int:
     of the PR is the final gate. The actual PR creation stays disabled until
     the 30-day calibration milestone proves a Tier1 human-agree rate >= 0.9.
     """
-    if subprocess.run(["git", "diff", "--quiet"], cwd=REPO_ROOT).returncode != 0:
-        raise SystemExit("[plan-close] working tree dirty; abort (preflight)")
+    unstaged = subprocess.run(["git", "diff", "--quiet"], cwd=REPO_ROOT).returncode
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"], cwd=REPO_ROOT
+    ).returncode
+    if unstaged != 0 or staged != 0:
+        raise SystemExit(
+            "[plan-close] working tree dirty (staged or unstaged); abort (preflight)"
+        )
     moves = plan_moves()
     if not moves:
         print("[plan-close] no Tier1 candidates")
