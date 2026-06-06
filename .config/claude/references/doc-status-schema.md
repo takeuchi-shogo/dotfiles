@@ -56,6 +56,15 @@ superseded_by: "path/to/new.md"          # archive 時のみ
 - frontmatter あり + status 未設定 → status + last_reviewed のみ追加
 - frontmatter あり + status あり → 何もしない（既存尊重）
 
+## plans の `lifecycle:` との語彙分離
+
+`docs/plans/` の plan は `lifecycle:` (active/completed/deferred/paused/pending) を生存状態に使う。これは doc-status-audit が扱う `status:` (active/reference/archive) とは**別概念**で、両ツールは disjoint な責務を持つ:
+
+- **doc-status-audit** (`status:`) = reference docs の鮮度 status 推定 (active/reference/archive)
+- **plan-close-detector** (`lifecycle:`) = plans の lifecycle クローズ判定 (active のまま放置された完了 plan の検出)
+
+`status:` を plan の close 判定に流用しない (語彙衝突を避ける)。移行期間中、既存 plan の `status:` のみのものは plan-close-detector が後方互換で読む。
+
 ## 運用頻度
 
 - 月次 `/improve` 実行時に `doc-status-audit.py --dry-run` を回して新規未設定ファイルを検出
