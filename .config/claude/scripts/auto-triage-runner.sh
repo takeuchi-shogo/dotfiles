@@ -42,7 +42,7 @@ log "Pending candidates: $CAND"
 
 # dry-run triage を headless で実行 (auto-triage skill が .triage/ レポートを書く)
 cd "$DOTFILES_DIR"
-claude --print --dangerously-skip-permissions "/auto-triage" >> "$LOG_FILE" 2>&1 || {
+claude --print --allowedTools "Read,Bash,Glob,Grep,Write" "/auto-triage" >> "$LOG_FILE" 2>&1 || {
     log "ERROR: Claude CLI failed with exit code $?"
     exit 1
 }
