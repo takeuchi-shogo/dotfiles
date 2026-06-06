@@ -91,3 +91,37 @@ class TestStats:
         assert stats["total_verdicts"] == 1
         assert stats["agreement_rate"] == 0.0
         assert stats["mechanical_confirmed"]["count"] == 0
+
+    def test_last_windows_trend_but_not_allowlist(self):
+        # PR #61 review 🟡: --last はトレンド統計のみ窓化、allowlist は全期間維持
+        entries = [
+            {
+                "key": "old",
+                "scope": "cc-bash",
+                "auto": "mechanical",
+                "verdict": "agree",
+                "ts": "2026-06-01T09:00:00",
+            },
+            {
+                "key": "mid",
+                "scope": "review-gate",
+                "auto": "advisory",
+                "verdict": "disagree",
+                "ts": "2026-06-02T09:00:00",
+            },
+            {
+                "key": "new",
+                "scope": "absorb",
+                "auto": "mechanical",
+                "verdict": "agree",
+                "ts": "2026-06-03T09:00:00",
+            },
+        ]
+        stats = logger.compute_stats(entries, last=1)
+        # トレンド: 最新 1 件 (new, agree) のみ
+        assert stats["window"] == 1
+        assert stats["total_verdicts"] == 1
+        assert stats["agreement_rate"] == 1.0
+        # allowlist: 全期間の mechanical+agree (old, new) — mid は advisory で除外
+        assert stats["mechanical_confirmed"]["count"] == 2
+        assert stats["mechanical_confirmed"]["scopes"] == ["absorb", "cc-bash"]

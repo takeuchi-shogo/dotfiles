@@ -102,18 +102,25 @@ def _latest_by_key(entries: list[dict]) -> list[dict]:
 
 
 def compute_stats(entries: list[dict], last: int | None = None) -> dict:
-    """agreement rate (全体 + 分類別) と mechanical-confirmed allowlist を返す。"""
-    verdicts = _latest_by_key(entries)
-    verdicts.sort(key=lambda e: e.get("ts", ""))
-    if last is not None:
-        verdicts = verdicts[-last:]
+    """agreement rate (トレンド) と mechanical-confirmed allowlist を返す。
 
-    total = len(verdicts)
-    agree = sum(1 for e in verdicts if e.get("verdict") == "agree")
+    意味論が異なるため `last` の適用範囲を分ける:
+      - **agreement_rate / per_class / total_verdicts**: トレンド指標 → `last` 窓。
+      - **mechanical_confirmed (Wave3 allowlist)**: 累積成果物 → 常に全期間集計。
+        `last` で truncate すると過去に human-confirmed したキーが allowlist から
+        欠落し Wave3 着手時に不完全になるため (PR #61 review 🟡)。
+    """
+    all_verdicts = _latest_by_key(entries)
+    all_verdicts.sort(key=lambda e: e.get("ts", ""))
+
+    # トレンド統計のみ last 窓を適用
+    windowed = all_verdicts[-last:] if last is not None else all_verdicts
+    total = len(windowed)
+    agree = sum(1 for e in windowed if e.get("verdict") == "agree")
 
     per_class: dict[str, dict] = {}
     for cls in CLASSES:
-        subset = [e for e in verdicts if e.get("auto") == cls]
+        subset = [e for e in windowed if e.get("auto") == cls]
         n = len(subset)
         a = sum(1 for e in subset if e.get("verdict") == "agree")
         per_class[cls] = {
@@ -122,19 +129,21 @@ def compute_stats(entries: list[dict], last: int | None = None) -> dict:
             "agreement_rate": round(a / n, 3) if n else None,
         }
 
-    # Wave3 allowlist: auto==mechanical かつ verdict==agree の scope/key
+    # Wave3 allowlist: 全期間の auto==mechanical かつ verdict==agree (last 非適用)
     confirmed = [
         {"key": e.get("key"), "scope": e.get("scope")}
-        for e in verdicts
+        for e in all_verdicts
         if e.get("auto") == "mechanical" and e.get("verdict") == "agree"
     ]
     confirmed_scopes = sorted({c["scope"] for c in confirmed if c["scope"]})
 
     return {
+        "window": last,  # null=全期間。トレンド統計のみに影響
         "total_verdicts": total,
         "agreement_rate": round(agree / total, 3) if total else None,
         "per_class": per_class,
         "mechanical_confirmed": {
+            "scope_note": "全期間集計 (--last 非適用)",
             "count": len(confirmed),
             "scopes": confirmed_scopes,
             "keys": [c["key"] for c in confirmed],
