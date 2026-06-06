@@ -145,5 +145,121 @@ def test_main_missing_ledger_is_empty_not_error(tmp_path, capsys):
     assert "採用実績なし" in capsys.readouterr().out
 
 
+def _line_v2(
+    d: str,
+    domain: str,
+    adopted: bool,
+    source_id: str = "https://feed/x",
+    scores: dict | None = None,
+    url: str = "https://x/y",
+) -> str:
+    """Phase 2 v2 スキーマ行 (source_id + scores 付き)。"""
+    return json.dumps(
+        {
+            "ts": f"{d}T00:00:00+09:00",
+            "date": d,
+            "domain": domain,
+            "url": url,
+            "title": "t",
+            "adopted": adopted,
+            "source_id": source_id,
+            "scores": scores,
+        },
+        ensure_ascii=False,
+    )
+
+
+def test_clamp_score_bounds_and_rejects_non_numbers():
+    assert aggregate._clamp_score(7) == 5.0
+    assert aggregate._clamp_score(0) == 1.0
+    assert aggregate._clamp_score(3) == 3.0
+    assert aggregate._clamp_score(None) is None
+    assert aggregate._clamp_score(True) is None
+    assert aggregate._clamp_score("4") is None
+
+
+def test_by_source_counts_and_day_distinct():
+    lines = [
+        _line_v2("2026-06-04", "a.dev", True, source_id="feed-a"),
+        _line_v2("2026-06-04", "a.dev", False, source_id="feed-a"),
+        _line_v2("2026-06-03", "a.dev", True, source_id="feed-a"),
+    ]
+    stats = aggregate.aggregate_by_source(lines, asof=ASOF, days=30)
+    assert stats["feed-a"]["adopted"] == 2
+    assert stats["feed-a"]["total"] == 3
+    assert len(stats["feed-a"]["days"]) == 2
+
+
+def test_by_source_ignores_phase1_rows_without_source_id():
+    lines = [
+        _line("2026-06-04", "a.dev", True),
+        _line_v2("2026-06-04", "a.dev", True, source_id="feed-a"),
+    ]
+    stats = aggregate.aggregate_by_source(lines, asof=ASOF, days=30)
+    assert set(stats.keys()) == {"feed-a"}
+    assert stats["feed-a"]["total"] == 1
+    dom = aggregate.aggregate(lines, asof=ASOF, days=30)
+    assert dom["a.dev"]["total"] == 2
+
+
+def test_by_source_averages_scores_with_clamp():
+    lines = [
+        _line_v2(
+            "2026-06-04",
+            "a.dev",
+            True,
+            source_id="feed-a",
+            scores={"novelty": 7, "reliability": 4, "concreteness": 0},
+        ),
+        _line_v2(
+            "2026-06-04",
+            "a.dev",
+            True,
+            source_id="feed-a",
+            scores={"novelty": 3, "reliability": 2, "concreteness": None},
+        ),
+    ]
+    stats = aggregate.aggregate_by_source(lines, asof=ASOF, days=30)
+    sums = stats["feed-a"]["sums"]
+    assert sums["novelty"] == [5.0 + 3.0, 2]
+    assert sums["reliability"] == [4.0 + 2.0, 2]
+    assert sums["concreteness"] == [1.0, 1]
+
+
+def test_by_source_keeps_zero_adopted_sources():
+    lines = [_line_v2("2026-06-04", "a.dev", False, source_id="noisy-feed")]
+    stats = aggregate.aggregate_by_source(lines, asof=ASOF, days=30)
+    assert "noisy-feed" in stats
+    assert stats["noisy-feed"]["adopted"] == 0
+    out = aggregate.render_by_source(stats, days=30, top=10)
+    assert "noisy-feed" in out
+    assert "0%" in out
+
+
+def test_render_by_source_empty_notice():
+    out = aggregate.render_by_source({}, days=30, top=10)
+    assert "採用データなし" in out
+
+
+def test_render_by_source_dash_when_no_scores():
+    lines = [_line_v2("2026-06-04", "a.dev", True, source_id="feed-a", scores=None)]
+    stats = aggregate.aggregate_by_source(lines, asof=ASOF, days=30)
+    out = aggregate.render_by_source(stats, days=30, top=10)
+    assert "—" in out
+
+
+def test_main_by_source_appends_section(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(
+        _line_v2("2026-06-04", "a.dev", True, source_id="feed-a") + "\n",
+        encoding="utf-8",
+    )
+    rc = aggregate.main([str(ledger), "--asof", "2026-06-04", "--by-source"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "採用上位ドメイン" in out
+    assert "ソース別パフォーマンス" in out
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))
