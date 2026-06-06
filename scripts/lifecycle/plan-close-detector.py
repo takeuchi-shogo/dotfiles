@@ -109,3 +109,48 @@ def asserts_satisfied(asserts: str) -> bool:
         if rc != 0:
             return False
     return True
+
+
+STALE_THRESHOLD_DAYS = 30
+_CLOSED_LIFECYCLES = {"completed", "archive", "deferred", "done", "paused"}
+
+
+@dataclass
+class Verdict:
+    result: str
+    tier: int
+
+
+def classify(
+    signals: Signals,
+    stale_days: int,
+    tree_clean: bool,
+    stale_threshold: int = STALE_THRESHOLD_DAYS,
+) -> Verdict:
+    """Classify a plan into a close-candidate tier.
+
+    Tier1 (auto-PR eligible) requires either a misplaced lifecycle or a strong
+    completion signal (allowlisted asserts pass AND a clean working tree). Path
+    existence alone is only weak evidence (an in-progress file also exists), so
+    it stays Tier2 to structurally prevent closing partially-done plans.
+    """
+    s = signals
+    if s.lifecycle in _CLOSED_LIFECYCLES:
+        return Verdict("MISPLACED", 1)
+    if s.lifecycle != "active":
+        return Verdict("HEALTHY", 0)
+    if s.asserts and asserts_satisfied(s.asserts) and tree_clean:
+        return Verdict("VERIFIED_DONE", 1)
+    if s.artifacts and artifacts_present(s.artifacts):
+        return Verdict("ARTIFACTS_PRESENT", 2)
+    if (
+        not s.asserts
+        and not s.artifacts
+        and stale_days >= stale_threshold
+        and s.checkboxes_total > 0
+        and s.checkboxes_done == s.checkboxes_total
+    ):
+        return Verdict("LIKELY_DONE", 2)
+    if stale_days >= stale_threshold:
+        return Verdict("STALE", 3)
+    return Verdict("HEALTHY", 0)

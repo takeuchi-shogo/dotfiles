@@ -68,6 +68,73 @@ def test_asserts_satisfied_rejects_non_allowlisted(monkeypatch):
     assert pcd.asserts_satisfied("! task validate-configs") is False
 
 
+def test_classify_misplaced():
+    s = pcd.Signals(
+        path=Path("docs/plans/active/x.md"),
+        lifecycle="completed",
+        artifacts=None,
+        asserts=None,
+        checkboxes_total=0,
+        checkboxes_done=0,
+    )
+    v = pcd.classify(s, stale_days=5, tree_clean=True)
+    assert v.result == "MISPLACED" and v.tier == 1
+
+
+def test_classify_verified_done_requires_assert_and_clean_tree(monkeypatch):
+    monkeypatch.setattr(pcd, "ASSERTS", {"ok": ["true"]})
+    s = pcd.Signals(
+        path=Path("x.md"),
+        lifecycle="active",
+        artifacts=None,
+        asserts="ok",
+        checkboxes_total=3,
+        checkboxes_done=0,
+    )
+    assert pcd.classify(s, stale_days=1, tree_clean=True).result == "VERIFIED_DONE"
+    assert pcd.classify(s, stale_days=1, tree_clean=False).result == "HEALTHY"
+
+
+def test_classify_artifacts_present_is_tier2(monkeypatch, tmp_path):
+    (tmp_path / "a.py").write_text("x")
+    monkeypatch.setattr(pcd, "REPO_ROOT", tmp_path)
+    s = pcd.Signals(
+        path=Path("x.md"),
+        lifecycle="active",
+        artifacts="a.py",
+        asserts=None,
+        checkboxes_total=3,
+        checkboxes_done=0,
+    )
+    v = pcd.classify(s, stale_days=1, tree_clean=True)
+    assert v.result == "ARTIFACTS_PRESENT" and v.tier == 2
+
+
+def test_classify_likely_done_is_tier2():
+    s = pcd.Signals(
+        path=Path("x.md"),
+        lifecycle="active",
+        artifacts=None,
+        asserts=None,
+        checkboxes_total=4,
+        checkboxes_done=4,
+    )
+    v = pcd.classify(s, stale_days=40, tree_clean=True)
+    assert v.result == "LIKELY_DONE" and v.tier == 2
+
+
+def test_classify_healthy_recent():
+    s = pcd.Signals(
+        path=Path("x.md"),
+        lifecycle="active",
+        artifacts=None,
+        asserts=None,
+        checkboxes_total=4,
+        checkboxes_done=1,
+    )
+    assert pcd.classify(s, stale_days=3, tree_clean=True).result == "HEALTHY"
+
+
 if __name__ == "__main__":
     import pytest
 
