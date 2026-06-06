@@ -212,6 +212,12 @@
   //   - Codex/Claude pane に 60s timeout (worktree setup 失敗時の無限ループ防止)
 
   "actions": {
+    "new-workspace": {
+      "type": "workspaceCommand",
+      "title": "New Workspace",
+      "commandName": "New Workspace",
+      "icon": { "type": "symbol", "name": "plus.square" }
+    },
     "worktree-agents": {
       "type": "workspaceCommand",
       "title": "Worktree Agents",
@@ -228,7 +234,7 @@
 
   "ui": {
     "newWorkspace": {
-      "action": "worktree-agents",
+      "action": "new-workspace",
       "contextMenu": [
         { "action": "worktree-agents", "title": "Worktree Agents" },
         { "action": "pr-review-agent", "title": "PR Review Agent" },
@@ -240,6 +246,21 @@
   },
 
   "commands": [
+    {
+      "name": "New Workspace",
+      "description": "Open a plain terminal in a new workspace (current directory)",
+      "workspace": {
+        "name": "Workspace",
+        "cwd": ".",
+        "layout": {
+          "pane": {
+            "surfaces": [
+              { "type": "terminal", "focus": true }
+            ]
+          }
+        }
+      }
+    },
     {
       "name": "Worktree Agents",
       "description": "Create a fresh git worktree at .claude/worktrees/, start Codex and Claude inside it",

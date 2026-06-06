@@ -6,6 +6,9 @@
 # Env:
 #   DISCORD_WEBHOOK_URL (from ~/.config/notifications/discord.env)
 #   DISCORD_ENV_PATH override (default: ~/.config/notifications/discord.env)
+#   NIGHTLY_NOTIFY_DISABLE=1  通知を抑制 (検証実行用)。呼び出し側が export する。
+#                             全 nightly task 共通スイッチ — DRY_RUN/FORCE_RUN 検証で
+#                             本番 webhook を汚さないため。
 #
 # Behavior:
 #   - URL 未設定 → stderr WARN + return 0 (silent skip、呼び出し側は ok 継続)
@@ -30,6 +33,13 @@ fi
 
 notify_discord() {
     local status="$1" task="$2" duration_sec="$3" report_path="$4" metric_summary="${5:-}" detail_text="${6:-}"
+
+    # 検証実行 (DRY_RUN / FORCE_RUN 等) は本番 webhook を汚さない。呼び出し側が
+    # NIGHTLY_NOTIFY_DISABLE=1 を export して制御する (定刻 cron のみ未設定で通知)。
+    if [[ "${NIGHTLY_NOTIFY_DISABLE:-0}" == "1" ]]; then
+        echo "[notify-discord] skip: NIGHTLY_NOTIFY_DISABLE=1 (validation run), task=$task" >&2
+        return 0
+    fi
 
     if [[ -z "${DISCORD_WEBHOOK_URL:-}" ]]; then
         echo "[notify-discord] WARN: DISCORD_WEBHOOK_URL not set, skipping notification for task=$task" >&2
