@@ -126,3 +126,33 @@ learnings/promoted-ledger.jsonl  (新規・追記専用)
 
 ## 未解決事項
 - **echo chamber の自動ガード**: リスク3 の watch 条件を満たすまで意図的に未実装(YAGNI)。観測トリガーで再検討する。
+
+## Wave3 entry requirements (governance)
+
+出典: RSI governance frontier absorb (`docs/research/2026-06-05-recursive-self-improvement-anthropic-absorb-analysis.md`, Anthropic 再帰的自己改善記事)。
+記事は「自己進化が壊れるとき何が起きるか」(制御喪失 / 検証ボトルネック / 判断 frontier) を扱う。
+本ループの **dry-run 期は設計上安全** (artifact 編集・commit・PR・ledger 書き込みゼロ) なので、
+ガバナンス機構は今ビルドせず、**Wave3 (mechanical 限定の無人 PR 化) の出荷ゲート**として codify する。
+Wave3 を起票するときは下記を同時に満たすこと (後付けでなくループ設計に統合する)。
+
+- **A: 判断 frontier 計測 (実装済み)** — calibration の人間裁定を `calibration-verdict-logger.py` が記録。
+  agreement rate (auto-triage の分類が人間の裁定と一致する率) = 個人版 Mythos 指標。
+  `mechanical_confirmed` の scope/key 集合が **Wave3 allowlist の素材**。
+  Wave3 着手の前提: mechanical 分類の agreement rate が**安定して高い** (calibration 2 週間で確認)。
+- **B1: メタ安全層の自己改変防御 (Wave3 で enforce)** — Wave3 の無人 PR が安全機構ファイルを
+  編集対象にしたら block する PreToolUse hook (`protect-linter-config.py` と同型、保護リストは
+  hook 内ハードコード)。保護対象: `improve-policy.md` / `completion-gate.py` / `gaming-detector.py` /
+  各ゲート hook / この保護 hook 自身。AutoEvolve コンテキスト判定は Wave3 runner が立てる env マーカーで。
+- **B2: 累積 drift audit (Wave3 で enforce)** — Wave3 PR を N 本まとめ、保護対象ファイルの累積 diff で
+  安全機構の段階的弱体化 (ガード削除・閾値緩和) を検出。dry-run 期は対象 PR が無いので不要。
+- **B3: グローバル circuit-breaker (Wave3 出荷時に実証済みにする)** — `~/.claude/agent-memory/AUTOEVOLVE_FROZEN`
+  フラグで `auto-triage-runner.sh` (live cron) + Wave3 runner を一括 no-op 化。kill-switch は
+  「必要になる前に存在」させる。`freeze` skill にトグル記述を追加。
+- **C1: 検証側の捕捉率計測 (Wave3 で enforce)** — Wave3 無人 PR への自動レビューの捕捉率を
+  `review-feedback.jsonl` 基盤の上で集計。生成 (無人 PR) だけ自己改善して検証が固定だと非対称 drift。
+- **C3: review gaming ガード (Wave3 で enforce)** — mechanical/advisory 比率の水増し
+  (無人化対象を増やすため安易に mechanical 分類する gaming) を `gaming-detector.py` の
+  `_detect_*` パターンに追加。dry-run 期は無人化対象が無いので未配線。
+
+→ 元の統合プラン (A+B+C を即実装) は `docs/plans/active/2026-06-05-rsi-governance-frontier-plan.md` を参照。
+本ループ配線後に retarget した経緯もそこに記録。
