@@ -18,6 +18,7 @@ TASKS=(
     "daily-report|23|35|run-daily-report.sh"
     "audit|23|45|run-audit.sh"
     "skill-audit|23|45|run-skill-audit.sh"
+    "plan-close-scan|0|50|run-plan-close-scan.sh"
     # tech-researcher: nightly ゲート相乗り (別ディレクトリ、.. は exec 時に解決)。
     # audit/skill-audit (23:45) の後に置き claude lock 競合を避ける。
     "tech-researcher|23|55|../tech-researcher/run-tech-researcher.sh"
