@@ -72,6 +72,7 @@
       "macskk"
       "jordanbaird-ice"
       "raycast"
+      "zed"                   # provides `zed` CLI via binary stanza
     ];
   };
 }
