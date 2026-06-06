@@ -73,3 +73,28 @@ adopted: 2
 - **記事の価値は手法そのものより「シンプルに動く統合」という教訓**。あなたの harness は記事のループ全体を既に持つ (一部は意図的に retire)。記事を「全部導入」するのは昨日の RSI absorb 結論 (execution 自己改善は重投資済) と逆行する。新規に足す価値があったのは欠けていた 1 ピース (publicity-review) のみ
 - **`/improve` retire の正しさが外部から二重に裏付けられた**: Codex (無人判断自動化は失敗モード同じ) + Gemini grounding (報酬ハッキング/Goodhart は 2025-26 研究で確立)。記事の簡素版でも無人 accept/reject を戻さない判断は妥当
 - **enterprise/別リポ → 個人 public repo の absorb ではスコープ翻訳が必須**: publicity-review を素朴に hard block すると既存の username/path で constant-fail。「原則 (leak を止める) は採用、適用範囲 (何を leak とみなすか) はリポ実態に翻訳」した (zero-trust absorb の教訓と同型)
+
+## Follow-up: self-improving loop 本体の実装と撤退 (2026-06-06)
+
+初回 absorb (2026-06-05) は publicity-review + Routines liveness のみ採用したが、ユーザーが「一部でなく全部高品質に、完全無人で (記事額面通り)」と再要求。記事の self-improving loop 本体 (発見→backlog→無人triage→PR) の実装を試み、段階導入で検証した結果、**Wave3 (learned → 無人 PR 化) は構造的に YAGNI** と判明して撤退した。
+
+### 実装したもの (master 統合済み)
+- **Wave1 `a3e8c8e`**: `session_events.py` に `from __future__ import annotations` 追加。PEP604 union (`str | None`) が実行時評価でクラッシュし、自己改善ループの**発見ステージ (learned 流入) が死んでいた根因**を修正。これは Wave3 の YAGNI 判定とは独立に価値があり**残す**
+- **Wave2 `7a1c556`/`78cc902`**: `auto-triage` dry-run skill + cron runner。learned 候補を mechanical/advisory/reject/defer に無人分類しレポートのみ出す (artifact 編集なし)
+
+### calibration の決定的 finding: mechanical 0/139
+全 139 件 learned を分類 → **mechanical 0 / advisory 129 / reject 5 / defer 5**。borderline (tournament-mode リンク切れ / `/ultra-review` typo / agent-count drift) も精査したが全て「判断が要る」で advisory。
+
+**構造的洞察**: learned ストアは本質的に「経験から得た判断材料 (advisory)」で、機械照合可能な mechanical を**原理的に含まない**。記事の「learned → 無人 PR」ループは、learned の性質上そもそも燃料が出ない。これは2週間 calibration を待たず初日に確定した。
+
+### 撤退と最終形
+- **撤退**: auto-triage-runner の cron 日次実行を撤去 (毎日同じ上位 N を見る無駄 + Wave3 YAGNI)。calibration リマインダーも不要として破棄
+- **残す**: Wave1 修正 (learned 流入回復) + auto-triage skill (手動再 calibration 用)
+- **本来の価値**: learned の advisory 129 件は**対話型 `/promote-learnings` で昇格**するのが筋。これが死んでいたループの本体で、Wave1 で燃料が回復した
+- **無人化したいなら別設計**: 入力源を learned ではなく lint 差分 / 静的解析 / リンクチェッカー出力に変える (本タスクの範囲外)
+
+### 段階導入が効いた教訓
+「完全無人で全部」を額面通り実装せず dry-run 段階を挟んだことで、**無人 PR 化の本体を作る前に「燃料が構造的にゼロ」と実装コストほぼゼロで判明**した。Codex Spec/Plan Gate の「完全自動は誤爆」+ design doc の「完全自動は誤爆」が、実データ (mechanical 0) で裏付けられた。記事の N=1 (13日1人) を鵜呑みにしない判断が正しかった。
+
+### dry-run skill の設計上の穴 (記録)
+auto-triage は dry-run で ledger に書かないため、cron 日次だと毎日同じ importance 上位 N 件を分類する (calibration にならない)。期間 calibration は無意味で、全件1回分類が正しかった。この穴は Codex Gate も突かなかった (dry-run の繰り返し挙動)。

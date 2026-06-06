@@ -27,6 +27,16 @@ pattern: learned-triage-classification
 dry-run は state を持たない (ledger に書かない)。分類はスキル改善で変動しうるため、calibration 中は確定させない。
 **calibration の裁定記録は dry-run の no-write 保証の外** (書き込み先は agent-memory であって repo artifact ではない)。
 
+## calibration 実測 (2026-06-06 時点)
+
+直近の全 139 件 learned を分類した時点では **mechanical 0 / advisory 129 / reject 5 / defer 5**。
+borderline (tournament-mode リンク切れ / typo / drift) も精査したが、すべて「判断が要る」で advisory だった。
+**現時点では機械照合可能な mechanical 種別が出現しておらず、Wave3 (無人 PR 化) の発火条件は未充足**。
+これは「learned ストアの中身が今は advisory に偏っている」という観測であって Wave3 の恒久放棄ではない
+— learned の分布が変われば mechanical が出現しうるため、calibration を継続して出現率を再測定する。
+
+詳細: `docs/research/2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md` の Follow-up
+
 ## Workflow
 
 1. **候補を取得**:
