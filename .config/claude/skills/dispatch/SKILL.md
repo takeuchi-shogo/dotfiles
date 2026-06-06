@@ -1,6 +1,6 @@
 ---
 name: dispatch
-description: "cmux Worker Router — タスクをサブエージェントまたは cmux Worker (Claude Code / Codex / Gemini) に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて', '別のモデルで', '長時間タスク', 'バックグラウンドで', '並列で実行', 'route this task'. Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）、単発の Codex/Gemini 質問（use /codex or /gemini directly）。"
+description: "cmux Worker Router — タスクをサブエージェントまたは cmux Worker (Claude Code / Codex / Gemini) に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。self-improve preset (/improve 後継): 各軸 Skill を cmux ペインで並列起動し提案を集約する自己改善ループ。Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて', '別のモデルで', '長時間タスク', 'バックグラウンドで', '並列で実行', 'route this task', '改善ループ', 'self-improve', 'self improve', '自己改善'. Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）、単発の Codex/Gemini 質問（use /codex or /gemini directly）。"
 origin: self
 user-invocable: true
 metadata:
@@ -144,6 +144,41 @@ scripts/runtime/collect-result.sh --workspace $(echo $WS1 | cut -d' ' -f1) --wor
 scripts/runtime/collect-result.sh --workspace $(echo $WS2 | cut -d' ' -f1) --worker $(echo $WS2 | cut -d' ' -f2) &
 wait
 ```
+
+### self-improve preset（自己改善ループ）
+
+`/improve`（retire 2026-05-03）の後継。各軸の専門 Skill を cmux ペインで**並列起動**し、各ペインは**提案を返すだけ**（確定しない）。集約・採否・確定はメイン Claude + 人間に残す（無人確定 = Goodhart を回避）。
+
+**トリガー**: ユーザーが「改善ループ回して」「self-improve」等と言ったとき。
+
+**Step 1: 3 軸を並列起動**（cmux 内のみ。外なら各 Skill を順次手動実行にフォールバック）。各 Worker は提案を返し、末尾を短い JSON で閉じる（liveness + 集約のため）:
+
+```bash
+HC=$(scripts/runtime/launch-worker.sh --model claude --task '/check-health を実行し doc 鮮度・参照整合性の問題を検出する。**提案を返すだけ。ファイルを編集・commit しない。** 末尾を JSON で閉じる: {"axis":"check-health","proposals":[{"target":"<path>","change":"<何を直すか>","evidence":"<file:line>"}],"status":"complete"}')
+SA=$(scripts/runtime/launch-worker.sh --model claude --task '/skill-audit を実行し skill の health・description 衝突を検出する。**提案を返すだけ。編集しない。** 末尾を JSON で閉じる: {"axis":"skill-audit","proposals":[...],"status":"complete"}')
+PL=$(scripts/runtime/launch-worker.sh --model claude --task '/auto-triage を実行し learned 昇格候補を分類する。**提案を返すだけ。昇格 (artifact 編集) は人間が /promote-learnings で確定。** 末尾を JSON で閉じる: {"axis":"promote-learnings","proposals":[...],"status":"complete"}')
+```
+
+**Step 2: 結果回収**（各 Worker を collect-result.sh で並列回収）:
+
+```bash
+for WS in "$HC" "$SA" "$PL"; do
+  scripts/runtime/collect-result.sh --workspace "$(echo "$WS" | cut -d' ' -f1)" --worker "$(echo "$WS" | cut -d' ' -f2)" --timeout 1800 &
+done
+wait
+```
+
+**Step 3: メイン Claude が集約** — 3 軸の JSON `proposals` を統合し、重複・矛盾を整理してユーザーに提示する。
+
+**Step 4: 人間が採否** — ユーザーが採用する提案を選ぶ。採用分のみメイン Claude が確定（Edit/commit/PR）。
+
+**Step 5: 完了** — 全提案を採否し終えたら cmux ペインを閉じる。これがループ完了。
+
+**設計上の制約（Codex 批評由来、2026-06-06）**:
+- **自動再問い合わせループは作らない** — `status:needs_followup` でも再問い合わせは人間判断で手動。無人ループは backlog 生成装置になる（最大の失敗モード）
+- **3 軸固定**（check-health / skill-audit / auto-triage）— 全 6 軸同時起動は YAGNI。review/audit/absorb が要るなら手動で足す
+- **各ペインは提案のみ**、確定（Edit/commit/PR）はメイン + 人間。これが `/improve` の無人確定（Goodhart）を回避する核心
+- **責任点を明示** — 提案は必ず採否してから閉じる。未採否で放置しない（backlog 生成装置化を防ぐ）
 
 ## 通信ログ
 
