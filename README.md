@@ -81,9 +81,9 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 .config/claude/
 ├── CLAUDE.md              # グローバル指示 (Progressive Disclosure)
 ├── settings.json          # hooks, permissions, env
-├── agents/                # 31 専門エージェント (code-reviewer, debugger, etc.)
-├── skills/                # 60+ スキル (review, commit, spec, epd, etc.)
-├── commands/              # 27 スラッシュコマンド (/commit, /review, /spec, etc.)
+├── agents/                # 23 専門エージェント + _archived 10 (code-reviewer, debugger, etc.)
+├── skills/                # 121 スキル (native ~57 + installed 64: review, commit, spec, epd, etc.)
+├── commands/              # 33 スラッシュコマンド (/commit, /review, /spec, etc.)
 ├── scripts/
 │   ├── policy/            # ガードレール hooks (golden-check, protect-linter-config, etc.)
 │   ├── runtime/           # セッション管理 (checkpoint, output-offload, etc.)
@@ -98,9 +98,12 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 主な機能:
 
 - **AutoEvolve**: セッションデータから自動で設定改善を提案
-- **マルチモデル連携**: Claude ↔ Codex (gpt-5.4) ↔ Gemini (1M ctx) の自動委譲
+- **マルチモデル連携**: Claude ↔ Codex (gpt-5.5) ↔ Gemini (1M ctx) の自動委譲
 - **Progressive Disclosure**: `CLAUDE.md` → `references/` → `rules/` の段階的情報開示
 - **EPD ワークフロー**: Spec → Spike → Validate → Implement → Review
+
+> **アーキテクチャ俯瞰図 (HTML)**: [.config/claude/docs/architecture.html](.config/claude/docs/architecture.html)
+> — Hooks / Skills / Agents の関係性・カテゴリ・役割・使いどころをビジュアル化（ブラウザで開く）。
 
 ```bash
 task upgrade-claude       # Claude Code アップグレード + パッチ適用

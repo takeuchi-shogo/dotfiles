@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dotfiles AI エージェント・アーキテクチャ</title>
+<style>
+  :root {
+    --bg: #0d0d17;
+    --bg-2: #14142a;
+    --panel: #1a1a2e;
+    --panel-2: #16213e;
+    --line: #2a2a44;
+    --ink: #e6e6f0;
+    --ink-dim: #a0a0c0;
+    --ink-faint: #6f6f93;
+    --purple: #7b5cd6;
+    --purple-soft: #533483;
+    --pink: #e94560;
+    --blue: #2e6fd6;
+    --teal: #1b998b;
+    --amber: #f4a261;
+    --green: #46c98b;
+    --cyan: #36c5d0;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 80% -10%, #1d1640 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 10%, #16213e 0%, transparent 55%),
+                var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #b49bff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+
+  /* ===== Nav ===== */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(13,13,23,0.82);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .inner {
+    max-width: 1180px; margin: 0 auto; padding: 11px 22px;
+    display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+  }
+  nav .brand { font-weight: 700; letter-spacing: .3px; margin-right: 12px; font-size: 14px; }
+  nav .brand span { color: var(--pink); }
+  nav a {
+    color: var(--ink-dim); font-size: 12px; padding: 5px 9px; border-radius: 7px;
+    white-space: nowrap; transition: .15s;
+  }
+  nav a:hover { color: var(--ink); background: rgba(123,92,214,.16); text-decoration: none; }
+  nav a.active { color: #fff; background: rgba(233,69,96,.20); }
+
+  /* ===== Layout ===== */
+  main { max-width: 1180px; margin: 0 auto; padding: 0 22px 90px; }
+  section { padding: 56px 0 18px; border-top: 1px solid transparent; }
+  section + section { border-top: 1px solid var(--line); }
+  h1, h2, h3 { line-height: 1.3; }
+  h2 {
+    font-size: 26px; margin: 0 0 6px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 14px; color: var(--pink);
+    border: 1px solid var(--pink); border-radius: 6px; padding: 1px 8px; flex: none;
+  }
+  h3 { font-size: 16px; margin: 26px 0 10px; color: #d7c9ff; }
+  .lead { color: var(--ink-dim); max-width: 80ch; margin: 4px 0 0; }
+  .muted { color: var(--ink-faint); font-size: 13px; }
+
+  /* ===== Hero ===== */
+  header.hero {
+    max-width: 1180px; margin: 0 auto; padding: 64px 22px 30px;
+  }
+  .hero .kicker {
+    font-family: var(--mono); font-size: 12.5px; color: var(--pink);
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 5vw, 50px); margin: 12px 0 14px; letter-spacing: -.5px;
+    background: linear-gradient(100deg, #fff 10%, #c9b8ff 55%, #ff8aa0 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.sub { font-size: 17px; color: var(--ink-dim); max-width: 78ch; margin: 0; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .stat {
+    background: linear-gradient(180deg, rgba(123,92,214,.14), rgba(22,33,62,.5));
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; min-width: 100px;
+  }
+  .stat b { display: block; font-size: 23px; font-family: var(--mono); color: #fff; }
+  .stat small { color: var(--ink-faint); font-size: 11px; letter-spacing: .4px; }
+
+  /* ===== Cards & grid ===== */
+  .grid { display: grid; gap: 14px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 920px){ .g3, .g4 { grid-template-columns: repeat(2,1fr);} }
+  @media (max-width: 620px){ .g2, .g3, .g4 { grid-template-columns: 1fr;} }
+  .card {
+    background: linear-gradient(180deg, rgba(26,26,46,.9), rgba(20,20,42,.7));
+    border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+  }
+  .card h4 { margin: 0 0 6px; font-size: 15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .card p { margin: 0; color: var(--ink-dim); font-size: 13.5px; }
+  .card .tag {
+    font-family: var(--mono); font-size: 10.5px; padding: 1px 7px; border-radius: 20px;
+    border: 1px solid var(--line); color: var(--ink-faint);
+  }
+  .accent-purple { border-top: 2px solid var(--purple); }
+  .accent-pink { border-top: 2px solid var(--pink); }
+  .accent-blue { border-top: 2px solid var(--blue); }
+  .accent-teal { border-top: 2px solid var(--teal); }
+  .accent-amber { border-top: 2px solid var(--amber); }
+  .accent-green { border-top: 2px solid var(--green); }
+  .accent-cyan { border-top: 2px solid var(--cyan); }
+
+  .dot { width:9px; height:9px; border-radius:50%; display:inline-block; flex:none;}
+  .d-purple{background:var(--purple);} .d-pink{background:var(--pink);}
+  .d-blue{background:var(--blue);} .d-teal{background:var(--teal);}
+  .d-amber{background:var(--amber);} .d-green{background:var(--green);}
+
+  /* ===== Tables ===== */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; margin-top: 14px;}
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 520px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top;}
+  thead th { background: rgba(123,92,214,.12); color: #d7c9ff; font-weight: 600; position: sticky; top:0;}
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  td code, th code { color: #ffb3c0; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ===== Layered diagram ===== */
+  .stack { display: grid; gap: 12px; margin-top: 18px; }
+  .layer {
+    border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px;
+    position: relative; background: rgba(20,20,42,.5);
+  }
+  .layer .lbl {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 8px;
+  }
+  .layer.l-user { background: linear-gradient(90deg, rgba(233,69,96,.12), transparent); border-color: rgba(233,69,96,.4);}
+  .layer.l-orch { background: linear-gradient(90deg, rgba(123,92,214,.16), rgba(22,33,62,.4)); border-color: var(--purple-soft);}
+  .layer.l-exec { background: linear-gradient(90deg, rgba(46,111,214,.10), rgba(22,33,62,.4)); border-color: rgba(46,111,214,.45);}
+  .layer.l-ext  { background: linear-gradient(90deg, rgba(27,153,139,.10), rgba(15,52,96,.5)); border-color: rgba(27,153,139,.45);}
+  .layer.l-data { background: linear-gradient(90deg, rgba(244,162,97,.10), rgba(27,27,47,.5)); border-color: rgba(244,162,97,.4);}
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip {
+    background: rgba(13,13,23,.55); border:1px solid var(--line); border-radius:9px;
+    padding:8px 12px; font-size:13px; flex:1 1 150px; min-width:140px;
+  }
+  .chip b { display:block; font-size:13.5px; color:#fff; }
+  .chip small { color: var(--ink-faint); font-size:11.5px; }
+  .flowdown { text-align:center; color:var(--ink-faint); font-size:18px; line-height:1; margin:-4px 0;}
+
+  /* relationship triad */
+  .triad { display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:18px;}
+  @media (max-width:760px){ .triad { grid-template-columns:1fr; } }
+  .triad .card { display:flex; flex-direction:column; }
+  .triad .role { font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-faint);}
+  .triad h4 { font-size:18px; margin:4px 0 8px;}
+  .triad ul { margin:8px 0 0; padding-left:18px; color:var(--ink-dim); font-size:13px;}
+  .triad li { margin:3px 0;}
+
+  .callout {
+    margin-top:18px; border:1px solid var(--purple-soft); border-left:3px solid var(--pink);
+    background: rgba(123,92,214,.08); border-radius:10px; padding:14px 18px; font-size:14px; color:var(--ink);
+  }
+  .callout b { color:#ffd3da; }
+
+  ul.clean { list-style:none; padding:0; margin:10px 0 0;}
+  ul.clean li { padding:7px 0 7px 22px; position:relative; color:var(--ink-dim); font-size:13.5px; border-bottom:1px dashed var(--line);}
+  ul.clean li:before { content:"▸"; position:absolute; left:4px; color:var(--pink);}
+  ul.clean li b { color:var(--ink);}
+
+  footer {
+    max-width:1180px; margin:0 auto; padding:30px 22px 60px; color:var(--ink-faint);
+    font-size:12.5px; border-top:1px solid var(--line);
+  }
+  footer code { color:#ffb3c0; }
+  .pill { display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--line); color:var(--ink-dim); margin:2px 4px 2px 0;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">dotfiles <span>/</span> AI Architecture</div>
+    <a href="#overview">概要</a>
+    <a href="#triad">Skill vs Agent</a>
+    <a href="#skills">Skills</a>
+    <a href="#agents">Agents</a>
+    <a href="#hooks">Hooks</a>
+    <a href="#tools">マルチツール</a>
+    <a href="#integrations">外部統合</a>
+    <a href="#workflow">ワークフロー</a>
+    <a href="#memory">メモリ&学習</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="kicker">Claude Code · Codex · Gemini · Cursor · Obsidian · Discord</div>
+  <h1>AI エージェント・アーキテクチャ</h1>
+  <p class="sub">
+    この dotfiles は、Claude Code を中核に据えた自律型開発ハーネスである。
+    <b>Hooks（メカニズム）</b>・<b>Skills（知識）</b>・<b>Agents（実行）</b> の3層が連携し、
+    Codex / Gemini への <b>マルチモデル委譲</b>、Obsidian / Discord / cmux への <b>外部統合</b>、
+    launchd cron と AutoEvolve による <b>自律運用・自己改善</b> を組み合わせて動作する。
+    本ページはその構造・カテゴリ・役割・使いどころを俯瞰する地図である。
+  </p>
+  <div class="stats">
+    <div class="stat"><b>23</b><small>AGENTS（+10 archived）</small></div>
+    <div class="stat"><b>121</b><small>SKILLS（57 native + 64 installed）</small></div>
+    <div class="stat"><b>33</b><small>SLASH COMMANDS</small></div>
+    <div class="stat"><b>16</b><small>PLUGINS</small></div>
+    <div class="stat"><b>9</b><small>HOOK EVENTS</small></div>
+    <div class="stat"><b>8</b><small>NIGHTLY CRON JOBS</small></div>
+    <div class="stat"><b>3</b><small>AI MODEL CLIs</small></div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview">
+  <h2><span class="num">01</span>全体像</h2>
+  <p class="lead">
+    Claude Code（Opus 4.8 / 1M コンテキスト）が <b>オーケストレーター</b> として全体を制御する。
+    毎ターン <code>CLAUDE.md</code> を Progressive Disclosure で読み込み、タスクの性質に応じて
+    実行層（Hooks / Skills / Agents / Plugins / MCP）・外部 CLI（Codex / Gemini）・
+    外部統合（Obsidian / Discord / cmux）・自律運用（launchd cron / AutoEvolve）に仕事を振り分ける。
+  </p>
+
+  <div class="grid g3" style="margin-top:18px;">
+    <div class="card accent-purple">
+      <h4>🧠 Orchestrator</h4>
+      <p>Claude Opus 4.8。コード生成・レビュー統合・タスク分解の中枢。<code>settings.json</code> の hooks / permissions / model が動作を規定する。</p>
+    </div>
+    <div class="card accent-blue">
+      <h4>⚙️ Execution Layer</h4>
+      <p>Hooks（決定的ガード）・Skills（知識/ワークフロー）・Agents（隔離実行）・Plugins・MCP が並行して機能する。</p>
+    </div>
+    <div class="card accent-teal">
+      <h4>🔀 Beyond the Loop</h4>
+      <p>深い推論は Codex、大規模分析は Gemini、長時間並列は cmux Worker、知識は Obsidian、リモートは Discord/Routines へ拡張する。</p>
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="layer l-user">
+      <div class="lbl">User / Remote</div>
+      <div class="chips">
+        <div class="chip"><b>ユーザー入力</b><small>プロンプト / スラッシュコマンド / コード変更</small></div>
+        <div class="chip"><b>リモート</b><small>Discord DM / Routines (cron) / launchd</small></div>
+      </div>
+    </div>
+    <div class="flowdown">▼</div>
+    <div class="layer l-orch">
+      <div class="lbl">Orchestrator Layer — Claude Opus 4.8 (1M ctx)</div>
+      <div class="chips">
+        <div class="chip"><b>Claude Code CLI</b><small>メインループ / 制御</small></div>
+        <div class="chip"><b>CLAUDE.md</b><small>コア原則 + 条件付き &lt;important if&gt;</small></div>
+        <div class="chip"><b>settings.json</b><small>hooks / permissions / model / plugins</small></div>
+      </div>
+    </div>
+    <div class="flowdown">▼</div>
+    <div class="layer l-exec">
+      <div class="lbl">Execution Layer</div>
+      <div class="chips">
+        <div class="chip"><b>Hooks</b><small>9 events · policy 40 / runtime 42 …</small></div>
+        <div class="chip"><b>Skills</b><small>121 個 · 知識 + ワークフロー</small></div>
+        <div class="chip"><b>Agents</b><small>23 個 · 隔離サブエージェント</small></div>
+        <div class="chip"><b>Plugins</b><small>16 個 · superpowers 他</small></div>
+        <div class="chip"><b>MCP</b><small>context7 / code-review-graph</small></div>
+      </div>
+    </div>
+    <div class="flowdown">▼ ▲</div>
+    <div class="layer l-ext">
+      <div class="lbl">External Models / Integrations</div>
+      <div class="chips">
+        <div class="chip"><b>Codex CLI</b><small>gpt-5.5 · 深い推論</small></div>
+        <div class="chip"><b>Gemini CLI</b><small>1M · 大規模分析</small></div>
+        <div class="chip"><b>cmux Worker</b><small>長時間並列ペイン</small></div>
+        <div class="chip"><b>Obsidian Vault</b><small>知識橋渡し (memory→Vault)</small></div>
+        <div class="chip"><b>Discord</b><small>リモート到達・承認制</small></div>
+      </div>
+    </div>
+    <div class="flowdown">▼ ▲</div>
+    <div class="layer l-data">
+      <div class="lbl">Data / Learning / Automation（local のみ・非公開）</div>
+      <div class="chips">
+        <div class="chip"><b>learnings/*.jsonl</b><small>errors / quality / patterns</small></div>
+        <div class="chip"><b>7-layer memory</b><small>compaction → dreaming</small></div>
+        <div class="chip"><b>launchd cron</b><small>夜間 8 ジョブ自律実行</small></div>
+        <div class="chip"><b>AutoEvolve</b><small>insights → 設定改善提案</small></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>3層マルチモデル連携</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>層</th><th>モデル</th><th>コンテキスト</th><th>役割</th><th>委譲ルール</th></tr></thead>
+      <tbody>
+        <tr><td><b>Orchestrator</b></td><td>Claude Opus 4.8</td><td>1M</td><td>全体制御・コード生成・レビュー統合</td><td>—</td></tr>
+        <tr><td><b>Deep Reasoning</b></td><td>Codex CLI (gpt-5.5)</td><td>~400K</td><td>設計・推論・複雑なデバッグ・セカンドオピニオン</td><td><code>rules/codex-delegation.md</code></td></tr>
+        <tr><td><b>Large Context</b></td><td>Gemini CLI</td><td>1M</td><td>大規模コードベース分析・外部リサーチ・PDF/動画</td><td><code>rules/gemini-delegation.md</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <b>設計思想:</b> 「Scaffolding &gt; Model」— 協調プロトコル（誰に・どう振るか）の選択が品質差の約 44%、モデル選択は約 14%。
+    だからこそ <b>委譲ルール・ゲート・観測可能性</b> をコードとして codify する。
+  </div>
+</section>
+
+<!-- ============ TRIAD ============ -->
+<section id="triad">
+  <h2><span class="num">02</span>中核概念 — Hooks / Skills / Agents の関係性</h2>
+  <p class="lead">
+    この3つは役割が明確に分かれている。一言でいえば
+    <b>「Skill が知識を与え、Agent がそれを実行し、Hook が境界を守る」</b>。
+    どこに何を置くかの判断基準は <code>determinism_boundary</code>（hook ⇔ instruction の境界）にある。
+  </p>
+
+  <div class="triad">
+    <div class="card accent-blue">
+      <div class="role">Mechanism / 決定的</div>
+      <h4>🔒 Hooks</h4>
+      <p>ライフサイクルイベントで自動発火する <b>スクリプト</b>。LLM を介さず決定論的に動く。</p>
+      <ul>
+        <li>静的に判定可能なルール（lint 設定保護・コミット検証・危険コマンド遮断）</li>
+        <li>観測・記録（session-learner・skill-tracker）</li>
+        <li>ゲート（completion-gate がテスト未通過を block）</li>
+      </ul>
+      <p style="margin-top:10px;"><span class="tag">いつ</span> 「毎回必ず」「LLM の気分に左右されたくない」ルール</p>
+    </div>
+    <div class="card accent-purple">
+      <div class="role">Knowledge / 宣言的</div>
+      <h4>📚 Skills</h4>
+      <p>再利用可能な <b>知識ベース + ワークフロー定義</b>。必要時にコンテキストへ読み込まれる。</p>
+      <ul>
+        <li><code>/skill名</code> で明示起動、または Agent が内部参照</li>
+        <li>多段プロセスを記述（<code>/epd</code>, <code>/review</code>, <code>/rpi</code>）</li>
+        <li>外部 CLI の wrapper（<code>/codex</code>, <code>/gemini</code>）</li>
+      </ul>
+      <p style="margin-top:10px;"><span class="tag">いつ</span> 「手順・知識を再利用したい」「人が判断を伴って起動」</p>
+    </div>
+    <div class="card accent-pink">
+      <div class="role">Execution / 隔離</div>
+      <h4>🤖 Agents</h4>
+      <p>独自のコンテキスト・ツール・システムプロンプトを持つ <b>専門サブエージェント</b>。</p>
+      <ul>
+        <li>メインの文脈を消費せず並列実行できる</li>
+        <li>専門タスク（code-reviewer, debugger, security-reviewer）</li>
+        <li>Skill が提供した知識を「実行」する主体</li>
+      </ul>
+      <p style="margin-top:10px;"><span class="tag">いつ</span> 「隔離した専門コンテキストで重い処理を回したい」</p>
+    </div>
+  </div>
+
+  <h3>典型的な連携フロー（コードレビューの例）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>主体</th><th>動作</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="dot d-pink"></span> Hook</td><td><code>UserPromptSubmit</code> / <code>PreToolUse</code> でプロンプト注入検査・スコープ強制</td></tr>
+        <tr><td>2</td><td><span class="dot d-purple"></span> Skill</td><td><code>/review</code> が変更規模を測り、必要なレビューアー構成を決定（ワークフロー知識）</td></tr>
+        <tr><td>3</td><td><span class="dot d-pink"></span> Agent</td><td><code>code-reviewer</code> + 言語専門（<code>golang-reviewer</code> / <code>typescript-reviewer</code>）を並列起動</td></tr>
+        <tr><td>4</td><td><span class="dot d-teal"></span> External</td><td>100 行超なら Codex CLI へ深い推論を委譲</td></tr>
+        <tr><td>5</td><td><span class="dot d-blue"></span> Hook</td><td><code>Stop</code> で <code>completion-gate</code> がテスト実行を確認、<code>session-learner</code> が知見を記録</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>capability カバレッジ（5 つの原子能力）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Capability</th><th>主担当 Agent</th><th>支援 Skill</th></tr></thead>
+      <tbody>
+        <tr><td><b>Localization</b> 箇所特定</td><td>debugger, Explore</td><td>check-health, fix-issue</td></tr>
+        <tr><td><b>Editing</b> 修正・生成</td><td>（直接実装）</td><td>epd, rpi, spike, frontend-design</td></tr>
+        <tr><td><b>Testing</b> テスト</td><td>test-engineer, test-analyzer</td><td>spike(validate), webapp-testing</td></tr>
+        <tr><td><b>Review</b> 品質評価</td><td>code-reviewer, codex-reviewer, golang-reviewer, typescript-reviewer</td><td>review, codex-review, security-review</td></tr>
+        <tr><td><b>Reproduction</b> 再現</td><td>debugger, cmux Worker(codex)</td><td>fix-issue, systematic-debugging</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SKILLS ============ -->
+<section id="skills">
+  <h2><span class="num">03</span>Skills — 知識ベース &amp; ワークフロー</h2>
+  <p class="lead">
+    合計 <b>121 個</b>（dotfiles ネイティブ ~57 + 外部マーケットプレイス由来 64）。
+    運用上は <code>references/skill-inventory.md</code> の tier に従い、まず <b>Core Workflow</b> で足りるか確認する。
+    各 skill には <b>pattern</b>（実装パターン）と <b>use-case category</b> が付与される。
+  </p>
+
+  <div class="grid g2" style="margin-top:8px;">
+    <div class="card"><h4><span class="dot d-purple"></span> Pattern（実装パターン）</h4>
+      <p><code>tool-wrapper</code>(13) · <code>generator</code>(12) · <code>reviewer</code>(10) · <code>pipeline</code>(11) · <code>inversion</code>(1) · <code>composite</code>(6)</p></div>
+    <div class="card"><h4><span class="dot d-pink"></span> Use-case Category</h4>
+      <p><code>Doc</code> 知識・記録 / <code>Workflow</code> 多段プロセス / <code>MCP-Enhance</code> CLI wrapper / <code>Reference</code> 言語・API 知識</p></div>
+  </div>
+
+  <h3>Tier 別カテゴリマップ</h3>
+  <div class="grid g3">
+    <div class="card accent-pink">
+      <h4>🎯 Core Workflow</h4>
+      <p class="muted">毎日の開発で最優先</p>
+      <ul class="clean">
+        <li><b>review</b> — レビューアー自動選択・並列起動</li>
+        <li><b>epd</b> — Spec→Spike→Validate→Build→Review</li>
+        <li><b>rpi</b> — Research→Plan→Implement</li>
+        <li><b>spec / spike / validate</b> — 仕様・試作・受入検証</li>
+        <li><b>check-health</b> — ドキュメント鮮度・乖離</li>
+        <li><b>commit</b> — conventional commit + 絵文字</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>🔀 Cross-Model / Research</h4>
+      <p class="muted">外部モデル・深い調査</p>
+      <ul class="clean">
+        <li><b>codex</b> — Codex CLI 深い推論 <span class="tag">MCP-Enhance</span></li>
+        <li><b>gemini</b> — 1M ctx 大規模分析 <span class="tag">MCP-Enhance</span></li>
+        <li><b>research</b> — マルチエージェント並列リサーチ</li>
+        <li><b>debate</b> — 複数 AI セカンドオピニオン</li>
+        <li><b>absorb</b> — 外部記事・論文の知見統合</li>
+        <li><b>dispatch</b> — cmux Worker ルーター</li>
+      </ul>
+    </div>
+    <div class="card accent-blue">
+      <h4>🧩 Domain / Specialist</h4>
+      <p class="muted">技術領域が明確なとき</p>
+      <ul class="clean">
+        <li><b>frontend-design / ui-ux-pro-max</b> — UI 生成</li>
+        <li><b>react-best-practices</b> — React 最適化</li>
+        <li><b>graphql-expert / buf-protobuf</b> — スキーマ設計</li>
+        <li><b>edge-case-analysis</b> — 異常系・境界値</li>
+        <li><b>webapp-testing</b> — agent-browser テスト</li>
+        <li><b>security-review / security-scan</b> — 監査</li>
+      </ul>
+    </div>
+    <div class="card accent-amber">
+      <h4>🔧 Automation / Meta</h4>
+      <p class="muted">ワークフロー自体を改善</p>
+      <ul class="clean">
+        <li><b>autonomous</b> — マルチセッション自律実行</li>
+        <li><b>create-pr-wait</b> — PR→CI 監視→自動修正</li>
+        <li><b>skill-creator / skill-audit</b> — skill 作成・監査</li>
+        <li><b>ai-workflow-audit</b> — AI ワークフロー監査</li>
+        <li><b>promote-learnings / auto-triage</b> — 学習昇格</li>
+        <li><b>eureka</b> — ブレイクスルー記録</li>
+      </ul>
+    </div>
+    <div class="card accent-green">
+      <h4>📓 Personal Ops</h4>
+      <p class="muted">GTD・知識管理（coding の前提にしない）</p>
+      <ul class="clean">
+        <li><b>daily-report / weekly-review</b> — 振り返り</li>
+        <li><b>morning-briefing / timekeeper</b> — 朝計画</li>
+        <li><b>obsidian-knowledge / digest</b> — ナレッジ整理</li>
+        <li><b>note / decision</b> — 即時記録</li>
+        <li><b>think / challenge</b> — 思考の壁打ち</li>
+        <li><b>recall / checkpoint</b> — 文脈復元・保存</li>
+      </ul>
+    </div>
+    <div class="card accent-purple">
+      <h4>☁️ Installed（外部 64）</h4>
+      <p class="muted">skills.sh / marketplace 由来</p>
+      <ul class="clean">
+        <li><b>google/skills</b> — bigquery, cloud-run, gke, firebase…</li>
+        <li><b>mizchi/skills</b> — ast-grep, playwright, devbox, nix-setup…</li>
+        <li><b>superpowers</b> — brainstorming, TDD, worktrees…</li>
+        <li><b>pr-review-toolkit</b> — 専門レビュー agent 群</li>
+        <li><b>obsidian / discord / mattpocock</b> — plugin skills</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>スキル間の関係（SkillNet）:</b>
+    <code>depend_on</code>（spec→validate）・<code>conflicts_with</code>（frontend-design ⇔ ui-ux-pro-max は同時有効化禁止）・
+    <code>compose_with</code>（research→absorb）・<code>similar_to</code>（codex-review ⇔ review）を形式的に定義し、skill-audit が衝突を検出する。
+  </div>
+</section>
+
+<!-- ============ AGENTS ============ -->
+<section id="agents">
+  <h2><span class="num">04</span>Agents — 専門実行コンテキスト（23）</h2>
+  <p class="lead">
+    Agents は隔離されたサブエージェント。Skills が知識を提供し、Agents がそれを実行する。
+    別途 <b>10 個が <code>_archived/</code></b> に退避（30 日評価後に削除する Harness Stability 方針）。
+  </p>
+
+  <div class="grid g3">
+    <div class="card accent-pink">
+      <h4>🔍 Code Review <span class="tag">9</span></h4>
+      <ul class="clean">
+        <li><b>code-reviewer</b> — 汎用 + 言語チェックリスト注入</li>
+        <li><b>golang-reviewer</b> — Go 専門（MA/MU スタイル）</li>
+        <li><b>typescript-reviewer</b> — TS/JS 専門（rules+checklist 両読み）</li>
+        <li><b>codex-reviewer</b> — Codex 深い推論（~100行+）</li>
+        <li><b>cross-file-reviewer</b> — 他ファイル影響検出</li>
+        <li><b>comment-analyzer</b> — コメント品質・正確性</li>
+        <li><b>silent-failure-hunter</b> — サイレント障害検出</li>
+        <li><b>test-analyzer</b> — テスト品質・エッジケース</li>
+        <li><b>security-reviewer</b> — OWASP・信頼境界</li>
+      </ul>
+    </div>
+    <div class="card accent-blue">
+      <h4>🏛 Architecture &amp; Design <span class="tag">3</span></h4>
+      <ul class="clean">
+        <li><b>backend-architect</b> — API/DB/スケーラビリティ</li>
+        <li><b>type-design-analyzer</b> — 型設計品質スコア</li>
+        <li><b>document-factory</b> — ドキュメント自動生成</li>
+      </ul>
+      <h4 style="margin-top:14px;">🛠 Implement &amp; Debug <span class="tag">2</span></h4>
+      <ul class="clean">
+        <li><b>debugger</b> — 体系的根本原因分析</li>
+        <li><b>codex-plan-reviewer</b> — Spec/Plan 批評・リスク分析</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>🧪 Test <span class="tag">2</span></h4>
+      <ul class="clean">
+        <li><b>test-engineer</b> — テスト戦略・カバレッジ</li>
+        <li><b>edge-case-hunter</b> — 境界値・異常系検出</li>
+      </ul>
+      <h4 style="margin-top:14px;">🎨 Product &amp; Design Review <span class="tag">2</span></h4>
+      <ul class="clean">
+        <li><b>product-reviewer</b> — spec 整合性・スコープ</li>
+        <li><b>design-reviewer</b> — UI/UX・アクセシビリティ</li>
+      </ul>
+    </div>
+    <div class="card accent-amber">
+      <h4>🧹 Maintenance <span class="tag">2</span></h4>
+      <ul class="clean">
+        <li><b>doc-gardener</b> — ドキュメント鮮度</li>
+        <li><b>ui-observer</b> — agent-browser UI 観察</li>
+      </ul>
+      <h4 style="margin-top:14px;">🔭 Routing / Infra <span class="tag">1</span></h4>
+      <ul class="clean">
+        <li><b>gemini-explore</b> — Gemini 1M 分析・リサーチ</li>
+      </ul>
+    </div>
+    <div class="card accent-purple">
+      <h4>♻️ AutoEvolve / Meta <span class="tag">2</span></h4>
+      <ul class="clean">
+        <li><b>autoevolve-core</b> — Analyze / Improve / Garden 統合</li>
+        <li><b>meta-analyzer</b> — セッション分析・改善候補抽出</li>
+      </ul>
+      <p style="margin-top:10px;" class="muted">自己改善ループの実行主体。local データのみ参照し master を直接変更しない。</p>
+    </div>
+    <div class="card">
+      <h4>📦 _archived <span class="tag">10</span></h4>
+      <p class="muted">build-fixer / db-reader / frontend-developer / golang-pro / golden-cleanup / migration-guard / nextjs-architecture-expert / safe-git-inspector / triage-router / typescript-pro</p>
+      <p style="margin-top:8px;" class="muted">削除前の 30 日評価枠。90 日 0 起動で退避（typescript-pro は implementer 版 → reviewer 版を別途新設）。</p>
+    </div>
+  </div>
+
+  <h3>言語別レビュー — 「チェックリスト注入」と「専門 agent」の二層</h3>
+  <p class="muted">Go と TS は go.md/typescript.md チェックリストを汎用 code-reviewer に注入しつつ、~200 行以上で専門 agent（golang-reviewer / typescript-reviewer）も加わる。専門 agent は rules も読み、独立した第2パスとして盲点を検出する。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>拡張子</th><th>チェックリスト（注入）</th><th>専門 agent（~200行+）</th></tr></thead>
+      <tbody>
+        <tr><td><code>.ts/.tsx/.js/.jsx</code></td><td>typescript.md</td><td><b>typescript-reviewer</b></td></tr>
+        <tr><td><code>.go</code></td><td>go.md</td><td><b>golang-reviewer</b></td></tr>
+        <tr><td><code>.py</code></td><td>python.md</td><td>—（code-reviewer + checklist）</td></tr>
+        <tr><td><code>.rs</code></td><td>rust.md</td><td>—（code-reviewer + checklist）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ HOOKS ============ -->
+<section id="hooks">
+  <h2><span class="num">05</span>Hooks — 決定的メカニズム層</h2>
+  <p class="lead">
+    Hooks は Claude Code のライフサイクルイベントで自動発火するスクリプト群。
+    <b>「静的に判定できるルールは mechanism に寄せる」</b> 原則のもと、プロンプトに書かずコードで強制する。
+    スクリプトは <code>scripts/</code> 配下に <b>policy 40 / runtime 42 / lifecycle 7 / learner 17 / lib 14</b> 本。
+  </p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>イベント</th><th>本数</th><th>代表スクリプト</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td><b>SessionStart</b></td><td>8</td><td>session-load.js, checkpoint_recover.py, harness-snapshot.py, scan-context-files.py</td><td>セッション復元・前回チェックポイント回復・環境スナップショット</td></tr>
+        <tr><td><b>UserPromptSubmit</b></td><td>1</td><td>user-input-guard.py</td><td>入力ガード（プロンプト注入・危険指示の検査）</td></tr>
+        <tr><td><b>PreToolUse</b></td><td>4</td><td>prompt-injection-detector.py, docker-safety.py, mcp-audit.py, comment-guard.sh</td><td>注入検査・Docker 安全性・MCP 監査・低価値コメント予防</td></tr>
+        <tr><td><b>PostToolUse</b></td><td>22</td><td>doc-garden-check.py, file-proliferation-guard.py, rationalization-scanner.py, skill-suggest.py, impact-scan.py</td><td>整形・鮮度・増殖防止・合理化検出・影響範囲スキャン</td></tr>
+        <tr><td><b>Stop</b></td><td>9</td><td>completion-gate.py, diff-coverage-gate.py, session-learner.py, session-save.js, sync-memory-to-vault.sh</td><td>テスト実行ゲート・カバレッジゲート・学習記録・状態保存・Vault 同期</td></tr>
+        <tr><td><b>PreCompact</b></td><td>2</td><td>pre-compact-save.js, half-clone.sh</td><td>圧縮前にセッション状態を退避</td></tr>
+        <tr><td><b>PostCompact</b></td><td>1</td><td>post-compact-verify.js</td><td>圧縮後の整合性 verify</td></tr>
+        <tr><td><b>SubagentStop</b></td><td>1</td><td>subagent-monitor.py</td><td>サブエージェント監視</td></tr>
+        <tr><td><b>Notification</b></td><td>1</td><td>cmux-notify.sh</td><td>cmux への通知</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g4" style="margin-top:16px;">
+    <div class="card accent-pink"><h4>policy/ <span class="tag">40</span></h4><p>ガードレール・ポリシー強制・エラー検出（golden-check, protect-linter-config, error-to-codex, gaming-detector）</p></div>
+    <div class="card accent-blue"><h4>runtime/ <span class="tag">42</span></h4><p>セッション管理・整形・チェックポイント・出力退避（auto-format, output-offload, launch-worker）</p></div>
+    <div class="card accent-amber"><h4>lifecycle/ <span class="tag">7</span></h4><p>計画追跡・ドキュメント管理（plan-lifecycle, doc-garden-check, context-drift-check, memory-archive）</p></div>
+    <div class="card accent-green"><h4>learner/ <span class="tag">17</span></h4><p>学習・分析（session-learner, calibration-verdict-logger, staleness-detector, eval-generator）</p></div>
+  </div>
+  <div class="callout">
+    <b>Build to Delete:</b> hook/script/agent は過渡的技術。設計時に「何が改善されればこれは不要か？」を問い、
+    削除コストを最小化する。削除は <b>30 日評価後</b>（Harness Stability）。
+  </div>
+</section>
+
+<!-- ============ MULTI-TOOL ============ -->
+<section id="tools">
+  <h2><span class="num">06</span>マルチツール構成 — Claude / Codex / Cursor</h2>
+  <p class="lead">
+    3 つの AI コーディングエージェントを統合管理する。Claude Code が最も重いオーケストレーター、
+    Codex は深い推論のサブエージェント、Cursor はエディタ内の軽量ハーネス。
+  </p>
+
+  <div class="grid g3">
+    <div class="card accent-purple">
+      <h4>🧠 Claude Code <code>~/.claude</code></h4>
+      <p>最重量のハーネス。Hooks 9 イベント・Skills 121・Agents 23・Commands 33・Plugins 16・Rules 11。Opus 4.8 / 1M。</p>
+      <ul class="clean">
+        <li><b>役割</b> オーケストレーター・実装・レビュー統合</li>
+        <li><b>強み</b> 自律ハーネス・自己改善・マルチモデル委譲</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>🔷 Codex CLI <code>~/.codex</code></h4>
+      <p>OpenAI Codex（gpt-5.5）。<code>config.toml</code> + 12 agents + <code>rules/default.rules</code>。Claude のサブエージェントとしても起動。</p>
+      <ul class="clean">
+        <li><b>役割</b> 深い推論・Spec/Plan ゲート・Review ゲート</li>
+        <li><b>agents</b> reviewer, debugger, security_auditor, edge_case_hunter, silent_failure_hunter …(12)</li>
+      </ul>
+    </div>
+    <div class="card accent-blue">
+      <h4>🟦 Cursor <code>~/.cursor</code></h4>
+      <p>Cursor エディタの AI 設定。rules 10・skills 7・agents 3・commands 3・<code>hooks.json</code> + quality-gate.sh。</p>
+      <ul class="clean">
+        <li><b>役割</b> エディタ内の軽量レビュー・品質ゲート</li>
+        <li><b>agents</b> reviewer / verifier / security-checker</li>
+        <li><b>skills</b> commit, spec, review, test-fix, create-pr, refactor, quality-report</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Plugins（16）— カテゴリ別</h3>
+  <div class="grid g3">
+    <div class="card accent-purple"><h4>🔄 Workflow / Process</h4>
+      <p><span class="pill">superpowers</span><span class="pill">ralph-loop</span><span class="pill">claude-md-management</span></p>
+      <p class="muted" style="margin-top:6px;">brainstorming / TDD / worktrees、Ralph Loop（反復自律）、CLAUDE.md 管理</p></div>
+    <div class="card accent-pink"><h4>🔍 Review / Quality</h4>
+      <p><span class="pill">pr-review-toolkit</span><span class="pill">code-simplifier</span></p>
+      <p class="muted" style="margin-top:6px;">PR 専門レビュー agent 群、コード簡素化</p></div>
+    <div class="card accent-blue"><h4>🎨 Frontend / Design</h4>
+      <p><span class="pill">frontend-design</span><span class="pill">playground</span></p>
+      <p class="muted" style="margin-top:6px;">高品質 UI 生成、HTML プレイグラウンド</p></div>
+    <div class="card accent-teal"><h4>🤝 External / Integration</h4>
+      <p><span class="pill">codex</span><span class="pill">obsidian</span><span class="pill">discord</span><span class="pill">datadog</span><span class="pill">warp</span></p>
+      <p class="muted" style="margin-top:6px;">Codex 連携、Obsidian、Discord リモート、Datadog、Warp</p></div>
+    <div class="card accent-amber"><h4>🧩 Domain Skills</h4>
+      <p><span class="pill">mattpocock-skills</span><span class="pill">terraform-skill</span></p>
+      <p class="muted" style="margin-top:6px;">TDD/triage/prototype、Terraform 支援</p></div>
+    <div class="card accent-green"><h4>🛠 LSP</h4>
+      <p><span class="pill">gopls-lsp</span><span class="pill">rust-analyzer-lsp</span><span class="pill">typescript-lsp</span></p>
+      <p class="muted" style="margin-top:6px;">Go / Rust / TS の言語サーバ</p></div>
+  </div>
+  <p class="muted" style="margin-top:12px;"><b>MCP:</b> <code>context7</code>（ライブラリ最新ドキュメント）・<code>code-review-graph</code>（構造グラフによるトークン効率レビュー）を常時有効化。</p>
+</section>
+
+<!-- ============ INTEGRATIONS ============ -->
+<section id="integrations">
+  <h2><span class="num">07</span>外部統合 &amp; リモート運用</h2>
+  <p class="lead">
+    Claude Code のループは端末内に閉じない。<b>知識（Obsidian）</b>・<b>リモート到達（Discord）</b>・
+    <b>定期実行（Routines / launchd）</b>・<b>長時間並列（cmux Worker）</b> へ外側に広がっている。
+  </p>
+
+  <div class="grid g2">
+    <div class="card accent-purple">
+      <h4>🟣 Obsidian — 知識橋渡し</h4>
+      <p>セッションの知見を Obsidian Vault（<code>~/Documents/Obsidian Vault</code>）へ <b>memory→Vault の単方向同期</b>するスナップショット連携。Vault は AI の reasoning input ではなく、人間の第二の脳。</p>
+      <ul class="clean">
+        <li><b>skills</b> obsidian-knowledge / digest / note / obsidian-content / obsidian-vault-setup</li>
+        <li><b>plugin</b> obsidian@obsidian-skills（obsidian-markdown / obsidian-cli / defuddle / json-canvas / bases）</li>
+        <li><b>hooks</b> sync-memory-to-vault.sh（Stop）/ save-briefing-to-vault.sh（PostToolUse）</li>
+        <li><b>原則</b> 現行コードと矛盾したら現状を優先（Vault は過去スナップショット）</li>
+      </ul>
+    </div>
+    <div class="card accent-pink">
+      <h4>🟢 Discord — リモート到達</h4>
+      <p>Discord 経由でリモートから Claude に到達する。<b>承認制ペアリング</b>・allowlist・DM/グループポリシーで制御。</p>
+      <ul class="clean">
+        <li><b>discord:configure</b> — bot token 設定・アクセスポリシー確認</li>
+        <li><b>discord:access</b> — ペアリング承認・allowlist 編集・DM 可否</li>
+        <li><b>tools</b> RemoteTrigger / PushNotification / SendMessage</li>
+        <li><b>用途</b> 外出先からタスク投入・進捗通知の受信</li>
+      </ul>
+    </div>
+    <div class="card accent-amber">
+      <h4>🟠 Routines / Schedule — 定期リモート実行</h4>
+      <p>cron スケジュールで動く <b>リモートエージェント（Routines）</b> と、対話内の反復実行。</p>
+      <ul class="clean">
+        <li><b>/schedule</b> — cron で動く remote agent の作成・一覧・実行</li>
+        <li><b>/loop</b> — プロンプト/コマンドを一定間隔で反復</li>
+        <li><b>ralph-loop</b> plugin — 反復自律ループ（ralph-loop / cancel-ralph）</li>
+        <li><b>tools</b> CronCreate / CronList / CronDelete</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>🔵 cmux Worker — 長時間並列（launched 系）</h4>
+      <p>Ghostty + cmux 上で <b>別ペインに Worker を起動</b>し、Claude/Codex/Gemini を並列に走らせる。改善・設計判断・セカンドオピニオンの正規パス。</p>
+      <ul class="clean">
+        <li><b>launch-worker.sh</b> — <code>--model codex/gemini</code> で Worker 起動（1-hop observable）</li>
+        <li><b>dispatch</b> skill — self-improve preset で各軸 skill を並列 fan-out</li>
+        <li><b>参照</b> references/cmux-ecosystem.md（CLI・surface 解決）</li>
+        <li><b>注意</b> Bash tool → codex は到達不能（TTY 不在）。cmux Worker が正規パス</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WORKFLOW ============ -->
+<section id="workflow">
+  <h2><span class="num">08</span>ワークフロー &amp; 使いどころ</h2>
+
+  <h3>タスク規模別の必須段階</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>規模</th><th>例</th><th>必須段階</th></tr></thead>
+      <tbody>
+        <tr><td><b>S</b></td><td>typo 修正・1 行変更</td><td>Implement → Codex Review Gate → Verify</td></tr>
+        <tr><td><b>M</b></td><td>関数追加・バグ修正</td><td>Plan → Codex Spec/Plan Gate → Edge Case 分析 → Implement → Test → Review Gate → Verify</td></tr>
+        <tr><td><b>L</b></td><td>新機能・リファクタリング</td><td>上記 + Security Check（＋ docs/plans/ への永続 plan）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>EPD ワークフロー（不確実なアイデア向け）</h3>
+  <div class="chips" style="margin-top:8px;">
+    <div class="chip" style="border-top:2px solid var(--purple);"><b>① Spec</b><small>/spec — Prompt-as-PRD 生成</small></div>
+    <div class="chip" style="border-top:2px solid var(--blue);"><b>② Spike</b><small>/spike — worktree 隔離プロトタイプ</small></div>
+    <div class="chip" style="border-top:2px solid var(--amber);"><b>③ Decide</b><small>proceed / pivot / abandon</small></div>
+    <div class="chip" style="border-top:2px solid var(--teal);"><b>④ Build</b><small>/rpi — Research→Plan→Implement</small></div>
+    <div class="chip" style="border-top:2px solid var(--pink);"><b>⑤ Review</b><small>code + product + design</small></div>
+    <div class="chip" style="border-top:2px solid var(--green);"><b>⑥ Ship</b><small>/commit</small></div>
+  </div>
+
+  <h3>どれを使うか（判断表）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>シナリオ</th><th>推奨</th></tr></thead>
+      <tbody>
+        <tr><td>不確実なアイデアを形にしたい</td><td><code>/epd</code>（フル 6 フェーズ）</td></tr>
+        <tr><td>仕様は明確、実装に入りたい</td><td><code>/rpi</code>（Research→Plan→Implement）</td></tr>
+        <tr><td>素早く実現可能性を検証したい</td><td><code>/spike</code>（worktree 隔離・テスト/lint 不要）</td></tr>
+        <tr><td>設計判断・トレードオフ比較</td><td><code>/debate</code> または cmux Worker（Codex）</td></tr>
+        <tr><td>大規模コードベースを分析</td><td><code>/gemini</code>（1M ctx）</td></tr>
+        <tr><td>外部記事の知見を取り込みたい</td><td><code>/absorb</code></td></tr>
+        <tr><td>コード変更のレビュー</td><td><code>/review</code>（規模に応じ自動スケール）</td></tr>
+        <tr><td>定期的に自動実行したい</td><td><code>/schedule</code>（Routines）/ launchd cron</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Review パイプライン（規模で自動スケール）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>変更行数</th><th>レビューアー構成</th></tr></thead>
+      <tbody>
+        <tr><td>~10 行</td><td>省略（Verify のみ）</td></tr>
+        <tr><td>~30 行</td><td>code-reviewer（言語チェックリスト注入）+ codex-reviewer</td></tr>
+        <tr><td>~50 行</td><td>上記 + edge-case-hunter + cross-file-reviewer（2+ファイル時）</td></tr>
+        <tr><td>~200 行</td><td>上記 + golang-reviewer / typescript-reviewer + Gemini セキュリティレビュー</td></tr>
+        <tr><td>200 行超</td><td>上記全て + スペシャリスト（3-way: Claude + Codex + Gemini）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ MEMORY & LEARNING ============ -->
+<section id="memory">
+  <h2><span class="num">09</span>メモリ &amp; 学習 — 7層モデル・AutoEvolve・夜間 cron</h2>
+
+  <h3>Claude Code 7層メモリモデル</h3>
+  <p class="muted">コンテキスト管理は 7 層で構成される。うちハーネスが介入できる層（4/5/7）に投資する。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Layer</th><th>名称</th><th>トリガー</th><th>ハーネス介入</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Tool Result Storage</td><td>毎ツール結果</td><td>不可（CC 内蔵）</td></tr>
+        <tr><td>2</td><td>Microcompaction</td><td>毎ターン</td><td>不可（CC 内蔵）</td></tr>
+        <tr><td>3</td><td>Session Memory</td><td>トークン+ツール閾値</td><td>間接（checkpoint で補完）</td></tr>
+        <tr><td>4</td><td><b>Full Compaction</b></td><td>autocompact 超過</td><td><b>可能</b> — PreCompact hook で状態保存</td></tr>
+        <tr><td>5</td><td><b>Auto Memory Extraction</b></td><td>クエリループ終了</td><td><b>可能</b> — MEMORY.md / memory/ 管理</td></tr>
+        <tr><td>6</td><td>Dreaming</td><td>BG（時間+蓄積）</td><td>間接 — memory/ の構造品質が効く</td></tr>
+        <tr><td>7</td><td><b>Cross-Agent Comm.</b></td><td>Agent spawn / BG</td><td><b>可能</b> — Agent 定義・SendMessage・worktree</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>AutoEvolve（自己改善ループ）</h3>
+  <p class="muted">セッションデータを自動収集・分析し、設定自体を改善する提案を生成する。生ログ（local 非公開）→ 反復出現で insights → 確信度が高ければ MEMORY/skill/rule へ昇格（人間が承認）。</p>
+  <div class="grid g4">
+    <div class="card accent-pink"><h4>セッション</h4><p>Stop/SessionEnd hook が errors / quality 指摘を jsonl に自動記録</p></div>
+    <div class="card accent-blue"><h4>日次</h4><p><code>/daily-report</code> の「今日の学び」で振り返り</p></div>
+    <div class="card accent-amber"><h4>バックグラウンド</h4><p>launchd cron で深夜に分析、朝レビュー（auto-triage dry-run）</p></div>
+    <div class="card accent-green"><h4>昇格</h4><p>patterns.jsonl → <code>/promote-learnings</code> で skill/rule 化</p></div>
+  </div>
+
+  <h3>夜間 launchd cron（自律運用）</h3>
+  <p class="muted">macOS launchd により毎晩自動実行される無人ジョブ。<code>scripts/runtime/nightly/</code> + <code>launchd-install.sh</code>。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>時刻</th><th>ジョブ</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>22:30</td><td>dep-audit</td><td>依存関係の監査</td></tr>
+        <tr><td>23:15</td><td>golden-check</td><td>Golden Principles 違反スキャン</td></tr>
+        <tr><td>23:20</td><td>friction-aggregate</td><td>摩擦イベント集計</td></tr>
+        <tr><td>23:25</td><td>health-check</td><td>ドキュメント鮮度・整合性</td></tr>
+        <tr><td>23:35</td><td>daily-report</td><td>全プロジェクト横断日報</td></tr>
+        <tr><td>23:45</td><td>audit / skill-audit</td><td>コードベース監査・skill 健全性</td></tr>
+        <tr><td>23:55</td><td>tech-researcher</td><td>AI tech 情報収集（自己進化型）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px;">
+    <div class="card">
+      <h4>🔒 安全機構</h4>
+      <ul class="clean">
+        <li>master 直接変更 <b>禁止</b></li>
+        <li>1 サイクル <b>最大 3 ファイル</b></li>
+        <li>テスト通過必須 / 人間レビュー必須</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🔐 セキュリティ境界</h4>
+      <p><b>Git 管理（公開可）:</b> agent 定義・skill・rule・hook ロジック・settings.json(permissions)</p>
+      <p style="margin-top:6px;"><b>local のみ（非公開）:</b> learnings/*.jsonl・metrics/・logs/・settings.local.json</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    <b>このページについて:</b> dotfiles リポジトリ（<code>~/.claude</code> = <code>.config/claude/</code>）の実態スナップショット。
+    数値は <code>settings.json</code> / <code>agents/</code> / <code>skills/</code> / <code>scripts/</code> / <code>nightly/launchd-install.sh</code> の実測に基づく。
+    canonical な定義は各設定ファイルが source of truth であり、構成変更時はこのページも更新する。
+  </p>
+  <p style="margin-top:8px;">
+    生成日: 2026-06-06 ·
+    関連: <code>.config/claude/README.md</code> · <code>references/skill-inventory.md</code> · <code>references/cmux-ecosystem.md</code> · <code>references/cc-7-layer-memory-model.md</code>
+  </p>
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav a'));
+    var map = {};
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) map[id] = a;
+    });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          var a = map[e.target.id];
+          if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    Object.keys(map).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+  })();
+</script>
+</body>
+</html>
