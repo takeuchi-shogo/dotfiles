@@ -229,6 +229,12 @@
       "title": "PR Review Agent",
       "commandName": "PR Review Agent",
       "icon": { "type": "symbol", "name": "eye.fill" }
+    },
+    "claude-teams": {
+      "type": "workspaceCommand",
+      "title": "Claude Teams",
+      "commandName": "Claude Teams",
+      "icon": { "type": "symbol", "name": "person.3.fill" }
     }
   },
 
@@ -238,6 +244,7 @@
       "contextMenu": [
         { "action": "worktree-agents", "title": "Worktree Agents" },
         { "action": "pr-review-agent", "title": "PR Review Agent" },
+        { "action": "claude-teams", "title": "Claude Teams" },
         { "type": "separator" },
         { "action": "cmux.newTerminal", "title": "New Terminal" },
         { "action": "cmux.newBrowser", "title": "New Browser" }
@@ -349,6 +356,26 @@
               }
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "Claude Teams",
+      "description": "Launch Claude Code with Agent Teams in split-pane mode via 'cmux claude-teams --teammate-mode tmux'. Ask the Claude session to 'create a team of N teammates' — each teammate spawns as a real cmux pane through the tmux shim (verified 2026-06-07). NOTE: this works for real teammates (the team-creation flow), NOT for Agent-tool subagents (those stay in-process).",
+      "workspace": {
+        "name": "Claude Teams",
+        "cwd": ".",
+        "layout": {
+          "pane": {
+            "surfaces": [
+              {
+                "type": "terminal",
+                "name": "Claude Teams",
+                "command": "exec cmux claude-teams --teammate-mode tmux",
+                "focus": true
+              }
+            ]
+          }
         }
       }
     }
