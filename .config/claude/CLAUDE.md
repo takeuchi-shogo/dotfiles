@@ -58,7 +58,7 @@
 - Harness contract: `docs/agent-harness-contract.md`
 - Harness Stability: `references/harness-stability.md` (hooks/skills/agents の削除は 30 日評価後)
 - Change Surface Matrix: `references/change-surface-matrix.md`、最低検証: `task validate-configs`, `task validate-symlinks`
-- `git commit --no-verify` は禁止（lefthook pre-commit / commit-msg で強制）
+- `git commit --no-verify` / `-n` は禁止（settings.json deny で block — lefthook 自身は `--no-verify` で bypass されるため、enforcement は deny ルール側）
 - lint config (`.eslintrc*`, `biome.json`, `.prettierrc*`) は保護対象 — 設定ではなくコードを直す（`protect-linter-config` hook で強制）
 - コード変更は Codex Review Gate (codex-reviewer + code-reviewer 並列) を受ける
 

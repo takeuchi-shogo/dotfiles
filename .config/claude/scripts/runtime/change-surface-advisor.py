@@ -16,7 +16,13 @@ category to avoid repeated suggestions in the same session.
 import json
 import os
 import re
+import sys
 from dataclasses import dataclass
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import load_hook_input, run_hook  # noqa: E402
 
 SEEN_FILE = "/tmp/claude-change-surface-seen.json"
 
@@ -127,8 +133,8 @@ def match_surfaces(file_path: str) -> list[SurfacePattern]:
 
 
 def main() -> None:
-    tool_input = json.loads(os.environ.get("TOOL_INPUT", "{}"))
-    file_path = tool_input.get("file_path", "")
+    data = load_hook_input()
+    file_path = data.get("tool_input", {}).get("file_path", "") or ""
 
     if not file_path:
         return
@@ -146,7 +152,9 @@ def main() -> None:
     save_seen(seen)
 
     # Build advisory message - only show highest risk
-    highest = min(new_matches, key=lambda m: ["critical", "high", "medium"].index(m.risk))
+    highest = min(
+        new_matches, key=lambda m: ["critical", "high", "medium"].index(m.risk)
+    )
     icon = RISK_ICONS[highest.risk]
     lines = [
         f"[Change Surface {icon}] {os.path.basename(file_path)} — "
@@ -159,4 +167,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_hook("change-surface-advisor", main)

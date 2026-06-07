@@ -25,6 +25,10 @@ import sys
 from datetime import date, datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import get_references_dir  # noqa: E402
+
 THRESHOLD_TOKENS = 6000
 CHARS_PER_TOKEN = 4  # rough estimate: ~4 chars per token for Japanese/English mixed
 
@@ -186,13 +190,13 @@ def measure_hook_outputs(log_dir: Path) -> dict:
     }
 
 
-def measure_references(claude_dir: Path) -> dict:
+def measure_references() -> dict:
     """Measure total line count of ~/.claude/references/*.md files.
 
     These are not always exposed, but represent the on-demand instruction budget.
     Recorded separately as 'available_budget' rather than 'active_budget'.
     """
-    refs_dir = claude_dir / "references"
+    refs_dir = get_references_dir()
     if not refs_dir.exists():
         return {
             "source": "references",
@@ -311,7 +315,7 @@ def _collect_results(claude_dir: Path, log_dir: Path) -> tuple[dict, Path]:
         measure_hook_outputs(log_dir),
         measure_skill_descriptions(claude_dir),
     ]
-    references_info = measure_references(claude_dir)
+    references_info = measure_references()
     total_tokens = sum(c["tokens_est"] for c in components)
     results = {
         "date": date.today().isoformat(),
