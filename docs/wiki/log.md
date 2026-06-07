@@ -1560,3 +1560,48 @@
 - 採用: 1件のみ — L1b uncertainty license を CLAUDE.md:94 honesty 原則に1節拡張（新規 bullet 不足、IFScale 尊重）。residual gap = 自由形式の事実/ライブラリ挙動/外部応答の断定（hook 非対象・コードでない・banned phrase 非該当）を自己申告で塞ぐ
 - メタ教訓（記事テーマの実演）: Phase 2.5 で Gemini が L3a 最優先と主張、根拠に `settings-schema.ts` を提示 → 検証で**存在せず（Gemini のハルシネーション）**。dotfiles の TS は全て vendored。bias 補正役自身が捏造 → file:line 検証が捏造を捕捉。Codex worker は別repo(hearable)で起動し dotfiles 文脈なく使用不能（既知の Bash→Codex 到達性問題）
 - family: claude-code-tips / anti-fabrication（saturated, 低収率の傾向を再確認。ただし harness vs 記事の mechanism 優位を file:line で立証する validation 価値はあった）
+
+## [2026-06-07] ingest-skip | gstack (Garry Tan の Claude Code 設定) を宣伝する記事
+- ソース: https://github.com/garrytan/gstack (記事: Medium "I'm Noisy" 系インフルエンサー宣伝 listicle)
+- 理由: topic family "claude-code-tips" saturated-borderline (15 件目, 採用率 <20%, delta=1)
+- 根拠: gstack repo は 2026-04-26 absorb (skill-md-15min-guide) で実在確認済み。generic listicle は構造的低収率 (Khairallah 40=採用0 / SKILL.md 15min=採用0 / dynamic workflows=採用0)。記事主張 (108k stars / 18歳ハッカソン優勝 / 3-5h/day 削減) は検証不能な social proof
+- per-method 照合台帳 (全10手法、9つ rehash + 1 novel):
+  - フェーズpipeline (Think→…→Reflect) → `2026-04-21-harness-pipeline` + EPD/rpi/workflow-guide (rehash)
+  - /office-hours (forcing questions) → `mattpocock:grill-me`/`grill-interview`/`brainstorming` (rehash)
+  - /plan-ceo-review (10-star MVP) → `/spec` + `mattpocock:to-prd` (rehash)
+  - /plan-eng-review (架構設計) → `/rpi` plan + `backend-architect` + `edge-case-analysis` (rehash)
+  - /design-shotgun (4-6案同時生成+ブラウザ比較+taste学習) → **novel** (多案同時生成スキル不在、taste-skill は単方向 anti-slop)
+  - /design-html (デザイン→HTML/CSS) → `image-to-code-skill` + `frontend-design` (rehash)
+  - /qa (実ブラウザ QA) → `webapp-testing` + `playwright-cli/test` + `ui-observer` (rehash)
+  - /ship (出荷ゲート+doc自動) → `/commit`/`/pull-request` + `completion-gate` hook (rehash)
+  - /document-release (doc自動更新) → `doc-gardener` + `/check-health` + `doc-garden-check` hook (rehash)
+  - GBrain (永続メモリ+3 trust levels) → 7-layer memory + MEMORY.md + 3スコープ(user/project/local) (rehash)
+- novel #5 (design-shotgun) はユーザー判断で skip — 多案同時生成+browser 比較は Go/TS 中心・シンプル志向の用途にニッチ
+- スキップ判定: Phase 1.5 gate (SATURATED-borderline → user 選択 skip)
+
+## [2026-06-07] ingest-skip | 14ステップでClaudeをオートパイロットで動かす方法 (/loop, Routines, 完全自動化スタック)
+- ソース: Codez (@0xCodez) バイラル記事の日本語全文翻訳 (519万インプレ, "Bookmark & Save"/Follow CTA の煽り signal)
+- 理由: topic family "claude-code-tips / multi-agent-orchestration" SATURATED (actionable novel = 0, delta は未検証 platform fact のみ)
+- 根拠: 実質的内容は全て absorb 済み —
+  - `2026-05-14-claude-code-routines-absorb-analysis.md` (Routines 全体: /schedule・claude/ prefix・15 runs/day・rubric・Recipe Catalog)
+  - `2026-05-31-32-claude-code-hacks-absorb-analysis.md` (/loop・routines・permissions・cost = 全 Already, Workflow = deliberate non-adopt, Auto Mode = 一次確認不能 open item)
+  - `2026-04-29-yamadashy-routines-perf-tuning-absorb-analysis.md` (Cloud Routines 運用)
+  - references: `scheduling-decision-table.md` (5機構ネットワーク)・`managed-agents-scheduling.md`・`routine-prompt-rubric.md`
+- per-method 照合台帳 (全14手法、11 rehash + 3 ambiguous(未検証/YAGNI) + N/A 1):
+  - /loop CronCreate/List/Delete → `32-hacks` "/loop Already" + `routines` M1 (rehash)
+  - cron式5フィールド → `scheduling-decision-table.md` Step2 CronCreate 行 (rehash)
+  - /loop制約 7日期限/session scope → session scope=decision-table「セッション終了で消える」, 7日期限=**CronCreate tool desc で runtime 直接確認** "auto-expire after 7 days" (rehash, runtime検証済)
+  - /loop制約 50タスク上限/CLAUDE_CODE_DISABLE_CRON → 記事のみ, runtime tool desc に記載なし (ambiguous, 焼き込み不可)
+  - /loop + /goal → `/goal` skill 実在 + loop Already (rehash)
+  - Desktop ローカルスケジューラ → ユーザーは Ghostty+cmux 運用, Desktop app 不使用 (N/A)
+  - トークン予算/レート制限 → `32-hacks` "cost Already" + decision-table アンチパターン (rehash)
+  - 無人権限 autoApprove/deny/.claudeignore/auditLog → `32-hacks` "permissions Already" (rehash)
+  - Auto Mode 93%/3段階/2層 → `32-hacks` で「一次確認不能」, 二次ソースで close 不可 (ambiguous)
+  - スケジューラ3層選択 → `scheduling-decision-table.md` は5機構ネットワーク化 (rehash, 記事より精緻)
+  - Cloud Routines → `2026-05-14-routines` 全カバー (rehash)
+  - /schedule トリガー → `routines` M1 Already (rehash)
+  - API トリガー /fire+beta header → `routines` M6 で YAGNI skip 済の延長 (ambiguous, YAGNI)
+  - GitHub トリガー → `routines` M4-R4 changelog GitHub trigger (rehash)
+  - Skills/Dynamic Workflows 組み合わせ → `32-hacks` hack31 Workflow=毎セッション注入で redundant (rehash, deliberate non-adopt)
+- runtime 検証メモ (記事の盲点): CronCreate には `durable: true` パラメータがあり `.claude/scheduled_tasks.json` に永続化して再起動を生き延びる。記事の「/loop は session scope で再起動で消える」断定は不正確 (デフォルトが in-memory なだけ)。記事の未検証スペック (50上限/DISABLE_CRON/Auto Mode 93%) は `32-hacks` の教訓どおり焼き込まない
+- スキップ判定: Phase 1.5 gate (SATURATED → user 選択 skip)

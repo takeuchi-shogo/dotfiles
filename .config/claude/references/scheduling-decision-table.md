@@ -24,6 +24,8 @@
 | **OS レベルの定期 job** | `CronCreate` | runtime tool（cron-style） | OS の cron 経由で起動 | 削除するまで永続 |
 | **複雑な多段タスクをセッション跨ぎで自走** | `/autonomous` (skill) | autonomous skill | 別セッションを生成 | task 完了まで |
 
+> **CronCreate / `/loop` 永続性の補足 (CronCreate tool desc で runtime 検証, 2026-06-07)**: 両者ともデフォルトは **in-memory、Claude セッション終了時に消える**。`CronCreate(durable: true)` を指定したときのみ `.claude/scheduled_tasks.json` に永続化し再起動を生き延びる (上表「削除するまで永続」はこの durable 指定時のみ)。recurring job は durable でも **7 日で自動失効** (最後に 1 回発火後に削除)。「再起動を越えて確実に走らせたい」なら `durable: true` か、より長寿命の `/schedule` (Managed Agent) を選ぶ。
+
 ## Step 3: 選択フローチャート
 
 ```
