@@ -8,6 +8,12 @@ Suggests only — never auto-activates.
 
 import json
 import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+
+from hook_utils import load_hook_input, run_hook  # noqa: E402
 
 # File extension → suggested skills mapping
 SKILL_MAP: dict[str, list[str]] = {
@@ -84,8 +90,8 @@ def get_suggestions(file_path: str) -> list[str]:
 
 
 def main() -> None:
-    tool_input = json.loads(os.environ.get("TOOL_INPUT", "{}"))
-    file_path = tool_input.get("file_path", "")
+    data = load_hook_input()
+    file_path = data.get("tool_input", {}).get("file_path", "") or ""
 
     if not file_path:
         return
@@ -113,4 +119,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_hook("skill-suggest", main)

@@ -1605,3 +1605,17 @@
   - Skills/Dynamic Workflows 組み合わせ → `32-hacks` hack31 Workflow=毎セッション注入で redundant (rehash, deliberate non-adopt)
 - runtime 検証メモ (記事の盲点): CronCreate には `durable: true` パラメータがあり `.claude/scheduled_tasks.json` に永続化して再起動を生き延びる。記事の「/loop は session scope で再起動で消える」断定は不正確 (デフォルトが in-memory なだけ)。記事の未検証スペック (50上限/DISABLE_CRON/Auto Mode 93%) は `32-hacks` の教訓どおり焼き込まない
 - スキップ判定: Phase 1.5 gate (SATURATED → user 選択 skip)
+
+## [2026-06-07] ingest-skip + validation-only | How Karpathy's CLAUDE.md made me $147,000
+
+- ソース: 匿名 content-farm 記事 (Discord screenshot 起点、$147,000/65→94%/18h-week は出典なし fake precision)
+- 判定: Phase 1.5 SATURATED-pure-rehash (delta=0)。claude-code-tips/CLAUDE.md best-practices family N=15+、24 ルール全てを既存 prior に名指し照合 (novel 0/ambiguous 0/N/A 1)。前回 12-rule (2026-05-10) で「N-rule 全採用=Reject」確定済みの煽り版
+- 記事採用: **0 件**
+- per-method 照合台帳: R1-4=karpathy_llm_coding.md / R5-8=ai_collaboration+honesty / R9-11=profile memories (R11 voice-lock のみ N/A) / R12-18=global system prompt+lefthook / R19-24=memory3層+checkpoint+failure-escalation / メモリアーキ=MEMORY.md索引+_index.md分離 (dotfiles の方が高度)
+- **validation-only follow-up (ultracode 24原則 audit)**: 24 原則を adversarial lens に既存 harness を 6 lens 並列監査 (29 agents, confirmed=15/rejected=8)。memory-loop=broken、他5 lens=drift
+  - Tier1 機構欠陥: change-surface-advisor.py:130 + skill-suggest.py:87 が非存在 TOOL_INPUT env var 読み→2ヶ月 dead NO-OP / measure-instruction-budget.py:195 references 常時0 undercount / --no-verify deny の `git commit -n` bypass + CLAUDE.md:61 根拠論理破綻
+  - Tier2 orphan: measure-instruction-budget.py 未 wire / run-learned-promote.sh 未スケジュール (設計判断要)
+  - Tier3 doc drift: careful description 誇張 / pre-commit-check.js 記述 stale / tool-scope-enforcer.py 未配線 / MEMORY.md stale fact×3 + scope件数 drift + broken link×2 / user_tech_stack.md Zed 未反映
+  - adversarial verify が 8 件棄却 (YAGNI 撤退/lefthook 独立 enforce/直交軸混同 等) で監査品質を担保
+- レポート: docs/research/2026-06-07-karpathy-147k-claudemd-absorb-analysis.md
+- MEMORY.md 索引: 追記しない (記事採用0。validation findings の修正は別タスクで提案)
