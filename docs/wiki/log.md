@@ -1546,3 +1546,17 @@
   - routine-prompt-rubric.md に無人実行 liveness 対策5点 + Pre-flight 1項目
 - Phase 2.5: Codex (採用1推奨→medium block 昇格指摘) + Gemini grounding (報酬ハッキング/Goodhart で /improve retire 裏付け)
 - レポート: docs/research/2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md
+
+## [2026-06-07] ingest (light) | How to Make Claude Code Stop Making Stuff Up — 4-layer honesty setup
+
+- ソース: 記事（4層 anti-fabrication: L1 honesty rules+I-dont-know license / L2 verify-before-write / L3 PostToolUse tsc+Stop tests / L4 fact-checker subagent）
+- 投入経路: /audit 誤起動 → /absorb に切替（記事はコードベースでないため gap 分析が正しいツール）
+- 判定: 記事の4層は dotfiles で実質 Already/N/A、かつ概ね mechanism 化で記事(prompt-only)より強い
+  - L1a 捏造禁止 = Already強（derivation-honesty-hook.py:43-67 が phrase 検出）
+  - L2 verify-before-write = Already（codex-verification-before-completion + search-first-gate.py）
+  - L3a per-edit typecheck = Already(Python: ruff check --fix が F821/F401 を edit 時検出) + N/A(TS は 537件全て vendored/sample, first-party ゼロ, settings-schema.ts 不在) + marginal(Rust 8件に cargo check 不経済)
+  - L3b Stop test = Already強（completion-gate.py: retry counter 付き、記事より堅牢）
+  - L4 fact-checker agent = Gap だが code-reviewer+honesty-hook+completion-gate と overlap 大 → Skip
+- 採用: 1件のみ — L1b uncertainty license を CLAUDE.md:94 honesty 原則に1節拡張（新規 bullet 不足、IFScale 尊重）。residual gap = 自由形式の事実/ライブラリ挙動/外部応答の断定（hook 非対象・コードでない・banned phrase 非該当）を自己申告で塞ぐ
+- メタ教訓（記事テーマの実演）: Phase 2.5 で Gemini が L3a 最優先と主張、根拠に `settings-schema.ts` を提示 → 検証で**存在せず（Gemini のハルシネーション）**。dotfiles の TS は全て vendored。bias 補正役自身が捏造 → file:line 検証が捏造を捕捉。Codex worker は別repo(hearable)で起動し dotfiles 文脈なく使用不能（既知の Bash→Codex 到達性問題）
+- family: claude-code-tips / anti-fabrication（saturated, 低収率の傾向を再確認。ただし harness vs 記事の mechanism 優位を file:line で立証する validation 価値はあった）
