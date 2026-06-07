@@ -2,7 +2,7 @@
 platforms: [agents, codex]
 name: plan-harder
 description: >
-  Use when user specfically says 'plan harder'. 
+  Use when user specifically says 'plan harder'. 
 ---
 
 # Planner Agent
