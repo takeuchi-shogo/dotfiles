@@ -1619,3 +1619,30 @@
   - adversarial verify が 8 件棄却 (YAGNI 撤退/lefthook 独立 enforce/直交軸混同 等) で監査品質を担保
 - レポート: docs/research/2026-06-07-karpathy-147k-claudemd-absorb-analysis.md
 - MEMORY.md 索引: 追記しない (記事採用0。validation findings の修正は別タスクで提案)
+
+## [2026-06-08] ingest-skip + wiring-spotcheck | 30 Copy-Paste System Prompts That Make Claude an Expert at Anything
+
+- ソース: https://x.com/eng_khairallah1/status/2063586097662407086 (同著者 @eng_khairallah1、前回 40 Features 2026-05-22 採用 0)
+- 判定: Phase 1.5 SATURATED-pure-rehash (delta=0)。claude-code-tips family 12 件目相当。触れ込み(Boris Cherny/125 settings/token waste)と本文(30 generic persona prompts)が完全乖離 — 本文に Boris talk も token waste 分析もゼロ
+- 記事採用: **0 件**
+- per-method 照合台帳 (delta=0 立証):
+  - token waste 4点 → feedback_instruction_cost/feedback_claudemd_length (CLAUDE.md 10%) / memory 3層 (project memory) / 2026-05-22-anthropic-engineers-token-savings (cache_control) / PR #70 skillOverrides + project_claude_plugins_provisioning (idle plugins) = 全 rehash
+  - 本文 9/13/14/21-25/27-30 → /research, /think decision+/decision+/debate, /digest+/absorb, /review+code-reviewer(COLDNESS_BIAS+minimum change), backend-architect, debugger+systematic-debugging, document-factory, test-engineer+TDD, /timekeeper, /onboarding, /review+challenge, /morning+morning-briefing = 全 rehash
+  - 本文 1-8/10-12/15-20/26 → N/A (content marketing/business/非技術者説明 = 個人 SWE harness scope外)
+  - メタ運用 (top5 に絞る・refine・効かない rule 削除) → improve-policy.md Pruning-First + empirical-prompt-tuning = rehash
+- 抽象度ミスマッチ: 記事=chat UI コピペ persona / dotfiles=CLI skill/agent codification。採用しても価値追加ゼロ (活用有無と独立した結論)
+- **wiring spot-check (ユーザー要請: rehash 先が死蔵でないか)**:
+  - skill 12個 (research/think/digest/timekeeper/morning-briefing/daily-report/debate/decision/onboarding/quiz/teachback/review) → 全て skillOverrides 非抑制 = 活用候補として温存、死蔵なし
+  - agent 6/7 実配線あり: code-reviewer (17 caller, /review 起動), document-factory (init-project Agent 起動), debugger, test-engineer, test-analyzer (/review), backend-architect (file-pattern-router 登録)
+  - **drift 1件発見**: nextjs-architecture-expert は agents/_archived/ に退役済みだが、私が rehash #22 で誤引用 (Already ハロシネーション)。references/agent-orchestration-map.md:187 がまだ退役済み agent を参照 → 別タスクで訂正提案
+- MEMORY.md 索引: 追記しない (記事採用 0)
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash → user 選択 skip + wiring spot-check)
+
+### wiring-check #2 追記 (2026-06-09, 同記事 sairahul1 引用版の重複 absorb)
+
+- 同記事 (Khairallah 30 system prompts) の sairahul1 引用版を再投入 → Saturation 再判定も独立に delta=0 一致 (gate の再現性確認)
+- 今回はマルチモデル連携 hook の配線を検証 (前回 #1 は skill/agent 配線): agent-router / suggest-gemini / post-test-analysis / error-to-codex は**全て Rust binary `claude-hooks` に移行済で live** (`user_prompt.rs` / `pre_tool.rs` / `post_bash.rs`、binary は 2026-04-14 build・settings.json 登録済)
+- Python `.py` 3つ (agent-router/suggest-gemini/post-test-analysis) は settings.json 未登録の移行残骸 (DEPRECATED マーカーなし)。error-to-codex.py のみ削除済 (de016cf)
+- **MEMORY drift 発見・訂正**: MEMORY.md マルチモデル連携セクションが旧 .py 名で記載 → wiring-check を「死蔵」と誤誘導していた。Rust 移行先を明記して訂正 (2026-06-09)
+- **.py→Rust ドキュメント drift が 23ファイルに波及**: 現役13 + active plan2 + test1 が要修正、ADR/spec/completed・paused plan 7 は immutable 除外 → L 規模整合プランを `docs/plans/active/2026-06-09-python-hook-rust-doc-reconciliation-plan.md` に保存、新セッション /rpi 実行
+- 教訓: skip の「Already/rehash」判定で matched_prior の **配線 live 確認 (B)** と **存在確認 (A)** を区別する。今回は MEMORY stale が A を B に見せかけていた
