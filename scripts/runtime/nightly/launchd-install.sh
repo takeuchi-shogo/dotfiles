@@ -10,7 +10,17 @@ mkdir -p "$AGENTS_DIR"
 
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 
+# wake/caffeinate 時刻の単一真実源 (setup-nightly-wake.sh の pmset と揃える)
+# shellcheck source=./nightly-wake.env
+source "${NIGHTLY_DIR}/nightly-wake.env"
+
+[[ "${NIGHTLY_WAKE_HOUR:-}" =~ ^[0-9]+$ && "${NIGHTLY_WAKE_MINUTE:-}" =~ ^[0-9]+$ ]] \
+    || { echo "[ERROR] nightly-wake.env: NIGHTLY_WAKE_HOUR/MINUTE must be integers" >&2; exit 1; }
+
 TASKS=(
+    # caffeinate アンブレラ: wake 時刻に発火し、バッチ完了までスリープを抑止する
+    # (pmset の `sleep 1` 対策)。最初の実ジョブ dep-audit (22:30) より前に置く。
+    "caffeinate|${NIGHTLY_WAKE_HOUR}|${NIGHTLY_WAKE_MINUTE}|nightly-caffeinate.sh"
     "dep-audit|22|30|run-dep-audit.sh"
     "golden-check|23|15|run-golden-check.sh"
     "friction-aggregate|23|20|run-friction-aggregate.sh"
