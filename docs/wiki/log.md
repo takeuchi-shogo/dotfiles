@@ -1620,7 +1620,7 @@
 - レポート: docs/research/2026-06-07-karpathy-147k-claudemd-absorb-analysis.md
 - MEMORY.md 索引: 追記しない (記事採用0。validation findings の修正は別タスクで提案)
 
-## [2026-06-08] ingest-skip + wiring-spotcheck | 30 Copy-Paste System Prompts That Make Claude an Expert at Anything
+## [2026-06-08] ingest-skip + wiring-check | 30 Copy-Paste System Prompts That Make Claude an Expert at Anything
 
 - ソース: https://x.com/eng_khairallah1/status/2063586097662407086 (同著者 @eng_khairallah1、前回 40 Features 2026-05-22 採用 0)
 - 判定: Phase 1.5 SATURATED-pure-rehash (delta=0)。claude-code-tips family 12 件目相当。触れ込み(Boris Cherny/125 settings/token waste)と本文(30 generic persona prompts)が完全乖離 — 本文に Boris talk も token waste 分析もゼロ
