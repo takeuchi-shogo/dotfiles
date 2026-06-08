@@ -88,8 +88,10 @@ function main() {
 
 	const bundlePath = findBundlePath();
 	if (!bundlePath) {
-		console.error("❌ Claude Code バンドルが見つかりません。");
-		process.exit(1);
+		console.log(
+			"⏭️  npm global に Claude Code が無いため検証を skip (native installer 等は patch 対象外)",
+		);
+		process.exit(0);
 	}
 
 	const backupPath = bundlePath + ".bak";

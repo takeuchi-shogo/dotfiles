@@ -110,8 +110,13 @@ function main() {
 	// Claude Code バンドルファイルを探す
 	const claudeDir = path.join(npmRoot, "@anthropic-ai", "claude-code");
 	if (!fs.existsSync(claudeDir)) {
-		console.error(`❌ Claude Code パッケージが見つかりません: ${claudeDir}`);
-		process.exit(1);
+		console.log(
+			`⏭️  npm global に Claude Code が無いため patch を skip: ${claudeDir}`,
+		);
+		console.log(
+			"   native installer 等は cli.js bundle を持たず本 patcher の対象外",
+		);
+		process.exit(0);
 	}
 
 	// バンドル候補を優先度順で探す
