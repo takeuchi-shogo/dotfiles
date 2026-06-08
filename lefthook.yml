@@ -31,6 +31,8 @@ pre-commit:
     check-claudemd-lines:
       glob: "*.md"
       run: bash .config/claude/scripts/policy/check-claudemd-lines.sh
+    build-claude-check:
+      run: bash .config/claude/scripts/lifecycle/build-claude.sh --check
     no-skill-readme:
       # Anthropic 公式 Skills ガイド: skill folder には README.md ではなく SKILL.md を置く
       # README.md は Claude Code の discovery 対象外で agent から見えない

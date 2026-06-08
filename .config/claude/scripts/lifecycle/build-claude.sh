@@ -10,7 +10,7 @@ TMPFILE=$(mktemp)
 trap 'rm -f "$TMPFILE"' EXIT
 
 # コンポーネント存在確認
-components=(header.md rules.md workflow.md principles.md dotfiles.md)
+components=(header.md rules.md workflow.md principles.md)
 for c in "${components[@]}"; do
   if [[ ! -f "${TEMPLATE_DIR}/${c}" ]]; then
     echo "ERROR: ${TEMPLATE_DIR}/${c} not found" >&2
@@ -31,10 +31,6 @@ done
   echo "---"
   echo ""
   cat "${TEMPLATE_DIR}/principles.md"
-  echo ""
-  echo "---"
-  echo ""
-  cat "${TEMPLATE_DIR}/dotfiles.md"
 } > "$TMPFILE"
 
 # 差分チェック
