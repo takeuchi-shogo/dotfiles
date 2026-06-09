@@ -26,7 +26,7 @@ updated: 2026-04-04
 
 ## 実践的な適用
 
-このリポジトリでは`golden-check.py`・`protect-linter-config.py`・`completion-gate.py`がCode-Based評価層を構成し、`code-reviewer`・`security-reviewer`・`product-reviewer`・`design-reviewer`がLLM-as-Judge層を担う。`claude-hooks` (post-bash, error-to-codex 機能) がregex検出→fix guide注入→codex-debugger提案のハイブリッドパイプラインを実現する。`/review`スキルがdiff内容シグナルで専門レビュアーを自動起動し、confidence 80未満を自動除外する。AutoEvolveの4層ループ（Session→Daily→Cron→On-demand）が「You can never stop looking at data」の思想を体現している。
+このリポジトリでは`golden-check.py`・`claude-hooks` pre-edit (protect-linter-config)・`completion-gate.py`がCode-Based評価層を構成し、`code-reviewer`・`security-reviewer`・`product-reviewer`・`design-reviewer`がLLM-as-Judge層を担う。`claude-hooks` (post-bash, error-to-codex 機能) がregex検出→fix guide注入→codex-debugger提案のハイブリッドパイプラインを実現する。`/review`スキルがdiff内容シグナルで専門レビュアーを自動起動し、confidence 80未満を自動除外する。AutoEvolveの4層ループ（Session→Daily→Cron→On-demand）が「You can never stop looking at data」の思想を体現している。
 
 ## 関連概念
 

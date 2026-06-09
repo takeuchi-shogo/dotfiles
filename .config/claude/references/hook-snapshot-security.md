@@ -36,7 +36,7 @@ Claude Code 本体は起動時に `captureHooksConfigSnapshot()` を 1 回だけ
 
 | CC 本体の仕組み | dotfiles 側の対応 | 同じ思想を持つか |
 |----------------|------------------|------------------|
-| `captureHooksConfigSnapshot()` at startup | `scripts/policy/protect-linter-config.py` が lint config の改変をブロック | ✅ 両方とも「起動時の設定を信頼源として凍結」 |
+| `captureHooksConfigSnapshot()` at startup | `claude-hooks` pre-edit (protect-linter-config 機能) が lint config の改変をブロック | ✅ 両方とも「起動時の設定を信頼源として凍結」 |
 | hook 設定の `Object.freeze()` | `.config/claude/settings.json` は変更検出されるが runtime では無視される | ✅ runtime 改変を無効化 |
 | `exit code 2` blocking | policy hooks も `exit 2` で block | ✅ 同一 convention を採用 |
 | `deny > ask > allow` precedence | `settings.json` で同じ優先順位を実装 | ✅ |
@@ -47,7 +47,7 @@ Claude Code 本体は起動時に `captureHooksConfigSnapshot()` を 1 回だけ
 
 | スクリプト | 何を snapshot するか | いつ |
 |-----------|---------------------|------|
-| `protect-linter-config.py` | lint 設定 (`.eslintrc*`, `biome.json`, `.prettierrc*`) の変更を deny | PreToolUse (Edit/Write) |
+| `claude-hooks` pre-edit (protect-linter-config) | lint 設定 (`.eslintrc*`, `biome.json`, `.prettierrc*`) の変更を deny | PreToolUse (Edit/Write) |
 | `pre-compact-save.js` | git 状態 (`git status`, `git diff`) | PreCompact |
 | `memory-integrity-check.py` | MEMORY.md と配下メモリファイルの hash | PreToolUse / SessionStart |
 | `completion-gate.py` | 起動時の workflow policy | Stop |
@@ -89,6 +89,6 @@ CC 本体は `exit 2` を "blocking" として使うが、これは POSIX 標準
 ## 参照
 
 - CC 本体 Ch12: `docs/research/2026-04-10-claude-code-from-source-analysis.md` §Ch12
-- 実装: `.config/claude/scripts/policy/protect-linter-config.py`
+- 実装: `tools/claude-hooks/src/pre_tool.rs` (`check_protect_linter`)
 - 設定: `.config/claude/settings.json` の `hooks` セクション
 - 関連: `references/agency-safety-framework.md`, `references/compact-instructions.md`

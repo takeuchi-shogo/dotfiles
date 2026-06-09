@@ -18,7 +18,7 @@ flowchart TD
     PID -->|"Clean"| ASF["agentshield-filter.py<br/>Agent Shield Filtering"]
     PID -->|"Injection detected"| BLOCK1["BLOCKED<br/>Notify user"]
 
-    ASF -->|"Pass"| PLC["protect-linter-config.py<br/>Lint Config Protection"]
+    ASF -->|"Pass"| PLC["claude-hooks pre-edit<br/>Lint Config Protection"]
     ASF -->|"Suspicious"| BLOCK2["BLOCKED<br/>Notify user"]
 
     PLC -->|"Not lint config"| SFG["claude-hooks pre-edit<br/>Search Before Implement"]
