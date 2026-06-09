@@ -81,7 +81,7 @@ Executor が「わからないことをわかっていない」場合、Advisor 
 FrugalGPT, AutoMix, RouteLLM で共通の未解決課題。
 
 **緩和策**:
-- 既存の hook ベースの検出（`error-to-codex.py`, `suggest-gemini.py`）で補完
+- 既存の hook ベースの検出（`claude-hooks` post-bash エラー検出 / pre-websearch Gemini 提案）で補完
 - Advisor 相談と hook ベース検出の二重安全網として機能させる
 
 ### レイテンシ不均一

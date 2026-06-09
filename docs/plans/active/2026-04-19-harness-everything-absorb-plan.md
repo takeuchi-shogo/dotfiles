@@ -428,7 +428,7 @@ Birgitta Böckeler (ThoughtWorks) は harness controls を 2 軸で分類する:
 | 本 ADR の 3 分類 | 4 軸象限 | 例 |
 |-----------------|----------|-----|
 | Deterministic Block | Computational × Guide/Sensor | `protect-linter-config.py` (Guide)、`golden-check.py` (Sensor) |
-| Semantic Advisory | Inferential × Guide/Sensor | `codex-reviewer` (Sensor)、`suggest-gemini.py` (Guide) |
+| Semantic Advisory | Inferential × Guide/Sensor | `codex-reviewer` (Sensor)、`claude-hooks` pre-websearch (Guide) |
 | Human Judgment | (axis 外) | Karpathy 4 原則、instruction 埋め込み |
 
 ### 使いどころ

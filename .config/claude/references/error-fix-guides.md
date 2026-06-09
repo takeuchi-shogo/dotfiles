@@ -5,7 +5,7 @@ last_reviewed: 2026-04-23
 
 # Error Fix Guides
 
-error-to-codex.py が参照するエラーパターン → 修正手順マッピング。
+claude-hooks (post-bash, error-to-codex 機能) が参照するエラーパターン → 修正手順マッピング。
 エラー検出時に具体的な修正指示を additionalContext に注入する。
 
 フォーマット: Symptom-Cause-Fix テーブル + before/after コード例（Codified Context 論文形式）

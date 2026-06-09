@@ -75,7 +75,7 @@ last_reviewed: 2026-04-23
 | `CLAUDE.md <agent_delegation>` | Opus は判断・統合、実作業は委譲する原則 |
 | `references/subagent-delegation-guide.md` | Sync/Async/Scheduled パターン、Parallelizability Gate、Coordinator Context Budget |
 | `references/agent-orchestration-map.md` | 4 フェーズコーディネーション（Research / Synthesis / Implementation / Verification） |
-| `scripts/policy/agent-router.py` | キーワードベースの委譲先推奨（hook） |
+| `claude-hooks` (Rust, `user-prompt`) | キーワードベースの委譲先推奨（hook） |
 | `.claude/agents/triage-router.md` | 不明瞭タスクの種別判定 |
 | `references/workflow-guide.md` | タスク規模 S/M/L と委譲戦略 |
 
@@ -146,7 +146,7 @@ last_reviewed: 2026-04-23
 |---|---|
 | `.config/claude/settings.json (hooks)` | PreToolUse / PostToolUse / UserPromptSubmit / Stop / SubagentStop の多段 event-driven |
 | `scripts/runtime/session_observer_router.py` | セッションイベントのルーティング |
-| `scripts/policy/agent-router.py` | キーワードベース推奨 |
+| `claude-hooks` (Rust, `user-prompt`) | キーワードベース推奨 |
 
 > **注記**: これらは Claude Code プロセス内のイベント fan-out であり、記事が指す multi-agent pub/sub とは前提が異なる。真の Message Bus（複数独立プロセスの非同期協調）は当セットアップの具体的必要性がないため実装しない。記事の Message Bus フレームで dotfiles を語る場合は、この前提ズレを必ず明示すること。
 
@@ -246,7 +246,7 @@ Dochkina 2026 の実験条件を個人 harness に直接適用するときの誤
 | 役割プール | 5000+ | 10-20 の専門エージェント |
 | タスク数 | 25,000+ | 1 セッションで 1-10 タスク |
 | 並列度 | 高 | 1-3 並列が主 |
-| 役割動的選択 | 自動 | 半自動（agent-router.py + 人間判断） |
+| 役割動的選択 | 自動 | 半自動（claude-hooks user-prompt + 人間判断） |
 
 **個人 harness での適用範囲**: Sequential の「構造最小・役割自律」原則は `/review` の並列起動、`/research` のサブタスク分解、EPD フェーズ内の作業分担に適用可能。ただし 14% の改善幅は実測されておらず、記事の数字をそのまま転用しない。
 

@@ -28,7 +28,7 @@ updated: 2026-04-06
 
 ## 実践的な適用
 
-このリポジトリのAutoEvolve 4層ループ（Session→Daily→BG→/improve）がメタ進化の実装に最も近い。`stagnation-detector.py`がEvoXの停滞検知を実装し、`scripts/policy/`内のerror-to-codex.pyがエラー反応型の戦略切替を担う。`learnings/*.jsonl`が戦略有効性の記録（what-happenedレベル）を保持し、`improve-policy.md`の26ルールがバリデーション閾値と改善速度の安全制約を定義する。`experiment_tracker`にtransfer_domainフィールドを追加することで転移効率の定量追跡が可能になる。ASI-Evolveの認知基盤パターン（先行知識のtopic-taggedインデックス化→各ラウンドでの自動注入）は`knowledge-index.yaml`+wiki概念注入として統合予定（`docs/plans/2026-04-06-asi-evolve-integration.md`）。UCB1サンプリングはIdeation-Debateの探索/活用バランス改善として適用予定。
+このリポジトリのAutoEvolve 4層ループ（Session→Daily→BG→/improve）がメタ進化の実装に最も近い。`stagnation-detector.py`がEvoXの停滞検知を実装し、`claude-hooks` (post-bash, error-to-codex 機能) がエラー反応型の戦略切替を担う。`learnings/*.jsonl`が戦略有効性の記録（what-happenedレベル）を保持し、`improve-policy.md`の26ルールがバリデーション閾値と改善速度の安全制約を定義する。`experiment_tracker`にtransfer_domainフィールドを追加することで転移効率の定量追跡が可能になる。ASI-Evolveの認知基盤パターン（先行知識のtopic-taggedインデックス化→各ラウンドでの自動注入）は`knowledge-index.yaml`+wiki概念注入として統合予定（`docs/plans/2026-04-06-asi-evolve-integration.md`）。UCB1サンプリングはIdeation-Debateの探索/活用バランス改善として適用予定。
 
 ## 関連概念
 

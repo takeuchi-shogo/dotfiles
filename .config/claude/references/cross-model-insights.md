@@ -182,8 +182,8 @@ MTI の理論的基盤: Agent = Core (architecture + trained weights) + Shell (s
 | Codex | Claude | 幅広い実装パターン。Codex の推論が深すぎて実用的でない場合 |
 
 **既存の自動切替:**
-- `error-to-codex.py`: エラー時に自動で Codex に委譲（実装済み）
-- `suggest-gemini.py`: 大規模分析が必要な場合に Gemini を提案（実装済み）
+- `claude-hooks` (post-bash, error-to-codex 機能): エラー時に自動で Codex に委譲（実装済み）
+- `claude-hooks` (pre-websearch): 大規模分析が必要な場合に Gemini を提案（実装済み）
 
 **注意:** 収束（複数モデルが同じ結論に達する）は盲点リスクの兆候でもある。全モデルが失敗する場合は問題の前提自体を疑う。
 

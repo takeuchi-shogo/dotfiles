@@ -33,7 +33,7 @@ const ASYNC_KEYWORDS: &[&str] = &[
 
 const SCHEDULED_KEYWORDS: &[&str] = &[
     "あとで", "later", "明日", "tomorrow", "定期的", "recurring",
-    "毎朝", "毎日", "スケジュール", "schedule", "フォローアップ",
+    "毎朝", "毎日", "スケジュール", "schedule", "フォローアップ", "follow.?up",
 ];
 
 fn match_keywords(text: &str, keywords: &[&str]) -> Vec<String> {
@@ -45,12 +45,35 @@ fn match_keywords(text: &str, keywords: &[&str]) -> Vec<String> {
         .collect()
 }
 
-fn match_regex_keywords(text: &str, patterns: &[&str]) -> bool {
-    patterns.iter().any(|p| {
-        Regex::new(&format!("(?i){}", p))
-            .map(|re| re.is_match(text))
-            .unwrap_or(false)
-    })
+fn match_regex_keywords(text: &str, patterns: &[&str]) -> Vec<String> {
+    patterns
+        .iter()
+        .filter(|p| {
+            Regex::new(&format!("(?i){}", p))
+                .map(|re| re.is_match(text))
+                .unwrap_or(false)
+        })
+        .map(|p| p.to_string())
+        .collect()
+}
+
+fn multimodal_regex() -> Regex {
+    Regex::new(
+        r"(?i)\.(pdf|mp4|mov|avi|mkv|webm|mp3|wav|m4a|flac|ogg|png|jpe?g|gif|webp|svg)(?:[^a-zA-Z0-9]|$)",
+    )
+    .unwrap()
+}
+
+fn log_routing(suggested: &str, keywords: &[String], prompt: &str) {
+    let matched: Vec<&String> = keywords.iter().take(3).collect();
+    crate::events::emit_event(
+        "agent_routing",
+        &serde_json::json!({
+            "suggested": suggested,
+            "keywords_matched": matched,
+            "prompt_length": prompt.chars().count(),
+        }),
+    );
 }
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -65,12 +88,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 1: Multimodal files → Gemini
-    let mm_re = Regex::new(
-        r"(?i)\.(pdf|mp4|mov|avi|mkv|webm|mp3|wav|m4a|flac|ogg|png|jpe?g|gif|webp|svg)(?:[^a-zA-Z0-9]|$)"
-    ).unwrap();
-
-    if let Some(caps) = mm_re.captures(prompt) {
+    if let Some(caps) = multimodal_regex().captures(prompt) {
         let ext = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        log_routing("multimodal", &[ext.to_string()], prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -88,6 +108,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     codex_matches.extend(match_keywords(prompt, CODEX_KEYWORDS_EN));
     if !codex_matches.is_empty() {
         let keywords: Vec<String> = codex_matches.into_iter().take(3).collect();
+        log_routing("codex", &keywords, prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -105,6 +126,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     gemini_matches.extend(match_keywords(prompt, GEMINI_KEYWORDS_EN));
     if !gemini_matches.is_empty() {
         let keywords: Vec<String> = gemini_matches.into_iter().take(3).collect();
+        log_routing("gemini", &keywords, prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -118,7 +140,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 4: Scheduled
-    if match_regex_keywords(prompt, SCHEDULED_KEYWORDS) {
+    let scheduled = match_regex_keywords(prompt, SCHEDULED_KEYWORDS);
+    if !scheduled.is_empty() {
+        log_routing("scheduled", &scheduled, prompt);
         crate::io::context(
             "UserPromptSubmit",
             "Scheduled パターン推奨: このタスクは将来の時刻に実行すると効果的です。\
@@ -129,7 +153,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 5: Async
-    if match_regex_keywords(prompt, ASYNC_KEYWORDS) {
+    let async_matched = match_regex_keywords(prompt, ASYNC_KEYWORDS);
+    if !async_matched.is_empty() {
+        log_routing("async", &async_matched, prompt);
         crate::io::context(
             "UserPromptSubmit",
             "Async パターン推奨: このタスクは独立して実行できます。\
@@ -142,4 +168,91 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // No match
     crate::io::passthrough(raw);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn multimodal_detects_pdf() {
+        assert!(multimodal_regex().is_match("この report.pdf を読んで"));
+    }
+
+    #[test]
+    fn multimodal_detects_image() {
+        assert!(multimodal_regex().is_match("screenshot.png を確認"));
+    }
+
+    #[test]
+    fn multimodal_detects_video_and_audio() {
+        let re = multimodal_regex();
+        assert!(re.is_match("clip.mp4 を変換"));
+        assert!(re.is_match("track.mp3 を再生"));
+    }
+
+    #[test]
+    fn multimodal_case_insensitive() {
+        assert!(multimodal_regex().is_match("DOC.PDF を開く"));
+    }
+
+    #[test]
+    fn multimodal_rejects_embedded() {
+        assert!(!multimodal_regex().is_match("notapdfx"));
+    }
+
+    #[test]
+    fn match_keywords_japanese() {
+        let m = match_keywords("このAPIの設計を考えて", CODEX_KEYWORDS_JA);
+        assert!(m.contains(&"設計".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_english() {
+        let m = match_keywords("design the architecture", CODEX_KEYWORDS_EN);
+        assert!(m.contains(&"design".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_english_case_insensitive() {
+        let m = match_keywords("DEBUG this", CODEX_KEYWORDS_EN);
+        assert!(m.contains(&"debug".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_gemini_research() {
+        let m = match_keywords("リサーチして", GEMINI_KEYWORDS_JA);
+        assert!(m.contains(&"リサーチ".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_no_match() {
+        assert!(match_keywords("hello world", CODEX_KEYWORDS_JA).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_scheduled() {
+        assert!(!match_regex_keywords("明日やって", SCHEDULED_KEYWORDS).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_followup_optional_separator() {
+        assert!(!match_regex_keywords("please follow-up", SCHEDULED_KEYWORDS).is_empty());
+        assert!(!match_regex_keywords("followup later", SCHEDULED_KEYWORDS).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_async() {
+        assert!(!match_regex_keywords("バックグラウンドで実行", ASYNC_KEYWORDS).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_case_insensitive() {
+        assert!(!match_regex_keywords("PARALLEL run", ASYNC_KEYWORDS).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_no_match() {
+        assert!(match_regex_keywords("普通の依頼", SCHEDULED_KEYWORDS).is_empty());
+    }
 }
