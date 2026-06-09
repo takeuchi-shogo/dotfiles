@@ -18,7 +18,7 @@ last_reviewed: 2026-04-23
 | 1 | **モデルは不安定部品** | モデル出力を無条件に信頼していないか？権限・検証・ロールバックが組み込まれているか？ | `core_principles`: 手抜きなし + 検証 |
 | 2 | **Prompt は制御面** | Prompt を人格装飾ではなく行動制御として設計しているか？分層・優先度・注入条件が明確か？ | `CLAUDE.md` の `<important if>` 条件付きタグ |
 | 3 | **Query Loop が心拍** | 代理システムに持続的な実行循環があるか？入力治理・ツール調度・回復分岐・停止条件を持つか？ | CC 内蔵。`completion-gate.py` で外部から補強 |
-| 4 | **ツールは受管理実行** | ツール呼び出しに調度纪律があるか？高危険ツールに高密度制約があるか？ | `bashSecurity` 22種チェック + `protect-linter-config.py` |
+| 4 | **ツールは受管理実行** | ツール呼び出しに調度纪律があるか？高危険ツールに高密度制約があるか？ | `bashSecurity` 22種チェック + `claude-hooks` pre-edit (protect-linter-config) |
 | 5 | **コンテキストは作業メモリ** | 長期規則・持久記憶・会話連続性・臨時対話を分層治理しているか？compact 戦略があるか？ | CLAUDE.md / MEMORY.md / Session Memory 3層 + autocompact |
 | 6 | **エラーパスは主パス** | prompt too long, max_output_tokens, hook 回環等を設計時に組み込んでいるか？catch で誤魔化していないか？ | `failure-taxonomy.md` + `resource-bounds.md` |
 | 7 | **回復の目標は作業継続** | 截断後に続写できるか？圧縮失敗時にシステムが呼吸を回復できるか？ | autocompact circuit breaker + reactive compact |

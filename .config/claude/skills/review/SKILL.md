@@ -596,7 +596,7 @@ python3 "$HOME/.claude/scripts/lib/harness_review_flag.py" write
 ## Step 6: Findings Persistence（フィードバックループ）
 
 Step 4 の統合後、最終レポートに含まれる各指摘を `review-findings.jsonl` に保存する。
-git commit 時に `review-feedback-tracker.py` hook が指摘の受入/却下を自動判定し、
+git commit 時に `claude-hooks` post-bash (review-feedback 機能) が指摘の受入/却下を自動判定し、
 レビューアーの精度追跡を可能にする。
 
 - 保存スクリプト (Python + emit_review_finding)

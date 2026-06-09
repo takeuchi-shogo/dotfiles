@@ -14,10 +14,10 @@ last_reviewed: 2026-04-23
 |---------|------------|-------------------|-----------|
 | **危険シェルコマンド** (rm -rf, mkfs, dd) | Critical | CC 本体 bashSecurity (22種) + `docker-safety.py` | 完全 |
 | **シークレット検出** (API key, token, password) | Critical | `prompt-injection-detector.py` (部分), Lefthook pre-commit | 部分的 — output 側の検出なし |
-| **パス走査・改ざん** (../, symlink attack) | High | `protect-linter-config.py`, `tool-scope-enforcer.py` | 完全 |
+| **パス走査・改ざん** (../, symlink attack) | High | `claude-hooks` pre-edit (protect-linter-config), `tool-scope-enforcer.py` | 完全 |
 | **ネットワーク流出** (curl\|bash, reverse shell) | Critical | CC 本体 bashSecurity | 完全 |
 | **権限昇格** (sudo, chmod 777) | High | CC 本体 bashSecurity | 完全 |
-| **設定改ざん** (.eslintrc, CI config) | Medium | `protect-linter-config.py` | 完全 |
+| **設定改ざん** (.eslintrc, CI config) | Medium | `claude-hooks` pre-edit (protect-linter-config) | 完全 |
 | **データ破壊** (DROP TABLE, TRUNCATE) | High | CC 本体 permission system (ask) | 部分的 — DB 操作の明示的検出なし |
 | **認証情報アクセス** (~/.ssh, .env) | High | `user-input-guard.py`, CC bashSecurity | 完全 |
 | **コードインジェクション** (eval, exec) | Medium | `prompt-injection-detector.py` | 部分的 — Python/JS の動的実行は未検出 |
