@@ -45,12 +45,16 @@ fn match_keywords(text: &str, keywords: &[&str]) -> Vec<String> {
         .collect()
 }
 
-fn match_regex_keywords(text: &str, patterns: &[&str]) -> bool {
-    patterns.iter().any(|p| {
-        Regex::new(&format!("(?i){}", p))
-            .map(|re| re.is_match(text))
-            .unwrap_or(false)
-    })
+fn match_regex_keywords(text: &str, patterns: &[&str]) -> Vec<String> {
+    patterns
+        .iter()
+        .filter(|p| {
+            Regex::new(&format!("(?i){}", p))
+                .map(|re| re.is_match(text))
+                .unwrap_or(false)
+        })
+        .map(|p| p.to_string())
+        .collect()
 }
 
 fn multimodal_regex() -> Regex {
@@ -58,6 +62,18 @@ fn multimodal_regex() -> Regex {
         r"(?i)\.(pdf|mp4|mov|avi|mkv|webm|mp3|wav|m4a|flac|ogg|png|jpe?g|gif|webp|svg)(?:[^a-zA-Z0-9]|$)",
     )
     .unwrap()
+}
+
+fn log_routing(suggested: &str, keywords: &[String], prompt: &str) {
+    let matched: Vec<&String> = keywords.iter().take(3).collect();
+    crate::events::emit_event(
+        "agent_routing",
+        &serde_json::json!({
+            "suggested": suggested,
+            "keywords_matched": matched,
+            "prompt_length": prompt.chars().count(),
+        }),
+    );
 }
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -74,6 +90,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // Priority 1: Multimodal files → Gemini
     if let Some(caps) = multimodal_regex().captures(prompt) {
         let ext = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        log_routing("multimodal", &[ext.to_string()], prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -91,6 +108,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     codex_matches.extend(match_keywords(prompt, CODEX_KEYWORDS_EN));
     if !codex_matches.is_empty() {
         let keywords: Vec<String> = codex_matches.into_iter().take(3).collect();
+        log_routing("codex", &keywords, prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -108,6 +126,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     gemini_matches.extend(match_keywords(prompt, GEMINI_KEYWORDS_EN));
     if !gemini_matches.is_empty() {
         let keywords: Vec<String> = gemini_matches.into_iter().take(3).collect();
+        log_routing("gemini", &keywords, prompt);
         crate::io::context(
             "UserPromptSubmit",
             &format!(
@@ -121,7 +140,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 4: Scheduled
-    if match_regex_keywords(prompt, SCHEDULED_KEYWORDS) {
+    let scheduled = match_regex_keywords(prompt, SCHEDULED_KEYWORDS);
+    if !scheduled.is_empty() {
+        log_routing("scheduled", &scheduled, prompt);
         crate::io::context(
             "UserPromptSubmit",
             "Scheduled パターン推奨: このタスクは将来の時刻に実行すると効果的です。\
@@ -132,7 +153,9 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 5: Async
-    if match_regex_keywords(prompt, ASYNC_KEYWORDS) {
+    let async_matched = match_regex_keywords(prompt, ASYNC_KEYWORDS);
+    if !async_matched.is_empty() {
+        log_routing("async", &async_matched, prompt);
         crate::io::context(
             "UserPromptSubmit",
             "Async パターン推奨: このタスクは独立して実行できます。\
@@ -209,27 +232,27 @@ mod tests {
 
     #[test]
     fn regex_keywords_scheduled() {
-        assert!(match_regex_keywords("明日やって", SCHEDULED_KEYWORDS));
+        assert!(!match_regex_keywords("明日やって", SCHEDULED_KEYWORDS).is_empty());
     }
 
     #[test]
     fn regex_keywords_followup_optional_separator() {
-        assert!(match_regex_keywords("please follow-up", SCHEDULED_KEYWORDS));
-        assert!(match_regex_keywords("followup later", SCHEDULED_KEYWORDS));
+        assert!(!match_regex_keywords("please follow-up", SCHEDULED_KEYWORDS).is_empty());
+        assert!(!match_regex_keywords("followup later", SCHEDULED_KEYWORDS).is_empty());
     }
 
     #[test]
     fn regex_keywords_async() {
-        assert!(match_regex_keywords("バックグラウンドで実行", ASYNC_KEYWORDS));
+        assert!(!match_regex_keywords("バックグラウンドで実行", ASYNC_KEYWORDS).is_empty());
     }
 
     #[test]
     fn regex_keywords_case_insensitive() {
-        assert!(match_regex_keywords("PARALLEL run", ASYNC_KEYWORDS));
+        assert!(!match_regex_keywords("PARALLEL run", ASYNC_KEYWORDS).is_empty());
     }
 
     #[test]
     fn regex_keywords_no_match() {
-        assert!(!match_regex_keywords("普通の依頼", SCHEDULED_KEYWORDS));
+        assert!(match_regex_keywords("普通の依頼", SCHEDULED_KEYWORDS).is_empty());
     }
 }

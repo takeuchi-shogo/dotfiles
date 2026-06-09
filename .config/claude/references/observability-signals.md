@@ -20,7 +20,7 @@ last_reviewed: 2026-04-23
 | スキル実行 | `session_events.py` `emit_event("skill", ...)` | `learnings/skill-executions.jsonl` | `/improve` Garden phase | 接続予定 |
 | エラーレートスパイク | `scripts/runtime/error-rate-monitor.py` | stderr 警告 + negative-knowledge.md | `negative-knowledge.md` updater | 接続済 |
 | サブエージェント完了 | `scripts/runtime/subagent-monitor.py` | `logs/subagent-metrics.jsonl` | `unassigned` (Gap 4) | 記録のみ |
-| Agent routing 判定 | `claude-hooks` (Rust, `user-prompt`) | additionalContext 注入 | `unassigned` (Gap 5) | 接続済(ログなし) |
+| Agent routing 判定 | `claude-hooks` (Rust, `user-prompt`) | additionalContext + `current-session.jsonl` (agent_routing) | `session-learner` (current-session 集計) | 接続済(ログあり, Gap 5 解消 2026-06-09) |
 | セッション集計 | `scripts/learner/session-learner.py` | `metrics/session-metrics.jsonl` | `autoevolve-core` | 記録のみ |
 | 失敗クラスタ | `scripts/learner/failure-clusterer.py` | `clusters/failure-clusters.json` | `/improve` Phase 1 (Gap 2 解消) | 接続予定 |
 | proposal verdict | `session_events.py` `emit_event("proposal", ...)` | `learnings/proposal-verdicts.jsonl` | `autoevolve-core` | 記録のみ |
