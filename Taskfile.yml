@@ -328,3 +328,23 @@ tasks:
       - launchctl bootout gui/$UID/com.cmux.worktree-daemon 2>/dev/null || true
       - rm -f $HOME/Library/LaunchAgents/com.cmux.worktree-daemon.plist
       - echo "✅ cmux-worktree-daemon uninstalled"
+
+  nightly:install:
+    desc: 'Install/reload all nightly LaunchAgents incl. caffeinate umbrella (夜勤マシン化)'
+    cmds:
+      - bash {{.TASKFILE_DIR}}/scripts/runtime/nightly/launchd-install.sh
+
+  nightly:wake:
+    desc: 'Apply scheduled wake for nightly batch via pmset (requires sudo + AC power)'
+    cmds:
+      - bash {{.TASKFILE_DIR}}/scripts/runtime/nightly/setup-nightly-wake.sh apply
+
+  nightly:wake:cancel:
+    desc: 'Cancel scheduled wake (pmset repeat cancel, requires sudo)'
+    cmds:
+      - bash {{.TASKFILE_DIR}}/scripts/runtime/nightly/setup-nightly-wake.sh cancel
+
+  nightly:wake:status:
+    desc: 'Show scheduled power events (pmset -g sched)'
+    cmds:
+      - bash {{.TASKFILE_DIR}}/scripts/runtime/nightly/setup-nightly-wake.sh status
