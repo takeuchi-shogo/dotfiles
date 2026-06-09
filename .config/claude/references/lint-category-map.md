@@ -76,7 +76,7 @@ last_reviewed: 2026-04-23
 | **PostToolUse** (ms) | auto-format.js | 1,2 (Grep/Glob-ability) |
 | **PostToolUse** (ms) | golden-check.py | 3,4 (Architecture, Security) |
 | **PostToolUse** (ms) | doc-garden-check.py | 7 (Documentation) |
-| **PreToolUse** (ms) | tdd-guard.py | 5 (Testability) |
+| **PreToolUse** (ms) | claude-hooks pre-edit (tdd-guard) | 5 (Testability) |
 | **Pre-commit** (s) | lefthook biome/oxlint/ruff/gofmt | 1,4,7 |
 | **Pre-commit** (s) | check-claudemd-lines.sh | 7 (Documentation) |
 | **Stop** (s) | completion-gate.py | 5 (Testability — テスト実行) |
@@ -85,7 +85,7 @@ last_reviewed: 2026-04-23
 ## 新カテゴリの拡張候補
 
 ### 5. Testability
-- **実装済み**: `completion-gate.py` (テスト実行ゲート), `tdd-guard.py` (テスト→実装順序)
+- **実装済み**: `completion-gate.py` (テスト実行ゲート), `claude-hooks` pre-edit の tdd-guard (テスト→実装順序)
 - **参照**: `agent-native-code-design.md` 原則2 (Collocated Tests), 原則4 (テスト=報酬信号)
 - **候補**: collocated test 存在チェック (実装ファイルの隣にテストがあるか)
 

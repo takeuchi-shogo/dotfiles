@@ -21,7 +21,7 @@ flowchart TD
     ASF -->|"Pass"| PLC["protect-linter-config.py<br/>Lint Config Protection"]
     ASF -->|"Suspicious"| BLOCK2["BLOCKED<br/>Notify user"]
 
-    PLC -->|"Not lint config"| SFG["search-first-gate.py<br/>Search Before Implement"]
+    PLC -->|"Not lint config"| SFG["claude-hooks pre-edit<br/>Search Before Implement"]
     PLC -->|"Lint config edit"| BLOCK3["BLOCKED<br/>Fix code, not config"]
 
     SFG --> GC["golden-check.py<br/>Golden Principles Check"]
@@ -48,7 +48,7 @@ flowchart TD
     SSS -->|"Risk found"| BLOCK5["BLOCKED<br/>Skill risk flagged"]
 
     subgraph post_exec ["Post-Execution Checks"]
-        RFT["review-feedback-tracker.py<br/>Review Feedback Tracking"]
+        RFT["claude-hooks post-bash<br/>Review Feedback Tracking"]
         GD["gaming-detector.py<br/>Gaming Detection"]
         SD["stagnation-detector.py<br/>Stagnation Detection"]
     end

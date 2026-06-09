@@ -129,7 +129,7 @@ blast radius はエージェント数に比例して拡大する。
 | Codex 委譲 | `rules/codex-delegation.md` | 深い推論（設計/リスク分析/デバッグ）に gpt-5.5 を活用 |
 | Gemini 委譲 | `rules/gemini-delegation.md` | 1M コンテキスト分析/外部リサーチ/マルチモーダル処理 |
 | 知識蒸留パイプライン | `references/improve-policy.md` | L0→L4 の段階的知識昇格 |
-| file-pattern-router.py | `scripts/policy/` | ファイル種別に基づくスペシャリスト自動選択 |
+| claude-hooks (pre-edit, file-pattern-router 機能) | `tools/claude-hooks/` | ファイル種別に基づくスペシャリスト自動選択 |
 
 ---
 
