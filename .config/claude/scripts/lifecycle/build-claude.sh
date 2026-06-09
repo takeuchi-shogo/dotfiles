@@ -4,8 +4,9 @@
 #   --check: 差分確認のみ（書き込みしない）
 set -euo pipefail
 
-TEMPLATE_DIR="${HOME}/dotfiles/.config/claude/templates/claude-md"
-OUTPUT="${HOME}/dotfiles/.config/claude/CLAUDE.md"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "${HOME}/dotfiles")"
+TEMPLATE_DIR="${REPO_ROOT}/.config/claude/templates/claude-md"
+OUTPUT="${REPO_ROOT}/.config/claude/CLAUDE.md"
 TMPFILE=$(mktemp)
 trap 'rm -f "$TMPFILE"' EXIT
 
