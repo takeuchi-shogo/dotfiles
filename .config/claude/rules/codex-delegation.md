@@ -98,7 +98,7 @@ Claude はプラン策定・レビュー・統合の上流/下流を担当し、
 | review / security | Codex + Claude | 多角的検証。異種シグナルの組み合わせ |
 | docs / config / small-edit | Claude 直接 | 委譲のオーバーヘッドが利益を上回る |
 
-**既存ルーティングとの関係**: `agent-router.py` のキーワードベースルーティングと競合しない。agent-router は特定エージェントへの振り分け、このガイダンスはモデル選択の指針。両方を組み合わせて使う。
+**既存ルーティングとの関係**: `claude-hooks` (Rust, `user-prompt`) のキーワードベースルーティングと競合しない。user-prompt routing は特定エージェントへの振り分け、このガイダンスはモデル選択の指針。両方を組み合わせて使う。
 
 ## Codex 実装失敗時のフォールバック
 

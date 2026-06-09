@@ -12,3 +12,4 @@
 | 2026-06-05 | findings-to-autoevolve.py | /improve 下流の孤児(reader 不在)。no-op 化 | 2026-07-05 |
 | 2026-06-05 | session-learner.py の strategy-outcomes 書き込み + _classify_* 3関数 | reader(contrastive-trace-analyzer)退役に伴いコード除去 | 除去済 |
 | 2026-06-06 | データ実体: logs/observe(9.7M)/traces(4.4M)/strategy-outcomes.jsonl(990K) | reader 不在の死蔵データ。計15M 削除 | 削除済 |
+| 2026-06-09 | scripts/policy/{agent-router,suggest-gemini,post-test-analysis}.py + scripts/tests/test_agent_router.py | Rust claude-hooks (user_prompt/pre_tool/post_bash) 移行済・settings.json 未登録の残骸。test_agent_router のロジックは user_prompt.rs mod tests に移植 (移植時 follow.?up drift を Rust に補填) | 即削除済 |

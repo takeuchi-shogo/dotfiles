@@ -33,7 +33,7 @@ const ASYNC_KEYWORDS: &[&str] = &[
 
 const SCHEDULED_KEYWORDS: &[&str] = &[
     "あとで", "later", "明日", "tomorrow", "定期的", "recurring",
-    "毎朝", "毎日", "スケジュール", "schedule", "フォローアップ",
+    "毎朝", "毎日", "スケジュール", "schedule", "フォローアップ", "follow.?up",
 ];
 
 fn match_keywords(text: &str, keywords: &[&str]) -> Vec<String> {
@@ -53,6 +53,13 @@ fn match_regex_keywords(text: &str, patterns: &[&str]) -> bool {
     })
 }
 
+fn multimodal_regex() -> Regex {
+    Regex::new(
+        r"(?i)\.(pdf|mp4|mov|avi|mkv|webm|mp3|wav|m4a|flac|ogg|png|jpe?g|gif|webp|svg)(?:[^a-zA-Z0-9]|$)",
+    )
+    .unwrap()
+}
+
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     let prompt = data["user_prompt"]
         .as_str()
@@ -65,11 +72,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     // Priority 1: Multimodal files → Gemini
-    let mm_re = Regex::new(
-        r"(?i)\.(pdf|mp4|mov|avi|mkv|webm|mp3|wav|m4a|flac|ogg|png|jpe?g|gif|webp|svg)(?:[^a-zA-Z0-9]|$)"
-    ).unwrap();
-
-    if let Some(caps) = mm_re.captures(prompt) {
+    if let Some(caps) = multimodal_regex().captures(prompt) {
         let ext = caps.get(1).map(|m| m.as_str()).unwrap_or("");
         crate::io::context(
             "UserPromptSubmit",
@@ -142,4 +145,91 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // No match
     crate::io::passthrough(raw);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn multimodal_detects_pdf() {
+        assert!(multimodal_regex().is_match("この report.pdf を読んで"));
+    }
+
+    #[test]
+    fn multimodal_detects_image() {
+        assert!(multimodal_regex().is_match("screenshot.png を確認"));
+    }
+
+    #[test]
+    fn multimodal_detects_video_and_audio() {
+        let re = multimodal_regex();
+        assert!(re.is_match("clip.mp4 を変換"));
+        assert!(re.is_match("track.mp3 を再生"));
+    }
+
+    #[test]
+    fn multimodal_case_insensitive() {
+        assert!(multimodal_regex().is_match("DOC.PDF を開く"));
+    }
+
+    #[test]
+    fn multimodal_rejects_embedded() {
+        assert!(!multimodal_regex().is_match("notapdfx"));
+    }
+
+    #[test]
+    fn match_keywords_japanese() {
+        let m = match_keywords("このAPIの設計を考えて", CODEX_KEYWORDS_JA);
+        assert!(m.contains(&"設計".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_english() {
+        let m = match_keywords("design the architecture", CODEX_KEYWORDS_EN);
+        assert!(m.contains(&"design".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_english_case_insensitive() {
+        let m = match_keywords("DEBUG this", CODEX_KEYWORDS_EN);
+        assert!(m.contains(&"debug".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_gemini_research() {
+        let m = match_keywords("リサーチして", GEMINI_KEYWORDS_JA);
+        assert!(m.contains(&"リサーチ".to_string()));
+    }
+
+    #[test]
+    fn match_keywords_no_match() {
+        assert!(match_keywords("hello world", CODEX_KEYWORDS_JA).is_empty());
+    }
+
+    #[test]
+    fn regex_keywords_scheduled() {
+        assert!(match_regex_keywords("明日やって", SCHEDULED_KEYWORDS));
+    }
+
+    #[test]
+    fn regex_keywords_followup_optional_separator() {
+        assert!(match_regex_keywords("please follow-up", SCHEDULED_KEYWORDS));
+        assert!(match_regex_keywords("followup later", SCHEDULED_KEYWORDS));
+    }
+
+    #[test]
+    fn regex_keywords_async() {
+        assert!(match_regex_keywords("バックグラウンドで実行", ASYNC_KEYWORDS));
+    }
+
+    #[test]
+    fn regex_keywords_case_insensitive() {
+        assert!(match_regex_keywords("PARALLEL run", ASYNC_KEYWORDS));
+    }
+
+    #[test]
+    fn regex_keywords_no_match() {
+        assert!(!match_regex_keywords("普通の依頼", SCHEDULED_KEYWORDS));
+    }
 }

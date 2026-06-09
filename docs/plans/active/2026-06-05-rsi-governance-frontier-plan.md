@@ -67,8 +67,8 @@
 
 記事 #7「人間レビューが速度ボトルネック、自動レビューが本番バグの1/3捕捉」。生成と検証の自己改善を対称化。
 
-- **C1**: 捕捉率計測 — Codex Review Gate / code-reviewer が捕えた問題 vs すり抜けて後で発覚した問題を集計。`post-test-analysis.py` (既存) に「review が捕捉 / すり抜け」のラベル付け append を追加
-  - **Files**: `scripts/policy/post-test-analysis.py` (集計拡張), `~/.claude/agent-memory/review-catch-rate.jsonl` (新規ログ)
+- **C1**: 捕捉率計測 — Codex Review Gate / code-reviewer が捕えた問題 vs すり抜けて後で発覚した問題を集計。Rust `claude-hooks` post-bash (`check_post_test`) のテスト失敗検出に「review が捕捉 / すり抜け」のラベル付けを追加。**注記 (2026-06-09 Rust 整合)**: 旧 `post-test-analysis.py` は context 出力のみで append ロジックを持たず本 C1 は新規実装。C1 は未実装 (Wave3 entry requirement として design doc にゲート化済み)。review catch-rate は test 失敗検出と別関心のため、実装時は post_bash.rs 拡張 or 専用サブコマンドを検討。
+  - **Files**: `tools/claude-hooks/src/post_bash.rs` (集計拡張 or 専用ロジック), `~/.claude/agent-memory/review-catch-rate.jsonl` (新規ログ)
 - **C2**: チェックリスト自己改善 — 捕捉率が閾値を下回ったら、すり抜けた問題のパターンを review チェックリスト (`skills/review/references/review-checklists/`) の改善候補として AutoEvolve の Analyze フェーズに渡す
   - **Files**: `.config/claude/agents/autoevolve-core.md` (Analyze 対象に review-catch-rate.jsonl 追加), review skill の checklist
 - **C3**: gaming ガード — 「簡単な問題だけ review に回して捕捉率を上げる」評価ゲーミングを `gaming-detector.py` の既存パターンに接続
