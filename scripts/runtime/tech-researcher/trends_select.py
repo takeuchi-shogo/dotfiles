@@ -18,8 +18,10 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
-from datetime import date, timedelta
+import sys
+from datetime import date, datetime, timedelta
 
 
 def _num(v) -> float:
@@ -73,3 +75,69 @@ def select(
 
     items.sort(key=score_key)
     return items[:top] if top else items
+
+
+def render_term(items: list[dict], days: int) -> str:
+    """ターミナル向け表示。URL は素のまま出力 (Ghostty 等が自動でリンク化する)。"""
+    out = [f"📡 AI Tech Trends — 直近{days}日 (adoption-ledger)"]
+    if not items:
+        out.append(f"  (直近{days}日の採用記事なし)")
+        return "\n".join(out) + "\n"
+    for i, rec in enumerate(items, 1):
+        s = rec.get("scores") or {}
+        badge = (
+            f"n{s.get('novelty') or '-'}"
+            f" c{s.get('concreteness') or '-'}"
+            f" r{s.get('reliability') or '-'}"
+        )
+        title = (rec.get("title") or "(no title)")[:72]
+        day = (rec.get("date") or "")[5:]
+        out.append(f" {i:>2}. [{badge}] {title}  ({rec.get('domain', '?')}, {day})")
+        out.append(f"     {rec['url']}")
+    return "\n".join(out) + "\n"
+
+
+def render_json(items: list[dict]) -> str:
+    return json.dumps(items, ensure_ascii=False)
+
+
+def _parse_date(s: str) -> date | None:
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("ledger", help="adoption-ledger.jsonl path")
+    parser.add_argument("--days", type=int, default=3)
+    parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--asof", default=None, help="基準日 YYYY-MM-DD (既定: 今日)")
+    parser.add_argument("--format", choices=("term", "json"), default="term")
+    args = parser.parse_args(argv)
+
+    asof = _parse_date(args.asof) if args.asof else date.today()
+    if asof is None:
+        print(f"ERROR: invalid --asof: {args.asof}", file=sys.stderr)
+        return 2
+    if args.days < 1 or args.top < 1:
+        print("ERROR: --days and --top must be >= 1", file=sys.stderr)
+        return 2
+
+    try:
+        with open(args.ledger, encoding="utf-8") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        lines = []
+
+    items = select(lines, asof=asof, days=args.days, top=args.top)
+    if args.format == "json":
+        sys.stdout.write(render_json(items) + "\n")
+    else:
+        sys.stdout.write(render_term(items, days=args.days))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -153,3 +153,47 @@ def test_missing_url_skipped():
     del rec["url"]
     items = trends_select.select([json.dumps(rec)], asof=ASOF, days=3)
     assert items == []
+
+
+def test_render_term_contains_urls_in_rank_order():
+    lines = [
+        _line("2026-06-09", "https://high", novelty=5, concreteness=5, title="High"),
+        _line("2026-06-09", "https://low", novelty=1, concreteness=1, title="Low"),
+    ]
+    items = trends_select.select(lines, asof=ASOF, days=3)
+    out = trends_select.render_term(items, days=3)
+    assert "https://high" in out and "https://low" in out
+    assert out.index("https://high") < out.index("https://low")
+    assert "High" in out and "example.com" in out
+
+
+def test_render_term_empty():
+    out = trends_select.render_term([], days=3)
+    assert "採用記事なし" in out
+
+
+def test_render_json_roundtrip():
+    lines = [_line("2026-06-09", "https://a/1")]
+    items = trends_select.select(lines, asof=ASOF, days=3)
+    parsed = json.loads(trends_select.render_json(items))
+    assert parsed[0]["url"] == "https://a/1"
+
+
+def test_main_missing_ledger_exits_zero(tmp_path, capsys):
+    rc = trends_select.main([str(tmp_path / "none.jsonl"), "--asof", "2026-06-10"])
+    assert rc == 0
+    assert "採用記事なし" in capsys.readouterr().out
+
+
+def test_main_invalid_asof_exits_two(tmp_path, capsys):
+    rc = trends_select.main([str(tmp_path / "none.jsonl"), "--asof", "junk"])
+    assert rc == 2
+
+
+def test_main_renders_real_file(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1", title="Article") + "\n")
+    rc = trends_select.main([str(ledger), "--asof", "2026-06-10", "--days", "3"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "https://a/1" in out and "Article" in out
