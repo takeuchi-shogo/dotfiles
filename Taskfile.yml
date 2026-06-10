@@ -348,3 +348,13 @@ tasks:
     desc: 'Show scheduled power events (pmset -g sched)'
     cmds:
       - bash {{.TASKFILE_DIR}}/scripts/runtime/nightly/setup-nightly-wake.sh status
+
+  trends:
+    desc: 'Show top adopted AI tech trends from adoption-ledger (clickable URLs; DAYS/TOP override 可, 使用は trends-usage.log に記録 — design §9 撤退条件の評価データ)'
+    vars:
+      DAYS: '{{.DAYS | default "3"}}'
+      TOP: '{{.TOP | default "5"}}'
+    cmds:
+      - mkdir -p $HOME/.cache/tech-researcher
+      - date -Iseconds >> $HOME/.cache/tech-researcher/trends-usage.log
+      - python3 {{.TASKFILE_DIR}}/scripts/runtime/tech-researcher/trends_select.py $HOME/.cache/tech-researcher/adoption-ledger.jsonl --days {{.DAYS}} --top {{.TOP}}
