@@ -5,7 +5,7 @@ last_reviewed: 2026-04-23
 
 # モデル別ルーティング
 
-主エージェント (Opus 等) は判断・計画・統合・ユーザー対話に集中。実作業はデフォルトで委譲する。
+主エージェント (Opus 等) は判断・計画・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
 
 ## モデル選択
 
@@ -31,6 +31,26 @@ last_reviewed: 2026-04-23
 - 複数の情報を統合した判断
 - プランの策定・修正
 - 委譲先への指示が説明コストに見合わない単純作業 (1-2 回の Grep/Read 等)
+
+## 実装委譲の判断表と運用
+
+実作業の委譲手段は規模で決める:
+
+| 実装の規模 | 委譲先 | 理由 |
+|-----------|--------|------|
+| 複数ファイル / verify 込み | `Workflow({name:'delegate-implementation'})` | 構造化委譲。各タスクは並行・直書きなので独立ファイルに分解する |
+| 単一〜中規模の実装 | `Agent(model:'sonnet')` 直接 | Workflow はオーバーキル |
+| 1-2 回の Grep/Read 等 | メインが自前 | handoff コストが見合わない |
+
+### 主エージェント (現在のメインモデル) の不可譲な責務 (委譲しない)
+
+- 計画策定・タスク分解・委譲先への指示作成
+- 複数情報を統合した判断・意思決定の支援
+- **実装結果の最終 verify / マージ判断** (一次評価は委譲先が担い、テンプレート品質のメタ評価と取り込み可否は主エージェントが判断する)
+
+### delegate-implementation Workflow の自己評価ループ
+
+`delegate-implementation` を使ったら、戻り値の `templateEval` を必ず `docs/workflows/delegate-implementation.evals.jsonl` に1行記録する (timestamp はメインが付与)。テンプレート改善は `empirical-prompt-tuning` skill の収束判定に従う: 2連続で `sonnetStruggles` 空 + `handoffClarity≥4` + `wouldReuse:true` なら安定、未達なら最頻 `suggestions` を最小 diff で適用する。詳細は `docs/workflows/delegate-implementation.evals.README.md`。
 
 ## Design Principles
 
