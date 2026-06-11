@@ -309,7 +309,7 @@ _save_debug() {
 
 CLAUDE_LOG=$(mktemp -t "lp-claude.XXXXXX"); _TMPFILES+=("$CLAUDE_LOG")
 CLAUDE_ERR=$(mktemp -t "lp-err.XXXXXX"); _TMPFILES+=("$CLAUDE_ERR")
-if ! "$TIMEOUT_BIN" 900s claude -p "$PROMPT" \
+if ! "$TIMEOUT_BIN" 900s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" \
         --allowedTools "Read,Edit,Write,Glob,Grep" \
         --output-format text > "$CLAUDE_LOG" 2> "$CLAUDE_ERR"; then
     release_claude_lock
