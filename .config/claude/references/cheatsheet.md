@@ -99,19 +99,22 @@ last_reviewed: 2026-04-23
 
 ## モデル選択マトリクス
 
+詳細は `references/model-routing.md` の Tier 表 (source of truth) を参照。
+
 | タスク種別 | 推奨モデル | 理由 |
 |---|---|---|
-| 複雑な設計・推論 | Opus | 深い思考が必要 |
-| 日常的なコーディング | Sonnet | 速度とコストのバランス |
-| 簡単な質問・補完 | Haiku | 高速・低コスト |
-| 大規模コードベース分析 | Gemini CLI | 1M コンテキスト |
-| 設計レビュー・リスク分析 | Codex CLI | 深い推論 (reasoning effort: high/xhigh) |
+| 統合判断・最深推論・ユーザー対話 | メインセッション (Fable 5) | Tier 0 — 委譲しない領域 |
+| 推論サブタスク (Plan 草案・設計分析・根因調査) | Opus | Tier 1 — `Agent(model:'opus')` |
+| 日常的なコーディング・探索 | Sonnet | Tier 2 — `Agent(model:'sonnet')`、並列実行 |
+| 簡単な抽出・変換 | Haiku | Tier 3 — 高速・低コスト |
+| 大規模コードベース分析 | Gemini CLI | 1M コンテキスト (横軸) |
+| 設計レビュー・リスク分析 | Codex CLI | 深い推論 (reasoning effort: high/xhigh) (横軸) |
 
 ### 現在の設定
 
 ```jsonc
 // settings.json
-"model": "opus[1m]"        // メインモデル
+"model": "claude-fable-5[1m]"  // メインモデル
 "effortLevel": "high"      // 推論努力レベル
 "language": "japanese"      // 応答言語
 ```
@@ -119,9 +122,11 @@ last_reviewed: 2026-04-23
 ### マルチモデル委譲
 
 ```
-Claude Code (Opus) ── サブエージェント委譲
-    ├── codex exec "..."   # 設計・推論・リスク分析
-    └── gemini "..."       # 1M 分析・リサーチ・マルチモーダル
+Claude Code (メイン: Fable 5) ── サブエージェント委譲
+    ├── Agent(model:'opus')    # 推論サブタスク
+    ├── Agent(model:'sonnet')  # 実装・探索 (並列 / delegate-implementation Workflow)
+    ├── codex exec "..."       # 設計・推論・リスク分析
+    └── gemini "..."           # 1M 分析・リサーチ・マルチモーダル
 ```
 
 ---

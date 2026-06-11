@@ -13,7 +13,7 @@ last_reviewed: 2026-04-23
 大規模モデル（Advisor）を小規模モデル（Executor）の戦略的相談役として使うパターン。
 Executor がタスクを主体的に実行し、困難な判断に直面した場合のみ Advisor に相談する。
 
-**現行ハーネスとの関係**: 現行は Opus がトップダウンで委譲する設計。Advisor Strategy は **ボトムアップ escalation**（Executor が自発的に相談）を追加する補完パターン。
+**現行ハーネスとの関係**: 現行はメインセッション (現在: Fable 5) がトップダウンで委譲する設計。Advisor Strategy は **ボトムアップ escalation**（Executor が自発的に相談）を追加する補完パターン。
 
 ## Response Types
 
