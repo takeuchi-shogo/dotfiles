@@ -8,18 +8,18 @@ INBOX="$HOME/Documents/Obsidian Vault/00-Inbox"
 TODAY="$(date +%Y%m%d)"
 DOW="$(date +%u)"  # 1=Mon, 7=Sun
 REPORT="$INBOX/skill-usage-weekly-${TODAY}.md"
+STATE_DIR="$HOME/.cache/skill-health"
+STATE_FILE="$STATE_DIR/last-usage-weekly.txt"
+THIS_WEEK="$(date +%G-W%V)"
 
-# Idempotent: その日のレポートあれば skip (LaunchAgent 多重発火対策)
-[ -f "$REPORT" ] && exit 0
+# 週次ゲートは状態ファイルで判定する。Inbox の出力ファイル存在で判定すると、
+# ユーザーが Inbox を処理 (移動/削除) した翌日に catch-up が再発火し毎日生成になる
+if [ "$(cat "$STATE_FILE" 2>/dev/null)" = "$THIS_WEEK" ]; then
+  exit 0
+fi
 
 # Catch-up window: Mon-Wed のみ。月曜スリープで飛んでも火水で拾う
 [ "$DOW" -gt 3 ] && exit 0
-
-# 今週のレポートが既にあれば skip (火水 catch-up が月曜と重複しないように)
-if find "$INBOX" -name 'skill-usage-weekly-*.md' -mtime -7 2>/dev/null | grep -q .; then
-  echo "[$(date -Iseconds)] this week's report exists, skip" >> "$LOG"
-  exit 0
-fi
 
 mkdir -p "$INBOX" 2>/dev/null || { echo "[$(date -Iseconds)] mkdir Inbox failed, skip" >> "$LOG"; exit 0; }
 
@@ -76,4 +76,5 @@ for s, n in counter.most_common(10):
 PY
 } > "$REPORT" 2>>"$LOG"
 
-echo "[$(date -Iseconds)] weekly report -> $REPORT (DOW=$DOW)" >> "$LOG"
+mkdir -p "$STATE_DIR" && echo "$THIS_WEEK" > "$STATE_FILE"
+echo "[$(date -Iseconds)] weekly report -> $REPORT (week=$THIS_WEEK DOW=$DOW)" >> "$LOG"

@@ -26,7 +26,8 @@ for jsonl_file in "$LEARNINGS_DIR"/*.jsonl; do
         [[ -z "$entry" ]] && continue
 
         # Generate hash for dedup
-        hash=$(echo "$entry" | md5 -q 2>/dev/null || echo "$entry" | md5sum | cut -d' ' -f1)
+        # shasum (/usr/bin) を使う: md5 は /sbin にあり cron の PATH (/usr/bin:/bin) から不達
+        hash=$(echo "$entry" | /usr/bin/shasum | cut -d' ' -f1)
         short_hash="${hash:0:8}"
         timestamp=$(echo "$entry" | jq -r '.timestamp // empty' 2>/dev/null)
         ts_prefix="${timestamp//[:-]/}"
