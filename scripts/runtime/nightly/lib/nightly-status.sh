@@ -4,7 +4,11 @@
 #
 # Public functions:
 #   status_begin "$TASK"
-#   status_end "ok|fail" "$msg" ["k=v" ...]    # 内部で mark_run_today を必ず呼ぶ (Q9: fail でも mark)
+#   status_end "ok|fail" "$msg" ["k=v" ...]
+#     ok          → mark_run_today (last-run 更新 + fail-count リセット)
+#     fail 1 回目  → mark しない (翌日 catch-up が 1 回だけ再試行)
+#     fail 2 連続  → mark する (次ゲートまで諦め)
+#     FORCE_RUN=1 → mark も fail-count も更新しない (検証実行は本番状態を汚さない)
 #   should_run_today "$TASK" "DAILY|DOW|DOM" "$gate_value" "$catch_up_days"
 #   mark_run_today "$TASK"                      # idempotent
 #   acquire_claude_lock                          # Q12: グローバル claude -p lock (atomic mkdir)
@@ -12,7 +16,7 @@
 #
 # Codex Gate 反映:
 #   Q8: status JSONL の正本は ~/.cache/nightly/status-${DATE}.jsonl (volatile /tmp 廃止)
-#   Q9: status_end は内部で mark_run_today を呼ぶ (catch-up 再試行防止)
+#   Q9 改訂 (2026-06-11): fail の自動再試行は 1 回まで (旧: fail でも必ず mark)
 #   Q12: claude_lock で 23:45 同時実行 (audit + skill-audit) を回避
 #   M1: status_end before status_begin で _NIGHTLY_CURRENT_TASK fallback
 #   FM-4: last_run の date format validation (YYYY-MM-DD regex)
@@ -28,13 +32,19 @@ NIGHTLY_TZ_TS="${NIGHTLY_TZ_TS_OVERRIDE:-$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S
 NIGHTLY_CACHE_DIR="${NIGHTLY_CACHE_DIR_OVERRIDE:-$HOME/.cache/nightly}"
 NIGHTLY_STATUS_JSONL="${NIGHTLY_CACHE_DIR}/status-${NIGHTLY_DATE}.jsonl"
 NIGHTLY_CLAUDE_LOCK_DIR="${NIGHTLY_CACHE_DIR}/.lock-claude-p"
-NIGHTLY_CLAUDE_LOCK_WAIT_SEC="${NIGHTLY_CLAUDE_LOCK_WAIT_SEC:-300}"  # 5 min
+# 20 min: audit の claude -p timeout (1200s) を直列待ちで吸収する (300s では 6/8 のように
+# 前段タスクが長引いただけで lock timeout fail になる)
+NIGHTLY_CLAUDE_LOCK_WAIT_SEC="${NIGHTLY_CLAUDE_LOCK_WAIT_SEC:-1200}"
+# グローバル circuit-breaker: このファイルが存在する間、全 nightly 自動ループを停止する。
+# 停止: touch ~/.claude/agent-memory/LOOP_DISABLED / 解除: rm 同ファイル
+NIGHTLY_LOOP_DISABLED="${NIGHTLY_LOOP_DISABLED_OVERRIDE:-$HOME/.claude/agent-memory/LOOP_DISABLED}"
 
 mkdir -p "$NIGHTLY_CACHE_DIR" 2>/dev/null || true
 
 # Internal state
 _NIGHTLY_BEGIN_TS=0
 _NIGHTLY_CURRENT_TASK=""
+_NIGHTLY_HAS_LOCK=0
 
 status_begin() {
     _NIGHTLY_CURRENT_TASK="$1"
@@ -83,6 +93,29 @@ status_end() {
     # message も metric に含める
     [[ -n "$msg" ]] && metric_obj=$(echo "$metric_obj" | jq --arg msg "$msg" '. + {msg: $msg}')
 
+    # Q9 改訂 (2026-06-11): fail の自動再試行は 1 回まで。
+    # - fail 1 回目: mark しない → 翌日の catch-up が 1 回だけ再試行する
+    # - fail 2 回連続 (当日/前日): mark する (次ゲートまで諦め)
+    # - ok: mark + fail-count リセット (mark_run_today 内)
+    # 旧 Q9/C6 (fail でも必ず mark) の「catch-up 再試行スパム防止」の意図は
+    # 「再試行上限 1 回」として保存している。
+    local _do_mark=1 _fail_count=0
+    if [[ "${FORCE_RUN:-0}" == "1" ]]; then
+        # 検証実行 (FORCE_RUN) は last-run も fail-count も汚さない (本番スケジュールと独立)
+        _do_mark=0
+    elif [[ "$status" == "fail" ]]; then
+        _fail_count=$(( $(_read_fail_count "$task") + 1 ))
+        if (( _fail_count >= 2 )); then
+            echo "[nightly] $task: ${_fail_count} consecutive fails; giving up until next gate" >&2
+            metric_obj=$(echo "$metric_obj" | jq --argjson n "$_fail_count" '. + {consecutive_fails: $n, retry: "gave up until next gate"}')
+        else
+            _do_mark=0
+            _write_fail_count "$task" "$_fail_count"
+            echo "[nightly] $task: fail (attempt ${_fail_count}); will retry via tomorrow catch-up" >&2
+            metric_obj=$(echo "$metric_obj" | jq --argjson n "$_fail_count" '. + {consecutive_fails: $n, retry: "tomorrow catch-up"}')
+        fi
+    fi
+
     # JSONL: detail も含めて永続化 (morning-briefing で活用可能)
     local line
     line=$(jq -nc \
@@ -102,8 +135,9 @@ status_end() {
     metric_summary=$(echo "$metric_obj" | jq -r 'to_entries | map("\(.key)=\(.value)") | join(", ")' 2>/dev/null || echo "")
     notify_discord "$status" "$task" "$duration_sec" "$report_path" "$metric_summary" "$detail_text"
 
-    # Q9 (Codex C6): fail でも mark_run_today を呼ぶ (catch-up 再試行防止)
-    mark_run_today "$task"
+    if [[ "$_do_mark" -eq 1 ]]; then
+        mark_run_today "$task"
+    fi
 
     echo "[nightly] end task=$task status=$status duration=${duration_sec}s" >&2
 
@@ -116,9 +150,56 @@ _is_valid_date() {
     [[ "$1" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]
 }
 
+# --- 連続 fail カウント (Q9 改訂 2026-06-11) ---
+# ファイル形式: "YYYY-MM-DD N" の 1 行。日付は書き込み実時刻 (NIGHTLY_DATE は source 時固定の
+# ため日付跨ぎでずれる)。当日/前日以外の記録は鮮度切れとして 0 扱い。破損も 0 扱い (fail safe)。
+_fail_count_file() {
+    echo "${NIGHTLY_CACHE_DIR}/fail-count-${1}.txt"
+}
+
+_read_fail_count() {
+    local task="$1" line fdate count today yesterday
+    line=$(cat "$(_fail_count_file "$task")" 2>/dev/null || echo "")
+    fdate="${line%% *}"
+    count="${line##* }"
+    if ! [[ "$count" =~ ^[0-9]+$ ]] || ! _is_valid_date "$fdate"; then
+        echo 0
+        return 0
+    fi
+    today=$(date +%Y-%m-%d)
+    yesterday=$(date -j -v-1d +%Y-%m-%d 2>/dev/null || date -d 'yesterday' +%Y-%m-%d)
+    if [[ "$fdate" == "$today" || "$fdate" == "$yesterday" ]]; then
+        echo "$count"
+    else
+        echo 0
+    fi
+}
+
+_write_fail_count() {
+    # tmpfile + mv のアトミック置換 (SIGKILL 等での途中書きを防ぐ)
+    local task="$1" count="$2" f tmp
+    f="$(_fail_count_file "$task")"
+    tmp=$(mktemp "${f}.XXXXXX" 2>/dev/null) || {
+        echo "[nightly] WARN: mktemp failed for fail-count" >&2
+        return 1
+    }
+    if printf '%s %s\n' "$(date +%Y-%m-%d)" "$count" > "$tmp" && mv -f "$tmp" "$f"; then
+        return 0
+    else
+        rm -f "$tmp" 2>/dev/null
+        return 1
+    fi
+}
+
 should_run_today() {
     local task="$1" gate_kind="$2" gate_value="$3" catch_up_days="${4:-0}"
     local last_run_file="${NIGHTLY_CACHE_DIR}/last-run-${task}.txt"
+
+    # グローバル circuit-breaker (FORCE_RUN より優先。-f: file の存在を厳密にチェック)
+    if [[ -f "$NIGHTLY_LOOP_DISABLED" ]]; then
+        echo "[nightly] skip $task: LOOP_DISABLED present ($NIGHTLY_LOOP_DISABLED)" >&2
+        return 1
+    fi
 
     local last_run
     last_run=$(cat "$last_run_file" 2>/dev/null || echo "1970-01-01")
@@ -191,6 +272,7 @@ mark_run_today() {
     local task="$1"
     [[ -z "$task" ]] && return 0  # nothing to mark
     echo "$NIGHTLY_DATE" > "${NIGHTLY_CACHE_DIR}/last-run-${task}.txt"
+    rm -f "$(_fail_count_file "$task")"
 }
 
 # Q12 (Codex FM-7): claude -p の同時実行を回避
@@ -205,10 +287,14 @@ acquire_claude_lock() {
         sleep 5
         waited=$((waited + 5))
     done
+    _NIGHTLY_HAS_LOCK=1
     echo "[nightly] acquired claude lock (waited=${waited}s)" >&2
     return 0
 }
 
 release_claude_lock() {
-    rmdir "$NIGHTLY_CLAUDE_LOCK_DIR" 2>/dev/null || true
+    if [[ "$_NIGHTLY_HAS_LOCK" -eq 1 ]]; then
+        rmdir "$NIGHTLY_CLAUDE_LOCK_DIR" 2>/dev/null || true
+        _NIGHTLY_HAS_LOCK=0
+    fi
 }

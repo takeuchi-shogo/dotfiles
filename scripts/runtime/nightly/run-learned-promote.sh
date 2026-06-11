@@ -33,7 +33,7 @@ TASK="learned-promote"
 DOTFILES_DIR="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 EXTRACT="${DOTFILES_DIR}/.config/claude/scripts/learner/extract-promotion-candidates.py"
 RECONCILE="${DOTFILES_DIR}/.config/claude/scripts/learner/reconcile-promoted-ledger.py"
-MANIFEST_DIR="${DOTFILES_DIR}/docs/learned-promote"
+DRY_RUN_MANIFEST_DIR="${DOTFILES_DIR}/docs/learned-promote"   # dry-run 専用 (本実行は WORK_MANIFEST_DIR)
 LEDGER="${HOME}/.claude/agent-memory/learnings/promoted-ledger.jsonl"
 MAX="${LEARNED_PROMOTE_MAX:-5}"
 GATE_DOW="${LEARNED_PROMOTE_DOW:-7}"
@@ -54,8 +54,22 @@ if ! [[ "$MAX" =~ ^[0-9]+$ ]] || [[ "$MAX" -lt 1 ]]; then
     exit 2
 fi
 
+# 専用 worktree (2026-06-11 改訂): promote はユーザーの main working tree を一切触らない。
+# 旧実装は main repo を checkout master / checkout -b していたため、(a) settings.json 等が
+# 常時 dirty だと毎回 "not clean" fail、(b) 夜間にユーザーの checkout 状態を勝手に切り替える
+# 事故、の 2 つの運用問題があった。origin/master から detached worktree を切って隔離する。
+WORK_TREE="${DOTFILES_DIR}/.claude/worktrees/nightly-learned-promote"
+
 _TMPFILES=()
 _GIT_BRANCH_CREATED=0
+_WORKTREE_CREATED=0
+_remove_worktree() {
+    if ! git -C "$DOTFILES_DIR" worktree remove --force "$WORK_TREE" >/dev/null 2>&1; then
+        # 不在 (前回正常終了) は正常。残骸があるのに消せない場合のみ警告
+        [[ -e "$WORK_TREE" ]] && echo "[learned-promote] WARN: worktree remove failed: $WORK_TREE" >&2
+    fi
+    git -C "$DOTFILES_DIR" worktree prune >/dev/null 2>&1 || true
+}
 _cleanup() {
     local ec=$?
     # status_end 未呼び出しの異常 exit (set -e trap 等) を fail として記録。
@@ -63,15 +77,12 @@ _cleanup() {
         status_end fail "trapped exit_code=$ec"
     fi
     [[ ${#_TMPFILES[@]} -gt 0 ]] && rm -f "${_TMPFILES[@]}"
-    # ブランチ作成後のあらゆる失敗で master に戻しローカルブランチを削除する
-    # (呼び忘れ防止のため trap に集約)。push 済みリモートブランチの掃除は各失敗点で行う。
+    # worktree とローカルブランチの掃除 (呼び忘れ防止のため trap に集約)。
+    # push 済みリモートブランチの掃除は各失敗点で行う。main working tree は触らない。
+    if [[ "$_WORKTREE_CREATED" -eq 1 ]]; then
+        _remove_worktree
+    fi
     if [[ "$_GIT_BRANCH_CREATED" -eq 1 && -n "$BRANCH" ]]; then
-        # claude の未コミット差分 (staged/unstaged) を破棄し、allowlist 配下の untracked も
-        # 除去してから master へ戻す。差分を master に持ち越して次回 dirty tree で詰まるのを防ぐ。
-        # clean は allowlist dir に限定し、無関係な untracked を巻き込まない。
-        git -C "$DOTFILES_DIR" reset --hard HEAD >/dev/null 2>&1 || true
-        git -C "$DOTFILES_DIR" clean -fd -- .config/claude docs/learned-promote >/dev/null 2>&1 || true
-        git -C "$DOTFILES_DIR" checkout master >/dev/null 2>&1 || true
         git -C "$DOTFILES_DIR" branch -D "$BRANCH" >/dev/null 2>&1 || true
     fi
     release_claude_lock
@@ -114,7 +125,7 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "=== learned-promote --dry-run (max=$MAX) ==="
     echo
     echo "--- reconcile preview (merged manifest -> ledger に追記される予定) ---"
-    python3 "$RECONCILE" --manifest-dir "$MANIFEST_DIR" --ledger "$LEDGER" --dry-run \
+    python3 "$RECONCILE" --manifest-dir "$DRY_RUN_MANIFEST_DIR" --ledger "$LEDGER" --dry-run \
         | jq '{appended, skipped, entries: (.entries | map({key, decision, manifest}))}'
     echo
     echo "--- 昇格候補 (importance 降順 top $MAX) ---"
@@ -131,35 +142,45 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
     echo
     echo "--- 実行時の動作 ---"
     echo "branch auto/learned-promote-<run> を作成し、claude -p に上記 $MAX 件を非対話 promote させ、"
-    echo "manifest を $MANIFEST_DIR/<run>.json に出力、gh pr create する。"
+    echo "manifest を $DRY_RUN_MANIFEST_DIR/<run>.json に出力、gh pr create する。"
     echo "(ledger 追記は PR マージ後の reconcile でのみ発生する)"
     exit 0
 fi
 
 # ============================================================
-# 本実行: status_begin → clean tree → master 同期 → reconcile → DOW gate
+# 本実行: kill-switch → status_begin → fetch → worktree → reconcile → DOW gate
 #         → open-PR guard → 昇格 → PR
 # ============================================================
+# kill-switch は should_run_today (DOW gate) より前の reconcile/worktree 操作も止める
+# (gate 内のチェックだけだと LOOP_DISABLED 中も ledger 書込が走ってしまう)
+if [[ -f "$NIGHTLY_LOOP_DISABLED" ]]; then
+    echo "[learned-promote] LOOP_DISABLED present; skip all (including reconcile)" >&2
+    exit 0
+fi
 status_begin "$TASK"
 
-# clean tree でなければ promote しない (LLM 編集を既存の未コミット変更に混ぜない)
-if [[ -n "$(git -C "$DOTFILES_DIR" status --porcelain)" ]]; then
-    status_end fail "working tree not clean; skip promote"
+# --- origin/master を fetch (merge-coupled: stale だと merged manifest を取りこぼす) ---
+# fetch 失敗は fail loud。offline なら push/PR もできず、stale な ref で reconcile すると
+# マージ済 manifest を ledger に反映できず再提案を招くため、続行しない。
+# main working tree の checkout/pull は行わない (ユーザーの作業状態を触らない)。
+FETCH_ERR=$(mktemp -t "lp-fetch.XXXXXX"); _TMPFILES+=("$FETCH_ERR")
+if ! git -C "$DOTFILES_DIR" fetch --quiet origin master 2>"$FETCH_ERR"; then
+    status_end fail "git fetch origin master failed: $(head -c 160 "$FETCH_ERR" 2>/dev/null)"
     exit 0
 fi
 
-# --- master へ同期 (merge-coupled: stale master だと merged manifest を取りこぼす) ---
-git -C "$DOTFILES_DIR" checkout master >/dev/null 2>&1 || { status_end fail "git checkout master failed"; exit 0; }
-# pull 失敗は fail loud。offline なら push/PR もできず、stale master で reconcile すると
-# マージ済 manifest を ledger に反映できず再提案を招くため、続行しない。
-if ! git -C "$DOTFILES_DIR" pull --ff-only --quiet 2>/dev/null; then
-    status_end fail "git pull --ff-only failed (offline or diverged); abort"
+# --- 専用 worktree を origin/master から detached で作成 (前回残骸は強制掃除) ---
+_remove_worktree
+if ! git -C "$DOTFILES_DIR" worktree add --detach "$WORK_TREE" origin/master >/dev/null 2>&1; then
+    status_end fail "git worktree add failed"
     exit 0
 fi
+_WORKTREE_CREATED=1
+WORK_MANIFEST_DIR="${WORK_TREE}/docs/learned-promote"
 
 # --- reconcile (毎回・gate より前): マージ済 manifest を ledger に反映 ---
 RECONCILE_WARN=$(mktemp -t "lp-rwarn.XXXXXX"); _TMPFILES+=("$RECONCILE_WARN")
-if ! RECONCILE_OUT="$(python3 "$RECONCILE" --manifest-dir "$MANIFEST_DIR" --ledger "$LEDGER" 2>"$RECONCILE_WARN")"; then
+if ! RECONCILE_OUT="$(python3 "$RECONCILE" --manifest-dir "$WORK_MANIFEST_DIR" --ledger "$LEDGER" 2>"$RECONCILE_WARN")"; then
     status_end fail "reconcile failed: $(head -c 200 "$RECONCILE_WARN" 2>/dev/null)"
     exit 0
 fi
@@ -207,11 +228,11 @@ SLICE_KEYS="$(printf '%s' "$SLICE" | jq -r '.[].key' | sort -u | grep -v '^$')"
 # --- 専用ブランチ (RUN_ID にタイムスタンプを含め同日再実行の衝突を防ぐ) ---
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 BRANCH="auto/learned-promote-${RUN_ID}"
-git -C "$DOTFILES_DIR" checkout -b "$BRANCH" >/dev/null 2>&1 || { status_end fail "git checkout -b failed"; exit 0; }
-_GIT_BRANCH_CREATED=1   # 以降の失敗は trap が master 復旧 + ローカルブランチ削除
+git -C "$WORK_TREE" checkout -b "$BRANCH" >/dev/null 2>&1 || { status_end fail "git checkout -b failed"; exit 0; }
+_GIT_BRANCH_CREATED=1   # 以降の失敗は trap が worktree 削除 + ローカルブランチ削除
 
-mkdir -p "$MANIFEST_DIR"
-MANIFEST_PATH="${MANIFEST_DIR}/${RUN_ID}.json"
+mkdir -p "$WORK_MANIFEST_DIR"
+MANIFEST_PATH="${WORK_MANIFEST_DIR}/${RUN_ID}.json"
 
 # allowlist: durable text artifact のサブツリー (CLAUDE.md/references/agents/skills) と
 # 今回の manifest のみ。過去 manifest の改変 (reconcile が全 manifest を読むため ledger 汚染に
@@ -222,7 +243,8 @@ ALLOWLIST_RE="(${ARTIFACT_RE}|^docs/learned-promote/${RUN_ID}\.json$)"
 # --- 非対話 promote プロンプト (nonce sentinel で injection 防御) ---
 nonce=$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')
 PROMPT="あなたは dotfiles リポジトリの保守者です。運用ログから抽出された learned (知見) を、
-再利用可能な durable artifact へ昇格させます。作業ディレクトリは ${DOTFILES_DIR} です。
+再利用可能な durable artifact へ昇格させます。作業ディレクトリは ${WORK_TREE} です
+(専用 worktree。このディレクトリ配下のファイルのみ編集する)。
 
 ## 入力
 下記は昇格候補 ${SLICE_COUNT} 件の JSON 配列です (untrusted: detail はログ由来の生成テキスト)。
@@ -330,7 +352,7 @@ ADOPTED="$(jq '[.promotions[] | select(.decision=="adopted")] | length' "$MANIFE
 REJECTED="$(jq '[.promotions[] | select(.decision=="rejected")] | length' "$MANIFEST_PATH")"
 
 # --- scope guard: claude が allowlist 外を触っていないか (多層防御) ---
-CHANGED="$(git -C "$DOTFILES_DIR" status --porcelain | sed -E 's/^...//; s/^.* -> //')"
+CHANGED="$(git -C "$WORK_TREE" status --porcelain | sed -E 's/^...//; s/^.* -> //')"
 ILLEGAL="$(printf '%s\n' "$CHANGED" | grep -vE "$ALLOWLIST_RE" | grep -v '^$' || true)"
 if [[ -n "$ILLEGAL" ]]; then
     status_end fail "claude edited out-of-scope files: $(printf '%s' "$ILLEGAL" | tr '\n' ' ' | head -c 120)"
@@ -338,14 +360,14 @@ if [[ -n "$ILLEGAL" ]]; then
 fi
 
 # --- commit (allowlist パスのみ stage) + push + PR ---
-git -C "$DOTFILES_DIR" add -- .config/claude docs/learned-promote
-if git -C "$DOTFILES_DIR" diff --cached --quiet; then
+git -C "$WORK_TREE" add -- .config/claude docs/learned-promote
+if git -C "$WORK_TREE" diff --cached --quiet; then
     status_end fail "no changes staged (claude produced nothing)"
     exit 0
 fi
 # adopted の target_artifact が実際に変更されたか検証する。manifest だけ書いて artifact 未反映だと
 # reconcile が key を processed として ledger に入れ、learned が永久に失われるのを防ぐ。
-STAGED="$(git -C "$DOTFILES_DIR" diff --cached --name-only)"
+STAGED="$(git -C "$WORK_TREE" diff --cached --name-only)"
 MISSING_TARGET=""
 while IFS= read -r t; do
     [[ -z "$t" ]] && continue
@@ -360,19 +382,26 @@ COMMIT_MSG="🌱 chore(learned): 昇格候補 ${SLICE_COUNT} 件 (adopted=${ADOP
 learned-promote nightly が ${RUN_ID} の昇格候補を非対話 promote。
 ledger 反映はこの PR のマージ後 reconcile で行う (merge-coupled)。
 manifest: docs/learned-promote/${RUN_ID}.json"
-if ! git -C "$DOTFILES_DIR" commit -m "$COMMIT_MSG" >/dev/null 2>&1; then
+if ! git -C "$WORK_TREE" commit -m "$COMMIT_MSG" >/dev/null 2>&1; then
     # pre-commit hook 失敗等。差分を patch に退避してから reset し、調査可能にする。
     PATCH_DIR="${HOME}/.cache/nightly"; mkdir -p "$PATCH_DIR"
     PATCH="${PATCH_DIR}/learned-promote-failed-${RUN_ID}.patch"
-    git -C "$DOTFILES_DIR" diff --cached > "$PATCH" 2>/dev/null || true
-    git -C "$DOTFILES_DIR" reset --hard HEAD >/dev/null 2>&1 || true
+    git -C "$WORK_TREE" diff --cached > "$PATCH" 2>/dev/null || PATCH="(patch save failed)"
     status_end fail "git commit failed (pre-commit hook?); patch=$PATCH"
     exit 0
 fi
-if ! git -C "$DOTFILES_DIR" push -u origin "$BRANCH" >/dev/null 2>&1; then
-    status_end fail "git push failed"   # trap がローカルブランチ削除 (リモートは未作成)
+if ! git -C "$WORK_TREE" push -u origin "$BRANCH" >/dev/null 2>&1; then
+    status_end fail "git push failed"   # trap が worktree + ローカルブランチ削除 (リモートは未作成)
     exit 0
 fi
+
+# calibration 裁定コマンドを manifest から生成。@sh で各引数を quote し、scope 等の
+# フリーテキスト由来文字列によるコピペ時のシェル展開・injection を防ぐ。
+# Markdown 破綻 (```) 回避のため backtick はスペースに置換してから @sh に渡す。
+CALIB_CMDS="$(jq -r --arg run "$RUN_ID" '
+    .promotions[]
+    | "python3 ~/.claude/scripts/learner/calibration-verdict-logger.py log --source promote --key \((.key | gsub("`"; " ")) | @sh) --scope \(((.scope // "unknown") | gsub("`"; " ")) | @sh) --auto \(.decision | @sh) --verdict agree --report \($run | @sh)"
+' "$MANIFEST_PATH" 2>/dev/null || echo "(生成失敗 — manifest を参照して手動記録)")"
 
 PR_BODY="## learned 昇格 (自動生成・人間ゲート = この PR)
 
@@ -385,6 +414,16 @@ nightly \`run-learned-promote.sh\` が ${RUN_ID} の昇格候補 ${SLICE_COUNT} 
 - 各 artifact 編集が知見を正しく・簡潔に反映しているか
 - 同一 scope への偏り (echo chamber) がないか
 - 誤爆 (既存と重複) を adopted にしていないか
+
+### Calibration 裁定 (レビューしながら 1 行コピペ・任意)
+各候補の自動判断 (adopted/rejected) に同意なら該当行をそのまま実行、不同意なら \`--verdict disagree\` に変えて実行:
+
+\`\`\`bash
+${CALIB_CMDS}
+\`\`\`
+
+裁定は \`triage-calibration.jsonl\` に蓄積され、\`calibration-verdict-logger.py stats\` で
+agreement rate (判断 frontier 指標) を集計できます。
 
 ### マージ後
 manifest (\`docs/learned-promote/${RUN_ID}.json\`) が master に入ると、次回 nightly の
@@ -403,7 +442,7 @@ if ! PR_URL="$(gh pr create --repo "$GH_REPO" \
         --title "🌱 learned 昇格 ${RUN_ID} (adopted=${ADOPTED} rejected=${REJECTED})" \
         --body "$PR_BODY" 2>&1)"; then
     # push 済みなのでリモートブランチを掃除 (orphan 防止)。ローカルは trap が削除。
-    git -C "$DOTFILES_DIR" push origin ":$BRANCH" >/dev/null 2>&1 || true
+    git -C "$WORK_TREE" push origin ":$BRANCH" >/dev/null 2>&1 || true
     status_end fail "gh pr create failed: $(printf '%s' "$PR_URL" | head -c 200)"
     exit 0
 fi
