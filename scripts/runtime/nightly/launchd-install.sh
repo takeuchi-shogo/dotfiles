@@ -22,12 +22,18 @@ TASKS=(
     # (pmset の `sleep 1` 対策)。最初の実ジョブ dep-audit (22:30) より前に置く。
     "caffeinate|${NIGHTLY_WAKE_HOUR}|${NIGHTLY_WAKE_MINUTE}|nightly-caffeinate.sh"
     "dep-audit|22|30|run-dep-audit.sh"
+    # learned-promote: 週次ゲート (LEARNED_PROMOTE_DOW) はスクリプト内蔵。非ゲート日は
+    # reconcile + skip で数秒。22 時台の lock 空き枠に置き、23 時台の claude -p 隊列と分離。
+    "learned-promote|22|45|run-learned-promote.sh"
     "golden-check|23|15|run-golden-check.sh"
     "friction-aggregate|23|20|run-friction-aggregate.sh"
     "health-check|23|25|run-health-check.sh"
     "daily-report|23|35|run-daily-report.sh"
     "audit|23|45|run-audit.sh"
-    "skill-audit|23|45|run-skill-audit.sh"
+    # skill-audit: audit と同時刻 (23:45) だと lock 衝突で fail する (2026-06-08 実績)。
+    # 5 分ずらし + lock wait 1200s (nightly-status.sh) で audit 最大 20 分を直列吸収する。
+    # 0 時台へは動かさない (NIGHTLY_DATE が翌日扱いになり DOW gate/status JSONL が 1 日ずれる)。
+    "skill-audit|23|50|run-skill-audit.sh"
     "plan-close-scan|0|50|run-plan-close-scan.sh"
     # tech-researcher: nightly ゲート相乗り (別ディレクトリ、.. は exec 時に解決)。
     # audit/skill-audit (23:45) の後に置き claude lock 競合を避ける。

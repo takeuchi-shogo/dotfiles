@@ -19,7 +19,8 @@ pattern: learned-triage-classification
 このループは段階導入:
 1. **(now) dry-run 分類** — 候補を mechanical/advisory/reject/defer に分け、根拠付きでレポート
 2. **calibration** — 人間がレポートを見て「mechanical 分類が正しいか」を検証、採用分から allowlist を作る。
-   裁定は `scripts/learner/calibration-verdict-logger.py log` で記録する (agree/disagree)。
+   裁定は `~/.claude/scripts/learner/calibration-verdict-logger.py log` で記録する (agree/disagree)。
+   (相対パス `scripts/learner/` は dotfiles repo root の別ディレクトリを指すので使わない)
    `... stats` で agreement rate (判断 frontier 指標) と mechanical-confirmed allowlist を集計。
    この裁定記録が Wave3 着手の前提データ (詳細: 上記 design doc の Wave3 entry requirements)。
 3. **(Wave3) 無人 PR 化** — allowlist に載った mechanical 種別のみ、決定論ゲート通過後に日次無人 PR

@@ -9,7 +9,7 @@
 #   Q12 (FM-7): acquire/release claude_lock で 23:45 同時実行を回避
 #   M3: report は mktemp に書いて成功時のみ atomic mv (partial write 防止)
 #   H2: grep -c は `|| true` でラップ (no-match で `0\n0` 防止)
-#   Q9: status_end が内部で mark_run_today を呼ぶ (fail でも mark、lib 側)
+#   Q9 改訂 (2026-06-11): fail 1 回目は mark せず翌日 catch-up で 1 回再試行 (lib 側)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

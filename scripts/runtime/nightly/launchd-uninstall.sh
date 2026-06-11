@@ -2,7 +2,7 @@
 # launchd-uninstall.sh — nightly LaunchAgent を unload + 削除
 set -euo pipefail
 AGENTS_DIR="$HOME/Library/LaunchAgents"
-TASKS=(caffeinate dep-audit golden-check friction-aggregate health-check daily-report audit skill-audit plan-close-scan tech-researcher)
+TASKS=(caffeinate dep-audit learned-promote golden-check friction-aggregate health-check daily-report audit skill-audit plan-close-scan tech-researcher)
 for task in "${TASKS[@]}"; do
     plist="$AGENTS_DIR/com.user.nightly.${task}.plist"
     [[ -f "$plist" ]] || { echo "[skip] $plist not found"; continue; }

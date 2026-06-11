@@ -41,6 +41,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 from storage import get_data_dir, read_jsonl
 
 CLASSES = ("mechanical", "advisory", "reject", "defer")
+PROMOTE_CLASSES = ("adopted", "rejected")
+ALL_CLASSES = CLASSES + PROMOTE_CLASSES
+SOURCES = ("auto-triage", "promote")
 VERDICTS = ("agree", "disagree")
 
 
@@ -51,14 +54,22 @@ def _ledger_path() -> Path:
 def _validate(v: dict) -> None:
     """裁定フィールドを検証する。boundary で fail fast (NO-OP フォールバック禁止)。"""
     auto, verdict, corrected = v.get("auto"), v.get("verdict"), v.get("corrected")
+    source = v.get("source", "auto-triage")
     if not v.get("key"):
         raise ValueError("key は必須")
-    if auto not in CLASSES:
-        raise ValueError(f"auto must be one of {CLASSES}, got {auto!r}")
+    if source not in SOURCES:
+        raise ValueError(f"source must be one of {SOURCES}, got {source!r}")
+    allowed = CLASSES if source == "auto-triage" else PROMOTE_CLASSES
+    if auto not in allowed:
+        raise ValueError(
+            f"source={source} では auto は {allowed} のいずれか, got {auto!r}"
+        )
     if verdict not in VERDICTS:
         raise ValueError(f"verdict must be one of {VERDICTS}, got {verdict!r}")
-    if corrected is not None and corrected not in CLASSES:
-        raise ValueError(f"corrected must be one of {CLASSES}, got {corrected!r}")
+    if corrected is not None and corrected not in allowed:
+        raise ValueError(
+            f"source={source} では corrected は {allowed} のいずれか, got {corrected!r}"
+        )
     if verdict == "agree" and corrected is not None and corrected != auto:
         raise ValueError("corrected が auto と矛盾 (agree なのに別分類を指定)")
 
@@ -74,6 +85,7 @@ def log_verdict(verdict_fields: dict) -> dict:
         "date": now.strftime("%Y-%m-%d"),
         "key": verdict_fields["key"],
         "scope": verdict_fields.get("scope"),
+        "source": verdict_fields.get("source", "auto-triage"),
         "auto": verdict_fields["auto"],
         "verdict": verdict_fields["verdict"],
         "corrected": verdict_fields.get("corrected"),
@@ -119,7 +131,10 @@ def compute_stats(entries: list[dict], last: int | None = None) -> dict:
     agree = sum(1 for e in windowed if e.get("verdict") == "agree")
 
     per_class: dict[str, dict] = {}
-    for cls in CLASSES:
+    extra_classes = sorted(
+        {e.get("auto") for e in windowed if e.get("auto")} - set(ALL_CLASSES)
+    )
+    for cls in (*ALL_CLASSES, *extra_classes):
         subset = [e for e in windowed if e.get("auto") == cls]
         n = len(subset)
         a = sum(1 for e in subset if e.get("verdict") == "agree")
@@ -129,11 +144,24 @@ def compute_stats(entries: list[dict], last: int | None = None) -> dict:
             "agreement_rate": round(a / n, 3) if n else None,
         }
 
+    per_source: dict[str, dict] = {}
+    for src in SOURCES:
+        subset = [e for e in windowed if e.get("source", "auto-triage") == src]
+        n = len(subset)
+        a = sum(1 for e in subset if e.get("verdict") == "agree")
+        per_source[src] = {
+            "n": n,
+            "agree": a,
+            "agreement_rate": round(a / n, 3) if n else None,
+        }
+
     # Wave3 allowlist: 全期間の auto==mechanical かつ verdict==agree (last 非適用)
     confirmed = [
         {"key": e.get("key"), "scope": e.get("scope")}
         for e in all_verdicts
-        if e.get("auto") == "mechanical" and e.get("verdict") == "agree"
+        if e.get("auto") == "mechanical"
+        and e.get("verdict") == "agree"
+        and e.get("source", "auto-triage") == "auto-triage"
     ]
     confirmed_scopes = sorted({c["scope"] for c in confirmed if c["scope"]})
 
@@ -142,6 +170,7 @@ def compute_stats(entries: list[dict], last: int | None = None) -> dict:
         "total_verdicts": total,
         "agreement_rate": round(agree / total, 3) if total else None,
         "per_class": per_class,
+        "per_source": per_source,
         "mechanical_confirmed": {
             "scope_note": "全期間集計 (--last 非適用)",
             "count": len(confirmed),
@@ -160,7 +189,13 @@ def main(argv: list[str] | None = None) -> int:
     p_log = sub.add_parser("log", help="裁定 1 件を記録")
     p_log.add_argument("--key", required=True, help="候補の冪等キー (SHA1 先頭でも可)")
     p_log.add_argument("--scope", default=None)
-    p_log.add_argument("--auto", required=True, help=f"auto-triage の分類 {CLASSES}")
+    p_log.add_argument(
+        "--source",
+        default="auto-triage",
+        choices=SOURCES,
+        help="裁定対象の自動判断の出所 (auto-triage 分類 / learned-promote PR)",
+    )
+    p_log.add_argument("--auto", required=True, help=f"自動側の判断 {ALL_CLASSES}")
     p_log.add_argument("--verdict", required=True, help=f"人間の裁定 {VERDICTS}")
     p_log.add_argument(
         "--corrected", default=None, help="disagree 時の正しい分類 (任意)"
@@ -180,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "key": args.key,
                 "scope": args.scope,
+                "source": args.source,
                 "auto": args.auto,
                 "verdict": args.verdict,
                 "corrected": args.corrected,

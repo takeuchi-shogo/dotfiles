@@ -211,6 +211,7 @@ prepend_nightly_status() {
         + " (\(.duration_sec)s)"
         + " → [\(.report // "no-report")]"
         + (if .metric.msg then " — " + .metric.msg else "" end)
+        + (if .metric.retry then " ⚠️[\(.metric.retry), fails=\(.metric.consecutive_fails // "?")]" else "" end)
     ' "$yesterday_jsonl" 2>/dev/null); then
         echo "[morning-briefing] WARN: jq failed to parse nightly status, skipping prepend" >&2
         echo "$original_briefing"
