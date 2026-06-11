@@ -357,4 +357,4 @@ tasks:
     cmds:
       - mkdir -p $HOME/.cache/tech-researcher
       - date -Iseconds >> $HOME/.cache/tech-researcher/trends-usage.log
-      - python3 {{.TASKFILE_DIR}}/scripts/runtime/tech-researcher/trends_select.py $HOME/.cache/tech-researcher/adoption-ledger.jsonl --days {{.DAYS}} --top {{.TOP}}
+      - python3 {{.TASKFILE_DIR}}/scripts/runtime/tech-researcher/trends_select.py $HOME/.cache/tech-researcher/adoption-ledger.jsonl --days "{{.DAYS}}" --top "{{.TOP}}"

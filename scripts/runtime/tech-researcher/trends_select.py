@@ -102,7 +102,7 @@ def render_term(items: list[dict], days: int) -> str:
         )
         title = _printable(str(rec.get("title") or "(no title)"))[:72]
         day = (rec.get("date") or "")[5:]
-        out.append(f" {i:>2}. [{badge}] {title}  ({rec.get('domain', '?')}, {day})")
+        out.append(f" {i:>2}. [{badge}] {title}  ({_printable(str(rec.get('domain', '?')))}, {day})")
         out.append(f"     {_printable(str(rec['url']))}")
     return "\n".join(out) + "\n"
 
