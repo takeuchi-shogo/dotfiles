@@ -5,14 +5,34 @@ last_reviewed: 2026-04-23
 
 # モデル別ルーティング
 
-主エージェント (Opus 等) は判断・計画・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
+主エージェント (メインセッションのモデル、現在: Fable 5) は判断・計画・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
 
-## モデル選択
+## モデル階層 (Tier) — source of truth
+
+メインが全部自前でやるのが最大のトークン浪費。タスクは既定で下位 Tier に落とし、上の Tier は「下では品質が落ちる」と判断できるときだけ使う。品質の要は協調プロトコル (Scaffolding > Model) であり、モデル格上げは最後の手段。
+
+| Tier | モデル | 担当 (これ以外は下の Tier へ落とす) | 起動方法 |
+|------|--------|--------------------------------------|----------|
+| 0 | **メインセッション** (現在: Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、新規アーキテクチャ判断、仕様の曖昧さ解消などの最深推論 | (本体) |
+| 1 | **Opus** (現行 4.8) | Plan 草案、設計分析、根本原因デバッグ、レビュー統合、edge case 分析 — 推論は要るが Tier 0 級ではないサブタスク | `Agent(model: "opus")` |
+| 2 | **Sonnet** | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
+| 3 | **Haiku** | WebFetch 生取得 (要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
+
+運用ルール:
+
+- **実装・探索は Sonnet に渡し、独立タスクは並列実行する** — 1 メッセージに複数 Agent call、複数ファイル+verify は delegate-implementation Workflow。メインが Edit/Read を連発しない
+- **組み込み agent (Explore / Plan / general-purpose) は `model` を必ず明示する** — 未指定はメインモデル (Fable) を継承し、fan-out が最高単価で走る。目安: Explore→`sonnet`、Plan→`opus`、general-purpose→タスク性質で選択
+- agents/*.md の frontmatter は Tier 整合済み (実装・定型レビュー系=sonnet / security-reviewer=opus / CLI driver=haiku)。深い推論が要る回だけ call-time `model: "opus"` で override する (call-time 指定が frontmatter に優先)
+- **subagent への model 指定はメインの prompt cache を壊さない** (子は別コンテキスト)。後述「Model Switch / Cache Invalidation Boundary」はメインセッション自体の model 切替の話
+
+### Tier (縦) と Worker (横) は直交
+
+Tier はメインセッション内の Claude モデル段階。Codex / Gemini / Cursor は異視点・1M コンテキスト・マルチモデル比較のための**横の並行軸**で、Tier では代替できない。ブラッシュアップ系の cmux Worker 優先 (CLAUDE.md) は従来通り。
+
+## 外部モデル選択 (横軸)
 
 | モデル | 得意領域 | 委譲タスク例 | 起動方法 |
 |--------|----------|-------------|----------|
-| **Sonnet** | 高速実装・定型作業 | ファイル探索、コード実装、テスト作成、URL取得+要約、定型レビュー | `Agent(model: "sonnet")` |
-| **Haiku** | 軽量な情報取得 | WebFetch (生 markdown 取得まで、要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
 | **Codex** | 異視点の深い推論 | 設計の壁打ち、リスク分析、セカンドオピニオン、コードレビュー | cmux Worker or `/dispatch` |
 | **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
 | **Cursor** | マルチモデル・Cloud Agent | モデル比較、非同期長時間タスク、Cursor インデックス活用 | `/cursor` skill |
@@ -20,13 +40,13 @@ last_reviewed: 2026-04-23
 
 ## 並行実行の選択肢
 
-- **サブエージェント**: Opus をブロックするが結果が確実に返る。軽量タスク向き
+- **サブエージェント**: メインをブロックするが結果が確実に返る。軽量タスク向き
 - **サブエージェント (BG)**: `run_in_background: true` で非同期。完了通知で結果を受け取る
 - **cmux Worker**: 完全並行 + レート制限が別枠。実装・長時間タスク・壁打ちラリー向き。cmux 内 (`CMUX_WORKSPACE_ID` 設定済み) で使用
 
 ## 委譲判定
 
-タスクを受けたら「自分 (Opus) でやるべきか？」をまず問う。以下に該当しなければ委譲する:
+タスクを受けたら「自分 (Tier 0) でやるべきか？」をまず問う。以下に該当しなければ、Tier 表で Opus / Sonnet / Haiku (または外部モデル) を選んで委譲する:
 - ユーザーとの対話・意思決定の支援
 - 複数の情報を統合した判断
 - プランの策定・修正
