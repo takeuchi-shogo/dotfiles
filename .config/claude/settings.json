@@ -197,10 +197,7 @@
   },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": false,
-  "enabledMcpjsonServers": [
-    "context7",
-    "code-review-graph"
-  ],
+  "enabledMcpjsonServers": ["context7", "code-review-graph"],
   "hooks": {
     "SessionStart": [
       {
@@ -838,10 +835,7 @@
   "language": "japanese",
   "sandbox": {
     "filesystem": {
-      "denyRead": [
-        "./.env",
-        "./.env.*"
-      ]
+      "denyRead": ["./.env", "./.env.*"]
     }
   },
   "effortLevel": "xhigh",
