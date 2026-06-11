@@ -643,7 +643,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; export OBSIDIAN_VAULT_PATH=\"$HOME/Documents/Obsidian Vault\"; $HOME/.config/claude/scripts/runtime/sync-memory-to-vault.sh >> /tmp/obsidian-sync.log 2>&1 & ;; esac; }",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; case \"$f\" in */.claude/projects/*/memory/*.md) [ \"$(basename \"$f\")\" = \"MEMORY.md\" ] && exit 0; export OBSIDIAN_VAULT_PATH=\"$HOME/Documents/Obsidian Vault\"; bash \"$HOME/.claude/scripts/runtime/sync-memory-to-vault.sh\" >> /tmp/obsidian-sync.log 2>&1 & ;; esac; }",
             "timeout": 5
           }
         ]

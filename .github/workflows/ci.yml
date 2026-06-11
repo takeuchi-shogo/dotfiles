@@ -1,0 +1,22 @@
+# CI — harness の Python テストスイート
+# agent-quality.yml の workflow_run trigger (workflows: ["CI"]) がこの name を参照する。
+# KEEP IN SYNC: name を変える場合は agent-quality.yml 側も更新すること。
+name: "CI"
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  harness-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Repo harness script tests
+        run: uvx pytest scripts/tests/ -q
+      - name: Claude scripts tests
+        working-directory: .config/claude/scripts
+        run: uvx pytest tests/ -q

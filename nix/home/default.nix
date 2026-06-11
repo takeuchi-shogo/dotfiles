@@ -66,6 +66,7 @@ in
     ".claude/scripts"              = outLink ".config/claude/scripts";
     ".claude/skills"               = outLink ".config/claude/skills";
     ".claude/workflows"            = outLink ".config/claude/workflows";
+    ".claude/references"           = outLink ".config/claude/references";
 
     # block 3: Codex (.codex → ~/.codex)
     # NOTE: .codex/config.toml は Codex.app/cmux が起動時に自己書き換え (notify / node_repl

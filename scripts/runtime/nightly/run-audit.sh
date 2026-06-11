@@ -84,7 +84,7 @@ PROMPT_EOF
 )"
 
 STDERR_LOG=$(mktemp -t "nightly-audit-stderr.XXXXXX")
-if ! "$TIMEOUT_BIN" 1200s claude -p "$PROMPT" > "$REPORT_TMP" 2> "$STDERR_LOG"; then
+if ! "$TIMEOUT_BIN" 1200s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" > "$REPORT_TMP" 2> "$STDERR_LOG"; then
     err_head=$(head -c 200 "$STDERR_LOG" 2>/dev/null || echo "")
     rm -f "$STDERR_LOG"
     status_end fail "claude -p failed/timeout, stderr: $err_head"

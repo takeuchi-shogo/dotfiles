@@ -181,7 +181,7 @@ else
     # "Execution error" を誘発し使用不可 — 2026-06-04 実地確認)。-p の純テキスト選別は
     # 単発応答なのでツール暴走リスクは低く、wall-clock 上限で十分。
     STDERR_LOG=$(mktemp -t "tr-stderr.XXXXXX"); _TMPFILES+=("$STDERR_LOG")
-    if ! "$TIMEOUT_BIN" 600s claude -p "$PROMPT" --output-format text \
+    if ! "$TIMEOUT_BIN" 600s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" --output-format text \
             > "$REPORT_RAW" 2> "$STDERR_LOG"; then
         err_head=$(head -c 200 "$STDERR_LOG" 2>/dev/null || echo "")
         status_end fail "claude -p failed/timeout, stderr: $err_head"

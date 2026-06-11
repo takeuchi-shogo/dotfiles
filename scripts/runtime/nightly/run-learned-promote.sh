@@ -296,17 +296,31 @@ if ! acquire_claude_lock; then
 fi
 # ledger 改ざん検出用に claude 実行前の hash を記録 (claude は Write で任意 path を書ける)
 LEDGER_HASH_BEFORE="$(shasum "$LEDGER" 2>/dev/null | awk '{print $1}' || echo none)"
+# 検証 fail 時のデバッグ素材退避。worktree も tmpfile も trap で消えるため、
+# 退避しないと「何が不正だったか」を再現実行なしに調査できない (2026-06-11 初回実行で実証)
+_save_debug() {
+    local dst="${HOME}/.cache/nightly/learned-promote-debug-${RUN_ID}"
+    mkdir -p "$dst" 2>/dev/null || return 0
+    cp "$MANIFEST_PATH" "$dst/manifest.json" 2>/dev/null || true
+    cp "$CLAUDE_LOG" "$dst/claude.log" 2>/dev/null || true
+    cp "$CLAUDE_ERR" "$dst/claude.err" 2>/dev/null || true
+    echo "[learned-promote] debug saved: $dst" >&2
+}
+
 CLAUDE_LOG=$(mktemp -t "lp-claude.XXXXXX"); _TMPFILES+=("$CLAUDE_LOG")
 CLAUDE_ERR=$(mktemp -t "lp-err.XXXXXX"); _TMPFILES+=("$CLAUDE_ERR")
-if ! "$TIMEOUT_BIN" 600s claude -p "$PROMPT" \
+if ! "$TIMEOUT_BIN" 900s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" \
         --allowedTools "Read,Edit,Write,Glob,Grep" \
         --output-format text > "$CLAUDE_LOG" 2> "$CLAUDE_ERR"; then
     release_claude_lock
-    status_end fail "claude -p failed/timeout: $(head -c 200 "$CLAUDE_ERR" 2>/dev/null)"
+    _save_debug
+    status_end fail "claude -p failed/timeout(900s): $(head -c 200 "$CLAUDE_ERR" 2>/dev/null)"
     exit 0
 fi
 release_claude_lock
+
 if grep -qiE '^[[:space:]]*execution error' "$CLAUDE_LOG" 2>/dev/null; then
+    _save_debug
     status_end fail "claude -p returned 'Execution error' (exit 0)"
     exit 0
 fi
@@ -320,22 +334,26 @@ fi
 
 # --- manifest 検証 (claude の出力を信頼しない) ---
 if [[ ! -f "$MANIFEST_PATH" ]]; then
+    _save_debug
     status_end fail "claude did not write manifest"
     exit 0
 fi
 if ! jq empty "$MANIFEST_PATH" 2>/dev/null; then
+    _save_debug
     status_end fail "manifest is not valid JSON"
     exit 0
 fi
 # (a) 件数が候補数と一致 (欠落/重複を弾く)
 M_LEN="$(jq '.promotions | length' "$MANIFEST_PATH")"
 if [[ "$M_LEN" != "$SLICE_COUNT" ]]; then
+    _save_debug
     status_end fail "manifest has $M_LEN promotions, expected $SLICE_COUNT"
     exit 0
 fi
 # (b) key 集合が slice と完全一致 (hallucination / 欠落を弾く)
 MANIFEST_KEYS="$(jq -r '.promotions[].key' "$MANIFEST_PATH" | sort -u | grep -v '^$')"
 if [[ "$MANIFEST_KEYS" != "$SLICE_KEYS" ]]; then
+    _save_debug
     status_end fail "manifest key set != candidate slice (mismatch/dup/hallucination)"
     exit 0
 fi
@@ -345,6 +363,7 @@ if ! jq -e --arg re "$ARTIFACT_RE" '
     and (all(.promotions[]; .decision!="adopted" or ((.target_artifact // "") | test($re))))
     and (all(.promotions[]; .decision!="rejected" or ((.reason // "") | length > 0)))
 ' "$MANIFEST_PATH" >/dev/null; then
+    _save_debug
     status_end fail "manifest schema invalid (decision/target/reason)"
     exit 0
 fi

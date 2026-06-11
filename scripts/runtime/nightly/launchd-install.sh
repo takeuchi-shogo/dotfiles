@@ -10,6 +10,11 @@ mkdir -p "$AGENTS_DIR"
 
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 
+# 夜間バッチの claude -p は Sonnet に固定する。--model 無指定の claude -p は
+# ~/.claude/settings.json のデフォルトモデルに従うため、対話用に Fable/Opus へ
+# 切り替えるとバッチ 23 箇所のコストと挙動が暗黙に変わってしまう (2026-06-11 検出)。
+NIGHTLY_CLAUDE_MODEL="${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}"
+
 # wake/caffeinate 時刻の単一真実源 (setup-nightly-wake.sh の pmset と揃える)
 # shellcheck source=./nightly-wake.env
 source "${NIGHTLY_DIR}/nightly-wake.env"
@@ -75,6 +80,8 @@ generate_plist() {
         <string>Asia/Tokyo</string>
         <key>OBSIDIAN_VAULT_PATH</key>
         <string>${VAULT_PATH}</string>
+        <key>NIGHTLY_CLAUDE_MODEL</key>
+        <string>${NIGHTLY_CLAUDE_MODEL}</string>
     </dict>
     <key>StandardOutPath</key>
     <string>/tmp/nightly-${task}.launchd.log</string>
