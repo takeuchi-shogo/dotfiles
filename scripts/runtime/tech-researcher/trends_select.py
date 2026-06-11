@@ -67,7 +67,8 @@ def select(
     items = sorted(seen.values(), key=lambda r: r.get("date") or "", reverse=True)
 
     def score_key(rec: dict):
-        s = rec.get("scores") or {}
+        raw = rec.get("scores")
+        s = raw if isinstance(raw, dict) else {}
         nov = _num(s.get("novelty"))
         con = _num(s.get("concreteness"))
         rel = _num(s.get("reliability"))
@@ -77,6 +78,14 @@ def select(
     return items[:top] if top else items
 
 
+def _printable(s: str) -> str:
+    """制御文字 (ANSI/OSC エスケープ・bidi 制御含む) を除去。
+
+    untrusted feed 由来の端末注入防御。
+    """
+    return "".join(ch for ch in s if ch.isprintable())
+
+
 def render_term(items: list[dict], days: int) -> str:
     """ターミナル向け表示。URL は素のまま出力 (Ghostty 等が自動でリンク化する)。"""
     out = [f"📡 AI Tech Trends — 直近{days}日 (adoption-ledger)"]
@@ -84,16 +93,17 @@ def render_term(items: list[dict], days: int) -> str:
         out.append(f"  (直近{days}日の採用記事なし)")
         return "\n".join(out) + "\n"
     for i, rec in enumerate(items, 1):
-        s = rec.get("scores") or {}
+        raw = rec.get("scores")
+        s = raw if isinstance(raw, dict) else {}
         badge = (
             f"n{s.get('novelty') or '-'}"
             f" c{s.get('concreteness') or '-'}"
             f" r{s.get('reliability') or '-'}"
         )
-        title = (rec.get("title") or "(no title)")[:72]
+        title = _printable(str(rec.get("title") or "(no title)"))[:72]
         day = (rec.get("date") or "")[5:]
         out.append(f" {i:>2}. [{badge}] {title}  ({rec.get('domain', '?')}, {day})")
-        out.append(f"     {rec['url']}")
+        out.append(f"     {_printable(str(rec['url']))}")
     return "\n".join(out) + "\n"
 
 

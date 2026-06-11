@@ -197,3 +197,26 @@ def test_main_renders_real_file(tmp_path, capsys):
     assert rc == 0
     out = capsys.readouterr().out
     assert "https://a/1" in out and "Article" in out
+
+
+def test_scores_not_dict_does_not_crash():
+    rec = json.loads(_line("2026-06-09", "https://a/bad"))
+    rec["scores"] = "high"
+    lines = [
+        json.dumps(rec),
+        _line("2026-06-09", "https://a/good", novelty=2, concreteness=2),
+    ]
+    items = trends_select.select(lines, asof=ASOF, days=3)
+    assert [r["url"] for r in items] == ["https://a/good", "https://a/bad"]
+    out = trends_select.render_term(items, days=3)
+    assert "https://a/bad" in out
+
+
+def test_render_term_strips_control_chars():
+    rtl_override = chr(0x202E)
+    evil_title = "Ti\x1b[31mtle" + rtl_override
+    lines = [_line("2026-06-09", "https://a/x\x1b]8;;evil", title=evil_title)]
+    items = trends_select.select(lines, asof=ASOF, days=3)
+    out = trends_select.render_term(items, days=3)
+    assert "\x1b" not in out
+    assert rtl_override not in out
