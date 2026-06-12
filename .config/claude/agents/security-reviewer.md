@@ -27,7 +27,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 5. **Transformation Mismatch** — decode / parse / normalize / render の前後で invariant が崩れていないか確認
 6. **Authentication/Authorization** — アクセス制御の検証
 7. **Dependency Security** — 脆弱な依存パッケージのチェック
-8. **Dependency & Configuration Integrity** — 依存パッケージのバージョン整合性、互換性破壊、lockfile スキーマ準拠、deprecated 警告の検出（`triage-router.md` の dependency-config 責務ドメイン担当。出典: CREAO AI-First 統合 2026-04-14）
+8. **Dependency & Configuration Integrity** — 依存パッケージのバージョン整合性、互換性破壊、lockfile スキーマ準拠、deprecated 警告の検出（出典: CREAO AI-First 統合 2026-04-14）
 9. **Security Best Practices** — セキュアコーディングパターンの適用
 10. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `references/claude-code-threats.md`）
 11. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `references/review-checklists/security-baseline.md`）

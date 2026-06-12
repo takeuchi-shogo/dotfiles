@@ -189,14 +189,8 @@ fn check_gp_blocking(data: &serde_json::Value) {
 // ── file-pattern-router (merged from file-pattern-router.py) ────────
 
 const FILE_AGENT_ROUTES: &[(&str, &str, &str)] = &[
-    (r"\.(tsx|jsx)$", "frontend-developer", "React コンポーネント"),
-    (r"\.(css|scss|less)$", "frontend-developer", "スタイルシート"),
-    (r"\.go$", "golang-pro", "Go コード"),
-    (r"go\.(mod|sum)$", "golang-pro", "Go 依存関係"),
     (r"\.rs$", "backend-architect", "Rust コード"),
-    (r"\.ts$", "typescript-pro", "TypeScript コード"),
     (r"\.config/claude/agents/", "document-factory", "エージェント定義"),
-    (r"\.config/claude/scripts/", "build-fixer", "Hook スクリプト"),
     (r"\.config/claude/references/", "doc-gardener", "リファレンス"),
     (r"\.proto$", "backend-architect", "Protocol Buffers"),
     (r"(test_|_test\.|\.test\.|\.spec\.)", "test-engineer", "テストファイル"),

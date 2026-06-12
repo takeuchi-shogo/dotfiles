@@ -127,11 +127,11 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **関連 GP**: —
 - **判定**: コードが正しくコンパイルされるか (pass/fail)
 - **不変条件**: コード変更後は必ずビルド/コンパイルを実行して通過を確認する
-- **レビューアー**: `build-fixer`
+- **レビューアー**: `debugger`
 - **recoveryType**: llm-recoverable
 - **controllability**: `mixed`
 - **autoFixable**: true
-- **suggestedFix**: "ビルドエラーの自動修正（build-fixer agent）"
+- **suggestedFix**: "ビルドエラーの根因分析と修正（debugger agent。build-fixer は 2026-06-12 archive）"
 
 ### FM-009: Resource Exhaustion
 
