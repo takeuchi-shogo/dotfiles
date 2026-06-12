@@ -22,8 +22,7 @@ fn check_output_offload(command: &str, output: &str) -> Option<String> {
     }
 
     // Save to temp file
-    let offload_dir = std::env::var("TMPDIR")
-        .unwrap_or_else(|_| "/tmp".to_string());
+    let offload_dir = std::env::var("TMPDIR").unwrap_or_else(|_| "/tmp".to_string());
     let offload_dir = format!("{}/claude-tool-outputs", offload_dir);
     let _ = std::fs::create_dir_all(&offload_dir);
 
@@ -97,9 +96,7 @@ fn effective_command_parts(command: &str) -> (String, String) {
                     .next()
                     .map(|c| c.is_ascii_alphabetic() || c == '_')
                     .unwrap_or(false)
-                && name
-                    .chars()
-                    .all(|c| c.is_ascii_alphanumeric() || c == '_')
+                && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
             {
                 tokens.next();
                 continue;
@@ -111,23 +108,27 @@ fn effective_command_parts(command: &str) -> (String, String) {
     if tokens.peek().copied() == Some("sudo") {
         tokens.next();
     }
-    let head = tokens
-        .next()
-        .map(|t| t.to_lowercase())
-        .unwrap_or_default();
-    let second = tokens
-        .next()
-        .map(|t| t.to_lowercase())
-        .unwrap_or_default();
+    let head = tokens.next().map(|t| t.to_lowercase()).unwrap_or_default();
+    let second = tokens.next().map(|t| t.to_lowercase()).unwrap_or_default();
     (head, second)
 }
 
 // ── error-to-codex ──────────────────────────────────────────────────
 
 const IGNORE_COMMANDS: &[&str] = &[
-    "git status", "git log", "git diff", "git branch",
-    "ls", "cat", "head", "tail", "pwd", "which", "echo",
-    "codex", "gemini",
+    "git status",
+    "git log",
+    "git diff",
+    "git branch",
+    "ls",
+    "cat",
+    "head",
+    "tail",
+    "pwd",
+    "which",
+    "echo",
+    "codex",
+    "gemini",
 ];
 
 // Commands where exit_code != 0 is NOT an error (used by check_exit_code_error only):
@@ -135,9 +136,7 @@ const IGNORE_COMMANDS: &[&str] = &[
 //   find exit 1 = permission denied on subdir; cmp/jq exit 1 = expected difference.
 // Matched against effective_command_head() so env vars / sudo are transparent.
 const EXIT_CODE_SAFE_COMMANDS: &[&str] = &[
-    "grep", "egrep", "fgrep", "rg",
-    "test", "[", "[[",
-    "diff", "cmp", "find", "jq",
+    "grep", "egrep", "fgrep", "rg", "test", "[", "[[", "diff", "cmp", "find", "jq",
 ];
 
 fn error_patterns() -> Vec<Regex> {
@@ -197,17 +196,34 @@ fn load_fix_guides() -> Vec<(String, String, String)> {
 
 fn classify_error(output: &str) -> &'static str {
     let lower = output.to_lowercase();
-    if lower.contains("permission denied") || lower.contains("eacces") || lower.contains("operation not permitted") {
+    if lower.contains("permission denied")
+        || lower.contains("eacces")
+        || lower.contains("operation not permitted")
+    {
         "PermissionDenied"
-    } else if (lower.contains("no such file") || lower.contains("enoent")) && !lower.contains("module") {
+    } else if (lower.contains("no such file") || lower.contains("enoent"))
+        && !lower.contains("module")
+    {
         "FileNotFound"
-    } else if lower.contains("file has changed") || lower.contains("content mismatch") || lower.contains("stale") {
+    } else if lower.contains("file has changed")
+        || lower.contains("content mismatch")
+        || lower.contains("stale")
+    {
         "EditMismatch"
-    } else if lower.contains("syntaxerror") || lower.contains("parse error") || lower.contains("unexpected token") {
+    } else if lower.contains("syntaxerror")
+        || lower.contains("parse error")
+        || lower.contains("unexpected token")
+    {
         "SyntaxError"
-    } else if lower.contains("rate limit") || lower.contains("429") || lower.contains("too many requests") {
+    } else if lower.contains("rate limit")
+        || lower.contains("429")
+        || lower.contains("too many requests")
+    {
         "RateLimit"
-    } else if lower.contains("timeout") || lower.contains("etimedout") || lower.contains("timed out") {
+    } else if lower.contains("timeout")
+        || lower.contains("etimedout")
+        || lower.contains("timed out")
+    {
         "Timeout"
     } else {
         ""
@@ -248,7 +264,10 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
     let error_match = patterns.iter().find_map(|p| {
         p.find(output).map(|m| {
             let start = output[..m.start()].rfind('\n').map(|i| i + 1).unwrap_or(0);
-            let end = output[m.end()..].find('\n').map(|i| m.end() + i).unwrap_or(output.len());
+            let end = output[m.end()..]
+                .find('\n')
+                .map(|i| m.end() + i)
+                .unwrap_or(output.len());
             let line = &output[start..end];
             safe_truncate(line, 200).to_string()
         })
@@ -290,7 +309,9 @@ fn check_error_to_codex(command: &str, output: &str) -> Option<String> {
         parts.push(recovery.to_string());
     }
 
-    parts.push("codex-debugger エージェントを使用してこのエラーの根本原因を分析できます。".to_string());
+    parts.push(
+        "codex-debugger エージェントを使用してこのエラーの根本原因を分析できます。".to_string(),
+    );
     parts.push(format!("コマンド: {}", safe_truncate(command, 100)));
 
     Some(parts.join("\n"))
@@ -328,9 +349,7 @@ fn exit_code_short_msg(output: &str) -> String {
 
 // Git subcommands where a non-zero exit code is informational (no match /
 // files differ / status variance), not a failure to investigate.
-const GIT_SAFE_SUBCOMMANDS: &[&str] = &[
-    "grep", "diff", "log", "show", "status", "branch",
-];
+const GIT_SAFE_SUBCOMMANDS: &[&str] = &["grep", "diff", "log", "show", "status", "branch"];
 
 /// True when a non-zero exit_code should NOT be treated as an error.
 /// Order of checks:
@@ -568,10 +587,7 @@ fn update_finding_outcome_in_place(
     let mut rows: Vec<Result<serde_json::Value, String>> = content
         .lines()
         .filter(|l| !l.trim().is_empty())
-        .map(|l| {
-            serde_json::from_str::<serde_json::Value>(l)
-                .map_err(|_| l.to_string())
-        })
+        .map(|l| serde_json::from_str::<serde_json::Value>(l).map_err(|_| l.to_string()))
         .collect();
 
     let mut found = false;
@@ -583,10 +599,21 @@ fn update_finding_outcome_in_place(
         if v["outcome_source"].as_str() == Some("explicit") && source == "auto_diff" {
             return OutcomeUpdate::SkippedExplicit;
         }
-        let Some(obj) = v.as_object_mut() else { continue };
-        obj.insert("outcome".to_string(), serde_json::Value::String(outcome.to_string()));
-        obj.insert("outcome_source".to_string(), serde_json::Value::String(source.to_string()));
-        obj.insert("outcome_timestamp".to_string(), serde_json::Value::String(crate::io::iso_now()));
+        let Some(obj) = v.as_object_mut() else {
+            continue;
+        };
+        obj.insert(
+            "outcome".to_string(),
+            serde_json::Value::String(outcome.to_string()),
+        );
+        obj.insert(
+            "outcome_source".to_string(),
+            serde_json::Value::String(source.to_string()),
+        );
+        obj.insert(
+            "outcome_timestamp".to_string(),
+            serde_json::Value::String(crate::io::iso_now()),
+        );
         found = true;
         break;
     }
@@ -710,7 +737,10 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         } else if line.starts_with("@@ ") && !current_file.is_empty() {
             if let Some(caps) = hunk_re.captures(line) {
                 let start: i64 = caps[1].parse().unwrap_or(0);
-                let count: i64 = caps.get(2).map(|m| m.as_str().parse().unwrap_or(1)).unwrap_or(1);
+                let count: i64 = caps
+                    .get(2)
+                    .map(|m| m.as_str().parse().unwrap_or(1))
+                    .unwrap_or(1);
                 let set = changed.entry(current_file.clone()).or_default();
                 for i in start..start + count {
                     set.insert(i);
@@ -796,9 +826,7 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
 // ── main entry ──────────────────────────────────────────────────────
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
-    let command = data["tool_input"]["command"]
-        .as_str()
-        .unwrap_or("");
+    let command = data["tool_input"]["command"].as_str().unwrap_or("");
     let output = data["tool_output"].as_str().unwrap_or("");
 
     let mut contexts: Vec<String> = Vec::new();
@@ -816,7 +844,12 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
     if let Some(ctx) = check_post_test(command, output) {
         // Skip if error-to-codex already caught this
-        if contexts.is_empty() || !contexts.last().map(|c| c.contains("Error-to-Codex")).unwrap_or(false) {
+        if contexts.is_empty()
+            || !contexts
+                .last()
+                .map(|c| c.contains("Error-to-Codex"))
+                .unwrap_or(false)
+        {
             contexts.push(ctx);
         }
     }
@@ -863,7 +896,10 @@ mod tests {
     #[test]
     fn match_partial_file_present_line_far() {
         let changed = make_changed("src/foo.rs", &[10]);
-        assert_eq!(match_finding_to_diff("src/foo.rs", 100, &changed), "partial");
+        assert_eq!(
+            match_finding_to_diff("src/foo.rs", 100, &changed),
+            "partial"
+        );
     }
 
     #[test]
@@ -894,14 +930,20 @@ mod tests {
 
     #[test]
     fn update_finding_normal_writeback() {
-        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        let dir = std::env::temp_dir().join(format!(
+            "rftest_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("review-findings.jsonl");
 
-        write_findings(&path, &[
-            serde_json::json!({"id": "f1", "file": "a.rs", "line": 10, "severity": "warn"}),
-        ]);
+        write_findings(
+            &path,
+            &[serde_json::json!({"id": "f1", "file": "a.rs", "line": 10, "severity": "warn"})],
+        );
 
         assert_eq!(
             update_finding_outcome_in_place(&path, "f1", "accept", "auto_diff"),
@@ -918,15 +960,21 @@ mod tests {
 
     #[test]
     fn update_finding_r05_explicit_blocks_auto_diff() {
-        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        let dir = std::env::temp_dir().join(format!(
+            "rftest_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("review-findings.jsonl");
 
-        write_findings(&path, &[
-            serde_json::json!({"id": "f2", "file": "b.rs", "line": 5,
-                               "outcome": "reject", "outcome_source": "explicit"}),
-        ]);
+        write_findings(
+            &path,
+            &[serde_json::json!({"id": "f2", "file": "b.rs", "line": 5,
+                               "outcome": "reject", "outcome_source": "explicit"})],
+        );
 
         assert_eq!(
             update_finding_outcome_in_place(&path, "f2", "accept", "auto_diff"),
@@ -940,14 +988,20 @@ mod tests {
 
     #[test]
     fn update_finding_nonexistent_id_returns_false() {
-        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        let dir = std::env::temp_dir().join(format!(
+            "rftest_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("review-findings.jsonl");
 
-        write_findings(&path, &[
-            serde_json::json!({"id": "f3", "file": "c.rs", "line": 1}),
-        ]);
+        write_findings(
+            &path,
+            &[serde_json::json!({"id": "f3", "file": "c.rs", "line": 1})],
+        );
 
         assert_eq!(
             update_finding_outcome_in_place(&path, "no-such-id", "accept", "auto_diff"),
@@ -957,17 +1011,25 @@ mod tests {
 
     #[test]
     fn update_finding_mixed_schema_preserves_other_fields() {
-        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        let dir = std::env::temp_dir().join(format!(
+            "rftest_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("review-findings.jsonl");
 
-        write_findings(&path, &[
-            serde_json::json!({"id": "old1", "file": "x.py", "line": 3,
+        write_findings(
+            &path,
+            &[
+                serde_json::json!({"id": "old1", "file": "x.py", "line": 3,
                                "confidence": 0.9, "tier": "L1", "score": 42}),
-            serde_json::json!({"id": "new1", "file": "y.ts", "line": 7,
+                serde_json::json!({"id": "new1", "file": "y.ts", "line": 7,
                                "severity": "error", "fix": "add null check"}),
-        ]);
+            ],
+        );
 
         assert_eq!(
             update_finding_outcome_in_place(&path, "old1", "partial", "auto_diff"),
