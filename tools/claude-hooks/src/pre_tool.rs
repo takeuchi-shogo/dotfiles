@@ -21,19 +21,44 @@ pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
 // ── pre-edit: protect-linter-config + search-first-gate ─────────────
 
 const BLOCKED_FILES: &[&str] = &[
-    ".eslintrc", ".eslintrc.js", ".eslintrc.cjs", ".eslintrc.json", ".eslintrc.yml",
-    "eslint.config.js", "eslint.config.mjs", "eslint.config.ts",
-    "biome.json", "biome.jsonc",
-    ".prettierrc", ".prettierrc.js", ".prettierrc.cjs", ".prettierrc.json", ".prettierrc.yml",
-    "prettier.config.js", "prettier.config.mjs",
-    ".oxlintrc.json", ".swiftlint.yml",
-    ".golangci.yml", ".golangci.yaml",
-    ".markdownlint.json", ".markdownlint.yaml",
-    ".stylelintrc", ".stylelintrc.json",
+    ".eslintrc",
+    ".eslintrc.js",
+    ".eslintrc.cjs",
+    ".eslintrc.json",
+    ".eslintrc.yml",
+    "eslint.config.js",
+    "eslint.config.mjs",
+    "eslint.config.ts",
+    "biome.json",
+    "biome.jsonc",
+    ".prettierrc",
+    ".prettierrc.js",
+    ".prettierrc.cjs",
+    ".prettierrc.json",
+    ".prettierrc.yml",
+    "prettier.config.js",
+    "prettier.config.mjs",
+    ".oxlintrc.json",
+    ".swiftlint.yml",
+    ".golangci.yml",
+    ".golangci.yaml",
+    ".markdownlint.json",
+    ".markdownlint.yaml",
+    ".stylelintrc",
+    ".stylelintrc.json",
 ];
 
 const MIXED_FILES: &[(&str, &[&str])] = &[
-    ("pyproject.toml", &["[tool.ruff", "[tool.black", "[tool.isort", "[tool.pylint", "[tool.mypy"]),
+    (
+        "pyproject.toml",
+        &[
+            "[tool.ruff",
+            "[tool.black",
+            "[tool.isort",
+            "[tool.pylint",
+            "[tool.mypy",
+        ],
+    ),
     ("Cargo.toml", &["[lints", "[lints.clippy", "[lints.rust"]),
 ];
 
@@ -157,7 +182,10 @@ fn check_gp_blocking(data: &serde_json::Value) {
         Regex::new(r"except\s*.*:\s*\n\s*pass").unwrap(),
     ];
     if empty_catch_patterns.iter().any(|p| p.is_match(content)) {
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-004", "file": file_path}));
+        crate::events::emit_event(
+            "quality",
+            &serde_json::json!({"rule": "GP-004", "file": file_path}),
+        );
         crate::io::deny(
             "BLOCKED [GP-004]: 空の catch/except ブロックが検出されました。\n\
              エラーを握り潰さず、適切にハンドリングしてください。\n\
@@ -176,7 +204,10 @@ fn check_gp_blocking(data: &serde_json::Value) {
         _ => vec![],
     };
     if unsafe_type_patterns.iter().any(|p| p.is_match(content)) {
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-005", "file": file_path}));
+        crate::events::emit_event(
+            "quality",
+            &serde_json::json!({"rule": "GP-005", "file": file_path}),
+        );
         crate::io::deny(
             "BLOCKED [GP-005]: `any` または `interface{}` の使用が検出されました。\n\
              具体的な型を使用し、型安全性を維持してください。\n\
@@ -190,11 +221,27 @@ fn check_gp_blocking(data: &serde_json::Value) {
 
 const FILE_AGENT_ROUTES: &[(&str, &str, &str)] = &[
     (r"\.rs$", "backend-architect", "Rust コード"),
-    (r"\.config/claude/agents/", "document-factory", "エージェント定義"),
-    (r"\.config/claude/references/", "doc-gardener", "リファレンス"),
+    (
+        r"\.config/claude/agents/",
+        "document-factory",
+        "エージェント定義",
+    ),
+    (
+        r"\.config/claude/references/",
+        "doc-gardener",
+        "リファレンス",
+    ),
     (r"\.proto$", "backend-architect", "Protocol Buffers"),
-    (r"(test_|_test\.|\.test\.|\.spec\.)", "test-engineer", "テストファイル"),
-    (r"\.config/claude/skills/", "security-reviewer", "スキル定義"),
+    (
+        r"(test_|_test\.|\.test\.|\.spec\.)",
+        "test-engineer",
+        "テストファイル",
+    ),
+    (
+        r"\.config/claude/skills/",
+        "security-reviewer",
+        "スキル定義",
+    ),
 ];
 
 const ROUTE_COOLDOWN_SECS: f64 = 120.0;
@@ -271,7 +318,14 @@ fn check_file_pattern_route(file_path: &str) -> Option<String> {
 
 // ── tdd-guard (merged from tdd-guard.py) ────────────────────────────
 
-const TDD_TEST_MARKERS: &[&str] = &["test_", "_test.", ".test.", ".spec.", "__tests__", "testdata"];
+const TDD_TEST_MARKERS: &[&str] = &[
+    "test_",
+    "_test.",
+    ".test.",
+    ".spec.",
+    "__tests__",
+    "testdata",
+];
 
 fn check_tdd_guard(file_path: &str) -> Option<String> {
     if std::env::var("TDD_MODE").as_deref() != Ok("1") {
@@ -283,8 +337,14 @@ fn check_tdd_guard(file_path: &str) -> Option<String> {
     }
 
     let p = Path::new(file_path);
-    let ext = p.extension().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
-    let stem = p.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
+    let ext = p
+        .extension()
+        .map(|e| e.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let stem = p
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_default();
     let parent = p.parent();
 
     let test_patterns: &[&str] = match ext.as_str() {
@@ -307,7 +367,10 @@ fn check_tdd_guard(file_path: &str) -> Option<String> {
         }
     }
 
-    let basename = p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    let basename = p
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_default();
     Some(format!(
         "[TDD Guard] `{}` に対応するテストファイルが見つかりません。\
          TDD モードが有効です。先にテストを作成してください。",
@@ -322,9 +385,7 @@ pub fn pre_edit(_raw: &str, data: &serde_json::Value) -> Result<(), String> {
     // GP-004/GP-005 blocking check (may call deny → exit 2)
     check_gp_blocking(data);
 
-    let file_path = data["tool_input"]["file_path"]
-        .as_str()
-        .unwrap_or("");
+    let file_path = data["tool_input"]["file_path"].as_str().unwrap_or("");
 
     let mut contexts: Vec<String> = Vec::new();
 
@@ -373,19 +434,43 @@ pub fn pre_search(data: &serde_json::Value) -> Result<(), String> {
 // ── pre-websearch: suggest gemini ───────────────────────────────────
 
 const SIMPLE_QUERIES: &[&str] = &[
-    "error message", "version", "changelog", "release notes",
-    "stackoverflow", "github issue", "npm package",
-    "エラーメッセージ", "バージョン", "リリースノート",
+    "error message",
+    "version",
+    "changelog",
+    "release notes",
+    "stackoverflow",
+    "github issue",
+    "npm package",
+    "エラーメッセージ",
+    "バージョン",
+    "リリースノート",
 ];
 
 const RESEARCH_KEYWORDS: &[&str] = &[
-    "documentation", "best practice", "comparison", "vs",
-    "library", "framework", "tutorial", "guide",
-    "architecture", "migration", "upgrade", "pattern",
-    "api reference", "specification", "benchmark",
-    "ドキュメント", "ベストプラクティス", "比較",
-    "ライブラリ", "フレームワーク", "チュートリアル",
-    "アーキテクチャ", "マイグレーション", "パターン",
+    "documentation",
+    "best practice",
+    "comparison",
+    "vs",
+    "library",
+    "framework",
+    "tutorial",
+    "guide",
+    "architecture",
+    "migration",
+    "upgrade",
+    "pattern",
+    "api reference",
+    "specification",
+    "benchmark",
+    "ドキュメント",
+    "ベストプラクティス",
+    "比較",
+    "ライブラリ",
+    "フレームワーク",
+    "チュートリアル",
+    "アーキテクチャ",
+    "マイグレーション",
+    "パターン",
 ];
 
 pub fn pre_websearch(_raw: &str, data: &serde_json::Value) -> Result<(), String> {
@@ -432,7 +517,12 @@ pub fn pre_commit(raw: &str, data: &serde_json::Value) -> Result<(), String> {
 
     // Get staged diff to check for secrets
     let diff = std::process::Command::new("git")
-        .args(["--no-optional-locks", "diff", "--cached", "--diff-filter=ACM"])
+        .args([
+            "--no-optional-locks",
+            "diff",
+            "--cached",
+            "--diff-filter=ACM",
+        ])
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
@@ -464,8 +554,9 @@ pub fn pre_commit(raw: &str, data: &serde_json::Value) -> Result<(), String> {
 
     if let Some(msg) = &msg_match {
         let conventional = Regex::new(
-            r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?:\s"
-        ).unwrap();
+            r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?:\s",
+        )
+        .unwrap();
         if !conventional.is_match(msg) {
             crate::io::context(
                 "PreToolUse",

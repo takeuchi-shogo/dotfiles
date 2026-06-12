@@ -26,11 +26,7 @@ fn run_silent(cmd: &str, args: &[&str]) -> bool {
 }
 
 fn run_capture(cmd: &str, args: &[&str]) -> (bool, String) {
-    match Command::new(cmd)
-        .args(args)
-        .env("NO_COLOR", "1")
-        .output()
-    {
+    match Command::new(cmd).args(args).env("NO_COLOR", "1").output() {
         Ok(o) => {
             let out = format!(
                 "{}{}",
@@ -54,9 +50,14 @@ fn trim_lines(text: &str, max: usize) -> Vec<String> {
 /// Check if a Prettier config exists by walking up from the file.
 fn has_prettier_config(file_path: &str) -> bool {
     let prettier_configs: &[&str] = &[
-        ".prettierrc", ".prettierrc.js", ".prettierrc.cjs",
-        ".prettierrc.json", ".prettierrc.yml", ".prettierrc.yaml",
-        "prettier.config.js", "prettier.config.mjs",
+        ".prettierrc",
+        ".prettierrc.js",
+        ".prettierrc.cjs",
+        ".prettierrc.json",
+        ".prettierrc.yml",
+        ".prettierrc.yaml",
+        "prettier.config.js",
+        "prettier.config.mjs",
     ];
     let mut dir = Path::new(file_path).parent();
     while let Some(d) = dir {
@@ -91,7 +92,8 @@ fn format_typescript(file_path: &str) -> Vec<String> {
                 .status();
         }
     } else {
-        let biome = find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
+        let biome =
+            find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
         let biome_parts: Vec<&str> = biome.split_whitespace().collect();
         if biome_parts.len() == 1 {
             run_silent(biome_parts[0], &["format", "--write", file_path]);
@@ -131,7 +133,9 @@ fn format_typescript(file_path: &str) -> Vec<String> {
     if !ok && !output.is_empty() {
         trim_lines(&output, 20)
             .into_iter()
-            .filter(|l| !l.starts_with("Found") && !l.starts_with("Finished") && !l.contains("oxlint"))
+            .filter(|l| {
+                !l.starts_with("Found") && !l.starts_with("Finished") && !l.contains("oxlint")
+            })
             .collect()
     } else {
         Vec::new()
@@ -163,8 +167,10 @@ fn format_go(file_path: &str) -> Vec<String> {
     let pattern = format!("{}/...", dir);
 
     if crate::io::which("golangci-lint") {
-        let (ok, output) =
-            run_capture("golangci-lint", &["run", "--fix", "--new-from-rev=HEAD", &pattern]);
+        let (ok, output) = run_capture(
+            "golangci-lint",
+            &["run", "--fix", "--new-from-rev=HEAD", &pattern],
+        );
         if !ok && !output.is_empty() {
             trim_lines(&output, 20)
                 .into_iter()
@@ -265,7 +271,8 @@ fn auto_format(file_path: &str) -> Option<(String, Vec<String>)> {
                 eprintln!("[Auto-Format] skip: no formatter config found for {}", ext);
                 return None;
             }
-            let biome = find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
+            let biome =
+                find_tool("biome").unwrap_or_else(|| "npx --yes @biomejs/biome@latest".to_string());
             let parts: Vec<&str> = biome.split_whitespace().collect();
             if parts.len() == 1 {
                 run_silent(parts[0], &["format", "--write", file_path]);
@@ -324,9 +331,7 @@ fn update_edit_counter(file_path: &str) -> Option<String> {
     recent.push(serde_json::json!({"file": file_path, "timestamp": now_ms}));
 
     // Prune stale + cap
-    recent.retain(|e| {
-        e["timestamp"].as_u64().unwrap_or(0) + LOOP_WINDOW_MS > now_ms
-    });
+    recent.retain(|e| e["timestamp"].as_u64().unwrap_or(0) + LOOP_WINDOW_MS > now_ms);
     if recent.len() > MAX_RECENT_EDITS {
         recent = recent[recent.len() - MAX_RECENT_EDITS..].to_vec();
     }
@@ -344,7 +349,9 @@ fn update_edit_counter(file_path: &str) -> Option<String> {
     if count == 30 {
         eprintln!("[Token] 30 edits in this session. Consider compacting context if response quality degrades.");
     } else if count == 50 {
-        eprintln!("[Token] 50 edits reached. Strongly recommend delegating to subagents or compacting.");
+        eprintln!(
+            "[Token] 50 edits reached. Strongly recommend delegating to subagents or compacting."
+        );
     }
 
     if loop_count >= LOOP_THRESHOLD {
@@ -408,12 +415,8 @@ fn strip_comments(content: &str, ext: &str) -> String {
 /// Infrastructure, docs, and config files generate false positives (CRIT-004).
 /// NOTE: `/scripts/` was previously excluded entirely, but this silenced legitimate
 /// GP-004 violations in harness scripts. Now only non-code infra paths are excluded.
-const GP_EXCLUDE_PATTERNS: &[&str] = &[
-    "/.worktrees/",
-    "/agent-memory/",
-    "/node_modules/",
-    "/.git/",
-];
+const GP_EXCLUDE_PATTERNS: &[&str] =
+    &["/.worktrees/", "/agent-memory/", "/node_modules/", "/.git/"];
 
 const GP_EXCLUDE_EXTENSIONS: &[&str] = &["md", "mdc", "toml", "yml", "yaml", "txt", "rst"];
 
@@ -460,7 +463,12 @@ fn similarity_ratio(a: &str, b: &str) -> f64 {
     2.0 * dp[len_a][len_b] as f64 / (len_a + len_b) as f64
 }
 
-fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_string: Option<&str>) -> Vec<String> {
+fn check_golden_principles(
+    content: &str,
+    file_path: &str,
+    tool_name: &str,
+    old_string: Option<&str>,
+) -> Vec<String> {
     if is_gp_excluded(file_path) {
         return Vec::new();
     }
@@ -499,12 +507,19 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
     {
         let msg = "[GP-002] 外部入力の直接使用が検出されました。バウンダリでバリデーションを行ってください（Zod, Pydantic 等）。";
         warnings.push(msg.to_string());
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-002", "file": file_path}));
+        crate::events::emit_event(
+            "quality",
+            &serde_json::json!({"rule": "GP-002", "file": file_path}),
+        );
     }
 
     // GP-003: Dependency files
     let dep_files = [
-        "package.json", "go.mod", "Cargo.toml", "requirements.txt", "pyproject.toml",
+        "package.json",
+        "go.mod",
+        "Cargo.toml",
+        "requirements.txt",
+        "pyproject.toml",
     ];
     let basename = Path::new(file_path)
         .file_name()
@@ -516,7 +531,10 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
             basename
         );
         warnings.push(msg);
-        crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-003", "file": file_path}));
+        crate::events::emit_event(
+            "quality",
+            &serde_json::json!({"rule": "GP-003", "file": file_path}),
+        );
     }
 
     // GP-004, GP-005 are enforced as BLOCK in pre_tool.rs (with emit_event)
@@ -536,14 +554,19 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
                             .file_stem()
                             .map(|s| s.to_string_lossy().to_lowercase())
                             .unwrap_or_default();
-                        if existing_stem != new_stem && similarity_ratio(&new_stem, &existing_stem) > 0.7 {
+                        if existing_stem != new_stem
+                            && similarity_ratio(&new_stem, &existing_stem) > 0.7
+                        {
                             if !is_duplicate_warning(file_path, "GP-009") {
                                 let msg = format!(
                                     "[GP-009] 類似名のファイル `{}` が同ディレクトリに存在します。新規作成ではなく既存ファイルの修正を検討してください。",
                                     existing
                                 );
                                 warnings.push(msg);
-                                crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-009", "file": file_path}));
+                                crate::events::emit_event(
+                                    "quality",
+                                    &serde_json::json!({"rule": "GP-009", "file": file_path}),
+                                );
                             }
                             break;
                         }
@@ -563,10 +586,13 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
                 "ts" | "tsx" | "js" | "jsx" | "go" | "rs" => &["//"],
                 _ => &["//", "#"],
             };
-            let comment_count = lines.iter().filter(|l| {
-                let trimmed = l.trim_start();
-                markers.iter().any(|m| trimmed.starts_with(m))
-            }).count();
+            let comment_count = lines
+                .iter()
+                .filter(|l| {
+                    let trimmed = l.trim_start();
+                    markers.iter().any(|m| trimmed.starts_with(m))
+                })
+                .count();
             let ratio = comment_count as f64 / lines.len() as f64;
             if ratio > 0.4 && !is_duplicate_warning(file_path, "GP-010") {
                 let pct = (ratio * 100.0) as u32;
@@ -575,7 +601,10 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
                     pct
                 );
                 warnings.push(msg);
-                crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-010", "file": file_path}));
+                crate::events::emit_event(
+                    "quality",
+                    &serde_json::json!({"rule": "GP-010", "file": file_path}),
+                );
             }
         }
     }
@@ -584,11 +613,18 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
     if tool_name == "Edit" {
         let old_str = old_string.unwrap_or("");
         if !old_str.is_empty() && matches!(ext.as_str(), "ts" | "tsx" | "js" | "jsx") {
-            let export_re = Regex::new(r"(?m)^export\s+(?:default\s+)?(?:function|const|type|interface|class|enum)\s+\w+").unwrap();
+            let export_re = Regex::new(
+                r"(?m)^export\s+(?:default\s+)?(?:function|const|type|interface|class|enum)\s+\w+",
+            )
+            .unwrap();
             let old_exports: Vec<&str> = export_re.find_iter(old_str).map(|m| m.as_str()).collect();
             if !old_exports.is_empty() {
-                let new_exports: Vec<&str> = export_re.find_iter(content).map(|m| m.as_str()).collect();
-                let changed: Vec<&&str> = old_exports.iter().filter(|e| !new_exports.contains(e)).collect();
+                let new_exports: Vec<&str> =
+                    export_re.find_iter(content).map(|m| m.as_str()).collect();
+                let changed: Vec<&&str> = old_exports
+                    .iter()
+                    .filter(|e| !new_exports.contains(e))
+                    .collect();
                 if !changed.is_empty() && !is_duplicate_warning(file_path, "GP-011") {
                     let preview: String = changed[0].chars().take(80).collect();
                     let msg = format!(
@@ -596,7 +632,10 @@ fn check_golden_principles(content: &str, file_path: &str, tool_name: &str, old_
                         &preview
                     );
                     warnings.push(msg);
-                    crate::events::emit_event("quality", &serde_json::json!({"rule": "GP-011", "file": file_path}));
+                    crate::events::emit_event(
+                        "quality",
+                        &serde_json::json!({"rule": "GP-011", "file": file_path}),
+                    );
                 }
             }
         }
@@ -648,7 +687,10 @@ fn check_checkpoint(file_path: &str) -> Option<String> {
     } else if last_cp_time > 0.0 && now - last_cp_time >= TIME_THRESHOLD {
         "auto:time_threshold"
     } else if last_cp_time == 0.0 {
-        let session_start = counter["lastReset"].as_u64().unwrap_or((now * 1000.0) as u64) as f64 / 1000.0;
+        let session_start = counter["lastReset"]
+            .as_u64()
+            .unwrap_or((now * 1000.0) as u64) as f64
+            / 1000.0;
         if now - session_start >= TIME_THRESHOLD {
             "auto:time_threshold"
         } else {
@@ -693,7 +735,11 @@ fn check_checkpoint(file_path: &str) -> Option<String> {
         let mut files: Vec<PathBuf> = entries
             .filter_map(|e| e.ok())
             .map(|e| e.path())
-            .filter(|p| p.file_name().map(|n| n.to_string_lossy().starts_with("checkpoint-")).unwrap_or(false))
+            .filter(|p| {
+                p.file_name()
+                    .map(|n| n.to_string_lossy().starts_with("checkpoint-"))
+                    .unwrap_or(false)
+            })
             .collect();
         files.sort();
         while files.len() > MAX_CHECKPOINTS {
@@ -735,9 +781,7 @@ fn track_edit_failure(tool_name: &str, file_path: &str, data: &serde_json::Value
         return;
     }
 
-    let result_content = data["tool_result"]["content"]
-        .as_str()
-        .unwrap_or("");
+    let result_content = data["tool_result"]["content"].as_str().unwrap_or("");
     let pattern = classify_edit_failure(result_content);
     let ext = Path::new(file_path)
         .extension()
@@ -762,9 +806,7 @@ fn track_edit_failure(tool_name: &str, file_path: &str, data: &serde_json::Value
 
 pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     let tool_name = data["tool_name"].as_str().unwrap_or("");
-    let file_path = data["tool_input"]["file_path"]
-        .as_str()
-        .unwrap_or("");
+    let file_path = data["tool_input"]["file_path"].as_str().unwrap_or("");
 
     // Track edit failures (side effect: emits event on failure)
     track_edit_failure(tool_name, file_path, data);
@@ -788,7 +830,12 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default();
-        eprintln!("[Auto-Lint] {}: {} issue(s) in {}", tool, errors.len(), basename);
+        eprintln!(
+            "[Auto-Lint] {}: {} issue(s) in {}",
+            tool,
+            errors.len(),
+            basename
+        );
         let mut parts = vec![format!(
             "[Auto-Lint] {} が {} で問題を検出:",
             tool, basename
