@@ -811,9 +811,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     let old_string = data["tool_input"]["old_string"].as_str();
     let gp_warnings = check_golden_principles(content, file_path, tool_name, old_string);
     if !gp_warnings.is_empty() {
-        let mut all = gp_warnings;
-        all.push("golden-cleanup エージェントで詳細なプリンシプルスキャンを実行できます。".to_string());
-        contexts.push(all.join("\n"));
+        contexts.push(gp_warnings.join("\n"));
     }
 
     // 4. Checkpoint check (side effect: saves checkpoint)

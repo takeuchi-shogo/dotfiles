@@ -412,9 +412,6 @@ def main() -> None:
             )
 
     if warnings:
-        warnings.append(
-            "golden-cleanup エージェントで詳細なプリンシプルスキャンを実行できます。"
-        )
         output_context("PostToolUse", "\n".join(warnings))
         return
 

@@ -38,7 +38,6 @@ KNOWN_REVIEWERS: frozenset[str] = frozenset(
         "product-reviewer",
         "design-reviewer",
         "debugger",
-        "build-fixer",
     ]
 )
 

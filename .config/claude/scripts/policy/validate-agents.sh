@@ -9,7 +9,7 @@ WARN_COUNT=0
 AGENT_COUNT=0
 
 # Exceptions: these agents legitimately use Write/Edit despite reviewer-like names
-WRITE_EDIT_EXCEPTIONS=("doc-gardener" "golden-cleanup")
+WRITE_EDIT_EXCEPTIONS=("doc-gardener")
 
 is_exception() {
     local name="$1"

@@ -47,7 +47,7 @@ SURFACES: list[SurfacePattern] = [
         category="db_migration",
         risk="critical",
         patterns=[r"migration[/.]", r"migrate", r"\.sql$", r"schema"],
-        advice="migration-guard (データ損失・後方互換性リスク)",
+        advice="edge-case-hunter + security-reviewer (データ損失・後方互換性リスク)",
     ),
     SurfacePattern(
         category="harness",

@@ -21,7 +21,26 @@ fi
 # Catch-up window: Mon-Wed
 [ "$DOW" -gt 3 ] && exit 0
 
-COUNT=$(find -L "$HOME/.claude/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+# アクティブ skill 数 = ディレクトリ実数 - skillOverrides "off" 抑制分。
+# 退役は skillOverrides 抑制 (可逆、SKILL.md 不編集) で行いディレクトリは残るため、
+# 実数を数えると退役済み skill が永遠に ALERT を出し続ける。
+# jq は cron PATH (/usr/bin:/bin) に不在のため /usr/bin/python3 を使う
+COUNT=$(/usr/bin/python3 - <<'PYEOF'
+import glob
+import json
+import os
+
+home = os.path.expanduser("~")
+dirs = [d for d in glob.glob(f"{home}/.claude/skills/*") if os.path.isdir(d)]
+try:
+    with open(f"{home}/.claude/settings.json") as f:
+        overrides = json.load(f).get("skillOverrides", {})
+except (OSError, json.JSONDecodeError):
+    overrides = {}
+off = {k for k, v in overrides.items() if v == "off"}
+print(sum(1 for d in dirs if os.path.basename(d) not in off))
+PYEOF
+) || { echo "[$(date -Iseconds)] python3 count failed, skip" >> "$LOG"; exit 0; }
 mkdir -p "$STATE_DIR" || { echo "[$(date -Iseconds)] mkdir STATE_DIR failed, skip" >> "$LOG"; exit 0; }
 echo "$THIS_WEEK" > "$STATE_FILE"
 

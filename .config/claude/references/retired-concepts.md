@@ -26,7 +26,7 @@ last_reviewed: 2026-05-30
 | `gleam-practice` | 2026-05-10 | (なし、削除) | commit 1e6e388「remove 3 unused language skills」で削除。Gleam は実運用言語でなく利用実績なし。skills-lock.json からも除外済 | 確定 |
 | `moonbit-practice` | 2026-05-10 | (なし、削除) | commit 1e6e388「remove 3 unused language skills」で削除。MoonBit は実運用言語でなく利用実績なし。skills-lock.json からも除外済 | 確定 |
 | `/improve` | 2026-05-03 | `/audit` + 各 review skill | `improve-policy.md` frontmatter は `status: deprecated` (5 サイクル連続 false-positive)。ただし `commands/improve.md` (Tidy Orchestrator) + `improve` skill 登録 + `autoevolve-core.md` の参照群が現存し、「廃止」と実体が矛盾する。断定せず事実を記録 | 曖昧 |
-| `autoevolve-core` (直接呼び出し) | 2026-05-03 | (なし、保守用 legacy) | `/improve` command retire に伴い新規呼び出し非推奨。agent 定義自体は `scripts/learner/*` 連携の保守用として現存 | 曖昧 |
+| `autoevolve-core` (直接呼び出し) | 2026-05-03 (定義削除 2026-06-12) | (なし) | `/improve` command retire に伴い新規呼び出し非推奨。agent 定義は retire 後 30 日経過の完全孤児として 2026-06-12 に meta-analyzer と共に削除 (棚卸し PR-3、docs/decommission-log.md) | 確定 |
 | `memory-archive.py` | 2026-06-01 (削除予定 2026-07-01) | `claudemd-size-check.py` の MEMORY.md 検知 + `docs/playbooks/memory-pruning.md` (手動 pruning) | dead script (呼び出し0/テスト0/hook未登録)。archive ロジックが「ファイル位置=古さ」を仮定するが MEMORY.md はトピック別構造のため、実行すると前半のコア知識を archive し肥大化した外部知見索引を残す逆効果 (2026-05-31 検出)。determinism boundary により archive 判断は judgment、検知のみ mechanism 化 (Codex+Opus C 案)。deprecation 中で実体現存のため status=曖昧 | 曖昧 |
 
 ## エントリ追加の指針

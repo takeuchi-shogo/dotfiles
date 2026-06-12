@@ -24,7 +24,7 @@ REVIEWER_MAP: dict[str, str] = {
     "FM-005": "security-reviewer",
     "FM-006": "code-reviewer",
     "FM-007": "code-reviewer",
-    "FM-008": "build-fixer",
+    "FM-008": "debugger",
     "FM-009": "code-reviewer",
     "FM-010": "security-reviewer",
     "FM-011": "code-reviewer",
