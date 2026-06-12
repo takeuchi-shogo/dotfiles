@@ -526,6 +526,121 @@ fn check_plan_lifecycle(command: &str, output: &str) -> Option<String> {
 
 // ── review-feedback-tracker ─────────────────────────────────────────
 
+fn match_finding_to_diff(
+    file: &str,
+    line: i64,
+    changed: &std::collections::HashMap<String, std::collections::HashSet<i64>>,
+) -> &'static str {
+    for (diff_file, lines) in changed {
+        if diff_file.ends_with(file) || file.ends_with(diff_file.as_str()) {
+            if line == 0 {
+                return "accept";
+            }
+            for &cl in lines {
+                if (cl - line).abs() <= 5 {
+                    return "accept";
+                }
+            }
+            return "partial";
+        }
+    }
+    "reject"
+}
+
+#[derive(PartialEq, Debug, Clone, Copy)]
+enum OutcomeUpdate {
+    Updated,
+    SkippedExplicit,
+    Failed,
+}
+
+fn update_finding_outcome_in_place(
+    findings_path: &std::path::Path,
+    finding_id: &str,
+    outcome: &str,
+    source: &str,
+) -> OutcomeUpdate {
+    let content = match std::fs::read_to_string(findings_path) {
+        Ok(c) => c,
+        Err(_) => return OutcomeUpdate::Failed,
+    };
+
+    let mut rows: Vec<Result<serde_json::Value, String>> = content
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| {
+            serde_json::from_str::<serde_json::Value>(l)
+                .map_err(|_| l.to_string())
+        })
+        .collect();
+
+    let mut found = false;
+    for row in rows.iter_mut() {
+        let Ok(v) = row else { continue };
+        if v["id"].as_str() != Some(finding_id) {
+            continue;
+        }
+        if v["outcome_source"].as_str() == Some("explicit") && source == "auto_diff" {
+            return OutcomeUpdate::SkippedExplicit;
+        }
+        let Some(obj) = v.as_object_mut() else { continue };
+        obj.insert("outcome".to_string(), serde_json::Value::String(outcome.to_string()));
+        obj.insert("outcome_source".to_string(), serde_json::Value::String(source.to_string()));
+        obj.insert("outcome_timestamp".to_string(), serde_json::Value::String(crate::io::iso_now()));
+        found = true;
+        break;
+    }
+
+    if !found {
+        return OutcomeUpdate::Failed;
+    }
+
+    let tmp_path = findings_path.with_extension("jsonl.tmp");
+    let mut out = String::new();
+    for row in &rows {
+        match row {
+            Ok(v) => {
+                if let Ok(s) = serde_json::to_string(v) {
+                    out.push_str(&s);
+                    out.push('\n');
+                }
+            }
+            Err(raw) => {
+                out.push_str(raw);
+                out.push('\n');
+            }
+        }
+    }
+    if std::fs::write(&tmp_path, &out).is_err() {
+        let _ = std::fs::remove_file(&tmp_path);
+        return OutcomeUpdate::Failed;
+    }
+    if std::fs::rename(&tmp_path, findings_path).is_err() {
+        let _ = std::fs::remove_file(&tmp_path);
+        return OutcomeUpdate::Failed;
+    }
+    OutcomeUpdate::Updated
+}
+
+pub fn redact_finding_text(s: &str) -> String {
+    static REDACT_RES: std::sync::OnceLock<Vec<Regex>> = std::sync::OnceLock::new();
+    let res = REDACT_RES.get_or_init(|| {
+        [
+            r"sk-[A-Za-z0-9_\-]{20,}",
+            r"gh[pousr]_[A-Za-z0-9]{36,}",
+            r"AKIA[0-9A-Z]{16}",
+        ]
+        .iter()
+        .filter_map(|p| Regex::new(p).ok())
+        .collect()
+    });
+    let mut result = s.to_string();
+    for re in res {
+        result = re.replace_all(&result, "[REDACTED]").into_owned();
+    }
+    result
+}
+
 fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
     if !Regex::new(r"\bgit\s+commit\b").ok()?.is_match(command) {
         return None;
@@ -547,7 +662,6 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         return None;
     }
 
-    // Read resolved IDs
     let resolved: std::collections::HashSet<String> = if feedback_path.exists() {
         std::fs::read_to_string(&feedback_path)
             .unwrap_or_default()
@@ -559,16 +673,13 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         std::collections::HashSet::new()
     };
 
-    // Read pending findings
     let pending: Vec<serde_json::Value> = std::fs::read_to_string(&findings_path)
         .unwrap_or_default()
         .lines()
         .filter_map(|l| serde_json::from_str(l).ok())
         .filter(|v: &serde_json::Value| {
-            v["id"]
-                .as_str()
-                .map(|id| !resolved.contains(id))
-                .unwrap_or(false)
+            let id = v["id"].as_str().unwrap_or("");
+            !id.is_empty() && v["outcome"].as_str().is_none() && !resolved.contains(id)
         })
         .collect();
 
@@ -576,7 +687,6 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         return None;
     }
 
-    // Get committed diff
     let diff = std::process::Command::new("git")
         .args(["--no-optional-locks", "diff", "HEAD~1..HEAD", "--unified=0"])
         .output()
@@ -589,7 +699,6 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         return None;
     }
 
-    // Parse diff changed lines
     let mut changed: std::collections::HashMap<String, std::collections::HashSet<i64>> =
         std::collections::HashMap::new();
     let mut current_file = String::new();
@@ -610,8 +719,11 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         }
     }
 
-    let mut accepted = 0usize;
-    let mut ignored = 0usize;
+    let mut accept_count = 0usize;
+    let mut partial_count = 0usize;
+    let mut reject_count = 0usize;
+    let mut skipped_count = 0usize;
+    let mut failed_count = 0usize;
     let ts = crate::io::iso_now();
 
     for finding in &pending {
@@ -622,21 +734,31 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
         let file = finding["file"].as_str().unwrap_or("");
         let line = finding["line"].as_i64().unwrap_or(0);
 
-        let outcome = if changed.iter().any(|(diff_file, lines)| {
-            (diff_file.ends_with(file) || file.ends_with(diff_file.as_str()))
-                && (line == 0 || lines.iter().any(|&cl| (cl - line).abs() <= 5))
-        }) {
-            "accepted"
-        } else {
-            "ignored"
-        };
+        let outcome = match_finding_to_diff(file, line, &changed);
 
-        // Record feedback
+        match update_finding_outcome_in_place(&findings_path, id, outcome, "auto_diff") {
+            OutcomeUpdate::Updated => {}
+            OutcomeUpdate::SkippedExplicit => {
+                skipped_count += 1;
+                continue;
+            }
+            OutcomeUpdate::Failed => {
+                failed_count += 1;
+                continue;
+            }
+        }
+
+        let finding_text = finding["finding"].as_str().unwrap_or("");
+        let redacted_text = if finding_text.is_empty() {
+            String::new()
+        } else {
+            redact_finding_text(finding_text)
+        };
         let entry = serde_json::json!({
             "timestamp": ts,
             "finding_id": id,
             "outcome": outcome,
-            "reason": "",
+            "reason": redacted_text,
         });
         if let Ok(mut f) = std::fs::OpenOptions::new()
             .create(true)
@@ -647,23 +769,28 @@ fn check_review_feedback(command: &str, _output: &str) -> Option<String> {
             let _ = writeln!(f, "{}", entry);
         }
 
-        if outcome == "accepted" {
-            accepted += 1;
-        } else {
-            ignored += 1;
+        match outcome {
+            "accept" => accept_count += 1,
+            "partial" => partial_count += 1,
+            _ => reject_count += 1,
         }
     }
 
-    if accepted + ignored > 0 {
-        Some(format!(
-            "[Review Feedback] {} 件のレビュー指摘を追跡: {} accepted, {} ignored",
-            accepted + ignored,
-            accepted,
-            ignored
-        ))
-    } else {
-        None
+    let total = accept_count + partial_count + reject_count;
+    if total == 0 {
+        return None;
     }
+    let mut msg = format!(
+        "[Review Feedback] {} 件のレビュー指摘を追跡: {} accept, {} partial, {} reject",
+        total, accept_count, partial_count, reject_count
+    );
+    if skipped_count > 0 {
+        msg.push_str(&format!(", {} skipped (explicit)", skipped_count));
+    }
+    if failed_count > 0 {
+        msg.push_str(&format!(", {} failed (write error)", failed_count));
+    }
+    Some(msg)
 }
 
 // ── main entry ──────────────────────────────────────────────────────
@@ -707,4 +834,183 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::{HashMap, HashSet};
+
+    fn make_changed(file: &str, lines: &[i64]) -> HashMap<String, HashSet<i64>> {
+        let mut m = HashMap::new();
+        m.insert(file.to_string(), lines.iter().copied().collect());
+        m
+    }
+
+    #[test]
+    fn match_accept_within_5() {
+        let changed = make_changed("src/foo.rs", &[10, 11, 12]);
+        assert_eq!(match_finding_to_diff("src/foo.rs", 14, &changed), "accept");
+        assert_eq!(match_finding_to_diff("src/foo.rs", 7, &changed), "accept");
+    }
+
+    #[test]
+    fn match_accept_exact() {
+        let changed = make_changed("src/foo.rs", &[42]);
+        assert_eq!(match_finding_to_diff("src/foo.rs", 42, &changed), "accept");
+    }
+
+    #[test]
+    fn match_partial_file_present_line_far() {
+        let changed = make_changed("src/foo.rs", &[10]);
+        assert_eq!(match_finding_to_diff("src/foo.rs", 100, &changed), "partial");
+    }
+
+    #[test]
+    fn match_reject_file_absent() {
+        let changed = make_changed("src/foo.rs", &[10]);
+        assert_eq!(match_finding_to_diff("src/bar.rs", 10, &changed), "reject");
+    }
+
+    #[test]
+    fn match_line_zero_accepts_on_file_match() {
+        let changed = make_changed("src/foo.rs", &[10]);
+        assert_eq!(match_finding_to_diff("src/foo.rs", 0, &changed), "accept");
+    }
+
+    #[test]
+    fn match_line_zero_rejects_when_file_absent() {
+        let changed = make_changed("src/foo.rs", &[10]);
+        assert_eq!(match_finding_to_diff("src/bar.rs", 0, &changed), "reject");
+    }
+
+    fn write_findings(path: &std::path::Path, entries: &[serde_json::Value]) {
+        use std::io::Write;
+        let mut f = std::fs::File::create(path).unwrap();
+        for e in entries {
+            writeln!(f, "{}", e).unwrap();
+        }
+    }
+
+    #[test]
+    fn update_finding_normal_writeback() {
+        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("review-findings.jsonl");
+
+        write_findings(&path, &[
+            serde_json::json!({"id": "f1", "file": "a.rs", "line": 10, "severity": "warn"}),
+        ]);
+
+        assert_eq!(
+            update_finding_outcome_in_place(&path, "f1", "accept", "auto_diff"),
+            OutcomeUpdate::Updated
+        );
+
+        let content = std::fs::read_to_string(&path).unwrap();
+        let v: serde_json::Value = serde_json::from_str(content.trim()).unwrap();
+        assert_eq!(v["outcome"].as_str(), Some("accept"));
+        assert_eq!(v["outcome_source"].as_str(), Some("auto_diff"));
+        assert!(v["outcome_timestamp"].as_str().is_some());
+        assert_eq!(v["severity"].as_str(), Some("warn"));
+    }
+
+    #[test]
+    fn update_finding_r05_explicit_blocks_auto_diff() {
+        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("review-findings.jsonl");
+
+        write_findings(&path, &[
+            serde_json::json!({"id": "f2", "file": "b.rs", "line": 5,
+                               "outcome": "reject", "outcome_source": "explicit"}),
+        ]);
+
+        assert_eq!(
+            update_finding_outcome_in_place(&path, "f2", "accept", "auto_diff"),
+            OutcomeUpdate::SkippedExplicit
+        );
+
+        let content = std::fs::read_to_string(&path).unwrap();
+        let v: serde_json::Value = serde_json::from_str(content.trim()).unwrap();
+        assert_eq!(v["outcome"].as_str(), Some("reject"));
+    }
+
+    #[test]
+    fn update_finding_nonexistent_id_returns_false() {
+        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("review-findings.jsonl");
+
+        write_findings(&path, &[
+            serde_json::json!({"id": "f3", "file": "c.rs", "line": 1}),
+        ]);
+
+        assert_eq!(
+            update_finding_outcome_in_place(&path, "no-such-id", "accept", "auto_diff"),
+            OutcomeUpdate::Failed
+        );
+    }
+
+    #[test]
+    fn update_finding_mixed_schema_preserves_other_fields() {
+        let dir = std::env::temp_dir().join(format!("rftest_{}", std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("review-findings.jsonl");
+
+        write_findings(&path, &[
+            serde_json::json!({"id": "old1", "file": "x.py", "line": 3,
+                               "confidence": 0.9, "tier": "L1", "score": 42}),
+            serde_json::json!({"id": "new1", "file": "y.ts", "line": 7,
+                               "severity": "error", "fix": "add null check"}),
+        ]);
+
+        assert_eq!(
+            update_finding_outcome_in_place(&path, "old1", "partial", "auto_diff"),
+            OutcomeUpdate::Updated
+        );
+
+        let content = std::fs::read_to_string(&path).unwrap();
+        let mut lines = content.lines();
+        let old_v: serde_json::Value = serde_json::from_str(lines.next().unwrap()).unwrap();
+        let new_v: serde_json::Value = serde_json::from_str(lines.next().unwrap()).unwrap();
+
+        assert_eq!(old_v["outcome"].as_str(), Some("partial"));
+        assert_eq!(old_v["confidence"].as_f64(), Some(0.9));
+        assert_eq!(old_v["tier"].as_str(), Some("L1"));
+        assert_eq!(old_v["score"].as_i64(), Some(42));
+
+        assert_eq!(new_v["severity"].as_str(), Some("error"));
+        assert!(new_v["outcome"].as_str().is_none());
+    }
+
+    #[test]
+    fn redact_api_key() {
+        let s = format!("token sk-{} and more", "a".repeat(24));
+        assert_eq!(redact_finding_text(&s), "token [REDACTED] and more");
+    }
+
+    #[test]
+    fn redact_github_token() {
+        let s = format!("auth ghp_{} done", "a".repeat(36));
+        let result = redact_finding_text(&s);
+        assert!(result.contains("[REDACTED]"));
+        assert!(!result.contains("ghp_"));
+    }
+
+    #[test]
+    fn redact_aws_key() {
+        let s = format!("key AKIA{}{} end", "IOSFODNN", "7EXAMPLE");
+        assert_eq!(redact_finding_text(&s), "key [REDACTED] end");
+    }
+
+    #[test]
+    fn redact_passthrough_normal_text() {
+        let s = "no secrets here";
+        assert_eq!(redact_finding_text(s), s);
+    }
 }
