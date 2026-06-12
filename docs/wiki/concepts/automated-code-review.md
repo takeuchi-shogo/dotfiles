@@ -32,6 +32,7 @@ dotfiles リポジトリでは `/review` スキルが Codex Review Gate（codex-
 - [quality-gates](quality-gates.md) — レビューを品質ゲートとして組み込む仕組み
 - [agent-evaluation](agent-evaluation.md) — エージェント自身の出力評価の方法論
 - [spec-driven-development](spec-driven-development.md) — Spec & Verify パラダイムの前提となる仕様駆動開発
+- [nrslib サーヴァントエンジニアリング (2026-06-12)](../../research/2026-06-12-servant-engineering-absorb-analysis.md) — 観点別並列レビュー (Faceted Prompting)・Review Tiering・Worker/Judge 分離によるレビュー速度改善
 
 ## ソース
 

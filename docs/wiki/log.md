@@ -1646,3 +1646,10 @@
 - **MEMORY drift 発見・訂正**: MEMORY.md マルチモデル連携セクションが旧 .py 名で記載 → wiring-check を「死蔵」と誤誘導していた。Rust 移行先を明記して訂正 (2026-06-09)
 - **.py→Rust ドキュメント drift が 23ファイルに波及**: 現役13 + active plan2 + test1 が要修正、ADR/spec/completed・paused plan 7 は immutable 除外 → L 規模整合プランを `docs/plans/active/2026-06-09-python-hook-rust-doc-reconciliation-plan.md` に保存、新セッション /rpi 実行
 - 教訓: skip の「Already/rehash」判定で matched_prior の **配線 live 確認 (B)** と **存在確認 (A)** を区別する。今回は MEMORY stale が A を B に見せかけていた
+
+## [2026-06-12] ingest | nrslib サーヴァントエンジニアリング (レビュー速度改善)
+
+- ソース: https://speakerdeck.com/nrslib/implementation-got-faster-so-what-about-reviews-an-invitation-to-servant-engineering-recreating-your-own-code-reviews-with-ai
+- 判定: Gap 2個 (tiering+計測), 既採用未実装 1個, Partial 4個, Already 3個, N/A 1個 (family 8件目 PASS-warning)
+- 取り込み: 全8タスク採用 → docs/plans/active/2026-06-12-servant-engineering-review-speed-plan.md (L)
+- 特記: Codex が CLAUDE.md S規模 Codex Gate vs review SKILL ~10行省略の policy conflict を検出
