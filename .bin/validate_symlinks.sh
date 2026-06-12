@@ -33,14 +33,16 @@ managed_links = [
     (home / ".claude/skills", root / ".config/claude/skills", ".claude/skills"),
 
     # block 3: Codex
-    (home / ".codex/config.toml", root / ".codex/config.toml", ".codex/config.toml"),
+    # NOTE: .codex/config.toml は symlink 検証対象外 — Codex.app/cmux が起動時に自己書き換え
+    # するため nix/home/default.nix で home.file 管理外 (self-rewriting app パターン)。
     (home / ".codex/AGENTS.md", root / ".codex/AGENTS.md", ".codex/AGENTS.md"),
 
     # block 4: Gemini
     (home / ".gemini/GEMINI.md", root / ".gemini/GEMINI.md", ".gemini/GEMINI.md"),
 
     # block 5: Cursor
-    (home / ".cursor/hooks.json", root / ".cursor/hooks.json", ".cursor/hooks.json"),
+    # NOTE: .cursor/hooks.json は symlink 検証対象外 — cmux が起動時に自己書き換えするため
+    # nix/home/default.nix で home.file 管理外 (.codex/config.toml と同じパターン)。
     (home / ".cursor/rules", root / ".cursor/rules", ".cursor/rules"),
     (home / ".cursor/skills", root / ".cursor/skills", ".cursor/skills"),
     (home / ".cursor/agents", root / ".cursor/agents", ".cursor/agents"),
