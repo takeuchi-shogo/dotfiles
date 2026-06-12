@@ -35,6 +35,28 @@ last_reviewed: 2026-04-23
 - **proposal**: 採否後は learning/summary に昇格、原本は破棄
 - **summary**: 長期トレンド用、永続
 
+## verification_status (任意フィールド)
+
+> 出典: Fable 5 14-steps absorb (2026-06-12) — 5段階メモリ進行の「Verify=検証済み事実化 / Consult=再導出せず参照」を薄い軸として翻訳。新規ループは作らない。
+
+`learning` / `summary` に任意で付与する信頼度ラベル。「仕組みの記録」と「検証済みの事実」を区別し、未検証仮説を事実として consult する事故を防ぐ。
+
+```json
+{ "verification_status": "verified | hypothesis | stale | retracted" }
+```
+
+| 値 | 意味 | consult 時の扱い |
+|----|------|----------------|
+| `verified` | 実行・観測・公式 docs で裏取り済み (裏取り方法を detail に残す) | 再導出せず参照してよい |
+| `hypothesis` | もっともらしいが未検証 (session summary 由来は原則これ) | 採用前に裏取りする |
+| `stale` | 検証済みだったが前提が変わった疑い (バージョン更新等) | 再検証してから使う |
+| `retracted` | 誤りと判明。反証を detail に残して保持 (再学習防止) | 参照しない (反証の根拠としてのみ) |
+
+運用ルール:
+- **欠落 = `hypothesis` 扱い** (reader 側 graceful degradation、既存 JSONL の後方互換)
+- 昇格 (`hypothesis` → `verified`) には裏取りの根拠 1 行を必須にする — 「似た記述を見た」は裏取りではない
+- Markdown メモリ (memory/*.md, HANDOFF) では frontmatter ではなく本文に「検証済み:」「仮説:」の接頭辞で表現してよい (薄い軸を重いスキーマにしない)
+
 ## 既存カテゴリ簡易マッピング
 
 - `traces/*.jsonl`, `learnings/{errors,quality,telemetry,friction-events,skill-executions,agent-invocations}.jsonl` → **event (30日)**
