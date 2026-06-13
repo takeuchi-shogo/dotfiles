@@ -60,7 +60,9 @@ func run(jobsPath string, dryRun bool) error {
 	}
 
 	if cf, err := exec.LookPath("caffeinate"); err == nil {
-		_ = exec.Command(cf, "-i", "-w", fmt.Sprintf("%d", os.Getpid())).Start()
+		if err := exec.Command(cf, "-i", "-w", fmt.Sprintf("%d", os.Getpid())).Start(); err != nil {
+			fmt.Fprintln(os.Stderr, "warn: caffeinate:", err)
+		}
 	}
 
 	commonEnv := map[string]string{
@@ -124,10 +126,8 @@ func readWebhookURL(home string) string {
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
-		if strings.HasPrefix(line, "DISCORD_WEBHOOK_URL=") {
-			v := strings.TrimPrefix(line, "DISCORD_WEBHOOK_URL=")
-			v = strings.Trim(v, `"'`)
-			return v
+		if v, ok := strings.CutPrefix(line, "DISCORD_WEBHOOK_URL="); ok {
+			return strings.Trim(v, `"'`)
 		}
 	}
 	return ""

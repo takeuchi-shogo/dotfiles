@@ -93,6 +93,40 @@ func TestRunHonorsLoopDisabled(t *testing.T) {
 	}
 }
 
+// TestGateSkipExitZeroIsMissing: exit 0 で JSONL を書かない場合は "missing"（fail にしない）。
+func TestGateSkipExitZeroIsMissing(t *testing.T) {
+	cache := t.TempDir()
+	dir := t.TempDir()
+	p := filepath.Join(dir, "gate-skip-job.sh")
+	if err := os.WriteFile(p, []byte("#!/usr/bin/env bash\nexit 0\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &config.Config{
+		Runtime: config.Runtime{MaxParallel: 1},
+		Jobs: []config.Job{
+			{Name: "gate-skip-job", Script: p, TimeoutSec: 10, Retry: 0},
+		},
+	}
+	o := New(cfg, Options{
+		CacheDir:      cache,
+		Date:          "2026-06-13",
+		Runner:        runner.Runner{},
+		ResolveScript: func(s string) string { return s },
+	})
+	summary, err := o.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	jr, ok := summary.Results["gate-skip-job"]
+	if !ok {
+		t.Fatal("expected result for gate-skip-job")
+	}
+	if jr.Status != "missing" {
+		t.Errorf("gate-skip exit-0 no-JSONL: status = %q, want missing", jr.Status)
+	}
+}
+
 // TestMissingRescue: fake script が非ゼロ終了し JSONL を書かない場合、
 // orchestrator が該当ジョブを "fail" として報告すること（silent loss 防止）。
 func TestMissingRescue(t *testing.T) {

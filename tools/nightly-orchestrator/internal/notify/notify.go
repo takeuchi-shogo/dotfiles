@@ -26,7 +26,7 @@ type Embed struct {
 
 func (p Payload) failCount() int {
 	n := 0
-	for _, line := range strings.Split(p.Embeds[0].Description, "\n") {
+	for line := range strings.SplitSeq(p.Embeds[0].Description, "\n") {
 		if strings.HasPrefix(line, "❌") {
 			n++
 		}

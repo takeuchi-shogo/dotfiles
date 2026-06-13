@@ -59,7 +59,6 @@ func (o *Orchestrator) Run(ctx context.Context) (*Summary, error) {
 	var wg sync.WaitGroup
 
 	for _, job := range o.cfg.Jobs {
-		job := job
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -93,6 +92,7 @@ func (o *Orchestrator) Run(ctx context.Context) (*Summary, error) {
 			// (silent loss を missing に偽装させない。Gemini HIGH 指摘の二重防御)。
 			lr := lastResults[job.Name]
 			if lr.TimedOut || lr.ExitCode != 0 {
+				// rescue assumes gate-skip paths exit 0; only abnormal exit/timeout with no JSONL becomes fail.
 				jr.Status = "fail"
 				jr.Record = status.Record{Metric: map[string]string{"msg": abnormalMsg(lr)}}
 			} else {
@@ -124,7 +124,7 @@ func (o *Orchestrator) runWithRetry(ctx context.Context, job config.Job) (int, r
 		if attempts > job.Retry {
 			break
 		}
-		// JSONL を読んでこの task の最新が fail かを判定
+		// cmd-exit happens-before: bash 子プロセスの書き込み完了は cmd.Run() 返却前に保証される。
 		latest, err := status.ReadLatestByTask(o.statusPath())
 		if err != nil {
 			break
