@@ -93,6 +93,31 @@ status_end() {
     # message も metric に含める
     [[ -n "$msg" ]] && metric_obj=$(echo "$metric_obj" | jq --arg msg "$msg" '. + {msg: $msg}')
 
+    # 偽成功検出 (全ジョブ横展開): claude -p が失敗しつつ exit 0 で返り、呼び出し側が ok と
+    # 誤判定したケースを最終 md から拾う。報告が Vault 相対 .md で実在する場合のみ検査する
+    # (PR URL や別パスは対象外)。2 つの signal を見る:
+    #   (a) 空 or 極小レポート (<50B): claude -p がほぼ何も書かず終わった = 失敗の典型。
+    #       Execution error / Overloaded / Rate limit / 途中切れ等、マーカー文字列に依存せず
+    #       捕捉できる最も頑健な signal。
+    #   (b) 末尾 20 行に行頭 "execution error": マーカーが残るケース。全文 grep だと大規模
+    #       レポート (audit/daily-report) の本文中の言及で False Fail するため末尾に限定する。
+    if [[ "$status" == "ok" && -n "$report_path" && "$report_path" == *.md && -n "${OBSIDIAN_VAULT_PATH:-}" ]]; then
+        local _report_abs="${OBSIDIAN_VAULT_PATH}/${report_path}"
+        if [[ -f "$_report_abs" ]]; then
+            local _sz
+            _sz=$(wc -c < "$_report_abs" 2>/dev/null | tr -d ' ' || echo 0)
+            if [[ "$_sz" =~ ^[0-9]+$ ]] && (( _sz < 50 )); then
+                echo "[nightly] $task: false success (report nearly empty ${_sz}B); flipping ok→fail" >&2
+                status="fail"
+                msg="${msg:+$msg; }false success: report nearly empty (${_sz}B)"
+            elif tail -n 20 "$_report_abs" 2>/dev/null | grep -qiE '^[[:space:]]*execution error'; then
+                echo "[nightly] $task: false success (Execution error at report tail); flipping ok→fail" >&2
+                status="fail"
+                msg="${msg:+$msg; }false success: Execution error at report tail"
+            fi
+        fi
+    fi
+
     # Q9 改訂 (2026-06-11): fail の自動再試行は 1 回まで。
     # - fail 1 回目: mark しない → 翌日の catch-up が 1 回だけ再試行する
     # - fail 2 回連続 (当日/前日): mark する (次ゲートまで諦め)
@@ -100,7 +125,15 @@ status_end() {
     # 旧 Q9/C6 (fail でも必ず mark) の「catch-up 再試行スパム防止」の意図は
     # 「再試行上限 1 回」として保存している。
     local _do_mark=1 _fail_count=0
-    if [[ "${FORCE_RUN:-0}" == "1" ]]; then
+    if [[ "${NIGHTLY_ORCHESTRATED:-0}" == "1" ]]; then
+        # orchestrator がリトライを制御する。bash の fail-count/翌日 catch-up 機構はバイパス。
+        # ok → mark (last-run 更新で同日重複防止), fail → mark しない
+        # (orchestrator が即リトライ。最終 fail でも未 mark → DAILY は翌夜再実行 /
+        #  DOW・DOM は catch-up window で翌夜再試行)。
+        # これをしないと前夜の fail-count が今夜 1 回目 fail を即 count=2 に押し上げ mark し、
+        # orchestrator の再起動が should_run_today の "already ran today" で死ぬ (Gemini CRITICAL)。
+        if [[ "$status" == "ok" ]]; then _do_mark=1; else _do_mark=0; fi
+    elif [[ "${FORCE_RUN:-0}" == "1" ]]; then
         # 検証実行 (FORCE_RUN) は last-run も fail-count も汚さない (本番スケジュールと独立)
         _do_mark=0
     elif [[ "$status" == "fail" ]]; then
@@ -128,7 +161,18 @@ status_end() {
         --argjson metric "$metric_obj" \
         '{ts: $ts, task: $task, status: $status, duration_sec: $duration_sec, report: $report, detail: $detail, metric: $metric}')
 
+    # 並列実行 (orchestrator) で複数ジョブが同時追記する際の行混ざりを防ぐ。detail が
+    # PIPE_BUF (macOS 4096B) を超えると O_APPEND のアトミック性が崩れ、混ざった行を reader が
+    # malformed スキップ → fail ジョブが missing 扱いで silent loss する (Gemini HIGH)。
+    # atomic mkdir lock — 書き込みは一瞬なので競合待ちは最小。launchd 直叩き (単一プロセス) でも
+    # 即取得で無害。macOS の flock(1) は標準で無いため mkdir を使う (既存 acquire_claude_lock 同様)。
+    local _jsonl_lock="${NIGHTLY_STATUS_JSONL}.lockd" _jw=0
+    while ! mkdir "$_jsonl_lock" 2>/dev/null; do
+        sleep 0.05; _jw=$((_jw + 1))
+        (( _jw >= 200 )) && { echo "[nightly] WARN: JSONL lock timeout (10s), writing anyway" >&2; break; }
+    done
     echo "$line" >> "$NIGHTLY_STATUS_JSONL"
+    rmdir "$_jsonl_lock" 2>/dev/null || true
 
     # Discord 通知 (detail を 6th arg として渡す)
     local metric_summary
@@ -278,6 +322,13 @@ mark_run_today() {
 # Q12 (Codex FM-7): claude -p の同時実行を回避
 # atomic mkdir で lock 取得、5 分 (NIGHTLY_CLAUDE_LOCK_WAIT_SEC) 待っても取れなければ failure
 acquire_claude_lock() {
+    # NIGHTLY_ORCHESTRATED=1: orchestrator が同時実行数を制御する場合、bash 内 lock を無効化する。
+    # launchd 直叩き (移行前 / フォールバック) では未設定 → 従来どおり lock 有効。
+    if [[ "${NIGHTLY_ORCHESTRATED:-0}" == "1" ]]; then
+        _NIGHTLY_HAS_LOCK=0
+        echo "[nightly] claude lock skipped (NIGHTLY_ORCHESTRATED=1, orchestrator-managed)" >&2
+        return 0
+    fi
     local waited=0
     while ! mkdir "$NIGHTLY_CLAUDE_LOCK_DIR" 2>/dev/null; do
         if [[ $waited -ge $NIGHTLY_CLAUDE_LOCK_WAIT_SEC ]]; then
