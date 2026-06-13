@@ -16,7 +16,7 @@ last_reviewed: 2026-04-23
 | 0 | **メインセッション** (現在: Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、新規アーキテクチャ判断、仕様の曖昧さ解消などの最深推論 | (本体) |
 | 1 | **Opus** (現行 4.8) | Plan 草案、設計分析、根本原因デバッグ、レビュー統合、edge case 分析 — 推論は要るが Tier 0 級ではないサブタスク | `Agent(model: "opus")` |
 | 2 | **Sonnet** | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
-| 3 | **Haiku** | WebFetch 生取得 (要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換 | `Agent(model: "haiku")` |
+| 3 | **Haiku** | WebFetch 生取得 (要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
 
 運用ルール:
 
@@ -127,6 +127,17 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 - **opusplan は禁止しない**: plan 品質の向上 (Opus の deep reasoning) は token cost より価値が高いケースが多い。ただし「opusplan で毎ターン model 切替」を recurring loop に組み込まない
 - **切替は task boundary で**: 別タスクに移るタイミングでだけ model を変える。ターン中に「ちょっと Haiku に投げて戻す」は cache miss が累積する
 - **長い subagent workflow には cache 期待しない**: subagent TTL=5min なので 5 分超のループは subscription cache が効かない。`subagent-delegation-guide.md` も参照
+
+## Model Safety Boundary (Fable classifier / Haiku grader 境界)
+
+> 出典: Fable 5 14-steps absorb (2026-06-12)。fallback 仕様は公式 docs で確認済 (platform.claude.com/cookbook/fable-5-fallback-billing-guide)。
+
+性質の異なる 2 つの「classifier」を混同しない:
+
+1. **Platform 側 domain safety fallback (server-side、こちらで実装するものではない)**: Fable 5 は cyber/bio/chem/distillation 領域の要求を検出すると **server 側で Opus 4.8 に透過的に自動切替**する (billing は cache hit 扱い)。security-reviewer 系タスク・脆弱性調査・暗号 primitive のレビューは Fable 指定でも実質 Opus 4.8 で走りうる。挙動が想定とズレたらこの透過 fallback を疑い、明示的に `Agent(model: "opus")` を指定して切り分ける
+2. **ローカル Bash permission classifier の outage (これは別物)**: `/model claude-fable-5` で Bash auto-mode classifier がセッション全体で死亡した実績 (2026-06-10)。trivial コマンドの成功を復帰の証拠にしない。復旧は `/model` で実績モデルへ。詳細: memory `feedback_model_fable_classifier_outage.md`
+
+**Haiku grader 境界**: Tier 3 の Haiku は「非権威の cheap prefilter / 形式チェック grader」(`/goal` evaluator も Haiku) までに限定する。**permission/safety 判定・最終 verify・マージ判断には使わない** — LLM に Tool Use 権限を判定させる permission classifier は determinism boundary 違反 + prompt injection 耐性なしとして reject 済み (`docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md` #4)。最終評価の権威は Tier 0 の不可譲な責務 (上記「主エージェント (現在のメインモデル) の不可譲な責務」)。
 
 ## Cost-aware Fallback (2026-06-15〜 Agent SDK credit 対応)
 

@@ -27,6 +27,7 @@
 - [エージェント競合解決](concepts/agent-conflict-resolution.md) — 並列エージェント間の矛盾検出・調停パターン
 - [PostHog Agent-First Rules — Wrapper vs Raw Boundary](../research/2026-04-11-posthog-agent-first-rules-analysis.md) — API parity と raw primitive 公開の設計原則。Capability Restriction Policy を subagent-delegation-guide に統合。control plane 設計問題としての wrapper-vs-raw-boundary.md 新規作成
 - [自己改善エージェント](concepts/self-improving-agents.md) — フィードバックループで自律的に能力を向上させる設計
+- **Fable 5 × 自己改善システム 14 ステップ (0xCodez, 2026-06-12)** — self-evolving/multi-agent-orchestration cross-family。採用 3 件: T1 `memory-schema.md` に verification_status ラベル (verified/hypothesis/stale/retracted) + `handoff-template.md` §3.7 / T2 `model-routing.md` に Model Safety Boundary (platform fallback ≠ local classifier, Haiku grader 境界) / T3 `scheduling-decision-table.md` に /goal pilot 条件 → 参照: [2026-06-12-fable5-14steps-absorb-analysis](../research/2026-06-12-fable5-14steps-absorb-analysis.md)
 - [複利ループ](concepts/compounding-loop.md) — フィードバックループによる品質の加速度的改善と堀の構築
 - [ワークフロー最適化](concepts/workflow-optimization.md) — エージェントワークフローの形式化と効率改善
 - [Multi-Agent Coordination Patterns](../references/multi-agent-coordination-patterns.md) — 5 パターン統合ビュー (Generator-Verifier / Orchestrator-Subagent / Agent Teams / Message Bus / Shared State)。「Start with Orchestrator-Subagent」原則と観測された限界に応じた進化戦略。Wave 1 で `references/multi-agent-coordination-patterns.md` 新設予定 → 参照: [analysis](../research/2026-04-11-multi-agent-coordination-patterns-analysis.md)
