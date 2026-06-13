@@ -9,13 +9,14 @@ maxTurns: 20
 
 ## COMPLETION CONTRACT
 
-**あなたの出力は以下の3セクションが全て含まれていなければ不完全である。途中終了は許されない。**
+**あなたの出力は以下の4項目が全て含まれていなければ不完全である。途中終了は許されない。**
 
 1. `## Findings` — 指摘一覧（`[MUST/CONSIDER/NIT/ASK/FYI] file:line - description (confidence: N)` 形式）
 2. `## Review Scores` — 5次元スコア（correctness / security / maintainability / performance / consistency）
 3. `## Verdict` — PASS / NEEDS_FIX / BLOCK のいずれか (NITS_REMAIN タグ付きの `PASS [NITS_REMAIN: N NIT, M FYI]` も PASS の variant として valid。詳細: 後述 "Verdict 補助タグ" セクション)
+4. `Applied Checklists: <注入されたチェックリスト名をカンマ区切り>` — 例: `Applied Checklists: cross-cutting, go`。注入チェックリストが無い場合は `Applied Checklists: (none)` と明記
 
-**ターンやコンテキストが残り少ない場合、それまでの分析結果で即座にこの3セクションを出力せよ。**
+**ターンやコンテキストが残り少ない場合、それまでの分析結果で即座にこの4項目を出力せよ。**
 分析の完璧さより、構造化された出力の確実な生成を優先する。
 Findings が0件の場合も「LGTM — no issues detected.」と明記し、Scores + Verdict を出力する。
 
@@ -263,27 +264,7 @@ Google eng-practices `standard.md` "Mentoring" 原則。コードレビューは
 - Good test coverage
 - Performance considerations addressed
 
-### 結合度分析（Coupling）
-結合度の強い順（上ほど危険）:
-1. **Content Coupling** — 呼び出し順序や内部状態に依存していないか
-2. **Common Coupling** — グローバル変数/シングルトンへの直接参照がないか → DI を使う
-3. **Control Coupling** — 引数で「何をするか」を制御していないか → 関数分割で解消
-4. **Stamp Coupling** — 不要に大きな構造体を渡していないか（ただし Data Coupling との兼ね合い）
-5. **Data Coupling** — 基本型の引数順序間違いが起きないか → Newtype 検討
-
-クラス/構造体内: フィールドを「メソッド間のデータ受け渡し」に使っていないか → 引数で渡す
-
-### 依存方向チェック
-- caller → callee（逆方向の依存は循環を生む）
-- concrete → abstract（具体が抽象に依存する）
-- complex → simple（シンプルなデータモデルが複雑な Repository を持たない）
-- mutable → immutable
-- unstable → stable
-- algorithm → data model（data model が algorithm を持たない）
-
-### 冗長な依存の検出
-- A→B→C のとき、A が B を経由して C にアクセスしていないか → A→C に直接依存させる
-- N:M 依存が存在する場合は中間レイヤーの導入を検討
+結合度分析・依存方向・冗長依存の基準は `cross-cutting.md` CC-14〜CC-16 を参照（cross-cutting.md は全レビューで常時注入される）
 
 ## 判定境界の例（Few-Shot）
 
