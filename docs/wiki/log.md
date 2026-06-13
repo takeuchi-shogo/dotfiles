@@ -1647,10 +1647,9 @@
 - **.py→Rust ドキュメント drift が 23ファイルに波及**: 現役13 + active plan2 + test1 が要修正、ADR/spec/completed・paused plan 7 は immutable 除外 → L 規模整合プランを `docs/plans/active/2026-06-09-python-hook-rust-doc-reconciliation-plan.md` に保存、新セッション /rpi 実行
 - 教訓: skip の「Already/rehash」判定で matched_prior の **配線 live 確認 (B)** と **存在確認 (A)** を区別する。今回は MEMORY stale が A を B に見せかけていた
 
-## [2026-06-12] ingest | Build self-improving agent system with Fable 5 in 14 steps (0xCodez)
+## [2026-06-12] ingest | nrslib サーヴァントエンジニアリング (レビュー速度改善)
 
-- ソース: https://x.com/0xCodez/status/2065089060104720776
-- 判定: Gap 0個 (Phase 2.5 で全降格), Partial 4個, Already 8個, 採用 3 件 (T1 verification_status / T2 Model Safety Boundary / T3 /goal pilot)
-- Saturation: PASS (warning, self-evolving + multi-agent-orchestration cross-family)
-- 取り込み: memory-schema + handoff-template + model-routing + scheduling-decision-table の 4 ファイル (全て S)
-- Fact-check: /goal・Outcomes・CMA・Routines・server-side fallback VERIFIED / Parameter Golf・Continual Learning Bench 数値 UNVERIFIED
+- ソース: https://speakerdeck.com/nrslib/implementation-got-faster-so-what-about-reviews-an-invitation-to-servant-engineering-recreating-your-own-code-reviews-with-ai
+- 判定: Gap 2個 (tiering+計測), 既採用未実装 1個, Partial 4個, Already 3個, N/A 1個 (family 8件目 PASS-warning)
+- 取り込み: 全8タスク採用 → docs/plans/active/2026-06-12-servant-engineering-review-speed-plan.md (L)
+- 特記: Codex が CLAUDE.md S規模 Codex Gate vs review SKILL ~10行省略の policy conflict を検出
