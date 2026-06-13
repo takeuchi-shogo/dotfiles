@@ -1,0 +1,7 @@
+# memory-vec runtime — version the source, ignore generated/installed artifacts.
+# Source (versioned): reindex.ts, query.ts, package.json, pnpm-lock.yaml, lib/memory_redactor.py
+node_modules/
+index.db
+index.db.tmp
+.reindex.lock
+lib/__pycache__/
