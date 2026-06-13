@@ -34,6 +34,14 @@ last_reviewed: 2026-04-23
   - **学び**: [この失敗から得た知見（次セッションが避けるべきこと）]
 - _(複数ある場合は繰り返す)_
 
+### 3.7. 検証済み事実 / 未検証仮説 (Verified Facts / Hypotheses)
+> Dead Ends (3.5) の対セクション。次セッションが「再導出せず信じてよいこと」と「裏取りしてから使うこと」を分ける。
+> 判定基準は `references/memory-schema.md` の verification_status (verified / hypothesis / stale / retracted) に従う。
+
+- **検証済み**: [事実の1行要約 — 裏取り方法を添える（実行結果 / 観測ログ / 公式 docs）]
+- **仮説**: [もっともらしいが未検証の推測 — 何を確認すれば verified になるかを添える]
+- _(根拠を添えられないものは「検証済み」に書かない)_
+
 ### 4. 推奨アクション
 - **即座に必要なこと**: [次に取るべきアクション]
 - **判断が必要な点**: [人間の意思決定が必要な事項]
@@ -86,6 +94,11 @@ last_reviewed: 2026-04-23
 - **アプローチ**: timeout 値を 5s → 15s に増加
   - **結果**: CI で同じ箇所で FAIL。タイムアウトではなくネットワーク到達性の問題
   - **学び**: timeout 調整では解決不可。IdP endpoint 自体の疎通を先に確認すべき
+
+### 3.7. 検証済み事実 / 未検証仮説
+- **検証済み**: ローカルと staging の `docker-compose` network 設定は同一 — 両ファイルの diff で確認済み
+- **検証済み**: 失敗箇所は `POST https://idp.staging.internal/token` への到達 — CI エラー出力で確認済み
+- **仮説**: IdP の staging endpoint が移設された — IdP 管理画面のホスト設定を見れば verified になる
 
 ### 4. 推奨アクション
 - **即座に必要なこと**: staging 環境から `idp.staging.internal` への疎通確認（`curl` / `dig`）

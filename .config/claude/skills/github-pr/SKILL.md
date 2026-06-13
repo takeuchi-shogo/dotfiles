@@ -32,6 +32,44 @@ PR品質を繰り返しチェックし、マージ判断を行う。
 - **レビュー後のrebase禁止**: レビュワーからコメントを受けた後はrebaseしない。コミットツリーが変わるとレビュー後の差分が追跡不能になる
 - **PR description更新は確認不要**: 実装が正。実装と乖離したdescriptionの修正は常に正しいため、ユーザー確認なしで実行してよい
 
+## Parallel Closeout: Format → (Tests ∥ Review)
+
+PR commit 直前の closeout として、以下の順序で並列化する。format を先行することで line 位置を確定させ、test と review を**安全に**並列化できる。
+
+> 出典 (verbatim): "Format first if formatting can change line locations. Then it is OK to run tests and review in parallel"
+> — openclaw/agent-skills `autoreview` SKILL.md
+
+### 実行順序
+
+```
+1. Format (must complete before test/review)
+   ├─ Goal: line 位置確定 (review 後の formatting 修正は stale を生む)
+   └─ Commands: <go fmt> / <prettier> / <ruff format> 等
+
+2. Tests ∥ Review (並列)
+   ├─ Tests: focused (変更ファイル + 影響 caller) を優先、full は CI に任せる
+   └─ Review: `/review` skill を並列起動 (または codex-reviewer)
+
+3. Convergence (両方完了後)
+   └─ 両方 clean なら commit、いずれかが NEEDS_FIX/BLOCK なら fix → rerun cycle
+```
+
+### Convergence Rule
+
+> 出典 (verbatim): "tests may force code changes that stale the review. If tests or review lead to code edits, rerun the affected tests and rerun review until no accepted/actionable findings remain"
+> — openclaw/agent-skills `autoreview` SKILL.md
+
+- 両方 clean exit (test pass + review verdict PASS) → commit/push 可
+- Tests が code 変更を促した場合: 影響テスト rerun + review rerun の二重 rerun
+- Review が code 変更を促した場合: 同様に focused test rerun + review rerun
+- 最大 3 サイクル (詳細は `/review` Step 5 サイクルルール 8 参照 — rerun cycle は二重定義しない)
+- cosmetic re-review 禁止 (`/review` SKILL.md Anti-Pattern #7 と同じ): PASS 後の余計な再走は禁止
+
+### 注記
+
+- **commit 前の操作**: このセクションで扱う format/test/review はすべて commit 前の closeout 操作。上記「レビュー後のrebase禁止」ルールと矛盾しない (rebase 禁止はレビュワーコメント受領後の話)
+- **並列化の ROI**: format が短い (~5 秒) + test/review が長い (~30 秒〜数分) の構成で効果が最大になる
+
 ## Size & Splitting
 
 Google eng-practices `small-cls.md` 由来の規律。PR (CL) は "one thing" に focus し、レビュー可能なサイズに保つ。

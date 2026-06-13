@@ -163,6 +163,70 @@ print(f'{updated}/{len(finding_ids)} findings updated')
 
 ---
 
+## Run Metrics (review-metrics.jsonl)
+
+reviewer 別 duration / findings 数 / confidence 分布 / verdict / rerun 数を run 単位で記録し、
+「どの reviewer・どの tier が遅いか」を体感値ではなく実測値で可視化する。
+
+### スキーマ
+
+| フィールド | 説明 |
+| --- | --- |
+| `run_id` | run 識別子 (`rv-YYYY-MM-DD-NNN`) |
+| `timestamp` | 記録日時 (ISO 8601、`append_to_learnings` が自動付与) |
+| `review_tier` | レビュー tier (`light` / `standard` / `deep`)。`tier` は learnings パイプラインが `raw` 等を setdefault する別概念のため使わない |
+| `verdict` | 最終判定 (`PASS` / `NEEDS_FIX` / `BLOCK`) |
+| `total_lines` | レビュー対象の総行数 |
+| `rerun_count` | この run 内での再レビュー回数 (初回=0) |
+| `reviewers` | reviewer 別計測リスト (下記) |
+| `reviewers[].name` | reviewer エージェント名 |
+| `reviewers[].duration_s` | dispatch 前後の wall-clock 概算秒数 |
+| `reviewers[].findings` | この reviewer が報告した指摘数 |
+| `reviewers[].confidence.min` | confidence 最小値 |
+| `reviewers[].confidence.max` | confidence 最大値 |
+| `reviewers[].confidence.mean` | confidence 平均値 |
+
+**注記 (duration_s)**: 初版では dispatch 前後の wall-clock 概算値。reviewer を並列起動するため reviewer 個別の厳密計測はしない。
+
+**注記 (light tier)**: light tier の run も `reviewers=[]` で 1 行記録する (light 発火率の計測のため)。
+
+**ファイル分離の理由**: `review-findings.jsonl` は outcome の in-place 書き戻し対象のため、
+粒度・ライフサイクルが異なる run 単位の計測と混在させない。join キーは `run_id`。
+
+### 記録コマンド例
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from session_events import emit_review_metrics
+
+emit_review_metrics({
+    'run_id': 'rv-2026-06-12-001',
+    'review_tier': 'standard',
+    'verdict': 'NEEDS_FIX',
+    'total_lines': 120,
+    'rerun_count': 0,
+    'reviewers': [
+        {
+            'name': 'code-reviewer',
+            'duration_s': 18.4,
+            'findings': 3,
+            'confidence': {'min': 72, 'max': 95, 'mean': 84.3}
+        },
+        {
+            'name': 'codex-reviewer',
+            'duration_s': 22.1,
+            'findings': 2,
+            'confidence': {'min': 80, 'max': 88, 'mean': 84.0}
+        }
+    ]
+})
+print('run metrics saved')
+"
+```
+
+---
+
 ## Data Storage
 
 レビュー結果のサマリを `~/.claude/skill-data/review/` に蓄積します。

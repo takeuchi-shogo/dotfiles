@@ -132,7 +132,7 @@ S (template に section 追加、~30 行)。
 
 ---
 
-## T8: format → test + review 並列 step を `/review` or `/github-pr` SKILL.md に追加 (M)
+## T8: format → test + review 並列 step を `/review` or `/github-pr` SKILL.md に追加 (M) — ✅ done 2026-06-13 (github-pr/SKILL.md)
 
 ### Target candidates
 1. **第一候補**: `/Users/takeuchishougo/dotfiles/.config/claude/skills/github-pr/SKILL.md`
