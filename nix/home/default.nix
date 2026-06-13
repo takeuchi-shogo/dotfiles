@@ -68,6 +68,17 @@ in
     ".claude/workflows"            = outLink ".config/claude/workflows";
     ".claude/references"           = outLink ".config/claude/references";
 
+    # block 2b: memory-vec indexer source (個別ファイル symlink)。
+    # skill-data/memory-vec/ は node_modules/index.db (ローカル生成物, gitignore) が
+    # 同居するため dir 単位ではなく個別ファイルを symlink (real dir は維持)。
+    # 注意: nix:switch 前に ~/.claude/skill-data/memory-vec/ の実体 .ts/.json/.yaml/lib を
+    # 削除すること (home-manager が既存実ファイルと衝突するため)。node_modules/index.db は残す。
+    ".claude/skill-data/memory-vec/reindex.ts"             = outLink ".config/claude/skill-data/memory-vec/reindex.ts";
+    ".claude/skill-data/memory-vec/query.ts"               = outLink ".config/claude/skill-data/memory-vec/query.ts";
+    ".claude/skill-data/memory-vec/package.json"           = outLink ".config/claude/skill-data/memory-vec/package.json";
+    ".claude/skill-data/memory-vec/pnpm-lock.yaml"         = outLink ".config/claude/skill-data/memory-vec/pnpm-lock.yaml";
+    ".claude/skill-data/memory-vec/lib/memory_redactor.py" = outLink ".config/claude/skill-data/memory-vec/lib/memory_redactor.py";
+
     # block 3: Codex (.codex → ~/.codex)
     # NOTE: .codex/config.toml は Codex.app/cmux が起動時に自己書き換え (notify / node_repl
     # MCP / plugins / marketplaces / hooks trust hash を注入) するため home.file 管理外。
