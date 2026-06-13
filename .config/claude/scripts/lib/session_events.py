@@ -384,6 +384,24 @@ def emit_review_finding(finding: dict) -> None:
     append_to_learnings("review-findings", finding)
 
 
+def emit_review_metrics(metrics: dict) -> None:
+    """レビュー run 単位の計測を review-metrics.jsonl に保存する。
+
+    finding 単位の review-findings.jsonl とは分離する (粒度・書き手・
+    ライフサイクルが異なり、findings 側は outcome の in-place 書き戻し対象のため)。
+    join キーは run_id。
+
+    metrics には以下を含む:
+      run_id (rv-YYYY-MM-DD-NNN), review_tier, verdict, total_lines, rerun_count,
+      reviewers: [{name, duration_s, findings, confidence: {min, max, mean}}]
+
+    review tier のフィールド名は "review_tier" とする。"tier" は
+    append_to_learnings が learnings パイプライン用に setdefault する
+    別概念 (raw/promoted) のため使わない。
+    """
+    append_to_learnings("review-metrics", metrics)
+
+
 def emit_agent_invocation(invocation: dict) -> None:
     """Agent ツール呼び出しを agent-invocations.jsonl に記録する。
 
