@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # launchd-uninstall.sh — nightly LaunchAgent を unload + 削除
+# glob で com.user.nightly.*.plist を全削除（旧 11 個別エントリ + orchestrator 両対応）
 set -euo pipefail
 AGENTS_DIR="$HOME/Library/LaunchAgents"
-TASKS=(caffeinate dep-audit learned-promote golden-check friction-aggregate health-check daily-report audit skill-audit plan-close-scan tech-researcher)
-for task in "${TASKS[@]}"; do
-    plist="$AGENTS_DIR/com.user.nightly.${task}.plist"
-    [[ -f "$plist" ]] || { echo "[skip] $plist not found"; continue; }
+echo "=== Uninstalling all com.user.nightly.* LaunchAgents ==="
+for plist in "$AGENTS_DIR"/com.user.nightly.*.plist; do
+    [[ -f "$plist" ]] || continue
+    label=$(basename "$plist" .plist)
     launchctl unload "$plist" 2>/dev/null || true
     rm -f "$plist"
-    echo "[uninstall] $task"
+    echo "  removed $label"
 done
 echo "完了。state は ~/.cache/nightly/ に残ります (削除する場合は手動)"

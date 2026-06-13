@@ -1,0 +1,45 @@
+# nightly-orchestrator ジョブ定義
+# script パスは dotfiles リポジトリルートからの相対。orchestrator は repo_root を解決して結合する。
+runtime:
+  max_parallel: 3
+jobs:
+  - name: dep-audit
+    script: scripts/runtime/nightly/run-dep-audit.sh
+    timeout_sec: 600
+    retry: 0
+  - name: learned-promote
+    script: scripts/runtime/nightly/run-learned-promote.sh
+    timeout_sec: 1080   # bash 900s + 余裕
+    retry: 1
+  - name: golden-check
+    script: scripts/runtime/nightly/run-golden-check.sh
+    timeout_sec: 720    # bash 600s + 余裕
+    retry: 1
+  - name: friction-aggregate
+    script: scripts/runtime/nightly/run-friction-aggregate.sh
+    timeout_sec: 600
+    retry: 1
+  - name: health-check
+    script: scripts/runtime/nightly/run-health-check.sh
+    timeout_sec: 720
+    retry: 1
+  - name: daily-report
+    script: scripts/runtime/nightly/run-daily-report.sh
+    timeout_sec: 720
+    retry: 1
+  - name: audit
+    script: scripts/runtime/nightly/run-audit.sh
+    timeout_sec: 1440   # bash 1200s + 余裕
+    retry: 1
+  - name: skill-audit
+    script: scripts/runtime/nightly/run-skill-audit.sh
+    timeout_sec: 1080
+    retry: 1
+  - name: plan-close-scan
+    script: scripts/runtime/nightly/run-plan-close-scan.sh
+    timeout_sec: 300
+    retry: 0
+  - name: tech-researcher
+    script: scripts/runtime/tech-researcher/run-tech-researcher.sh
+    timeout_sec: 900
+    retry: 1

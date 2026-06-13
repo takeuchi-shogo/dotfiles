@@ -1,0 +1,14 @@
+version: "3"
+tasks:
+  build:
+    desc: Build the orchestrator binary
+    cmds:
+      - go build -o nightly-orchestrator .
+  test:
+    desc: Run all tests
+    cmds:
+      - go test ./...
+  lint:
+    desc: Vet
+    cmds:
+      - go vet ./...
