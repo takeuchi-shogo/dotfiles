@@ -22,28 +22,19 @@ source "${NIGHTLY_DIR}/nightly-wake.env"
 [[ "${NIGHTLY_WAKE_HOUR:-}" =~ ^[0-9]+$ && "${NIGHTLY_WAKE_MINUTE:-}" =~ ^[0-9]+$ ]] \
     || { echo "[ERROR] nightly-wake.env: NIGHTLY_WAKE_HOUR/MINUTE must be integers" >&2; exit 1; }
 
+# orchestrator バイナリをビルド（launchd は絶対パスでバイナリを叩く）
+ORCH_DIR="${TASKFILE_DIR:-$(git -C "$NIGHTLY_DIR" rev-parse --show-toplevel)}/tools/nightly-orchestrator"
+echo "=== Building nightly-orchestrator ==="
+( cd "$ORCH_DIR" && go build -o nightly-orchestrator . ) || { echo "ERROR: orchestrator build failed" >&2; exit 1; }
+ORCH_BIN="${ORCH_DIR}/nightly-orchestrator"
+
+# 移行後: 個別 11 ジョブは orchestrator が内部で並列実行する。
+# launchd エントリは caffeinate（スリープ抑止）と orchestrator の 2 本のみ。
 TASKS=(
     # caffeinate アンブレラ: wake 時刻に発火し、バッチ完了までスリープを抑止する
-    # (pmset の `sleep 1` 対策)。最初の実ジョブ dep-audit (22:30) より前に置く。
     "caffeinate|${NIGHTLY_WAKE_HOUR}|${NIGHTLY_WAKE_MINUTE}|nightly-caffeinate.sh"
-    "dep-audit|22|30|run-dep-audit.sh"
-    # learned-promote: 週次ゲート (LEARNED_PROMOTE_DOW) はスクリプト内蔵。非ゲート日は
-    # reconcile + skip で数秒。22 時台の lock 空き枠に置き、23 時台の claude -p 隊列と分離。
-    "learned-promote|22|45|run-learned-promote.sh"
-    "golden-check|23|15|run-golden-check.sh"
-    "friction-aggregate|23|20|run-friction-aggregate.sh"
-    "health-check|23|25|run-health-check.sh"
-    "daily-report|23|35|run-daily-report.sh"
-    "audit|23|45|run-audit.sh"
-    # skill-audit: audit と同時刻 (23:45) だと lock 衝突で fail する (2026-06-08 実績)。
-    # 5 分ずらし + lock wait 1200s (nightly-status.sh) で audit 最大 20 分を直列吸収する。
-    # 0 時台へは動かさない (NIGHTLY_DATE が翌日扱いになり DOW gate/status JSONL が 1 日ずれる)。
-    "skill-audit|23|50|run-skill-audit.sh"
-    "plan-close-scan|0|50|run-plan-close-scan.sh"
-    # tech-researcher: nightly ゲート相乗り (別ディレクトリ、.. は exec 時に解決)。
-    # audit/skill-audit (23:45) の後に置き claude lock 競合を避ける。
-    "tech-researcher|23|55|../tech-researcher/run-tech-researcher.sh"
 )
+# orchestrator は別関数で専用 plist を生成（ProgramArguments が go バイナリで bash と異なるため）
 
 generate_plist() {
     local task="$1" hour="$2" minute="$3" script="$4"
@@ -98,11 +89,59 @@ PLIST
     echo "[install] ${task}: ${hour}:${minute} → $(basename "$plist")"
 }
 
+generate_orchestrator_plist() {
+    local plist="$AGENTS_DIR/com.user.nightly.orchestrator.plist"
+    # caffeinate (NIGHTLY_WAKE_HOUR:NIGHTLY_WAKE_MINUTE) の 2 分後に起動し、スリープ抑止下で全ジョブを回す
+    cat > "$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.nightly.orchestrator</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>${ORCH_BIN}</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>${NIGHTLY_WAKE_HOUR}</integer>
+        <key>Minute</key><integer>$((NIGHTLY_WAKE_MINUTE + 2))</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/tmp/nightly-orchestrator.launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/nightly-orchestrator.launchd.log</string>
+    <key>WorkingDirectory</key>
+    <string>${HOME}</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key><string>/Applications/cmux.app/Contents/Resources/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key><string>${HOME}</string>
+        <key>TZ</key><string>Asia/Tokyo</string>
+        <key>OBSIDIAN_VAULT_PATH</key><string>${VAULT_PATH}</string>
+        <key>NIGHTLY_CLAUDE_MODEL</key><string>${NIGHTLY_CLAUDE_MODEL}</string>
+    </dict>
+</dict>
+</plist>
+PLIST
+    plutil -lint "$plist" >/dev/null || { echo "ERROR: invalid orchestrator plist" >&2; return 1; }
+    echo "$plist"
+}
+
 echo "=== Installing ${#TASKS[@]} nightly LaunchAgents ==="
 for entry in "${TASKS[@]}"; do
     IFS='|' read -r task hour minute script <<< "$entry"
     generate_plist "$task" "$hour" "$minute" "$script"
 done
+
+echo "=== Installing orchestrator LaunchAgent ==="
+orch_plist=$(generate_orchestrator_plist) || exit 1
+launchctl unload "$orch_plist" 2>/dev/null || true
+launchctl load "$orch_plist"
+echo "  loaded com.user.nightly.orchestrator (starts $((NIGHTLY_WAKE_MINUTE + 2)) past ${NIGHTLY_WAKE_HOUR}:00)"
 
 echo
 echo "=== Verification: launchctl list (nightly entries) ==="
