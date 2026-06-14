@@ -72,6 +72,7 @@ func run(jobsPath string, dryRun bool) error {
 		"OBSIDIAN_VAULT_PATH":    os.Getenv("OBSIDIAN_VAULT_PATH"),
 		"NIGHTLY_CODEX_MODEL":    envOr("NIGHTLY_CODEX_MODEL", "gpt-5.5"),
 		"NIGHTLY_CODEX_EFFORT":   envOr("NIGHTLY_CODEX_EFFORT", "high"),
+		"NIGHTLY_CODEX_BIN":      envOr("NIGHTLY_CODEX_BIN", "codex"),
 	}
 
 	o := orchestrator.New(cfg, orchestrator.Options{

@@ -322,9 +322,9 @@ _save_debug() {
 # fail。bad PR は作られない)。プロンプトは stdin 経由 (positional arg は stdin EOF 待ちで hang)。
 CLAUDE_LOG=$(mktemp -t "lp-codex.XXXXXX"); _TMPFILES+=("$CLAUDE_LOG")
 CLAUDE_ERR=$(mktemp -t "lp-err.XXXXXX"); _TMPFILES+=("$CLAUDE_ERR")
-if ! printf '%s' "$PROMPT" | "$TIMEOUT_BIN" 900s codex exec \
+if ! printf '%s' "$PROMPT" | "$TIMEOUT_BIN" 900s "${NIGHTLY_CODEX_BIN:-codex}" exec \
         --skip-git-repo-check -m "${NIGHTLY_CODEX_MODEL:-gpt-5.5}" \
-        --sandbox workspace-write -C "$WORK_TREE" \
+        --sandbox workspace-write -C "$WORK_TREE" --ignore-user-config \
         --config model_reasoning_effort="${NIGHTLY_CODEX_EFFORT:-high}" \
         > "$CLAUDE_LOG" 2> "$CLAUDE_ERR"; then
     release_claude_lock

@@ -21,6 +21,23 @@ NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.5}"
 NIGHTLY_CODEX_EFFORT="${NIGHTLY_CODEX_EFFORT:-high}"
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 
+# codex バイナリの絶対パスを install 時 (= operator の対話シェル) に解決して plist env に焼く。
+# launchd の bash -lc (login shell) は .bash_profile 再読込で mise を活性化せず、PATH 解決だと
+# stale な /usr/local/bin/codex 0.39.0 (--output-last-message 短縮形 / remote MCP 非対応) に
+# 落ちて全ジョブ失敗する (2026-06-14 実夜で実証)。絶対パスで PATH 非依存にする。
+NIGHTLY_CODEX_BIN="${NIGHTLY_CODEX_BIN:-$(command -v codex || true)}"
+if [[ -z "$NIGHTLY_CODEX_BIN" || ! -x "$NIGHTLY_CODEX_BIN" ]]; then
+    echo "[ERROR] codex CLI が見つからない (command -v codex)。先に codex を install/activate せよ" >&2
+    exit 1
+fi
+# 解決した codex が --output-last-message を持つか検証 (古い 0.39.0 等を弾く)。
+if ! "$NIGHTLY_CODEX_BIN" exec --help 2>/dev/null | grep -q -- '--output-last-message'; then
+    echo "[ERROR] $NIGHTLY_CODEX_BIN は --output-last-message 非対応 (古すぎ)。codex を更新せよ" >&2
+    "$NIGHTLY_CODEX_BIN" --version >&2 || true
+    exit 1
+fi
+echo "[install] codex bin: $NIGHTLY_CODEX_BIN ($("$NIGHTLY_CODEX_BIN" --version 2>/dev/null))"
+
 # wake/caffeinate 時刻の単一真実源 (setup-nightly-wake.sh の pmset と揃える)
 # shellcheck source=./nightly-wake.env
 source "${NIGHTLY_DIR}/nightly-wake.env"
@@ -83,6 +100,8 @@ generate_plist() {
         <string>${NIGHTLY_CODEX_MODEL}</string>
         <key>NIGHTLY_CODEX_EFFORT</key>
         <string>${NIGHTLY_CODEX_EFFORT}</string>
+        <key>NIGHTLY_CODEX_BIN</key>
+        <string>${NIGHTLY_CODEX_BIN}</string>
     </dict>
     <key>StandardOutPath</key>
     <string>/tmp/nightly-${task}.launchd.log</string>
@@ -135,6 +154,7 @@ generate_orchestrator_plist() {
         <key>OBSIDIAN_VAULT_PATH</key><string>${VAULT_PATH}</string>
         <key>NIGHTLY_CODEX_MODEL</key><string>${NIGHTLY_CODEX_MODEL}</string>
         <key>NIGHTLY_CODEX_EFFORT</key><string>${NIGHTLY_CODEX_EFFORT}</string>
+        <key>NIGHTLY_CODEX_BIN</key><string>${NIGHTLY_CODEX_BIN}</string>
     </dict>
 </dict>
 </plist>
