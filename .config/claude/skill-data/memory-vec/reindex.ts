@@ -46,9 +46,9 @@ const MEMORY_DIR = join(
 	HOME,
 	".claude/projects/-Users-takeuchishougo-dotfiles/memory",
 );
-const VAULT_PATH = process.env.OBSIDIAN_VAULT_PATH
-	? process.env.OBSIDIAN_VAULT_PATH
-	: join(HOME, "Documents/Obsidian Vault");
+const VAULT_PATH =
+	process.env.OBSIDIAN_VAULT_PATH?.trim() ||
+	join(HOME, "Documents/Obsidian Vault");
 
 type SourceRoot = { root: string; source: string };
 

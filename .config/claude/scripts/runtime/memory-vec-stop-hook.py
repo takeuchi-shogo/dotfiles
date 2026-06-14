@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Memory vector index Stop hook (Phase C).
 
-If memory/*.md is newer than ~/.claude/skill-data/memory-vec/index.db,
-fire-and-forget a background reindex via Node. Always exits 0 within ~100ms
-so session termination is never blocked.
+If memory/*.md or Vault article *.md is newer than
+~/.claude/skill-data/memory-vec/index.db, fire-and-forget a background reindex
+via Node. Always exits 0 within ~100ms so session termination is never blocked.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ LOG_FILE = Path.home() / ".claude" / "logs" / "memory-vec.log"
 
 
 def _vault_path() -> Path:
-    env = os.environ.get("OBSIDIAN_VAULT_PATH")
+    env = os.environ.get("OBSIDIAN_VAULT_PATH", "").strip()
     return Path(env) if env else Path.home() / "Documents" / "Obsidian Vault"
 
 

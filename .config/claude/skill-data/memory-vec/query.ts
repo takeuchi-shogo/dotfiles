@@ -1,7 +1,7 @@
 // query.ts (Phase D)
 //
 // CLI: node --experimental-strip-types query.ts <query-text>
-// Outputs JSON array on stdout: [{ path, name, distance }, ...]
+// Outputs JSON array on stdout: [{ path, name, distance, source }, ...]
 //
 // Located alongside node_modules/ (same reason as reindex.ts).
 
@@ -17,7 +17,7 @@ env.useBrowserCache = false;
 const DB_PATH = join(homedir(), ".claude/skill-data/memory-vec/index.db");
 const EMBED_MODEL = "Xenova/all-MiniLM-L6-v2";
 const TOP_K = 5;
-const OVERFETCH_K = 20;
+const OVERFETCH_K = 50;
 
 export function openDB(path: string): DatabaseSync {
 	const db = new DatabaseSync(path, { allowExtension: true });
@@ -80,7 +80,10 @@ async function main(): Promise<void> {
 		process.exit(2);
 	}
 	const srcIdx = process.argv.indexOf("--source");
-	const source = srcIdx >= 0 ? process.argv[srcIdx + 1] : undefined;
+	const source =
+		srcIdx >= 0 && srcIdx + 1 < process.argv.length
+			? process.argv[srcIdx + 1]
+			: undefined;
 	const rows = await queryIndex(DB_PATH, query, { source });
 	process.stdout.write(JSON.stringify(rows));
 }
