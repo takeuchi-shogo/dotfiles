@@ -9,6 +9,7 @@ so session termination is never blocked.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,16 @@ SKILL_DATA = Path.home() / ".claude" / "skill-data" / "memory-vec"
 INDEX_DB = SKILL_DATA / "index.db"
 REINDEX_SCRIPT = SKILL_DATA / "reindex.ts"
 LOG_FILE = Path.home() / ".claude" / "logs" / "memory-vec.log"
+
+
+def _vault_path() -> Path:
+    env = os.environ.get("OBSIDIAN_VAULT_PATH")
+    return Path(env) if env else Path.home() / "Documents" / "Obsidian Vault"
+
+
+def scan_dirs() -> list[Path]:
+    vault = _vault_path()
+    return [MEMORY_DIR, vault / "05-Literature", vault / "09-TechTrends"]
 
 
 def _log(stage: str, error: BaseException) -> None:
@@ -71,7 +82,7 @@ def _log_event(stage: str, payload: dict) -> None:
 def main() -> int:
     _drain_stdin()
 
-    if not MEMORY_DIR.is_dir() or not REINDEX_SCRIPT.is_file():
+    if not REINDEX_SCRIPT.is_file():
         return 0
 
     node_bin = shutil.which("node")
@@ -80,7 +91,10 @@ def main() -> int:
         return 0
 
     try:
-        md_files = list(MEMORY_DIR.glob("*.md"))
+        md_files: list[Path] = []
+        for d in scan_dirs():
+            if d.is_dir():
+                md_files.extend(d.glob("*.md"))
         if not md_files:
             return 0
 
