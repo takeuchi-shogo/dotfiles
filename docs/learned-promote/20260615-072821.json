@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-15",
+  "branch": "auto/learned-promote-20260615-072821",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "148cfda4e52ac5dbbcf31b958f55234c52fa42d5",
+      "decision": "adopted",
+      "scope": "launchd",
+      "target_artifact": ".config/claude/references/managed-agents-scheduling.md",
+      "detail_excerpt": "launchd の bash -lc <path> は +x 必須"
+    },
+    {
+      "key": "3b47479f8b0e66127ef674d02528fab63293b20b",
+      "decision": "rejected",
+      "scope": "task-registry",
+      "reason": "already covered: .config/claude/references/task-registry-schema.md",
+      "detail_excerpt": "task-registry.jsonl 未生成は autonomous 未起動"
+    },
+    {
+      "key": "9984fd00c7075b8e65233e0d3efec66003c9c1da",
+      "decision": "rejected",
+      "scope": "symphony-absorb",
+      "reason": "already covered: docs/plans/active/2026-04-29-symphony-clawsweeper-absorb-plan.md",
+      "detail_excerpt": "新規取り込みでなく既存 Codex Janitor のハーデニング"
+    },
+    {
+      "key": "9f2aa4b5f6c3a27492b0ab51a4a5cac432e3585f",
+      "decision": "adopted",
+      "scope": "codex-absorb-timeout",
+      "target_artifact": ".config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "large-context absorb で Codex stall 時は Gemini fallback"
+    },
+    {
+      "key": "ef9e35ec21f2f3b8c14e7b2d2b78ce66c5a3e68b",
+      "decision": "adopted",
+      "scope": "python-re-safety",
+      "target_artifact": ".config/claude/agents/security-reviewer.md",
+      "detail_excerpt": "Python re は timeout なし、ReDoS に size cap 必須"
+    }
+  ]
+}
