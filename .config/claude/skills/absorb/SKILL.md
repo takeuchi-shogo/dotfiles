@@ -58,6 +58,8 @@ metadata:
 | 4: Plan | Opus → Sonnet | プラン策定 → レポート書き出し委譲 |
 | 5+: Wiki/Obsidian/Log | Sonnet BG | 書き込み作業を並列委譲 |
 
+large-context absorb で Codex CLI が 14 分程度 no-progress になった場合は、Codex 側を失敗として記録し、Gemini-only の Phase 3 fallback に進んでよい。fallback 理由と未取得の Codex 批評は分析レポートに明記する。
+
 ## Phase 1: Extract（要点抽出） [Haiku / Gemini に委譲]
 
 ### Phase 1.0: 取得経路の決定 (gate)

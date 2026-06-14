@@ -13,6 +13,8 @@ last_reviewed: 2026-05-14
 | Patrol Agent | launchd plist | 5分ごと | `scripts/runtime/com.claude.patrol-agent.plist` |
 | AutoEvolve | cron | 毎日 03:00 | `scripts/runtime/autoevolve-runner.sh` |
 
+launchd plist から `bash -lc <script-path>` 形式で起動するスクリプトは、事前に `+x` を確認する。shell がパスを直接 exec するため、実行権限がないと `exit 126 Permission denied` で失敗する。
+
 ## Managed Agents API での代替
 
 ```
