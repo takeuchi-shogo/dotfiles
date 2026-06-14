@@ -165,6 +165,8 @@ as they skew the data and make retention look worse than it actually is.
 
 スキルが複数フェーズの生成タスクを扱う場合、SKILL.md 本文に「生成中に毎回照合する最低基準」を書く。設計参考資料と違うのは、**生成の途中で self-check が強制される形式** にすること。抽象的な「ベストプラクティス」は読み流されるが、checkbox 形式の Contract は途中照合を促す。
 
+> **completion-gate との役割分担**: `scripts/policy/completion-gate.py` hook は Stop 時・テスト時の機械ゲートで、生成途中の形式・tone・claim の具体性までは拾えない。Pre-generation Contract はその盲点を生成中に埋める補完であり、機械ゲートの代替ではない。両者は別レイヤーとして併用する。高 stakes な skill（破壊的操作・検証報告・review/gate 系）に選択適用し、全 skill に一律展開はしない。
+
 #### 義務レベルの 3 層
 
 | レベル | 意味 | 扱い |
