@@ -147,6 +147,8 @@ def _run_query(query: str, node_bin: str) -> list[dict] | None:
                 "--no-warnings",
                 str(QUERY_SCRIPT),
                 query,
+                "--source",
+                "memory",
             ],
             capture_output=True,
             text=True,

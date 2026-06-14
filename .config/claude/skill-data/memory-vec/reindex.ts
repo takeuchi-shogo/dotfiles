@@ -46,6 +46,17 @@ const MEMORY_DIR = join(
 	HOME,
 	".claude/projects/-Users-takeuchishougo-dotfiles/memory",
 );
+const VAULT_PATH =
+	process.env.OBSIDIAN_VAULT_PATH?.trim() ||
+	join(HOME, "Documents/Obsidian Vault");
+
+type SourceRoot = { root: string; source: string };
+
+const SOURCES: SourceRoot[] = [
+	{ root: MEMORY_DIR, source: "memory" },
+	{ root: join(VAULT_PATH, "05-Literature"), source: "vault" },
+	{ root: join(VAULT_PATH, "09-TechTrends"), source: "vault" },
+];
 const SKILL_DATA = join(HOME, ".claude/skill-data/memory-vec");
 const DB_PATH = join(SKILL_DATA, "index.db");
 const DB_TMP = join(SKILL_DATA, "index.db.tmp");
@@ -231,23 +242,25 @@ async function embed(text: string): Promise<Float32Array> {
 	return new Float32Array(out.data);
 }
 
-type DocFile = { path: string; name: string; body: string };
+type DocFile = { path: string; name: string; body: string; source: string };
 
-function readMemoryFiles(): DocFile[] {
-	let files: string[];
-	try {
-		files = readdirSync(MEMORY_DIR).filter((f: string) => f.endsWith(".md"));
-	} catch (e) {
-		logFailure("readdir_memory", e);
-		return [];
-	}
+export function readSourceFiles(sources: SourceRoot[]): DocFile[] {
 	const out: DocFile[] = [];
-	for (const f of files) {
-		const path = join(MEMORY_DIR, f);
+	for (const { root, source } of sources) {
+		let files: string[];
 		try {
-			out.push({ path, name: f, body: readFileSync(path, "utf8") });
+			files = readdirSync(root).filter((f: string) => f.endsWith(".md"));
 		} catch (e) {
-			logFailure(`read_file:${f}`, e);
+			logFailure(`readdir:${source}:${root}`, e);
+			continue;
+		}
+		for (const f of files) {
+			const path = join(root, f);
+			try {
+				out.push({ path, name: f, body: readFileSync(path, "utf8"), source });
+			} catch (e) {
+				logFailure(`read_file:${f}`, e);
+			}
 		}
 	}
 	return out;
@@ -265,7 +278,8 @@ async function rebuildIndex(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         path TEXT NOT NULL,
-        body TEXT NOT NULL
+        body TEXT NOT NULL,
+        source TEXT NOT NULL
       );
     `);
 		db.exec(
@@ -273,13 +287,13 @@ async function rebuildIndex(
 		);
 
 		const insertDoc = db.prepare(
-			`INSERT INTO docs (name, path, body) VALUES (?, ?, ?) RETURNING id`,
+			`INSERT INTO docs (name, path, body, source) VALUES (?, ?, ?, ?) RETURNING id`,
 		);
 		const insertVec = db.prepare(
 			`INSERT INTO doc_vec (rowid, embedding) VALUES (?, ?)`,
 		);
 
-		const docs = readMemoryFiles();
+		const docs = readSourceFiles(SOURCES);
 		let indexed = 0;
 		let skipped = 0;
 		let anomalies = 0;
@@ -303,7 +317,9 @@ async function rebuildIndex(
 			}
 			try {
 				const emb = await embed(clean.slice(0, 2000));
-				const inserted = insertDoc.get(d.name, d.path, clean) as { id: number };
+				const inserted = insertDoc.get(d.name, d.path, clean, d.source) as {
+					id: number;
+				};
 				insertVec.run(
 					BigInt(inserted.id),
 					new Uint8Array(emb.buffer, emb.byteOffset, emb.byteLength),
@@ -388,8 +404,10 @@ async function main(): Promise<void> {
 	}
 }
 
-main().catch((e) => {
-	logFailure("unhandled", e);
-	touchSentinel(DB_PATH);
-	process.exitCode = 1;
-});
+if (import.meta.main) {
+	main().catch((e) => {
+		logFailure("unhandled", e);
+		touchSentinel(DB_PATH);
+		process.exitCode = 1;
+	});
+}
