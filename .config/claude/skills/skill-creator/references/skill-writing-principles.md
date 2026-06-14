@@ -15,7 +15,7 @@ hamelsmu/evals-skills (meta-skill.md) から適応した、スキル品質を高
 
 **Good:** "特定の失敗モードに基づく binary pass/fail 評価を使用する。ROUGE, BERTScore, cosine similarity を主要指標にしない。"
 
-**例外**: 指示に従わないと重大な結果を招く場合のみ、1文の「なぜ」を添える。
+**例外**: 次のいずれかに該当するルールだけ、1 文の「なぜ」を inline で添える — (a) 違反すると重大な結果を招く (b) 直感に反し省略されやすい (c) 実行コストが高く根拠なしには skip されやすい。短い rationale は遵守率を上げるが、全ルールに付けると IFScale で逆効果になるため、この 3 条件に限定する。詳細な根拠は references/ に分離する Progressive Disclosure を崩さない。
 
 ### 1.1. Invert Test — 反対の結論を導けるか？
 

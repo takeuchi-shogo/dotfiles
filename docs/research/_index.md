@@ -93,6 +93,7 @@ last_reviewed: 2026-04-23
 - 12 Claude Patterns — rewrite skill + think decision/roleplay + digest summarize + challenge persona + checkpoint brief + 参照2件
 - CC Automation Guide — spike Feasibilityラベル + cron拡充
 - Paper Analysis Prompts — 9プロンプト → /paper-analysisスキル統合、安全機構: 原典照合 + チャンキング + Sycophancy防止
+- Claude Fable 5 System Prompt (公式チャットプロンプト再構成版, craft reference) — 採用4件 (O3 応答作法 / M5 危険ルール1文rationale / M3 Pre-gen Contract判定訂正 / O4 prose output-mode)。教訓: verbatim 移植も calibration 破壊と同等に危険 (injection 継承/staleness)→behavior を自 harness vocabulary に翻訳。2.5 gate が in-group バイアスを双方向補正 → `docs/research/2026-06-14-claude-fable5-system-prompt-absorb-analysis.md`
 
 ### セキュリティ
 
