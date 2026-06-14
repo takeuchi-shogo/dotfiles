@@ -1,6 +1,8 @@
 ---
-status: active
-last_reviewed: 2026-04-29
+status: superseded
+last_reviewed: 2026-06-14
+superseded-by: 2026-06-14
+superseded-note: "T4-C (regression-suite populate + harness 変更時 hook) は上流 /improve (retire 2026-05-03) に依存して孤立。regression-gate.py は /improve Adversarial Phase 専用・regression-suite.json 未生成で silent-skip する死蔵。capability gap (失敗の exact input を恒久 regression 化) は TDD reproduce-then-fix + failure-escalation-protocol で概念カバー済。Opik self-repairing harness absorb (2026-06-14) の stale-plan audit で退役確定。詳細: docs/research/2026-06-14-opik-self-repairing-harness-absorb-analysis.md"
 ---
 
 # Self-Healing Agent Harness Absorb Plan
