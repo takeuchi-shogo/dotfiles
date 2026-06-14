@@ -914,7 +914,7 @@
       ]
     }
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "outputStyle": "prose",
   "plansDirectory": "./tmp/plans",
   "skipWorkflowUsageWarning": true,
