@@ -15,10 +15,6 @@ jobs:
     script: scripts/runtime/nightly/run-golden-check.sh
     timeout_sec: 720    # bash 600s + 余裕
     retry: 1
-  - name: friction-aggregate
-    script: scripts/runtime/nightly/run-friction-aggregate.sh
-    timeout_sec: 600
-    retry: 1
   - name: health-check
     script: scripts/runtime/nightly/run-health-check.sh
     timeout_sec: 720
