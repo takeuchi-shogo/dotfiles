@@ -1,8 +1,8 @@
 ---
-status: implemented
+status: partially-implemented
 implemented-by: 2026-05-30
-implemented-note: "Tri-judge panel が /absorb Phase 2.5 (Codex + Gemini 異モデルファミリ並列批評) として実装済み。2026-05-30 Hermes absorb の Stale-Plan Audit で implemented 確定。"
-last_reviewed: 2026-05-30
+implemented-note: "T1/T2/T3 のみ実装済 (Tri-judge panel が /absorb Phase 2.5 = T2、2026-05-30 Hermes absorb の Stale-Plan Audit で確定)。**T4-C (regression-suite populate) は未実装のまま 2026-06-14 に superseded** — 上流 /improve (retire 2026-05-03) 依存で孤立、Opik self-repairing harness absorb の stale-plan audit で退役。frontmatter を implemented→partially-implemented に訂正。"
+last_reviewed: 2026-06-14
 ---
 
 # Self-Healing Agent Harness 記事分析レポート
