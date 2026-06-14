@@ -26,6 +26,8 @@ Output:
   - JSONL: ~/.claude/logs/doc-status-audit-{date}.jsonl
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
