@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Harness — takeuchi-shogo/dotfiles</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23070b14'/%3E%3Crect x='3' y='3' width='10' height='2' fill='%234fd8eb'/%3E%3Crect x='3' y='7' width='7' height='2' fill='%234fd8eb'/%3E%3Crect x='3' y='11' width='10' height='2' fill='%23f5a524'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg0:#070b14;
+  --bg1:#0d1322;
+  --bg2:#111a2e;
+  --panel:rgba(13,19,34,.72);
+  --line:rgba(79,216,235,.16);
+  --line-soft:rgba(79,216,235,.07);
+  --cyan:#4fd8eb;
+  --cyan-dim:#2b94a6;
+  --cyan-glow:rgba(79,216,235,.35);
+  --amber:#f5a524;
+  --amber-dim:rgba(245,165,36,.55);
+  --txt:#c9d6e3;
+  --txt-dim:#8294a8;
+  --txt-faint:#7388a0;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+}
+body{
+  font-family:var(--sans);
+  color:var(--txt);
+  font-size:15px;
+  line-height:1.75;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(79,216,235,.07), transparent 62%),
+    radial-gradient(900px 600px at 8% 108%, rgba(245,165,36,.05), transparent 60%),
+    linear-gradient(180deg, #081020 0%, var(--bg0) 30%, var(--bg0) 100%);
+  min-height:100vh;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, var(--line-soft) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(90deg, var(--line-soft) 0 1px, transparent 1px 56px);
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 20%, #000 30%, transparent 90%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 20%, #000 30%, transparent 90%);
+}
+.scanlines{
+  position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.10) 3px 4px);
+}
+.wrap{position:relative; z-index:2; max-width:1060px; margin:0 auto; padding:0 24px 40px}
+
+/* ---------- typography ---------- */
+h1,h2,h3,h4,.mono{font-family:var(--mono)}
+code{font-family:var(--mono); font-size:.92em; color:var(--cyan); word-break:break-all}
+a{color:var(--cyan); text-decoration:none}
+a:hover{text-decoration:underline}
+h2{
+  font-size:1.25rem; letter-spacing:.04em; color:#e8f4f8;
+  display:flex; align-items:baseline; gap:12px; margin-bottom:6px;
+}
+.h-mark{
+  color:var(--amber); font-size:.78rem; letter-spacing:.18em;
+  border:1px solid rgba(245,165,36,.35); padding:1px 8px; border-radius:2px;
+}
+.sec{margin-top:72px}
+.sec-lead{color:var(--txt-dim); font-size:.88rem; margin-bottom:22px}
+
+/* ---------- hero ---------- */
+.hero{padding:84px 0 20px; text-align:left}
+.hero-badges{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px}
+.badge{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.14em;
+  color:var(--cyan); border:1px solid var(--line); padding:3px 12px; border-radius:2px;
+  background:rgba(79,216,235,.04);
+}
+.badge-amber{color:var(--amber); border-color:rgba(245,165,36,.4); background:rgba(245,165,36,.05)}
+.hero h1{
+  font-size:clamp(2.3rem,6vw,3.6rem); letter-spacing:.02em; color:#eef7fa;
+  text-shadow:0 0 28px var(--cyan-glow); line-height:1.15;
+}
+.hero-sub{color:var(--txt-dim); font-size:.95rem; margin-top:10px; font-family:var(--mono); letter-spacing:.02em}
+.thesis{
+  margin-top:22px; font-family:var(--mono); font-size:1.02rem; color:var(--cyan);
+  letter-spacing:.06em;
+}
+.thesis::before{content:"// "; color:var(--txt-faint)}
+.counters{
+  display:flex; flex-wrap:wrap; gap:0; margin-top:44px;
+  border:1px solid var(--line); border-radius:4px; overflow:hidden;
+  background:linear-gradient(180deg, rgba(17,26,46,.85), rgba(13,19,34,.85));
+}
+.counter{
+  flex:1 1 120px; min-width:110px; padding:18px 16px 14px; text-align:center;
+  border-right:1px solid var(--line-soft); position:relative;
+  opacity:0; transform:translateY(6px);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.counter.lit{opacity:1; transform:none}
+.counter:last-child{border-right:none}
+.counter .num{
+  display:block; font-family:var(--mono); font-size:2rem; color:var(--cyan);
+  text-shadow:0 0 16px var(--cyan-glow); line-height:1.2;
+}
+.counter .lbl{
+  display:block; margin-top:4px; font-family:var(--mono); font-size:.68rem;
+  letter-spacing:.16em; color:var(--txt-faint); text-transform:uppercase;
+}
+.counter.lit::after{
+  content:""; position:absolute; left:50%; bottom:8px; width:18px; height:2px;
+  transform:translateX(-50%); background:var(--amber); opacity:.55;
+}
+
+/* ---------- architecture stack ---------- */
+.stack{display:flex; flex-direction:column; gap:8px}
+.layer{
+  display:flex; align-items:center; gap:18px; padding:16px 20px;
+  border:1px solid var(--line); border-radius:4px; background:var(--panel);
+  color:var(--txt); transition:border-color .25s, box-shadow .25s, transform .25s;
+  position:relative; overflow:hidden;
+}
+.layer::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--cyan-dim); opacity:.6; transition:opacity .25s, background .25s;
+}
+.layer:hover{
+  text-decoration:none; border-color:var(--cyan);
+  box-shadow:0 0 22px rgba(79,216,235,.14), inset 0 0 22px rgba(79,216,235,.04);
+  transform:translateX(2px);
+}
+.layer:hover::before{background:var(--cyan); opacity:1}
+.l-tag{
+  font-family:var(--mono); font-size:1rem; color:var(--amber);
+  min-width:44px; letter-spacing:.05em;
+}
+.l-body{flex:1}
+.l-body strong{
+  display:block; font-family:var(--mono); font-size:.95rem; color:#e8f4f8; letter-spacing:.04em;
+}
+.l-desc{display:block; font-size:.8rem; color:var(--txt-dim); margin-top:2px; line-height:1.6}
+.l-go{font-family:var(--mono); color:var(--txt-faint); transition:color .25s}
+.layer:hover .l-go{color:var(--cyan)}
+
+/* ---------- detail sections / tables ---------- */
+.detail{
+  border:1px solid var(--line-soft); border-radius:4px; background:var(--panel);
+  padding:22px 24px; margin-top:14px;
+}
+.detail p{font-size:.9rem; color:var(--txt)}
+.detail p + p{margin-top:8px}
+table{width:100%; border-collapse:collapse; margin-top:16px; font-size:.85rem}
+th{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--txt-faint); text-align:left; padding:6px 12px 6px 0;
+  border-bottom:1px solid var(--line);
+}
+td{
+  padding:7px 12px 7px 0; border-bottom:1px solid var(--line-soft);
+  vertical-align:top; color:var(--txt);
+}
+td:first-child{white-space:nowrap}
+tr:hover td{background:rgba(79,216,235,.025)}
+.principle-note{
+  margin-top:16px; padding:10px 14px; border-left:2px solid var(--amber-dim);
+  background:rgba(245,165,36,.04); font-size:.82rem; color:var(--txt-dim);
+}
+.principle-note b{color:var(--amber); font-family:var(--mono); font-weight:600}
+
+/* ---------- timeline ---------- */
+.timeline{
+  display:flex; gap:0; overflow-x:auto; padding:18px 0 10px;
+  scrollbar-width:thin; scrollbar-color:var(--cyan-dim) transparent;
+}
+.t-stage{
+  flex:0 0 215px; min-width:215px; position:relative; padding:0 14px 0 0;
+}
+.t-stage::before{
+  content:""; position:absolute; top:13px; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, var(--cyan-dim), var(--line));
+}
+.t-stage:last-child::before{background:linear-gradient(90deg, var(--amber-dim), transparent)}
+.t-node{
+  position:relative; display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:.78rem; color:#e8f4f8; letter-spacing:.03em;
+  background:var(--bg1); border:1px solid var(--line); border-radius:3px;
+  padding:3px 10px; margin-bottom:12px;
+  box-shadow:0 0 12px rgba(79,216,235,.10);
+}
+.t-node .t-n{
+  color:var(--amber); font-size:.72rem; border-left:1px solid var(--line-soft); padding-left:8px;
+}
+.t-stage.t-night .t-node{border-color:rgba(245,165,36,.4); box-shadow:0 0 12px rgba(245,165,36,.10)}
+.t-stage ul{list-style:none; font-size:.74rem; line-height:1.9}
+.t-stage li{color:var(--txt-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.t-stage li code{color:var(--cyan); font-size:.96em}
+.t-stage li.t-more{color:var(--txt-faint); font-style:normal}
+.t-foot{font-size:.76rem; color:var(--txt-faint); margin-top:10px}
+
+/* ---------- principles strip ---------- */
+.principles{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:10px}
+.prin{
+  border:1px solid var(--line-soft); border-radius:4px; background:var(--panel);
+  padding:14px 16px; transition:border-color .25s, box-shadow .25s;
+}
+.prin:hover{border-color:var(--cyan); box-shadow:0 0 18px rgba(79,216,235,.10)}
+.prin b{
+  display:block; font-family:var(--mono); font-size:.82rem; color:var(--cyan);
+  letter-spacing:.04em; margin-bottom:4px;
+}
+.prin span{font-size:.78rem; color:var(--txt-dim); line-height:1.65; display:block}
+
+/* ---------- catalog ---------- */
+.cat-controls{
+  display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  position:sticky; top:0; z-index:5; padding:14px 0 10px;
+  background:linear-gradient(180deg, var(--bg0) 75%, transparent);
+}
+#cat-search{
+  flex:1 1 320px; font-family:var(--mono); font-size:.88rem; color:var(--txt);
+  background:var(--bg1); border:1px solid var(--line); border-radius:3px;
+  padding:9px 14px; outline:none; transition:border-color .25s, box-shadow .25s;
+}
+#cat-search::placeholder{color:var(--txt-faint)}
+#cat-search:focus{border-color:var(--cyan); box-shadow:0 0 14px rgba(79,216,235,.18)}
+#hit-count{font-family:var(--mono); font-size:.76rem; color:var(--amber); min-width:130px}
+.tabs{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; border-bottom:1px solid var(--line); padding-bottom:0}
+.tab{
+  font-family:var(--mono); font-size:.8rem; letter-spacing:.04em; cursor:pointer;
+  color:var(--txt-dim); background:transparent; border:1px solid transparent; border-bottom:none;
+  padding:8px 16px 7px; border-radius:3px 3px 0 0;
+  transition:color .2s, background .2s;
+}
+.tab:hover{color:var(--cyan)}
+.tab:focus-visible,.layer:focus-visible,#cat-search:focus-visible,.group summary:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+.tab.active{
+  color:var(--cyan); background:var(--bg1);
+  border-color:var(--line); position:relative;
+}
+.tab.active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan-glow);
+}
+.tab .tab-n{color:var(--txt-faint); margin-left:6px; font-size:.72rem}
+.tab.active .tab-n{color:var(--amber)}
+.panel{display:none; padding-top:18px}
+.panel.active{display:block}
+.group{
+  border:1px solid var(--line-soft); border-radius:4px; background:var(--panel);
+  margin-bottom:10px; overflow:hidden;
+}
+.group summary{
+  cursor:pointer; list-style:none; padding:11px 16px;
+  font-family:var(--mono); font-size:.8rem; letter-spacing:.06em; color:#dcebf2;
+  display:flex; align-items:center; gap:10px;
+  border-left:2px solid var(--cyan-dim);
+  transition:background .2s;
+}
+.group summary:hover{background:rgba(79,216,235,.04)}
+.group summary::-webkit-details-marker{display:none}
+.group summary::before{
+  content:"▸"; color:var(--cyan); font-size:.7rem; transition:transform .2s;
+}
+.group[open] summary::before{transform:rotate(90deg)}
+.group .g-n{color:var(--txt-faint); font-size:.72rem; margin-left:auto}
+.group .g-src{
+  font-size:.66rem; color:var(--amber); border:1px solid rgba(245,165,36,.3);
+  padding:0 7px; border-radius:2px; letter-spacing:.08em;
+}
+.entries{list-style:none; padding:4px 16px 12px}
+.entry{
+  display:flex; gap:14px; align-items:baseline; padding:5px 0;
+  border-bottom:1px solid rgba(79,216,235,.04); font-size:.82rem;
+}
+.entry:last-child{border-bottom:none}
+.entry > code{flex:0 0 232px; color:var(--cyan); font-size:.78rem; word-break:break-all; white-space:normal}
+.entry > span{color:var(--txt-dim); line-height:1.6}
+.entry .m{
+  flex:0 0 auto; font-family:var(--mono); font-size:.64rem; color:var(--amber);
+  border:1px solid rgba(245,165,36,.25); border-radius:2px; padding:0 6px;
+  letter-spacing:.04em; white-space:nowrap;
+}
+.entry.hidden{display:none}
+.group.hidden{display:none}
+.cat-empty.hidden{display:none}
+.cat-empty{color:var(--txt-dim); font-size:.86rem; padding:18px 4px; border:1px dashed var(--line); border-radius:8px; text-align:center; margin-top:8px}
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+.archived-note{font-size:.76rem; color:var(--txt-faint); padding:2px 16px 10px}
+.entry.arch-entry > code{color:var(--txt-faint)}
+
+/* ---------- footer ---------- */
+footer{
+  margin-top:90px; padding:26px 0 12px; border-top:1px solid var(--line);
+  font-family:var(--mono); font-size:.74rem; color:var(--txt-faint);
+  display:flex; gap:18px; flex-wrap:wrap; align-items:center; letter-spacing:.05em;
+}
+footer .f-dot{color:var(--cyan-dim)}
+
+/* ---------- responsive ---------- */
+@media (max-width:720px){
+  body{font-size:14px}
+  .hero{padding-top:56px}
+  .counter{flex:1 1 33%; border-bottom:1px solid var(--line-soft)}
+  .entry{flex-direction:column; gap:2px}
+  .entry > code{flex:none}
+  .layer{gap:12px; padding:13px 14px}
+  .l-desc{font-size:.74rem}
+  td:first-child{white-space:normal}
+  .timeline{padding-bottom:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+<main class="wrap">
+<header class="hero" id="top">
+  <div class="hero-badges">
+    <span class="badge badge-amber">SNAPSHOT 2026-06-12</span>
+    <span class="badge">takeuchi-shogo/dotfiles</span>
+    <span class="badge">CLAUDE CODE HARNESS</span>
+  </div>
+  <h1>AI Agent Harness</h1>
+  <p class="hero-sub">takeuchi-shogo/dotfiles — Claude Code 環境の全体像</p>
+  <p class="thesis">"Humans steer, agents execute"</p>
+  <div class="counters" id="counters">
+    <div class="counter"><span class="num" data-target="23">0</span><span class="lbl">agents</span></div>
+    <div class="counter"><span class="num" data-target="121">0</span><span class="lbl">skills</span></div>
+    <div class="counter"><span class="num" data-target="60">0</span><span class="lbl">hook commands</span></div>
+    <div class="counter"><span class="num" data-target="16">0</span><span class="lbl">plugins</span></div>
+    <div class="counter"><span class="num" data-target="8">0</span><span class="lbl">rust modules</span></div>
+  </div>
+</header>
+<section class="sec" id="arch">
+  <h2><span class="h-mark">01</span>アーキテクチャ全体図</h2>
+  <p class="sec-lead">harness は 5 レイヤーの積層構造。上の層が「何をすべきか」を定義し、下の層が「実際に守らせ・覚え・改善する」。クリックで各レイヤーの詳細へ。</p>
+  <div class="stack">
+    <a class="layer" href="#layer-1">
+      <span class="l-tag">L1</span>
+      <span class="l-body"><strong>指示層</strong>
+      <span class="l-desc">CLAUDE.md (~130行, Progressive Disclosure) / references/ (~120 docs) / rules/ (言語別 + 委譲ルール)</span></span>
+      <span class="l-go">→</span>
+    </a>
+    <a class="layer" href="#layer-2">
+      <span class="l-tag">L2</span>
+      <span class="l-body"><strong>強制層</strong>
+      <span class="l-desc">hooks (9 events / 60 commands) / Rust binary <code>tools/claude-hooks</code> (8 modules) / Lefthook / settings.json deny rules</span></span>
+      <span class="l-go">→</span>
+    </a>
+    <a class="layer" href="#layer-3">
+      <span class="l-tag">L3</span>
+      <span class="l-body"><strong>能力層</strong>
+      <span class="l-desc">skills 121 / agents 23 (+archived 10) / plugins 16</span></span>
+      <span class="l-go">→</span>
+    </a>
+    <a class="layer" href="#layer-4">
+      <span class="l-tag">L4</span>
+      <span class="l-body"><strong>マルチモデル層</strong>
+      <span class="l-desc">Fable=指揮 / Opus=推論 / Sonnet=実装 / Codex Review Gate / Gemini 1M / cmux Workers</span></span>
+      <span class="l-go">→</span>
+    </a>
+    <a class="layer" href="#layer-5">
+      <span class="l-tag">L5</span>
+      <span class="l-body"><strong>記憶・自己改善層</strong>
+      <span class="l-desc">7層メモリモデル / patterns.jsonl → auto-triage → promote-learnings / nightly jobs / Obsidian 単方向同期</span></span>
+      <span class="l-go">→</span>
+    </a>
+  </div>
+</section>
+<section class="sec" id="layer-1">
+  <h2><span class="h-mark">L1</span>指示層 — Instruction Layer</h2>
+  <div class="detail">
+    <p>「Claude に何をどう判断させるか」を宣言する層。CLAUDE.md は約 130 行に絞り、<code>&lt;important if&gt;</code> 条件タグと references/ への Progressive Disclosure で詳細を遅延展開する。指示は常時コンテキストに乗るためトークン予算と注意 (attention) を直接消費する — だから「少なく・濃く・条件付き」が原則。</p>
+    <table>
+      <thead><tr><th>コンポーネント</th><th>パス</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td><code>CLAUDE.md</code></td><td><code>.config/claude/CLAUDE.md</code></td><td>~130行のグローバル指示。Foundation / Delegation / 設計原則 / 条件付き important ブロック</td></tr>
+        <tr><td><code>references/</code></td><td><code>.config/claude/references/</code></td><td>~120 docs。決定表・モデルルーティング・harness 安定性などの詳細仕様を必要時のみ展開</td></tr>
+        <tr><td><code>rules/</code></td><td><code>.config/claude/rules/</code></td><td>言語別ルール (Go/TS) + Codex/Gemini 委譲ルール</td></tr>
+        <tr><td><code>PLANS.md</code></td><td>repo root</td><td>非自明な変更のプランニング規約。plansDirectory は <code>tmp/plans/</code></td></tr>
+        <tr><td><code>agent-harness-contract.md</code></td><td><code>docs/</code></td><td>harness 変更時の契約 (何を壊してはいけないか)</td></tr>
+      </tbody>
+    </table>
+    <div class="principle-note"><b>原則</b> ドキュメント＝インフラ（仕様書は耐荷重構造物。2 回説明したら書き下ろす）/ IFScale: 指示の「数」が品質を決める — 増やすより削って濃くする</div>
+  </div>
+</section>
+
+<section class="sec" id="layer-2">
+  <h2><span class="h-mark">L2</span>強制層 — Enforcement Layer</h2>
+  <div class="detail">
+    <p>「プロンプトに書いたお願い」は確率的にしか守られない。static-checkable なルールはすべてこの層に降ろして決定論的に強制する。hooks は 9 イベント / 60 コマンドで Claude のツール実行をリアルタイムに監査・ブロックし、ホットパス（毎 Bash・毎 Edit に走るガード）は Rust binary に統合して latency を抑えている。</p>
+    <table>
+      <thead><tr><th>コンポーネント</th><th>パス</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td>hooks</td><td><code>settings.json</code> → <code>scripts/{policy,runtime,lifecycle,learner}/</code></td><td>9 events / 60 commands。completion-gate, prompt-injection-detector, file-proliferation-guard など</td></tr>
+        <tr><td>Rust binary</td><td><code>tools/claude-hooks</code></td><td>8 modules (events / io / main / post_any / post_bash / post_edit / pre_tool / user_prompt)。高頻度 hook を 1 バイナリに統合</td></tr>
+        <tr><td>Lefthook</td><td><code>lefthook.yml</code></td><td>ポリグロット pre-commit + commit-msg 検証</td></tr>
+        <tr><td>deny rules</td><td><code>settings.json</code></td><td><code>git commit --no-verify</code> 禁止、lint config 保護などの拒否リスト</td></tr>
+      </tbody>
+    </table>
+    <div class="principle-note"><b>原則</b> Determinism boundary — linter / ast-grep / hook / test で表現できるルールはプロンプトに書かない。「指示」は壊れるが「機構」は壊れない</div>
+  </div>
+</section>
+<section class="sec" id="layer-3">
+  <h2><span class="h-mark">L3</span>能力層 — Capability Layer</h2>
+  <div class="detail">
+    <p>「スキル＝知識ベース、エージェント＝実行コンテキスト」。skill は手順・ドメイン知識を on-demand で注入し、agent は隔離されたコンテキストで実行を担う。121 skills のうち外部由来 (google/skills 13, mizchi/skills 18 ほか) は hash 検証付きで vendoring。使わない skill は <code>skillOverrides</code> で抑制し、listing budget（注意の押し出し）を管理する。</p>
+    <table>
+      <thead><tr><th>コンポーネント</th><th>パス</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td>skills (121)</td><td><code>.config/claude/skills/</code></td><td>ワークフロー / 知識管理 / レビュー / UI / 外部 vendored。検索は下のカタログへ</td></tr>
+        <tr><td>agents (23 + 10 archived)</td><td><code>.config/claude/agents/</code></td><td>レビュー系が最厚 (12)。30 日評価後に退役 → archived へ (Build to Delete)</td></tr>
+        <tr><td>plugins (16)</td><td><code>settings.json</code> 駆動</td><td>superpowers / codex / pr-review-toolkit など。<code>task claude:plugins</code> で別マシン再現</td></tr>
+        <tr><td>skills-lock</td><td><code>skills-lock.json</code></td><td>外部 skill の出自・hash 固定。drift は <code>task skills:verify</code> で検出</td></tr>
+      </tbody>
+    </table>
+    <div class="principle-note"><b>原則</b> Build to Delete — ハーネスは過渡的技術。設計時に「何が改善されればこれは不要か」を問う / 削除は 30 日評価後 (harness-stability)</div>
+  </div>
+</section>
+
+<section class="sec" id="layer-4">
+  <h2><span class="h-mark">L4</span>マルチモデル層 — Multi-Model Layer</h2>
+  <div class="detail">
+    <p>単一モデルに全部やらせない。メイン (Fable) は判断・統合に限定し、実装・探索は Sonnet サブエージェントへ並列委譲、深い推論サブタスクは Opus、レビューは外部モデル (Codex) でバイアスを相殺する。協調プロトコルの設計が品質差異の 44% を占め、モデル選択は ~14% — だから Scaffolding に投資する。</p>
+    <table>
+      <thead><tr><th>Tier</th><th>モデル</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td><code>指揮</code></td><td>Fable (メイン)</td><td>判断・統合・最深推論。実装はしない</td></tr>
+        <tr><td><code>推論</code></td><td>Opus</td><td>Plan 草案・設計分析・根因調査</td></tr>
+        <tr><td><code>実装</code></td><td>Sonnet</td><td>実装・探索・テスト。並列 Agent 実行</td></tr>
+        <tr><td><code>批評</code></td><td>Codex (gpt-5.5)</td><td>Review Gate (S規模以上)・Spec/Plan Gate (M規模以上)。外部視点でバイアス相殺</td></tr>
+        <tr><td><code>分析</code></td><td>Gemini</td><td>1M コンテキスト分析・リサーチ・マルチモーダル (PDF/動画/音声)</td></tr>
+        <tr><td><code>補助</code></td><td>Cursor</td><td>マルチモデル・Cloud Agent</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px">対話的なセカンドオピニオン（improve / debate / absorb）は cmux Worker (<code>launch-worker.sh</code>) で実モデルとラリーする。サブエージェント一発投げに逃げない、が運用ルール。</p>
+    <div class="principle-note"><b>原則</b> Scaffolding &gt; Model — 協調プロトコル選択が品質の支配項。既知バイアス: Claude=萎縮+Sycophancy / Gemini=過度に楽観 / Codex=狭く深い</div>
+  </div>
+</section>
+<section class="sec" id="layer-5">
+  <h2><span class="h-mark">L5</span>記憶・自己改善層 — Memory &amp; Self-Improvement Layer</h2>
+  <div class="detail">
+    <p>セッションを跨いで「学んだこと」を残し、運用ログから改善を半自動で昇格させる層。Claude Code 内蔵の 7 層メモリ（Tool Result Storage → Microcompaction → Session Memory → Full Compaction → Auto Memory Extraction → Dreaming → Cross-Agent Communication）のうち、harness が介入できるのは L4 以降 — PreCompact hook での状態保存、MEMORY.md / memory/ の構造管理、Agent 定義によるコスト制御がその介入点。</p>
+    <table>
+      <thead><tr><th>コンポーネント</th><th>パス</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td>7層メモリモデル</td><td><code>references/cc-7-layer-memory-model.md</code></td><td>CC 内蔵 7 層の介入ポイント整理。安い層が高い層の発動を防ぐ設計</td></tr>
+        <tr><td>MEMORY.md + memory/</td><td><code>.claude/projects/*/memory/</code></td><td>200行/25KB の索引 + 詳細ファイル群。スコープ 3 種 (user/project/local)</td></tr>
+        <tr><td>learned 昇格ループ</td><td><code>patterns.jsonl</code> → <code>auto-triage</code> → <code>promote-learnings</code></td><td>セッションから自動抽出した知見を無人分類し、skill/reference/rule へ昇格</td></tr>
+        <tr><td>nightly jobs</td><td><code>scripts/runtime/nightly/</code> (launchd)</td><td>run-* 9 本: learned-promote, golden-check, health-check, audit, skill-audit, dep-audit, daily-report, friction-aggregate, plan-close-scan</td></tr>
+        <tr><td>Obsidian 同期</td><td><code>sync-memory-to-vault.sh</code></td><td>memory → Vault の単方向スナップショット。Vault からの書き戻しはしない</td></tr>
+      </tbody>
+    </table>
+    <div class="principle-note"><b>原則</b> 失敗 → capability gap → durable artifact。"try harder" ではなく「何の能力が欠けていたか」を機構化する / ガバナンスは後付けでなくループ設計に統合</div>
+  </div>
+</section>
+
+<section class="sec" id="lifecycle">
+  <h2><span class="h-mark">02</span>セッションライフサイクル</h2>
+  <p class="sec-lead">1 セッションの間に hook がどこで発火するか。左から右へ時系列（横スクロール可）。</p>
+  <div class="timeline">
+    <div class="t-stage">
+      <div class="t-node">SessionStart <span class="t-n">9</span></div>
+      <ul>
+        <li><code>session-load.js</code></li>
+        <li><code>checkpoint_recover.py</code></li>
+        <li><code>env-bootstrap.py</code></li>
+        <li><code>memory-integrity-check.py</code></li>
+        <li><code>harness-snapshot.py</code></li>
+        <li><code>scan-context-files.py</code></li>
+        <li><code>session-bom.py</code></li>
+        <li class="t-more">+2</li>
+      </ul>
+    </div>
+    <div class="t-stage">
+      <div class="t-node">UserPromptSubmit <span class="t-n">2</span></div>
+      <ul>
+        <li><code>claude-hooks user-prompt</code></li>
+        <li class="t-more">(agent-router ほか統合)</li>
+        <li><code>user-input-guard.py</code></li>
+      </ul>
+    </div>
+    <div class="t-stage">
+      <div class="t-node">PreToolUse <span class="t-n">10</span></div>
+      <ul>
+        <li><code>claude-hooks pre-bash</code></li>
+        <li><code>claude-hooks pre-commit</code></li>
+        <li><code>claude-hooks pre-edit</code></li>
+        <li><code>prompt-injection-detector.py</code></li>
+        <li><code>docker-safety.py</code></li>
+        <li><code>comment-guard.sh</code></li>
+        <li><code>mcp-audit.py</code></li>
+        <li class="t-more">+3 (ガード群)</li>
+      </ul>
+    </div>
+    <div class="t-stage">
+      <div class="t-node">PostToolUse <span class="t-n">26</span></div>
+      <ul>
+        <li><code>claude-hooks post-edit</code></li>
+        <li><code>claude-hooks post-bash</code></li>
+        <li><code>stagnation-detector.py</code></li>
+        <li><code>file-proliferation-guard.py</code></li>
+        <li><code>impact-scan.py</code></li>
+        <li><code>rationalization-scanner.py</code></li>
+        <li><code>derivation-honesty-hook.py</code></li>
+        <li class="t-more">+19 (最多イベント)</li>
+      </ul>
+    </div>
+    <div class="t-stage">
+      <div class="t-node">Stop <span class="t-n">9</span></div>
+      <ul>
+        <li><code>completion-gate.py</code></li>
+        <li><code>diff-coverage-gate.py</code></li>
+        <li><code>session-save.js</code></li>
+        <li><code>session-learner.py</code></li>
+        <li><code>sync-memory-to-vault.sh</code></li>
+        <li><code>session-stats.sh</code></li>
+        <li class="t-more">+3 (通知ほか)</li>
+      </ul>
+    </div>
+    <div class="t-stage">
+      <div class="t-node">Pre/PostCompact <span class="t-n">2</span></div>
+      <ul>
+        <li><code>pre-compact-save.js</code></li>
+        <li><code>half-clone.sh</code></li>
+        <li><code>post-compact-verify.js</code></li>
+      </ul>
+    </div>
+    <div class="t-stage t-night">
+      <div class="t-node">夜間 launchd <span class="t-n">9</span></div>
+      <ul>
+        <li><code>run-learned-promote.sh</code></li>
+        <li><code>run-golden-check.sh</code></li>
+        <li><code>run-health-check.sh</code></li>
+        <li><code>run-audit.sh</code></li>
+        <li><code>run-skill-audit.sh</code></li>
+        <li><code>run-dep-audit.sh</code></li>
+        <li class="t-more">+3 (report / friction / plan-close)</li>
+      </ul>
+    </div>
+  </div>
+  <p class="t-foot">ほかに SubagentStop (<code>subagent-monitor.py</code>) / Notification (<code>cmux-notify.sh</code>) が各 1 本。合計 9 events / 60 commands。</p>
+</section>
+<section class="sec" id="principles">
+  <h2><span class="h-mark">03</span>設計原則</h2>
+  <p class="sec-lead">harness 全体を貫く 6 つの原則。</p>
+  <div class="principles">
+    <div class="prin"><b>Humans steer, agents execute</b><span>人間は方向を決め、エージェントが実行する。メインモデルも「指揮」に徹し実装はサブエージェントへ。</span></div>
+    <div class="prin"><b>Build to Delete</b><span>hook / script / agent は過渡的技術。設計時に「何が改善されればこれは不要か」を問い、削除コストを最小化する。</span></div>
+    <div class="prin"><b>Determinism boundary</b><span>static-checkable rules は linter / hook へ降ろす。プロンプトのお願いは確率的、機構は決定論的。</span></div>
+    <div class="prin"><b>契約層 strict / 実装層 regenerable</b><span>API・型・schema は厳密に定義し、実装は再生成可能に保つ。壊れたら作り直せる側に複雑さを寄せる。</span></div>
+    <div class="prin"><b>境界で Fail Fast / 内部は Trust</b><span>暗黙フォールバック・モック残置・NO-OP は絶対禁止。境界で即死させ、内部は信頼して薄く保つ。</span></div>
+    <div class="prin"><b>Scaffolding &gt; Model</b><span>協調プロトコル選択が品質差異の 44%、モデル選択は ~14%。診断に使えない信号は実質ゼロ — 観測可能にする。</span></div>
+  </div>
+</section>
+
+<section class="sec" id="catalog">
+  <h2><span class="h-mark">04</span>全カタログ</h2>
+  <p class="sec-lead">harness を構成する全コンポーネント。検索は名前 + 説明の部分一致で全タブ横断。</p>
+  <div class="cat-controls">
+    <label for="cat-search" class="sr-only">カタログを検索（名前・説明の部分一致）</label>
+    <input id="cat-search" type="search" placeholder="検索: 名前 / 説明 (例: review, gemini, nightly)" autocomplete="off" aria-label="カタログを検索" aria-controls="panel-agents panel-skills panel-hooks panel-plugins panel-scripts">
+    <span id="hit-count" role="status" aria-live="polite"></span>
+  </div>
+  <div class="tabs" role="tablist" aria-label="カタログのカテゴリ">
+    <button class="tab active" id="tab-agents" data-tab="agents" role="tab" aria-selected="true" aria-controls="panel-agents">Agents <span class="tab-n">33</span></button>
+    <button class="tab" id="tab-skills" data-tab="skills" role="tab" aria-selected="false" aria-controls="panel-skills">Skills <span class="tab-n">121</span></button>
+    <button class="tab" id="tab-hooks" data-tab="hooks" role="tab" aria-selected="false" aria-controls="panel-hooks">Hooks <span class="tab-n">60</span></button>
+    <button class="tab" id="tab-plugins" data-tab="plugins" role="tab" aria-selected="false" aria-controls="panel-plugins">Plugins <span class="tab-n">16</span></button>
+    <button class="tab" id="tab-scripts" data-tab="scripts" role="tab" aria-selected="false" aria-controls="panel-scripts">Scripts <span class="tab-n">70</span></button>
+  </div>
+  <p id="cat-empty" class="cat-empty hidden" role="status">一致する項目がありません。検索語を変えてください。</p>
+
+  <div class="panel active" id="panel-agents" role="tabpanel" aria-labelledby="tab-agents" tabindex="0">
+    <details open class="group">
+      <summary>レビュー系 <span class="g-n">12</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>code-reviewer</code><span>Expert code review specialist for quality, security, and maintainability.</span></li>
+        <li class="entry"><code>codex-plan-reviewer</code><span>Codex CLI (gpt-5.5) を活用した Spec/Plan 批評エージェント。</span></li>
+        <li class="entry"><code>codex-reviewer</code><span>Codex CLI (gpt-5.5) を活用した Review Gate エージェント。</span></li>
+        <li class="entry"><code>comment-analyzer</code><span>コメント・ドキュメントの正確性・完全性・長期保守性を分析するレビューエージェント。</span></li>
+        <li class="entry"><code>cross-file-reviewer</code><span>変更が他ファイルに与える影響（インターフェース不整合、シグネチャ変更の未追従、import 破損）を検出するレビューエージェント。</span></li>
+        <li class="entry"><code>design-reviewer</code><span>Design/UX観点のコードレビュー。</span></li>
+        <li class="entry"><code>edge-case-hunter</code><span>境界値・異常系・nil パス・空コレクション・ゼロ値など「正常系では通らないパス」の検出に特化したレビューエージェント。</span></li>
+        <li class="entry"><code>product-reviewer</code><span>Product 観点のコードレビュー専門エージェント。</span></li>
+        <li class="entry"><code>security-reviewer</code><span>Deep-dive security analysis that complements code-reviewer's surface checks.</span></li>
+        <li class="entry"><code>silent-failure-hunter</code><span>サイレント障害・不適切なエラーハンドリング・危険なフォールバックを検出するレビューエージェント。</span></li>
+        <li class="entry"><code>test-analyzer</code><span>テストカバレッジの質と網羅性を分析するレビューエージェント。</span></li>
+        <li class="entry"><code>type-design-analyzer</code><span>型設計の品質を分析する専門レビューエージェント。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>言語特化系 <span class="g-n">2</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>golang-reviewer</code><span>Go コードレビュー専門エージェント。</span></li>
+        <li class="entry"><code>typescript-reviewer</code><span>TypeScript/JavaScript コードレビュー専門エージェント。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>実装系 <span class="g-n">3</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>backend-architect</code><span>Backend system architecture and API design specialist.</span></li>
+        <li class="entry"><code>document-factory</code><span>Auto-generate .md documents (agent definitions, CLAUDE.md, subsystem specs, ADRs).</span></li>
+        <li class="entry"><code>test-engineer</code><span>Test automation and quality assurance specialist.</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>調査系 <span class="g-n">2</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>debugger</code><span>Systematic debugging specialist for root cause analysis.</span></li>
+        <li class="entry"><code>ui-observer</code><span>agent-browser CLI を使った UI 状態観察・バグ再現・パフォーマンス計測の専門エージェント。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>マルチモデル・自己改善系 <span class="g-n">3</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>autoevolve-core</code><span>(legacy 2026-05-03) AutoEvolve 統合エージェント。</span></li>
+        <li class="entry"><code>gemini-explore</code><span>Gemini CLI の 1M コンテキストを活用した大規模コードベース分析・外部リサーチ・マルチモーダル処理エージェント。</span></li>
+        <li class="entry"><code>meta-analyzer</code><span>AutoEvolve の Analyze フェーズ専門エージェント。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>その他 <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>doc-gardener</code><span>ドキュメント陳腐化を検出・修正するメンテナンスエージェント。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>Archived <span class="g-src">退役済</span> <span class="g-n">10</span></summary>
+      <p class="archived-note">30 日評価を経て退役したエージェント（Build to Delete の実践）。名前のみ掲載。</p>
+      <ul class="entries">
+        <li class="entry arch-entry"><code>build-fixer</code></li>
+        <li class="entry arch-entry"><code>db-reader</code></li>
+        <li class="entry arch-entry"><code>frontend-developer</code></li>
+        <li class="entry arch-entry"><code>golang-pro</code></li>
+        <li class="entry arch-entry"><code>golden-cleanup</code></li>
+        <li class="entry arch-entry"><code>migration-guard</code></li>
+        <li class="entry arch-entry"><code>nextjs-architecture-expert</code></li>
+        <li class="entry arch-entry"><code>safe-git-inspector</code></li>
+        <li class="entry arch-entry"><code>triage-router</code></li>
+        <li class="entry arch-entry"><code>typescript-pro</code></li>
+      </ul>
+    </details>
+  </div>
+  <div class="panel" id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" tabindex="0">
+    <details open class="group">
+      <summary>ワークフロー <span class="g-n">24</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>autonomous</code><span>複雑なタスクをセッション跨ぎで自律実行する。</span></li>
+        <li class="entry"><code>careful</code><span>Use when working near production systems or performing potentially destructive operations.</span></li>
+        <li class="entry"><code>checkpoint</code><span>現在の作業状態を手動で checkpoint として保存し、HANDOFF.md を生成する。</span></li>
+        <li class="entry"><code>commit</code><span>conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。</span></li>
+        <li class="entry"><code>create-issue</code><span>ユーザーの要件テキスト（自由文）から構造化された GitHub Issue を生成し、gh issue create で投稿する。</span></li>
+        <li class="entry"><code>create-pr-wait</code><span>PR作成→CI監視→失敗時自動修正→再pushを自動化するワークフロー。</span></li>
+        <li class="entry"><code>cursor</code><span>Cursor Agent CLI (ヘッドレスモード) を使ったコード分析・生成・リファクタリング。</span></li>
+        <li class="entry"><code>debate</code><span>複数AIモデル (Codex/Gemini) に同じ質問を投げ、独立した視点を収集・統合する。</span></li>
+        <li class="entry"><code>difit</code><span>GitHub風のブラウザベース diff ビューアを起動する。</span></li>
+        <li class="entry"><code>dispatch</code><span>cmux Worker Router — タスクをサブエージェントまたは cmux Worker (Claude Code / Codex / Gemini) に振り分けて実行する。</span></li>
+        <li class="entry"><code>feature-tracker</code><span>マルチセッションプロジェクトのフィーチャーリスト管理。</span></li>
+        <li class="entry"><code>fix-issue</code><span>GitHub Issue を起点にした自動修正ワークフロー。</span></li>
+        <li class="entry"><code>freeze</code><span>Use when debugging or investigating — prevents accidental file modifications outside target area.</span></li>
+        <li class="entry"><code>gemini</code><span>Gemini CLI (1Mコンテキスト) を使った大規模分析・リサーチ・マルチモーダル処理。</span></li>
+        <li class="entry"><code>github-pr</code><span>GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。</span></li>
+        <li class="entry"><code>hook-debugger</code><span>Hook が期待通り発火しない・エラーになる時の診断 Runbook。</span></li>
+        <li class="entry"><code>init-project</code><span>プロジェクトに最適な Claude Code 構造を初期化・適応するオーケストレータ。</span></li>
+        <li class="entry"><code>interviewing-issues</code><span>曖昧なGitHub Issueを4段階のインタビューで明確化し、構造化された仕様を出力する。</span></li>
+        <li class="entry"><code>prd-to-issues</code><span>PRD（Prompt-as-PRD）を垂直スライス（Tracer Bullet）の独立 Issue 群に分解し、blocking 関係付きで GitHub に投稿する。</span></li>
+        <li class="entry"><code>refactor-session</code><span>機能実装禁止の清掃専用セッション。</span></li>
+        <li class="entry"><code>setup-background-agents</code><span>プロジェクトにバックグラウンドエージェント基盤をセットアップする。</span></li>
+        <li class="entry"><code>spec</code><span>Prompt-as-PRD を生成する。</span></li>
+        <li class="entry"><code>spike</code><span>プロトタイプファースト開発。</span></li>
+        <li class="entry"><code>validate</code><span>Product Validation ゲート。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>知識管理 <span class="g-n">23</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>absorb</code><span>外部記事・論文・リポジトリの知見を現在のセットアップに統合する。</span></li>
+        <li class="entry"><code>alphaxiv-paper-lookup</code><span>arxiv 論文を alphaxiv.org 経由で構造化レポートとして取得する。</span></li>
+        <li class="entry"><code>compile-wiki</code><span>docs/research/ の分析レポート群を概念ベースの wiki にコンパイルする。</span></li>
+        <li class="entry"><code>daily-report</code><span>1日の全プロジェクト横断セッションをまとめた日報を生成する。</span></li>
+        <li class="entry"><code>decision</code><span>設計・ワークフロー決定を構造化記録する軽量決定ジャーナル。</span></li>
+        <li class="entry"><code>deep-read</code><span>記事の深い理解を促す対話型学習スキル。</span></li>
+        <li class="entry"><code>developer-onboarding</code><span>開発者プロファイルを対話で構築し、type:user メモリとして保存する。</span></li>
+        <li class="entry"><code>digest</code><span>NotebookLM 出力テキスト・記事・URL・PDF を構造化 Obsidian Literature Note に変換する。</span></li>
+        <li class="entry"><code>eureka</code><span>技術ブレイクスルーを構造化テンプレートで即座に記録する。</span></li>
+        <li class="entry"><code>excalidraw</code><span>テキスト説明から Excalidraw 互換 JSON ダイアグラムを生成し、.excalidraw ファイルとして保存する。</span></li>
+        <li class="entry"><code>explain-code</code><span>コード・関数・モジュールを、スキャンしやすいブログ記事形式 (見出し + 要点 + 図解的説明) で解説する。</span></li>
+        <li class="entry"><code>morning-briefing</code><span>朝の運営全体像を 1 ファイルにまとめる。</span></li>
+        <li class="entry"><code>note</code><span>セッション中の知見を Obsidian Vault の Inbox に即時保存する。</span></li>
+        <li class="entry"><code>obsidian-knowledge</code><span>Obsidian Vault のナレッジ整理・検索・リンク化を行う。</span></li>
+        <li class="entry"><code>obsidian-vault-setup</code><span>Use when setting up a new Obsidian Vault as an 'AI second brain'.</span></li>
+        <li class="entry"><code>paper-analysis</code><span>複数の学術論文を構造的に分析するワークフロー。</span></li>
+        <li class="entry"><code>recall</code><span>コミット履歴 (contextual commits) から開発文脈を復元する。</span></li>
+        <li class="entry"><code>research</code><span>マルチモデル並列リサーチ。</span></li>
+        <li class="entry"><code>rewrite</code><span>テキストをターゲットオーディエンス向けにリライトする。</span></li>
+        <li class="entry"><code>think</code><span>思考を深める対話セッション。</span></li>
+        <li class="entry"><code>timekeeper</code><span>朝の計画と夕方の振り返りを対話形式で行い、Obsidian Vault に保存する。</span></li>
+        <li class="entry"><code>ubiquitous-language</code><span>会話・コード・PRD・Issue から DDD ubiquitous language (用語集) を抽出し、語彙 drift を検出して docs/glossary.md に整備する。</span></li>
+        <li class="entry"><code>weekly-review</code><span>GTD式の週次レビュー。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>レビュー・品質 <span class="g-n">16</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>audit</code><span>コードベース全体の品質監査を実行し、優先度付き QUESTIONS.md を生成する。</span></li>
+        <li class="entry"><code>autocover</code><span>テスト自動生成パイプライン。</span></li>
+        <li class="entry"><code>challenge</code><span>直前の変更を分析し、エレガント版の再設計・厳しいレビュー・差分実証を行う。</span></li>
+        <li class="entry"><code>check-health</code><span>ドキュメント鮮度・コード乖離・参照整合性をチェックする。</span></li>
+        <li class="entry"><code>codex-review-issue</code><span>Codex AI (gpt-5.5) を使って GitHub Issue の品質をレビューし、抜け漏れ・曖昧表現・エッジケース見落としを検出する。</span></li>
+        <li class="entry"><code>dependency-auditor</code><span>package.json / go.mod / Cargo.toml / requirements.txt から脆弱性・放棄パッケージ・license 問題・major version lag を検査し、優先度付き修正リストを生成する…</span></li>
+        <li class="entry"><code>edge-case-analysis</code><span>実装前に異常系・境界値・nil パスを強制的に洗い出す。</span></li>
+        <li class="entry"><code>grill-interview</code><span>プラン・設計を容赦なくストレステストする事前インタビュー。</span></li>
+        <li class="entry"><code>improve-codebase-architecture</code><span>コードベースを能動的に探索し、深化候補を診断する。</span></li>
+        <li class="entry"><code>prompt-review</code><span>このスキルは、ユーザーが「プロンプトをレビューして」「対話履歴を分析して」「理解度を診断して」と依頼したとき、または /prompt-review で呼び出されたときに使用する。</span></li>
+        <li class="entry"><code>review</code><span>コード変更のレビューを実行。</span></li>
+        <li class="entry"><code>security-review</code><span>Run OWASP Top 10 security review on recent code changes. 直近のコード変更に対するセキュリティレビュー。</span></li>
+        <li class="entry"><code>security-scan</code><span>AgentShield でエージェント設定のセキュリティ監査を実行する。</span></li>
+        <li class="entry"><code>simplify</code><span>Simplify changed code by removing duplication and eliminating inefficiency.</span></li>
+        <li class="entry"><code>web-design-guidelines</code><span>Review UI code for Web Interface Guidelines compliance.</span></li>
+        <li class="entry"><code>webapp-testing</code><span>Toolkit for interacting with and testing local web applications using agent-browser CLI.</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>フロントエンド・UI <span class="g-n">15</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>brandkit</code><span>Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, an…</span></li>
+        <li class="entry"><code>design-taste-frontend</code><span>Anti-slop frontend skill for landing pages, portfolios, and redesigns.</span></li>
+        <li class="entry"><code>frontend-design</code><span>Create or refine frontend interfaces with high design quality.</span></li>
+        <li class="entry"><code>gpt-taste</code><span>Elite UX/UI &amp; Advanced GSAP Motion Engineer.</span></li>
+        <li class="entry"><code>high-end-visual-design</code><span>Teaches the AI to design like a high-end agency.</span></li>
+        <li class="entry"><code>image-to-code</code><span>Elite website image-to-code skill for Codex.</span></li>
+        <li class="entry"><code>imagegen-frontend-mobile</code><span>Elite mobile app image-generation skill for creating premium, app-native screen concepts and flows.</span></li>
+        <li class="entry"><code>imagegen-frontend-web</code><span>Elite frontend image-direction skill for generating premium, conversion-aware website design references.</span></li>
+        <li class="entry"><code>industrial-brutalist-ui</code><span>Raw mechanical interfaces fusing Swiss typographic print with military terminal aesthetics.</span></li>
+        <li class="entry"><code>minimalist-ui</code><span>Clean editorial-style interfaces.</span></li>
+        <li class="entry"><code>react-best-practices</code><span>React/Next.js パフォーマンス最適化 40+ rule (waterfalls 解消、bundle 最適化、レンダリング改善)。</span></li>
+        <li class="entry"><code>redesign-existing-projects</code><span>Upgrades existing websites and apps to premium quality.</span></li>
+        <li class="entry"><code>stitch-design-taste</code><span>Semantic Design System Skill for Google Stitch.</span></li>
+        <li class="entry"><code>ui-ux-pro-max</code><span>Use when designing or implementing UI/UX for web and mobile apps — component styling, color systems, typography, layout,…</span></li>
+        <li class="entry"><code>vercel-composition-patterns</code><span>React composition patterns that scale.</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>自己改善・評価 <span class="g-n">9</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>ai-workflow-audit</code><span>Audit and upgrade a repo's AI operating model.</span></li>
+        <li class="entry"><code>analyze-tacit-knowledge</code><span>セッションログから暗黙知を自動抽出し、3層構造（ログ要約 / スキルルール・個別の学び / 上位原則）で蓄積・進化させるパイプラインスキル。</span></li>
+        <li class="entry"><code>auto-triage</code><span>patterns.jsonl の learned 昇格候補を mechanical/advisory/reject/defer に無人分類し dry-run レポートを出す。</span></li>
+        <li class="entry"><code>check-context</code><span>Check current context window usage and session state.</span></li>
+        <li class="entry"><code>full-output-enforcement</code><span>Overrides default LLM truncation behavior.</span></li>
+        <li class="entry"><code>output-review</code><span>毎週金曜 15 分で「今週 Claude の出力でダメだったもの」を棚卸しし、修正ルールを抽出して CLAUDE.md / feedback memory / skill に codify する weekly cadence。</span></li>
+        <li class="entry"><code>promote-learnings</code><span>patterns.jsonl の learned (運用ログから自動抽出された知見) を durable artifact (skill/reference/CLAUDE.md rule/policy) へ昇格させる。</span></li>
+        <li class="entry"><code>skill-audit</code><span>Batch A/B benchmarking and health audit for skills.</span></li>
+        <li class="entry"><code>skill-creator</code><span>Create new skills, modify and improve existing skills, and measure skill performance.</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>その他 (ドメイン特化) <span class="g-n">3</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>buf-protobuf</code><span>Buf エコシステム (Buf CLI / BSR / Bufstream) で Protobuf スキーマ設計・コード生成・breaking detection、gRPC/ConnectRPC、Kafka 互換ストリームを扱う。</span></li>
+        <li class="entry"><code>graphql-expert</code><span>GraphQL API の設計・実装・レビューを支援するエキスパートガイド。</span></li>
+        <li class="entry"><code>salesforce-rest-api</code><span>Salesforce REST API の開発・統合を支援する。</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>Google Cloud 系 <span class="g-src">google/skills</span> <span class="g-n">13</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>alloydb-basics</code><span>AlloyDB for PostgreSQL のクラスタ・インスタンス・バックアップ管理と MCP ツール連携を支援する。</span></li>
+        <li class="entry"><code>bigquery-basics</code><span>BigQuery のデータセット・テーブル・クエリ・ジョブ管理を支援する。</span></li>
+        <li class="entry"><code>cloud-run-basics</code><span>Cloud Run の services / jobs / worker pools の作成・デプロイ・スケール設定を支援する。</span></li>
+        <li class="entry"><code>cloud-sql-basics</code><span>Cloud SQL (MySQL / PostgreSQL / SQL Server) のインスタンス作成・バックアップ・HA・セキュア接続を支援する。</span></li>
+        <li class="entry"><code>firebase-basics</code><span>Firebase の Firestore / Auth / Hosting / Functions / Storage を扱うモバイル・Web アプリ開発を支援する。</span></li>
+        <li class="entry"><code>gemini-api</code><span>Agent Platform (旧 Vertex AI) 上で Gemini API を Google Gen AI SDK で扱う。</span></li>
+        <li class="entry"><code>gke-basics</code><span>GKE Autopilot を golden path として、production-ready クラスタの計画・作成・設定を支援する。</span></li>
+        <li class="entry"><code>google-cloud-recipe-auth</code><span>Google Cloud の認証・認可設計を支援する。</span></li>
+        <li class="entry"><code>google-cloud-recipe-networking-observability</code><span>Google Cloud のネットワーク調査をログ・メトリクス・診断ツールで支援する。</span></li>
+        <li class="entry"><code>google-cloud-recipe-onboarding</code><span>Google Cloud を初めて触る開発者の first step を支援する。</span></li>
+        <li class="entry"><code>google-cloud-waf-cost-optimization</code><span>Google Cloud Well-Architected Framework (WAF) のコスト最適化ピラーに沿ってワークロードを評価し、build / deploy / manage の各段階で actionable な節約推奨を生成…</span></li>
+        <li class="entry"><code>google-cloud-waf-reliability</code><span>Google Cloud Well-Architected Framework (WAF) の信頼性ピラーに沿ってワークロードを評価し、SLO / HA / DR / capacity 計画の actionable な推奨を生成する。</span></li>
+        <li class="entry"><code>google-cloud-waf-security</code><span>Google Cloud Well-Architected Framework (WAF) のセキュリティピラーに沿ってワークロードを評価し、IAM / network security / data protection / operat…</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>mizchi 系 <span class="g-src">mizchi/skills</span> <span class="g-n">18</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>apm-usage</code><span>Use APM (Agent Package Manager) to manage agent skills and dependencies.</span></li>
+        <li class="entry"><code>ast-grep-practice</code><span>Operate ast-grep as a project lint tool.</span></li>
+        <li class="entry"><code>chezmoi-management</code><span>mizchi's chezmoi dotfiles operations: source location, diff/apply flow, skill addition, the APM vs chezmoi boundary, pre…</span></li>
+        <li class="entry"><code>cloudflare-deploy</code><span>Deploy applications and infrastructure to Cloudflare using Workers, Pages, and related platform services.</span></li>
+        <li class="entry"><code>conventional-changelog</code><span>Reference for Conventional Commits and automatic CHANGELOG generation.</span></li>
+        <li class="entry"><code>devbox</code><span>Reference for the devbox development environment manager.</span></li>
+        <li class="entry"><code>dotenvx</code><span>Reference for the dotenvx environment variable management tool.</span></li>
+        <li class="entry"><code>empirical-prompt-tuning</code><span>Methodology for iteratively improving agent-facing instructions (skills / slash commands / CLAUDE.md / code-gen prompts)…</span></li>
+        <li class="entry"><code>gh-fix-ci</code><span>Debug or fix failing GitHub PR checks running in GitHub Actions.</span></li>
+        <li class="entry"><code>justfile</code><span>Reference for just command runner.</span></li>
+        <li class="entry"><code>mizchi-blog-style</code><span>Japanese-language style guide and AI-tone detection rubric for mizchi-authored blog posts (zenn / dev.to).</span></li>
+        <li class="entry"><code>nix-setup</code><span>Set up Nix flakes for dev environments.</span></li>
+        <li class="entry"><code>node-sqlite-vec</code><span>Set up Node 24+ built-in `node:sqlite` with the loadable `sqlite-vec` extension for vector / RAG storage in TypeScript,…</span></li>
+        <li class="entry"><code>pi-coding-agent</code><span>Embed `@mariozechner/pi-coding-agent` as a coding-agent runtime in Node scripts, write pi extensions (plugins) with `pi.…</span></li>
+        <li class="entry"><code>playwright-cli</code><span>Use when running Playwright via terminal CLI — `npx playwright test` (test runner), `codegen` (interactive recording), `…</span></li>
+        <li class="entry"><code>playwright-test</code><span>Best practices and reference for Playwright Test (E2E).</span></li>
+        <li class="entry"><code>retrospective-codify</code><span>On task completion, pair "what failed first" with "what finally worked" and codify the should-have-known-it insight as a…</span></li>
+        <li class="entry"><code>tech-article-reproducibility</code><span>Evaluate the reproducibility of technical articles.</span></li>
+      </ul>
+    </details>
+  </div>
+  <div class="panel" id="panel-hooks" role="tabpanel" aria-labelledby="tab-hooks" tabindex="0">
+    <details open class="group">
+      <summary>SessionStart <span class="g-n">9</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>session-load.js</code><span>node</span></li>
+        <li class="entry"><code>checkpoint_recover.py</code><span>python3</span></li>
+        <li class="entry"><code>date +%s &gt; /tmp/claude-session-start.txt</code><span>inline</span></li>
+        <li class="entry"><code>env-bootstrap.py</code><span>python3</span></li>
+        <li class="entry"><code>memory-integrity-check.py</code><span>python3</span></li>
+        <li class="entry"><code>harness-snapshot.py</code><span>python3</span></li>
+        <li class="entry"><code>scan-context-files.py</code><span>python3</span></li>
+        <li class="entry"><code>memory-vec-hint-hook.py</code><span class="m">startup</span><span>python3</span></li>
+        <li class="entry"><code>session-bom.py</code><span>python3</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>UserPromptSubmit <span class="g-n">2</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>claude-hooks user-prompt</code><span class="m">Rust</span><span>agent-router 等を統合した Rust binary サブコマンド</span></li>
+        <li class="entry"><code>user-input-guard.py</code><span>python3</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>PreToolUse <span class="g-n">10</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>claude-hooks pre-bash</code><span class="m">Bash</span><span>Rust</span></li>
+        <li class="entry"><code>claude-hooks pre-commit</code><span class="m">Bash(git commit *)</span><span>Rust</span></li>
+        <li class="entry"><code>claude-hooks pre-edit</code><span class="m">Edit|Write</span><span>Rust</span></li>
+        <li class="entry"><code>comment-guard.sh</code><span class="m">Edit|Write|MultiEdit</span><span>bash</span></li>
+        <li class="entry"><code>prompt-injection-detector.py</code><span class="m">Bash</span><span>python3</span></li>
+        <li class="entry"><code>claude-hooks pre-search</code><span class="m">Grep|Glob|Read</span><span>Rust</span></li>
+        <li class="entry"><code>claude-hooks pre-websearch</code><span class="m">WebSearch</span><span>Rust</span></li>
+        <li class="entry"><code>mcp-audit.py</code><span class="m">mcp__.*</span><span>python3</span></li>
+        <li class="entry"><code>docker-safety.py</code><span class="m">Bash(*docker*)</span><span>python3</span></li>
+        <li class="entry"><code>rtk hook claude</code><span class="m">Bash</span><span>外部 CLI</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>PostToolUse <span class="g-n">26</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>claude-hooks post-edit</code><span class="m">Edit|Write</span><span>Rust</span></li>
+        <li class="entry"><code>claudemd-size-check.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>claude-hooks post-bash</code><span class="m">Bash</span><span>Rust</span></li>
+        <li class="entry"><code>stagnation-detector.py</code><span class="m">Bash</span><span>python3</span></li>
+        <li class="entry"><code>error-rate-monitor.py</code><span class="m">Bash</span><span>python3</span></li>
+        <li class="entry"><code>file-proliferation-guard.py</code><span class="m">Write</span><span>python3</span></li>
+        <li class="entry"><code>spec-quality-check.py</code><span class="m">Write</span><span>python3</span></li>
+        <li class="entry"><code>type-safety-delta.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>impact-scan.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>mcp-skill-hint.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>approval-fatigue-guard.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>doc-garden-check.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>structure-check.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>skill-suggest.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>change-surface-advisor.py</code><span class="m">Edit|Write</span><span>python3</span></li>
+        <li class="entry"><code>jq → memory frontmatter updated_at 自動更新</code><span class="m">Edit|Write</span><span>inline</span></li>
+        <li class="entry"><code>jq → sync-memory-to-vault.sh 起動</code><span class="m">Edit|Write</span><span>inline</span></li>
+        <li class="entry"><code>mcp-response-inspector.py</code><span class="m">mcp__.*</span><span>python3</span></li>
+        <li class="entry"><code>rationalization-scanner.py</code><span class="m">Agent</span><span>python3</span></li>
+        <li class="entry"><code>agent-invocation-logger.py</code><span class="m">Agent</span><span>python3</span></li>
+        <li class="entry"><code>cmux-notify.sh</code><span class="m">Agent</span><span>bash — サブエージェント完了通知</span></li>
+        <li class="entry"><code>derivation-honesty-hook.py</code><span class="m">Bash|Write|Edit</span><span>python3</span></li>
+        <li class="entry"><code>skill-tracker.py</code><span class="m">Skill</span><span>python3</span></li>
+        <li class="entry"><code>save-briefing-to-vault.sh</code><span class="m">Skill</span><span>bash</span></li>
+        <li class="entry"><code>claude-hooks post-any</code><span class="m">(all tools)</span><span>Rust</span></li>
+        <li class="entry"><code>webfetch-truncation-detector.py</code><span class="m">WebFetch</span><span>python3</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>PreCompact <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>pre-compact-save.js &amp;&amp; half-clone.sh</code><span>node + bash — compaction 直前の状態保存</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>PostCompact <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>post-compact-verify.js</code><span>node — compaction 後の整合検証</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>SubagentStop <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>subagent-monitor.py</code><span>python3</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>Stop <span class="g-n">9</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>completion-gate.py</code><span>python3</span></li>
+        <li class="entry"><code>diff-coverage-gate.py</code><span>python3</span></li>
+        <li class="entry"><code>session-save.js</code><span>node</span></li>
+        <li class="entry"><code>session-learner.py</code><span>python3 (background)</span></li>
+        <li class="entry"><code>sync-memory-to-vault.sh</code><span>bash (background)</span></li>
+        <li class="entry"><code>session-stats.sh</code><span>bash (background)</span></li>
+        <li class="entry"><code>cmux-notify.sh</code><span>inline bash — 経過時間付き完了通知</span></li>
+        <li class="entry"><code>afplay Blow.aiff</code><span>inline — 完了サウンド</span></li>
+        <li class="entry"><code>memory-vec-stop-hook.py</code><span>python3</span></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>Notification <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>cmux-notify.sh</code><span>bash — 入力待ち通知</span></li>
+      </ul>
+    </details>
+  </div>
+  <div class="panel" id="panel-plugins" role="tabpanel" aria-labelledby="tab-plugins" tabindex="0">
+    <details open class="group">
+      <summary>Plugins <span class="g-n">16</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>claude-md-management</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>code-simplifier</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>codex</code><span class="m">openai-codex</span></li>
+        <li class="entry"><code>datadog</code><span class="m">kw-marketplace</span></li>
+        <li class="entry"><code>frontend-design</code><span class="m">claude-code-plugins</span></li>
+        <li class="entry"><code>gopls-lsp</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>mattpocock-skills</code><span class="m">mattpocock-skills</span></li>
+        <li class="entry"><code>obsidian</code><span class="m">obsidian-skills</span></li>
+        <li class="entry"><code>playground</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>pr-review-toolkit</code><span class="m">claude-code-plugins</span></li>
+        <li class="entry"><code>ralph-loop</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>rust-analyzer-lsp</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>superpowers</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>terraform-skill</code><span class="m">antonbabenko-terraform</span></li>
+        <li class="entry"><code>typescript-lsp</code><span class="m">claude-plugins-official</span></li>
+        <li class="entry"><code>warp</code><span class="m">claude-code-warp</span></li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="panel" id="panel-scripts" role="tabpanel" aria-labelledby="tab-scripts" tabindex="0">
+    <details open class="group">
+      <summary>runtime/ <span class="g-n">48</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>_brevity_runner.py</code></li>
+        <li class="entry"><code>_brevity_summary.py</code></li>
+        <li class="entry"><code>_brevity_types.py</code></li>
+        <li class="entry"><code>best-of-n-runner.sh</code></li>
+        <li class="entry"><code>brevity-benchmark.py</code></li>
+        <li class="entry"><code>cmux-worktree-daemon.sh</code></li>
+        <li class="entry"><code>collect-result.sh</code></li>
+        <li class="entry"><code>daily-health-check.sh</code></li>
+        <li class="entry"><code>dispatch-log.sh</code></li>
+        <li class="entry"><code>finish-pr-review.sh</code></li>
+        <li class="entry"><code>inject-review-prompt.sh</code></li>
+        <li class="entry"><code>launch-worker.sh</code></li>
+        <li class="entry"><code>nightly/launchd-install.sh</code></li>
+        <li class="entry"><code>nightly/launchd-uninstall.sh</code></li>
+        <li class="entry"><code>nightly/lib/nightly-status.sh</code></li>
+        <li class="entry"><code>nightly/lib/notify-discord.sh</code></li>
+        <li class="entry"><code>nightly/nightly-caffeinate.sh</code></li>
+        <li class="entry"><code>nightly/run-audit.sh</code></li>
+        <li class="entry"><code>nightly/run-daily-report.sh</code></li>
+        <li class="entry"><code>nightly/run-dep-audit.sh</code></li>
+        <li class="entry"><code>nightly/run-friction-aggregate.sh</code></li>
+        <li class="entry"><code>nightly/run-golden-check.sh</code></li>
+        <li class="entry"><code>nightly/run-health-check.sh</code></li>
+        <li class="entry"><code>nightly/run-learned-promote.sh</code></li>
+        <li class="entry"><code>nightly/run-plan-close-scan.sh</code></li>
+        <li class="entry"><code>nightly/run-skill-audit.sh</code></li>
+        <li class="entry"><code>nightly/setup-nightly-wake.sh</code></li>
+        <li class="entry"><code>patrol-agent.sh</code></li>
+        <li class="entry"><code>poll-pr-reviewer.sh</code></li>
+        <li class="entry"><code>pr-review-claude.sh</code></li>
+        <li class="entry"><code>pr-review-setup.sh</code></li>
+        <li class="entry"><code>prepare-pr-review.sh</code></li>
+        <li class="entry"><code>promote-patterns.py</code></li>
+        <li class="entry"><code>race-runner.sh</code></li>
+        <li class="entry"><code>rotate-patterns.py</code></li>
+        <li class="entry"><code>skill-drift-check.sh</code></li>
+        <li class="entry"><code>skill-hash-verify.sh</code></li>
+        <li class="entry"><code>skill-rollback.sh</code></li>
+        <li class="entry"><code>tech-researcher/aggregate.py</code></li>
+        <li class="entry"><code>tech-researcher/lib/feed.sh</code></li>
+        <li class="entry"><code>tech-researcher/run-tech-researcher.sh</code></li>
+        <li class="entry"><code>tech-researcher/sources.py</code></li>
+        <li class="entry"><code>tech-researcher/tests/test_aggregate.py</code></li>
+        <li class="entry"><code>tech-researcher/tests/test_sources.py</code></li>
+        <li class="entry"><code>tech-researcher/tests/test_trends_select.py</code></li>
+        <li class="entry"><code>tech-researcher/trends_select.py</code></li>
+        <li class="entry"><code>token-audit.py</code></li>
+        <li class="entry"><code>worktree-port-alloc.sh</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>lifecycle/ <span class="g-n">7</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>claude-plugins-sync.sh</code></li>
+        <li class="entry"><code>dead-weight-scan.py</code></li>
+        <li class="entry"><code>doc-status-audit.py</code></li>
+        <li class="entry"><code>doctor-stale.sh</code></li>
+        <li class="entry"><code>doctor.sh</code></li>
+        <li class="entry"><code>permission-audit.py</code></li>
+        <li class="entry"><code>plan-close-detector.py</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>lib/ <span class="g-n">6</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>cmux_resolver.sh</code></li>
+        <li class="entry"><code>dispatch_logger.sh</code></li>
+        <li class="entry"><code>diversity_metrics.py</code></li>
+        <li class="entry"><code>skill_platforms.py</code></li>
+        <li class="entry"><code>skills_lock.py</code></li>
+        <li class="entry"><code>submodular_selection.py</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>security/ <span class="g-n">3</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>check-company-content.sh</code></li>
+        <li class="entry"><code>publicity-scan.py</code></li>
+        <li class="entry"><code>scan-jsonl-secrets.py</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>migrations/ <span class="g-n">3</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>add-origin-to-skills.py</code></li>
+        <li class="entry"><code>add-platforms-to-skills.py</code></li>
+        <li class="entry"><code>add-provenance-to-lock.py</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>learner/ <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>reviewer-calibration.py</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>experimental/ <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>gh-skill-wrapper.sh</code></li>
+      </ul>
+    </details>
+    <details open class="group">
+      <summary>tests/ <span class="g-n">1</span></summary>
+      <ul class="entries">
+        <li class="entry"><code>test_plan_close_detector.py</code></li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <span>SNAPSHOT 2026-06-12</span>
+  <span class="f-dot">●</span>
+  <span>github.com/takeuchi-shogo/dotfiles</span>
+  <span class="f-dot">●</span>
+  <span>Generated with Claude Code</span>
+</footer>
+</main>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- hero counters: staggered count-up ---------- */
+  var counters = Array.prototype.slice.call(document.querySelectorAll("#counters .counter"));
+  var fired = false;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function animateNum(el, target, duration) {
+    if (!el) return;
+    if (isNaN(target)) { return; }
+    if (reduceMotion) { el.textContent = target; return; }
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min((ts - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+  function lightUp() {
+    if (fired) return;
+    fired = true;
+    counters.forEach(function (c, i) {
+      setTimeout(function () {
+        c.classList.add("lit");
+        var num = c.querySelector(".num");
+        if (!num) return;
+        animateNum(num, parseInt(num.getAttribute("data-target"), 10), 900);
+      }, reduceMotion ? 0 : 160 * i);
+    });
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { lightUp(); io.disconnect(); } });
+    }, { threshold: 0.3 });
+    var target = document.getElementById("counters");
+    if (target) io.observe(target);
+    setTimeout(lightUp, 1200); /* fallback: above-the-fold でも確実に点灯 */
+  } else {
+    lightUp();
+  }
+
+  /* ---------- catalog: tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  function activateTab(name) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-tab") === name;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === "panel-" + name); });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activateTab(t.getAttribute("data-tab")); });
+  });
+
+  /* ---------- catalog: live search (cross-tab) ---------- */
+  var entries = Array.prototype.slice.call(document.querySelectorAll(".panel .entry"));
+  entries.forEach(function (e) { e._s = e.textContent.toLowerCase(); });
+  var groups = Array.prototype.slice.call(document.querySelectorAll(".panel .group"));
+  var baseTabCounts = {};
+  tabs.forEach(function (t) {
+    var name = t.getAttribute("data-tab");
+    var panel = document.getElementById("panel-" + name);
+    baseTabCounts[name] = panel ? panel.querySelectorAll(".entry").length : 0;
+    t._n = t.querySelector(".tab-n");
+  });
+  var searchBox = document.getElementById("cat-search");
+  var hitCount = document.getElementById("hit-count");
+  var emptyMsg = document.getElementById("cat-empty");
+  var openStateSaved = false;
+  function applySearch(q) {
+    q = q.trim().toLowerCase();
+    if (q) {
+      if (!openStateSaved) {
+        groups.forEach(function (g) { g._wasOpen = g.open; });
+        openStateSaved = true;
+      }
+      var total = 0;
+      var perTab = {};
+      entries.forEach(function (e) {
+        var hit = e._s.indexOf(q) !== -1;
+        e.classList.toggle("hidden", !hit);
+        if (hit) total++;
+      });
+      groups.forEach(function (g) {
+        var visible = g.querySelectorAll(".entry:not(.hidden)").length;
+        g.classList.toggle("hidden", visible === 0);
+        if (visible > 0) g.open = true;
+      });
+      panels.forEach(function (p) {
+        perTab[p.id.replace("panel-", "")] = p.querySelectorAll(".entry:not(.hidden)").length;
+      });
+      tabs.forEach(function (t) {
+        var name = t.getAttribute("data-tab");
+        if (t._n) t._n.textContent = perTab[name] + "/" + baseTabCounts[name];
+      });
+      hitCount.textContent = "HIT: " + total + " / " + entries.length;
+      if (emptyMsg) emptyMsg.classList.toggle("hidden", total !== 0);
+    } else {
+      entries.forEach(function (e) { e.classList.remove("hidden"); });
+      groups.forEach(function (g) {
+        g.classList.remove("hidden");
+        if (openStateSaved) g.open = g._wasOpen;
+      });
+      openStateSaved = false;
+      tabs.forEach(function (t) {
+        var name = t.getAttribute("data-tab");
+        if (t._n) t._n.textContent = baseTabCounts[name];
+      });
+      hitCount.textContent = "";
+      if (emptyMsg) emptyMsg.classList.add("hidden");
+    }
+  }
+  if (searchBox) {
+    searchBox.addEventListener("input", function () { applySearch(searchBox.value); });
+    searchBox.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") { searchBox.value = ""; applySearch(""); }
+    });
+  }
+
+  /* ---------- architecture stack: smooth scroll (anchor fallback 込み) ---------- */
+  Array.prototype.slice.call(document.querySelectorAll(".stack .layer")).forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      var id = a.getAttribute("href");
+      var dest = document.querySelector(id);
+      if (dest) {
+        ev.preventDefault();
+        dest.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (history.pushState) history.pushState(null, "", id);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
