@@ -356,21 +356,31 @@ release_claude_lock() {
 # 理由: launchd 直叩きの claude -p は default model / Keychain 依存で不安定
 # (fable-5 classifier outage 等)。codex exec は CODEX_HOME 認証で headless 安定。
 #
-# 出力分離: codex の stdout は reasoning trace なので、最終メッセージは -o で
-# 専用ファイルに書き出す (claude -p は stdout=本文だったため redirect で取れた)。
-# プロンプトは stdin 経由で渡す (positional arg だと stdin EOF 待ちで hang する —
-# 2026-06-14 実地確認)。
+# 出力分離: codex の stdout は reasoning trace なので、最終メッセージは
+# --output-last-message で専用ファイルに書き出す (claude -p は stdout=本文だったため
+# redirect で取れた)。プロンプトは stdin 経由で渡す (positional arg だと stdin EOF 待ちで
+# hang する — 2026-06-14 実地確認)。
+#
+# codex バイナリは NIGHTLY_CODEX_BIN の絶対パスを使う。launchd の bash -lc (login shell) は
+# .bash_profile 再読込で mise を活性化せず PATH に新しい codex が乗らないため、PATH 解決だと
+# stale な /usr/local/bin/codex 0.39.0 に落ちる (2026-06-14 実夜で実証)。install 時に
+# command -v codex で解決した絶対パスを plist env 経由で渡す。
+#
+# --ignore-user-config: 無人バッチを ~/.codex/config.toml の drift から隔離する (remote MCP
+# サーバ等が壊れると codex 起動ごと失敗するため)。auth は CODEX_HOME から読むので維持される。
 #
 # モデル/推論強度は env で上書き可:
 #   NIGHTLY_CODEX_MODEL  (既定 gpt-5.5)
 #   NIGHTLY_CODEX_EFFORT (既定 high — golden パイロットで検証済)
+#   NIGHTLY_CODEX_BIN    (既定 codex — install 時に絶対パスへ解決)
 # ============================================================
 NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.5}"
 NIGHTLY_CODEX_EFFORT="${NIGHTLY_CODEX_EFFORT:-high}"
+NIGHTLY_CODEX_BIN="${NIGHTLY_CODEX_BIN:-codex}"
 
 # run_codex_report — read-only 分析 → レポート生成の共通ラッパー (claude -p 置換)。
 # Usage: run_codex_report <timeout_sec> <out_file> <prompt>
-#   最終メッセージを -o で <out_file> に書く。codex の trace は捨てる。
+#   最終メッセージを --output-last-message で <out_file> に書く。codex の trace は捨てる。
 # 戻り値: 成功 0 / 失敗 非0。失敗時はグローバル CODEX_ERR_HEAD に trace 先頭 200B。
 # timeout は TIMEOUT_BIN (呼び出し側 preflight で解決済) を使う。未解決なら自前で探す。
 CODEX_ERR_HEAD=""
@@ -384,10 +394,10 @@ run_codex_report() {
     fi
     local trace
     trace=$(mktemp -t "nightly-codex-trace.XXXXXX")
-    if ! printf '%s' "$prompt" | "$tbin" "${timeout_sec}s" codex exec \
+    if ! printf '%s' "$prompt" | "$tbin" "${timeout_sec}s" "$NIGHTLY_CODEX_BIN" exec \
             --skip-git-repo-check -m "$NIGHTLY_CODEX_MODEL" --sandbox read-only \
-            --config model_reasoning_effort="$NIGHTLY_CODEX_EFFORT" \
-            -o "$out_file" > "$trace" 2>&1; then
+            --ignore-user-config --config model_reasoning_effort="$NIGHTLY_CODEX_EFFORT" \
+            --output-last-message "$out_file" > "$trace" 2>&1; then
         CODEX_ERR_HEAD=$(head -c 200 "$trace" 2>/dev/null || echo "")
         rm -f "$trace"
         return 1
