@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # launchd-install.sh — nightly task の launchd LaunchAgent plist を生成 + load
-# 理由: cron は Aqua session 外で起動 → Keychain access 不可 → claude -p が Execution error で fail
-# launchd LaunchAgent (~/Library/LaunchAgents/) は user の Aqua session 内で起動 → Keychain OK
+# 理由: cron は Aqua session 外 + PATH/env が最小で起動するため LLM CLI が不安定。
+# launchd LaunchAgent (~/Library/LaunchAgents/) は user の Aqua session 内で起動し、
+# EnvironmentVariables で PATH/HOME/TZ/モデル設定を明示注入できる。
+# (2026-06-14: 夜間 LLM 呼び出しは claude -p → codex に移行済。codex は CODEX_HOME 認証)
 set -euo pipefail
 
 NIGHTLY_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -10,10 +12,14 @@ mkdir -p "$AGENTS_DIR"
 
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 
-# 夜間バッチの claude -p は Sonnet に固定する。--model 無指定の claude -p は
-# ~/.claude/settings.json のデフォルトモデルに従うため、対話用に Fable/Opus へ
-# 切り替えるとバッチ 23 箇所のコストと挙動が暗黙に変わってしまう (2026-06-11 検出)。
-NIGHTLY_CLAUDE_MODEL="${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}"
+# 夜間バッチの LLM 呼び出しは 2026-06-14 に claude -p → codex へ移行。codex は CODEX_HOME 認証で
+# headless 安定 (claude -p の default model / Keychain 依存の不安定を回避)。モデルと推論強度を
+# 明示固定する (env で上書き可。run-*.sh / lib も同じ既定にフォールバックする)。
+# CODEX_HOME を明示注入し headless で認証経路を確定させる (未注入だと OPENAI_API_KEY 等への
+# 暗黙フォールバックで挙動がぶれる)。
+NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.5}"
+NIGHTLY_CODEX_EFFORT="${NIGHTLY_CODEX_EFFORT:-high}"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 
 # wake/caffeinate 時刻の単一真実源 (setup-nightly-wake.sh の pmset と揃える)
 # shellcheck source=./nightly-wake.env
@@ -69,10 +75,14 @@ generate_plist() {
         <string>${HOME}</string>
         <key>TZ</key>
         <string>Asia/Tokyo</string>
+        <key>CODEX_HOME</key>
+        <string>${CODEX_HOME}</string>
         <key>OBSIDIAN_VAULT_PATH</key>
         <string>${VAULT_PATH}</string>
-        <key>NIGHTLY_CLAUDE_MODEL</key>
-        <string>${NIGHTLY_CLAUDE_MODEL}</string>
+        <key>NIGHTLY_CODEX_MODEL</key>
+        <string>${NIGHTLY_CODEX_MODEL}</string>
+        <key>NIGHTLY_CODEX_EFFORT</key>
+        <string>${NIGHTLY_CODEX_EFFORT}</string>
     </dict>
     <key>StandardOutPath</key>
     <string>/tmp/nightly-${task}.launchd.log</string>
@@ -121,8 +131,10 @@ generate_orchestrator_plist() {
         <key>PATH</key><string>/Applications/cmux.app/Contents/Resources/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
         <key>HOME</key><string>${HOME}</string>
         <key>TZ</key><string>Asia/Tokyo</string>
+        <key>CODEX_HOME</key><string>${CODEX_HOME}</string>
         <key>OBSIDIAN_VAULT_PATH</key><string>${VAULT_PATH}</string>
-        <key>NIGHTLY_CLAUDE_MODEL</key><string>${NIGHTLY_CLAUDE_MODEL}</string>
+        <key>NIGHTLY_CODEX_MODEL</key><string>${NIGHTLY_CODEX_MODEL}</string>
+        <key>NIGHTLY_CODEX_EFFORT</key><string>${NIGHTLY_CODEX_EFFORT}</string>
     </dict>
 </dict>
 </plist>

@@ -22,7 +22,7 @@ if [[ -z "${OBSIDIAN_VAULT_PATH:-}" ]]; then
     status_begin "$TASK"; status_end fail "missing OBSIDIAN_VAULT_PATH"
     exit 0
 fi
-for cmd in jq claude; do
+for cmd in jq codex; do
     if ! command -v "$cmd" &>/dev/null; then
         status_begin "$TASK"; status_end fail "preflight: $cmd CLI not found"
         exit 0
@@ -83,14 +83,11 @@ PROMPT="$(cat <<'PROMPT_EOF'
 PROMPT_EOF
 )"
 
-STDERR_LOG=$(mktemp -t "nightly-audit-stderr.XXXXXX")
-if ! "$TIMEOUT_BIN" 1200s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" > "$REPORT_TMP" 2> "$STDERR_LOG"; then
-    err_head=$(head -c 200 "$STDERR_LOG" 2>/dev/null || echo "")
-    rm -f "$STDERR_LOG"
-    status_end fail "claude -p failed/timeout, stderr: $err_head"
+# codex exec (read-only 分析 → -o で REPORT_TMP に最終メッセージのみ書き出す)
+if ! run_codex_report 1200 "$REPORT_TMP" "$PROMPT"; then
+    status_end fail "codex failed/timeout: $CODEX_ERR_HEAD"
     exit 0
 fi
-rm -f "$STDERR_LOG"
 
 mv "$REPORT_TMP" "$REPORT_PATH"
 

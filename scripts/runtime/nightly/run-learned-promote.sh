@@ -106,7 +106,7 @@ for f in "$EXTRACT" "$RECONCILE"; do
 done
 TIMEOUT_BIN=$(command -v timeout 2>/dev/null || command -v gtimeout 2>/dev/null || true)
 if [[ "$DRY_RUN" -eq 0 ]]; then
-    for cmd in claude gh; do
+    for cmd in codex gh; do
         if ! command -v "$cmd" &>/dev/null; then
             status_begin "$TASK"; status_end fail "preflight: $cmd not found"
             exit 0
@@ -289,13 +289,18 @@ ${MANIFEST_PATH} を Write で次の JSON にする。入力候補 ${SLICE_COUNT
   ]
 }"
 
-# --- claude -p (最小権限: Read/Edit/Write/Glob/Grep。Bash/ネットなし) ---
+# --- codex workspace-write (専用 worktree 配下のみ書込可。下の codex 起動を参照) ---
 if ! acquire_claude_lock; then
-    status_end fail "claude lock timeout"
+    status_end fail "codex lock timeout"
     exit 0
 fi
-# ledger 改ざん検出用に claude 実行前の hash を記録 (claude は Write で任意 path を書ける)
+# ledger 改ざん検出用に codex 実行前の hash を記録。workspace-write は WORK_TREE 配下に
+# 書込を制限するが (ledger は配下外)、多層防御として hash を検証する。
 LEDGER_HASH_BEFORE="$(shasum "$LEDGER" 2>/dev/null | awk '{print $1}' || echo none)"
+# push 先改ざん検出: workspace-write は git 実行を許すため、codex が WORK_TREE の origin remote を
+# 書き換えると push が攻撃者先に向く。scope guard は porcelain ベースで remote 変更を捕捉できない
+# ため、codex 実行前の origin URL を控え push 直前に不変を検証する。
+ORIGIN_URL_BEFORE="$(git -C "$WORK_TREE" remote get-url origin 2>/dev/null || echo "")"
 # 検証 fail 時のデバッグ素材退避。worktree も tmpfile も trap で消えるため、
 # 退避しないと「何が不正だったか」を再現実行なしに調査できない (2026-06-11 初回実行で実証)
 _save_debug() {
@@ -307,35 +312,42 @@ _save_debug() {
     echo "[learned-promote] debug saved: $dst" >&2
 }
 
-CLAUDE_LOG=$(mktemp -t "lp-claude.XXXXXX"); _TMPFILES+=("$CLAUDE_LOG")
+# 2026-06-14: claude -p → codex workspace-write 移行。
+# codex を -C "$WORK_TREE" --sandbox workspace-write で起動すると、sandbox が編集範囲を
+# 専用 worktree 配下に物理的に制限する (claude の prompt ベース制限より強い)。network は
+# codex 既定で無効。manifest は codex が WORK_TREE 内に書き、後段の多層ガード (manifest 検証 /
+# ledger hash / scope guard / adopted-target-modified) で出力を検証する。
+# 注意: workspace-write は git 実行を許す (claude の --allowedTools 除外より緩い)。prompt で
+# git 禁止を指示しているが、万一 codex が commit してもガードが安全側に倒す (no changes staged
+# fail。bad PR は作られない)。プロンプトは stdin 経由 (positional arg は stdin EOF 待ちで hang)。
+CLAUDE_LOG=$(mktemp -t "lp-codex.XXXXXX"); _TMPFILES+=("$CLAUDE_LOG")
 CLAUDE_ERR=$(mktemp -t "lp-err.XXXXXX"); _TMPFILES+=("$CLAUDE_ERR")
-if ! "$TIMEOUT_BIN" 900s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" \
-        --allowedTools "Read,Edit,Write,Glob,Grep" \
-        --output-format text > "$CLAUDE_LOG" 2> "$CLAUDE_ERR"; then
+if ! printf '%s' "$PROMPT" | "$TIMEOUT_BIN" 900s codex exec \
+        --skip-git-repo-check -m "${NIGHTLY_CODEX_MODEL:-gpt-5.5}" \
+        --sandbox workspace-write -C "$WORK_TREE" \
+        --config model_reasoning_effort="${NIGHTLY_CODEX_EFFORT:-high}" \
+        > "$CLAUDE_LOG" 2> "$CLAUDE_ERR"; then
     release_claude_lock
     _save_debug
-    status_end fail "claude -p failed/timeout(900s): $(head -c 200 "$CLAUDE_ERR" 2>/dev/null)"
+    # codex のエラーは stderr に出る。空なら stdout(trace) 末尾で補う (通知に診断材料を残す)
+    _err="$(head -c 200 "$CLAUDE_ERR" 2>/dev/null)"
+    [[ -z "$_err" ]] && _err="$(tail -c 200 "$CLAUDE_LOG" 2>/dev/null)"
+    status_end fail "codex failed/timeout(900s): $_err"
     exit 0
 fi
 release_claude_lock
 
-if grep -qiE '^[[:space:]]*execution error' "$CLAUDE_LOG" 2>/dev/null; then
-    _save_debug
-    status_end fail "claude -p returned 'Execution error' (exit 0)"
-    exit 0
-fi
-
-# --- ledger 改ざん検出 (claude は ledger を触ってはならない) ---
+# --- ledger 改ざん検出 (codex は ledger を触ってはならない) ---
 LEDGER_HASH_AFTER="$(shasum "$LEDGER" 2>/dev/null | awk '{print $1}' || echo none)"
 if [[ "$LEDGER_HASH_BEFORE" != "$LEDGER_HASH_AFTER" ]]; then
-    status_end fail "claude modified the ledger (forbidden); abort without PR"
+    status_end fail "codex modified the ledger (forbidden); abort without PR"
     exit 0
 fi
 
-# --- manifest 検証 (claude の出力を信頼しない) ---
+# --- manifest 検証 (codex の出力を信頼しない) ---
 if [[ ! -f "$MANIFEST_PATH" ]]; then
     _save_debug
-    status_end fail "claude did not write manifest"
+    status_end fail "codex did not write manifest"
     exit 0
 fi
 if ! jq empty "$MANIFEST_PATH" 2>/dev/null; then
@@ -407,6 +419,12 @@ if ! git -C "$WORK_TREE" commit -m "$COMMIT_MSG" >/dev/null 2>&1; then
     PATCH="${PATCH_DIR}/learned-promote-failed-${RUN_ID}.patch"
     git -C "$WORK_TREE" diff --cached > "$PATCH" 2>/dev/null || PATCH="(patch save failed)"
     status_end fail "git commit failed (pre-commit hook?); patch=$PATCH"
+    exit 0
+fi
+# push 先改ざん検出: codex が origin remote を書き換えていないか push 直前に検証する
+ORIGIN_URL_AFTER="$(git -C "$WORK_TREE" remote get-url origin 2>/dev/null || echo "")"
+if [[ "$ORIGIN_URL_BEFORE" != "$ORIGIN_URL_AFTER" ]]; then
+    status_end fail "origin remote URL changed during codex run (forbidden); abort before push"
     exit 0
 fi
 if ! git -C "$WORK_TREE" push -u origin "$BRANCH" >/dev/null 2>&1; then

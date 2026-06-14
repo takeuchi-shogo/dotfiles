@@ -70,7 +70,8 @@ func run(jobsPath string, dryRun bool) error {
 		"NIGHTLY_NOTIFY_DISABLE": "1",
 		"NIGHTLY_DATE_OVERRIDE":  date,
 		"OBSIDIAN_VAULT_PATH":    os.Getenv("OBSIDIAN_VAULT_PATH"),
-		"NIGHTLY_CLAUDE_MODEL":   envOr("NIGHTLY_CLAUDE_MODEL", "claude-sonnet-4-6"),
+		"NIGHTLY_CODEX_MODEL":    envOr("NIGHTLY_CODEX_MODEL", "gpt-5.5"),
+		"NIGHTLY_CODEX_EFFORT":   envOr("NIGHTLY_CODEX_EFFORT", "high"),
 	}
 
 	o := orchestrator.New(cfg, orchestrator.Options{
