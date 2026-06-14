@@ -34,7 +34,7 @@ if [[ -z "${OBSIDIAN_VAULT_PATH:-}" ]]; then
     status_begin "$TASK"; status_end fail "missing OBSIDIAN_VAULT_PATH"
     exit 0
 fi
-for cmd in jq curl claude; do
+for cmd in jq curl codex; do
     if ! command -v "$cmd" &>/dev/null; then
         status_begin "$TASK"; status_end fail "preflight: $cmd CLI not found in PATH"
         exit 0
@@ -99,14 +99,11 @@ dotfiles リポ (~/dotfiles) の以下のディレクトリを横断スキャン
 PROMPT_EOF
 )"
 
-STDERR_LOG=$(mktemp -t "nightly-golden-stderr.XXXXXX")
-if ! "$TIMEOUT_BIN" 600s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" > "$REPORT_TMP" 2> "$STDERR_LOG"; then
-    local_stderr_head=$(head -c 200 "$STDERR_LOG" 2>/dev/null || echo "")
-    rm -f "$STDERR_LOG"
-    status_end fail "claude -p failed or timeout, stderr: $local_stderr_head"
+# codex exec (read-only 分析 → -o で REPORT_TMP に最終メッセージのみ書き出す)
+if ! run_codex_report 600 "$REPORT_TMP" "$PROMPT"; then
+    status_end fail "codex failed or timeout: $CODEX_ERR_HEAD"
     exit 0
 fi
-rm -f "$STDERR_LOG"
 
 # M3: 成功時のみ atomic mv
 mv "$REPORT_TMP" "$REPORT_PATH"

@@ -58,8 +58,8 @@ for cmd in jq curl python3; do
         exit 0
     fi
 done
-if [[ "${TECH_RESEARCHER_DRY_RUN:-0}" != "1" ]] && ! command -v claude &>/dev/null; then
-    status_begin "$TASK"; status_end fail "preflight: claude CLI not found"
+if [[ "${TECH_RESEARCHER_DRY_RUN:-0}" != "1" ]] && ! command -v codex &>/dev/null; then
+    status_begin "$TASK"; status_end fail "preflight: codex CLI not found"
     exit 0
 fi
 TIMEOUT_BIN=$(command -v timeout 2>/dev/null || command -v gtimeout 2>/dev/null || true)
@@ -171,26 +171,16 @@ if [[ "${TECH_RESEARCHER_DRY_RUN:-0}" == "1" ]]; then
         echo '```'
     } > "$REPORT_RAW"
 else
-    # nightly batch (audit/skill-audit) と claude -p の同時実行を回避 (5分待ち)。
-    # 収集は lock 不要、claude 呼び出し直前でのみ取得する。
+    # nightly batch (audit/skill-audit) と codex の同時実行を回避 (5分待ち)。
+    # 収集は lock 不要、codex 呼び出し直前でのみ取得する (orchestrator 下では no-op)。
     if ! acquire_claude_lock; then
-        status_end fail "claude lock timeout"
+        status_end fail "codex lock timeout"
         exit 0
     fi
-    # 暴走防止は timeout 600s が hard stop (--tools "" / --max-budget-usd は claude -p で
-    # "Execution error" を誘発し使用不可 — 2026-06-04 実地確認)。-p の純テキスト選別は
-    # 単発応答なのでツール暴走リスクは低く、wall-clock 上限で十分。
-    STDERR_LOG=$(mktemp -t "tr-stderr.XXXXXX"); _TMPFILES+=("$STDERR_LOG")
-    if ! "$TIMEOUT_BIN" 600s claude -p "$PROMPT" --model "${NIGHTLY_CLAUDE_MODEL:-claude-sonnet-4-6}" --output-format text \
-            > "$REPORT_RAW" 2> "$STDERR_LOG"; then
-        err_head=$(head -c 200 "$STDERR_LOG" 2>/dev/null || echo "")
-        status_end fail "claude -p failed/timeout, stderr: $err_head"
-        exit 0
-    fi
-    # claude -p は内部失敗時 exit 0 のまま本文に "Execution error" を出すことがある。
-    # 先頭行を trim + 大小無視で照合 (先頭空白/大小ゆれを誤って成功扱いしない)。
-    if head -n1 "$REPORT_RAW" 2>/dev/null | grep -qiE '^[[:space:]]*execution error'; then
-        status_end fail "claude -p returned 'Execution error' (exit 0)"
+    # 暴走防止は timeout 600s が hard stop。純テキスト選別 (候補リストは PROMPT 埋め込み済) は
+    # 単発応答なので read-only sandbox で十分。-o で最終メッセージのみ REPORT_RAW に書く。
+    if ! run_codex_report 600 "$REPORT_RAW" "$PROMPT"; then
+        status_end fail "codex failed/timeout: $CODEX_ERR_HEAD"
         exit 0
     fi
 fi
