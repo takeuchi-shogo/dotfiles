@@ -408,7 +408,7 @@ if [[ -n "$MISSING_TARGET" ]]; then
     status_end fail "adopted target not actually modified: $MISSING_TARGET"
     exit 0
 fi
-COMMIT_MSG="🌱 chore(learned): 昇格候補 ${SLICE_COUNT} 件 (adopted=${ADOPTED} rejected=${REJECTED})
+COMMIT_MSG="🔧 chore(learned): 昇格候補 ${SLICE_COUNT} 件 (adopted=${ADOPTED} rejected=${REJECTED})
 
 learned-promote nightly が ${RUN_ID} の昇格候補を非対話 promote。
 ledger 反映はこの PR のマージ後 reconcile で行う (merge-coupled)。
@@ -476,7 +476,7 @@ $(cat "$MANIFEST_PATH")
 
 if ! PR_URL="$(gh pr create --repo "$GH_REPO" \
         --base master --head "$BRANCH" \
-        --title "🌱 learned 昇格 ${RUN_ID} (adopted=${ADOPTED} rejected=${REJECTED})" \
+        --title "🔧 learned 昇格 ${RUN_ID} (adopted=${ADOPTED} rejected=${REJECTED})" \
         --body "$PR_BODY" 2>&1)"; then
     # push 済みなのでリモートブランチを掃除 (orphan 防止)。ローカルは trap が削除。
     git -C "$WORK_TREE" push origin ":$BRANCH" >/dev/null 2>&1 || true
