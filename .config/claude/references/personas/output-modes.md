@@ -88,7 +88,9 @@ last_reviewed: 2026-04-23
 - 思考の壁打ち（`/think` 等）
 - 「箇条書きで要点だけ」では関係性が落ちる説明
 
-**非適用:** コード・コマンド・検証結果・gate finding は対象外（minimal の例外条項と同じ）。`/review` や hook/gate 通信では使わない（冗長性必須）。**opt-in 専用で default にはしない**（IFScale 保護 + minimal/caveman と方向が逆のため）。
+**非適用:** コード・コマンド・検証結果・gate finding は対象外（minimal の例外条項と同じ）。`/review` や hook/gate 通信では使わない（冗長性必須）。
+
+**実装**: `output-styles/prose.md`（native output style、coding 指示は保持）。`/output-style prose` で個別有効化、settings.json `outputStyle: prose` で default 化できる。default にする場合のトレードオフ（IFScale + minimal/caveman と方向が逆）を承知した上で選ぶこと。
 
 ## default（指定なし）
 

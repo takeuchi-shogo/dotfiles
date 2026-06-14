@@ -915,6 +915,7 @@
     }
   },
   "effortLevel": "high",
+  "outputStyle": "prose",
   "plansDirectory": "./tmp/plans",
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
