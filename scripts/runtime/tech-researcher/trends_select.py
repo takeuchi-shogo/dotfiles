@@ -32,13 +32,12 @@ def _num(v) -> float:
     return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else 0.0
 
 
-def select(
-    lines: list[str], asof: date, days: int, top: int | None = None
-) -> list[dict]:
-    """adopted=true を日付窓内で抽出し、url dedup + score ソート済みで返す。
+def _collect_adopted_window(lines: list[str], asof: date, days: int) -> list[dict]:
+    """adopted=true を日付窓で抽出し url dedup して返す (未ソート)。
 
-    ランク: novelty+concreteness 降順 → reliability 降順 → date 降順。
-    窓: asof を含む直近 days 日間 (aggregate.py と同一セマンティクス)。
+    同 url は最新日の採用レコードを残す。窓は asof を含む直近 days 日間
+    (aggregate.py と同一セマンティクス)。select() と select_harness_candidates()
+    が窓・dedup ロジックを共有する。
     """
     cutoff = (asof - timedelta(days=days - 1)).isoformat()
     asof_s = asof.isoformat()
@@ -62,20 +61,62 @@ def select(
         prev = seen.get(url)
         if prev is None or d > (prev.get("date") or ""):
             seen[url] = rec
+    return list(seen.values())
 
+
+def _axis(rec: dict, name: str) -> float:
+    """scores オブジェクトから軸 name の数値を取り出す (不在/非数値/非 dict は 0)。"""
+    raw = rec.get("scores")
+    s = raw if isinstance(raw, dict) else {}
+    return _num(s.get(name))
+
+
+def select(
+    lines: list[str], asof: date, days: int, top: int | None = None
+) -> list[dict]:
+    """adopted=true を日付窓内で抽出し、url dedup + score ソート済みで返す。
+
+    ランク: novelty+concreteness 降順 → reliability 降順 → date 降順。
+    窓: asof を含む直近 days 日間 (aggregate.py と同一セマンティクス)。
+    """
     # 安定ソート 2 段: date 降順 → score key で再ソート → 同点は新しい日付が先に残る
-    items = sorted(seen.values(), key=lambda r: r.get("date") or "", reverse=True)
+    items = sorted(
+        _collect_adopted_window(lines, asof, days),
+        key=lambda r: r.get("date") or "",
+        reverse=True,
+    )
 
     def score_key(rec: dict):
-        raw = rec.get("scores")
-        s = raw if isinstance(raw, dict) else {}
-        nov = _num(s.get("novelty"))
-        con = _num(s.get("concreteness"))
-        rel = _num(s.get("reliability"))
+        nov = _axis(rec, "novelty")
+        con = _axis(rec, "concreteness")
+        rel = _axis(rec, "reliability")
         return (-(nov + con), -rel)
 
     items.sort(key=score_key)
     return items[:top] if top else items
+
+
+def select_harness_candidates(
+    lines: list[str], asof: date, days: int, min_relevance: float
+) -> list[dict]:
+    """harness_relevance >= min_relevance の adopted 記事を relevance 降順で返す。
+
+    Phase 5 (Task 5.2 absorb→PR bridge) の候補選択土台。「AI トレンドとして重要」
+    (select) とは別軸で「自分のハーネスを改善しうるか」(harness_relevance) を見る。
+    ランク: harness_relevance 降順 → date 降順 (同点は新しい記事を先頭)。
+    閾値未満は除外する — 薄い晩は空リストを返し、5.2 側で PR ゼロに落ちる
+    (死蔵 PR 防止の閾値ベース流量制御)。harness_relevance 不在 (旧レコード) は 0 扱い。
+    min_relevance は 1 以上を渡すこと — 0 だと 0.0 >= 0 で旧 3 軸レコードが混入する。
+    上位 N 件は呼び出し側で slice する (select() の top と異なり CLI 非公開のため)。
+    """
+    items = [
+        r
+        for r in _collect_adopted_window(lines, asof, days)
+        if _axis(r, "harness_relevance") >= min_relevance
+    ]
+    items.sort(key=lambda r: r.get("date") or "", reverse=True)
+    items.sort(key=lambda r: -_axis(r, "harness_relevance"))
+    return items
 
 
 def _printable(s: str) -> str:
