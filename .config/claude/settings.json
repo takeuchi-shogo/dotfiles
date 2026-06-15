@@ -871,7 +871,8 @@
     "obsidian@obsidian-skills": true,
     "terraform-skill@antonbabenko-terraform": true,
     "warp@claude-code-warp": true,
-    "mattpocock-skills@mattpocock-skills": true
+    "mattpocock-skills@mattpocock-skills": true,
+    "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -903,8 +904,15 @@
         "source": "directory",
         "path": "/Users/takeuchishougo/dotfiles/.config/claude/marketplaces/mattpocock-skills"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
     }
   },
+  "outputStyle": "prose",
   "language": "japanese",
   "sandbox": {
     "filesystem": {
@@ -915,7 +923,6 @@
     }
   },
   "effortLevel": "xhigh",
-  "outputStyle": "prose",
   "plansDirectory": "./tmp/plans",
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
