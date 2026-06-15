@@ -14,6 +14,7 @@ last_reviewed: 2026-05-14
 | AutoEvolve | cron | 毎日 03:00 | `scripts/runtime/autoevolve-runner.sh` |
 
 launchd plist から `bash -lc <script-path>` 形式で起動するスクリプトは、事前に `+x` を確認する。shell がパスを直接 exec するため、実行権限がないと `exit 126 Permission denied` で失敗する。
+Python スクリプトを同経路で動かす場合、`python3` が macOS system Python 3.9 に解決されることがある。nightly / launchd 対象の Python は `from __future__ import annotations` を先頭に置き、PEP 604 形式の注釈 (`X | None`) が実行時評価で `TypeError` にならないようにする。
 
 ## Managed Agents API での代替
 

@@ -262,6 +262,7 @@ wait
 ### フォールバック
 
 モデルがエラーや空出力を返した場合、claude -p で同じプロンプトを再実行する。
+Gemini が wide web search / critique 系サブタスクで長時間後に空出力を返した場合は、Gemini subagent を再試行せず、失敗を記録して Codex-only の批評に切り替える。
 
 ### ディレクトリ構造
 
