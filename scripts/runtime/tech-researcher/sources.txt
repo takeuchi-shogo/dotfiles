@@ -5,8 +5,9 @@
 # このファイルは初期シード。進化結果 (status/score) は sources-ledger 側に持つ。
 # 進化の単位は feed URL 単位 (D1): 1 行 = 1 source = adoption-ledger の source_id。
 #
-# 不採用 (推測 URL が 404): openai.com/blog/rss.xml, anthropic.com/rss.xml, blog.google AI rss
-#   → 正しい feed URL が判明したら追記する (捏造で埋めない)。
+# 不採用 (RSS 不在, 2026-06-14 検証): Anthropic (www.anthropic.com/rss.xml /news/rss.xml とも 404),
+#   X/Twitter (信頼できる RSS なし)。判明/別手段が出たら追記する (捏造で埋めない)。
+#   OpenAI は blog/rss.xml は 404 だが news/rss.xml が実在 → 下記に追加済。
 
 # Zenn トピックフィード
 https://zenn.dev/topics/ai/feed
@@ -18,3 +19,19 @@ https://qiita.com/tags/ai/feed.atom
 
 # AI 各社・コミュニティブログ
 https://huggingface.co/blog/feed.xml
+
+# AI ベンダー・コーディングツール (2026-06-14 検証)
+https://openai.com/news/rss.xml
+https://www.cursor.com/changelog/rss.xml
+
+# 海外 dev コミュニティ (2026-06-14 検証)
+https://dev.to/feed
+
+# 論文 (arXiv RSS, RDF 形式。feed.sh の item 抽出が 0 件なら別途対応 — Issue #100)
+https://rss.arxiv.org/rss/cs.AI
+https://rss.arxiv.org/rss/cs.SE
+
+# 一般 SWE: 言語・設計・アーキ (引き出し用, harness 非依存。2026-06-14 検証)
+https://go.dev/blog/feed.atom
+https://devblogs.microsoft.com/typescript/feed/
+https://martinfowler.com/feed.atom
