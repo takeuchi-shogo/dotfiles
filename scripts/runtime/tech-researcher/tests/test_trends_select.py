@@ -23,6 +23,7 @@ def _line(
     novelty: int | None = 3,
     reliability: int | None = 3,
     concreteness: int | None = 3,
+    harness_relevance: int | None = None,
     title: str = "t",
     domain: str = "example.com",
 ) -> str:
@@ -33,6 +34,8 @@ def _line(
             "reliability": reliability,
             "concreteness": concreteness,
         }
+        if harness_relevance is not None:
+            scores["harness_relevance"] = harness_relevance
     return json.dumps(
         {
             "ts": f"{d}T00:00:00+09:00",
@@ -220,3 +223,86 @@ def test_render_term_strips_control_chars():
     out = trends_select.render_term(items, days=3)
     assert "\x1b" not in out
     assert rtl_override not in out
+
+
+def test_harness_below_threshold_excluded():
+    lines = [
+        _line("2026-06-09", "https://hi", harness_relevance=5),
+        _line("2026-06-09", "https://lo", harness_relevance=2),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=3, min_relevance=4
+    )
+    assert [r["url"] for r in items] == ["https://hi"]
+
+
+def test_harness_thin_night_returns_empty():
+    lines = [
+        _line("2026-06-09", "https://a", harness_relevance=2),
+        _line("2026-06-09", "https://b", harness_relevance=3),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=3, min_relevance=4
+    )
+    assert items == []
+
+
+def test_harness_sort_relevance_desc_then_date():
+    lines = [
+        _line("2026-06-09", "https://mid", harness_relevance=4),
+        _line("2026-06-09", "https://top", harness_relevance=5),
+        _line("2026-06-08", "https://tie-old", harness_relevance=5),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=7, min_relevance=4
+    )
+    assert [r["url"] for r in items] == [
+        "https://top",
+        "https://tie-old",
+        "https://mid",
+    ]
+
+
+def test_harness_missing_axis_treated_as_zero_excluded():
+    lines = [
+        _line("2026-06-09", "https://has", harness_relevance=4),
+        _line("2026-06-09", "https://old"),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=3, min_relevance=1
+    )
+    assert [r["url"] for r in items] == ["https://has"]
+
+
+def test_harness_adopted_false_excluded():
+    lines = [
+        _line("2026-06-09", "https://yes", harness_relevance=5),
+        _line("2026-06-09", "https://no", adopted=False, harness_relevance=5),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=3, min_relevance=4
+    )
+    assert [r["url"] for r in items] == ["https://yes"]
+
+
+def test_harness_window_cutoff_excludes_old():
+    lines = [
+        _line("2026-06-09", "https://new", harness_relevance=5),
+        _line("2026-06-01", "https://old", harness_relevance=5),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=3, min_relevance=4
+    )
+    assert [r["url"] for r in items] == ["https://new"]
+
+
+def test_harness_url_dedup_keeps_latest_date():
+    lines = [
+        _line("2026-06-08", "https://a/1", harness_relevance=2),
+        _line("2026-06-09", "https://a/1", harness_relevance=5),
+    ]
+    items = trends_select.select_harness_candidates(
+        lines, asof=ASOF, days=7, min_relevance=4
+    )
+    assert len(items) == 1
+    assert items[0]["date"] == "2026-06-09"

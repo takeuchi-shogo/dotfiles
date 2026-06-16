@@ -1653,3 +1653,10 @@
 - 判定: Gap 2個 (tiering+計測), 既採用未実装 1個, Partial 4個, Already 3個, N/A 1個 (family 8件目 PASS-warning)
 - 取り込み: 全8タスク採用 → docs/plans/active/2026-06-12-servant-engineering-review-speed-plan.md (L)
 - 特記: Codex が CLAUDE.md S規模 Codex Gate vs review SKILL ~10行省略の policy conflict を検出
+
+## [2026-06-14] ingest-skip (validation-only, adopt=0) | Opik Self-Repairing Harness + Karpathy Loop Engineering
+- ソース: https://x.com/_avichawla/status/2065727218991735000 + "Your Agent Harness Should Repair Itself" (Comet ML/Opik vendor article)
+- 判定: family self-evolving/self-healing-harness N>=13, Saturation PASS(warning), per-method 台帳で全12手法 rehash (delta=0) → 採用 0
+- 取り込み: なし (loop engineering=ralph-loop, self-repair=self-healing CREAO が丸ごとカバー)
+- Validation-only: /improve 退役 orphan を露出 → 退役処理 (T4-C plan superseded+completed/, regression-gate.py 他を decommission-log flag 2026-07-14, self-healing report frontmatter 訂正)
+- 詳細: docs/research/2026-06-14-opik-self-repairing-harness-absorb-analysis.md

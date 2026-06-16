@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-15",
+  "branch": "auto/learned-promote-20260615-222309",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "03edb938ee1b366546c7673444998d904f28d694",
+      "decision": "rejected",
+      "scope": "skill-nesting",
+      "reason": "already covered: .config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "subagent からの skill ネスト呼び出しは timeout する"
+    },
+    {
+      "key": "d1ea903b95461e5f88a91bbf5d64a023841201fd",
+      "decision": "adopted",
+      "scope": "gemini-parallel",
+      "target_artifact": ".config/claude/skills/research/SKILL.md",
+      "detail_excerpt": "Gemini wide web search 空出力時は Codex-only に fallback"
+    },
+    {
+      "key": "484158397c0ab9ef524750cbe0f4ecfc222fb9ed",
+      "decision": "adopted",
+      "scope": "launchd-python",
+      "target_artifact": ".config/claude/references/managed-agents-scheduling.md",
+      "detail_excerpt": "launchd の Python 3.9 では future annotations 必須"
+    },
+    {
+      "key": "a4168b6f88d22102091c90c840674248c668adde",
+      "decision": "rejected",
+      "scope": "rust-python-compat",
+      "reason": "already covered: .config/claude/scripts/lib/session_events.py",
+      "detail_excerpt": "Rust の data ラップを Python 側でフラット化する"
+    },
+    {
+      "key": "d356ca7331c5a69d5a3db698292e54465f7a4f20",
+      "decision": "rejected",
+      "scope": "codex",
+      "reason": "already covered: .config/claude/skills/debate/SKILL.md",
+      "detail_excerpt": "clean context で独立したセカンドオピニオンを得る"
+    }
+  ]
+}
