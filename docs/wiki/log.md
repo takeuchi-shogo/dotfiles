@@ -1660,3 +1660,64 @@
 - 取り込み: なし (loop engineering=ralph-loop, self-repair=self-healing CREAO が丸ごとカバー)
 - Validation-only: /improve 退役 orphan を露出 → 退役処理 (T4-C plan superseded+completed/, regression-gate.py 他を decommission-log flag 2026-07-14, self-healing report frontmatter 訂正)
 - 詳細: docs/research/2026-06-14-opik-self-repairing-harness-absorb-analysis.md
+
+## [2026-06-17] ingest-skip | Agent harness engineering with Claude: 14-step roadmap (movez Substack)
+- ソース: movez.substack.com (Addy Osmani loop engineering を参照した harness 14-step roadmap)
+- 理由: topic family "harness-engineering/self-improving-system" saturated-pure-rehash (N>=10 件目, 採用率<20%, delta=0)
+- 根拠: 直近同系 vendor 記事が連続採用0 (Opik 2026-06-14 delta=0 / Hermes 2026-05-31 delta=0 / Cursor 2026-04-30 採用0)。決定打=3日前の 2026-06-12-fable5-14steps が同一テーマ・同一14ステップ構造を absorb 済み
+- per-method 照合台帳 (delta=0 の立証 — 全14手法 → matched_prior 名指し):
+  - 1 harness=model/tools/permissions/context → `docs/agent-harness-contract.md` + harness-stability.md (rehash)
+  - 2 .claude/ folder layout → MEMORY.md「dotfiles 構造」.config/claude/ 実構造 (rehash)
+  - 3 harness vs loop vs system 3層 → 2026-06-12-fable5-14steps + cc-7-layer-memory-model.md (rehash)
+  - 4 default harness baseline → 2026-04-30-cursor-harness baseline 説明 (rehash)
+  - 5 CLAUDE.md <500 tokens → feedback_claudemd_length.md(IFScale)、dotfiles は意図的に >500=反証済 (rehash)
+  - 6 settings.json permissions undo-cost test → deny rules + change-surface-matrix.md + careful skill (rehash)
+  - 7 subagents writer-vs-checker → 2026-04-30-cursor-harness「#7 R-002 役割分離」Already確定 + Codex Review Gate (rehash)
+  - 8 skills reusable procedures → 2026-04-12-tan-thin-harness + skill-writing-principles.md (rehash)
+  - 9 hooks deterministic (PreToolUse exit2/PostToolUse fmt) → determinism_boundary.md + claude-hooks Rust 4層 (rehash)
+  - 10 add a loop (/loop + /goal grader) → 2026-06-12-fable5-14steps /goal 採用 + 2026-04-02-ralph-loop (rehash)
+  - 11 dynamic workflows (agent/parallel/pipeline) → MEMORY.md「Workflow tool は deliberate non-adopt」(rehash)
+  - 12 memory write-before-walk/read-at-start/distill → cc-7-layer-memory-model.md + memory-schema + handoff-template (rehash)
+  - 13 close the loop output→lesson→skill → autoevolve_details.md 4層ループ + /promote-learnings (rehash)
+  - 14 ship harness as plugin → project_claude_plugins_provisioning.md(task claude:plugins) + 本ブランチ ponytail プラグイン (rehash)
+- 該当 family のキーワード hit: harness, loop engineer, self-improv, self-evolv, recursive self
+- スキップ判定: Phase 1.5 gate (SATURATED-pure-rehash, ユーザー承認 skip)
+
+## [2026-06-17] ingest | stop-slop (AI tell removal from prose)
+- ソース: https://github.com/hardikpandya/stop-slop
+- 判定: Gap 6 / Partial 2 / Already 2 / N/A 1
+- 取り込み: 1 件 (prose.md に false agency→能動態 / 英語 throat-clearing opener / em-dash soft-default)
+- 棄却: skill 丸ごと vendor (YAGNI)、絶対ルール (二次 slop)、5次元スコア、jargon/binary/Wh-
+- 分析: docs/research/2026-06-17-stop-slop-prose-anti-slop-absorb-analysis.md
+
+## [2026-06-17] ingest | Agentic Code Review
+- ソース: テキスト直貼り (essay, Sean Goedecke 系)
+- 判定: Gap 1 / Partial 3 / Already 4 / N/A 2 (code-review-best-practices family N=9, PASS warning)
+- 取り込み: 1 件 (test-analyzer 4c アサーション書き換え検出 = diff-delta、4b tautological では捕まらない gap)
+- Phase 2.5: Codex(cmux) + Gemini 両 fallback 失敗 (wander/出力未回収) — S規模1件ゆえ Pass2 判定で続行
+- 分析: docs/research/2026-06-17-agentic-code-review-absorb-analysis.md
+
+## [2026-06-17] ingest | How to Create Loops with Claude (kumai_yu/Qiita)
+- ソース: https://qiita.com/kumai_yu/items/54ded70a5a68a5ca15d5
+- 判定: 全11手法 Already (Gap 0 / Partial 0 / N/A 0) → 採用 0
+- family: loop-engineering / multi-agent-orchestration (N=15, SATURATED-pure-rehash, delta=0)
+- 根拠: 一次ソース Addy Osmani の loop engineering エッセイは既に references/comprehension-debt-policy.md に出典明記で absorb 済み (二次紹介ゆえ採用0)。3日前 Opik 記事の同判定と一致
+- ユーザー: Saturation Gate で continue 選択 → フル workflow (Phase2 + Phase2.5 Gemini) 実行も採用0確定
+- Phase2.5: Gemini novel 候補2点 (context poisoning / tool-call 上限) は記事の主張でなく既存実装でカバー → 棄却 (Gemini imagination ガード)
+- 分析: docs/research/2026-06-17-loops-with-claude-absorb-analysis.md
+
+## [2026-06-17] ingest (full workflow, adopt=0) | Hermes VPS 24/7 OS Complete Guide
+- ソース: https://zenn.dev/sora_biz/articles/hermes-vps-complete-guide (sora_biz, Zenn)
+- 判定: Hermes 記事4本目、personal-agent-os/self-evolving family 飽和。全10手法 rehash (delta=0)
+- continue 選択でフル検証 (Phase 2-5 + Codex/Gemini) → Gap 0、採用 0
+- Phase 2.5: Codex「採用0妥当、(8)双方向リモコンは N/A by security posture/scope mismatch、(4)VPS≠ローカルMac で可用性モデル相違」/ Gemini「別途 Hermes 立てる ROI 低、skill 蓄積はドメイン依存で非転移、TokenMix.ai 検証は hallucination 懸念」
+- per-method 台帳 + 詳細: docs/research/2026-06-17-hermes-vps-24-7-os-absorb-analysis.md
+- 次回短絡 anchor: Hermes ツール記事 / "Personal OS reframe" framing は reference-only 短絡可
+
+## [2026-06-17] ingest (full workflow, adopt=0) | Hermes Analyst 10x Better + 6 Lessons (再提出)
+- ソース: 0xJeff (Hermes Analyst 10x Better / 6 Workflows 6 Lessons 60 Days) — テキスト貼付
+- 判定: personal-agent-os/hermes family (実ファイル N=9)。**「6 Lessons」記事は 2026-06-02 absorb の exact twin**、「10x Better」の唯一の新規非N/A手法 Nested Orchestrator もカバー済 → delta=0、採用 0
+- continue 選択でフル検証 (Phase 2-2.5 + Codex/Gemini)
+- Phase 2.5: Codex 格上げ提案2件を検証で棄却 — echo chamber=2026-06-02 で design note+watch 採用済(新規不要)、Nested Orchestrator cross-pollination=`multi-agent-coordination-patterns.md:89`(Agent Teams)+`:67`(親 synthesis)+Workflow patterns でカバー済(Codex は subagent-delegation-guide:138 のみ読み coordination-patterns 見落とし=狭く深い盲点)。Gemini 700s 不完全→失敗記録
+- ゲート教訓: Phase 1.5 で固有名詞 "hermes" を grep せず orchestration/skill キーワードで引いたため exact twin を見落とし(飽和結論には到達)。次回は著者/製品名を直 grep
+- 既存 anchor 通り: Hermes ツール記事は reference-only 短絡可 (twin/vendor content)
