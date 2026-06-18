@@ -1,22 +1,24 @@
 ---
 status: reference
-last_reviewed: 2026-05-30
+last_reviewed: 2026-06-18
 ---
 
 # Deny Rules Catalog (settings.json permissions auditability)
 
 `.config/claude/settings.json` の `permissions` を **カテゴリ別**に読めるようにした台帳。
-目的は auditability — 102 件の deny / 71 件の allow の **意図** をカテゴリ単位で追えるようにする
+目的は auditability — 104 件の deny / 71 件の allow の **意図** をカテゴリ単位で追えるようにする
 (claude-code-harness の番号付きガードレールレジストリに相当、ただし「生成」はせず読み物に留める)。
 
 > **single source は `settings.json` の `permissions` ブロック。本ファイルは編集しても挙動を変えない**
-> (auditability 用)。乖離検出には末尾の再生成コマンドを使う。`ask` tier は現状 0 件。
+> (auditability 用)。`## DENY (N)` / `## ALLOW (N)` ヘッダの件数は `task validate-configs`
+> (`.bin/validate_configs.sh`) が settings.json と自動照合し、drift すると CI が fail する。
+> 手動同期に頼らず、件数が変わったらヘッダ・合計・カテゴリを直すこと。`ask` tier は現状 0 件。
 
-## DENY (102)
+## DENY (104)
 
 | tier (category) | 件数 | 代表パターン | rationale |
 |-----------------|------|--------------|-----------|
-| 破壊的 Bash | 8 | `rm -rf *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify` 禁止は CLAUDE.md の commit gate と対 |
+| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対 |
 | ネットワーク・外部実行 Bash | 14 | `curl *`, `wget *`, `sudo *`, `su *`, `ssh *`, `scp *`, `nc/ncat/netcat *`, `osascript *`, `security *`, `pbcopy/pbpaste *`, `open *` | 外部送信・権限昇格・リモート実行・クリップボード/GUI 経由の持ち出しを遮断 (exfiltration boundary) |
 | 環境変数・秘密露出 Bash | 16 | `printenv`, `env`, `* .env*`, `* ~/.ssh/*`, `* ~/.aws/*`, `* ~/.gnupg/*`, `* ~/.config/gcloud/*`, `* ~/.git-credentials`, `* ~/.netrc`, `* ~/.npmrc`, `* ~/.vault-token` ほか | Bash 経由での環境変数 dump / 秘密ディレクトリ・認証ファイルの読み出しを遮断 |
 | 秘密ファイル Read (glob) | 19 | `Read(.env*)`, `Read(**/*.pem)`, `Read(**/*.p12)`, `Read(**/*credentials*)`, `Read(**/*secret*)`, `Read(**/*.key)`, `Read(**/id_rsa*)`, `Read(**/*password*)`, `Read(**/.htpasswd)`, `Read(**/*.kdbx)`, `Read(**/auth.json)` ほか | Read tool での秘密ファイル混入を内容パターンで遮断 |
@@ -25,7 +27,7 @@ last_reviewed: 2026-05-30
 | 秘密ディレクトリ Edit (~/) | 12 | `Edit(~/.ssh/**)`, `Edit(~/.aws/**)`, `Edit(~/.gnupg/**)`, `Edit(~/.config/gcloud/**)`, `Edit(~/.config/gh/**)`, `Edit(~/.git-credentials)`, `Edit(~/.vault-token)` ほか | 同上 (Edit tool 経路) |
 | shell rc Write/Edit | 8 | `Write/Edit(~/.zshrc)`, `Write/Edit(~/.bashrc)`, `Write/Edit(~/.zprofile)`, `Write/Edit(~/.bash_profile)` | shell 起動ファイルの改変 (永続的バックドア・PATH 汚染) を遮断。dotfiles 管理外の直接編集も禁止 |
 
-**deny 合計: 8 + 14 + 16 + 19 + 13 + 12 + 12 + 8 = 102** (settings.json と一致)
+**deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 12 + 8 = 104** (settings.json と一致)
 
 ## ALLOW (71) — カテゴリ要約
 
