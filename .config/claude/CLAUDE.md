@@ -72,6 +72,13 @@
 
 </important>
 
+<important if="you are writing a Japanese prose artifact — PR description, Issue body, memo, commit body, or doc">
+
+- 脱・AI 臭ルールに従う: `references/japanese-ai-prose.md`（「〜することができる」→「できる」、前置き・ヘッジ・機械翻訳調の受動態を抜く、行為者を主語に）
+- これは brevity ではない。自然で完全な文を保ち、AI 臭だけ抜く（極端な圧縮は `concise.md` の役割で別物）
+
+</important>
+
 ---
 
 ## ワークフロー

@@ -209,6 +209,10 @@ if.app-id = 'com.google.chrome.for.testing'
 run = 'layout floating'
 
 [[on-window-detected]]
+if.app-id = 'com.obsproject.obs-studio'
+run = 'layout floating'
+
+[[on-window-detected]]
 if.app-id = 'company.thebrowser.Browser'
 run = 'move-node-to-workspace A'
 
