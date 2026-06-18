@@ -1721,3 +1721,12 @@
 - Phase 2.5: Codex 格上げ提案2件を検証で棄却 — echo chamber=2026-06-02 で design note+watch 採用済(新規不要)、Nested Orchestrator cross-pollination=`multi-agent-coordination-patterns.md:89`(Agent Teams)+`:67`(親 synthesis)+Workflow patterns でカバー済(Codex は subagent-delegation-guide:138 のみ読み coordination-patterns 見落とし=狭く深い盲点)。Gemini 700s 不完全→失敗記録
 - ゲート教訓: Phase 1.5 で固有名詞 "hermes" を grep せず orchestration/skill キーワードで引いたため exact twin を見落とし(飽和結論には到達)。次回は著者/製品名を直 grep
 - 既存 anchor 通り: Hermes ツール記事は reference-only 短絡可 (twin/vendor content)
+
+## [2026-06-18] ingest-skip (light Phase 2, adopt=0) | Vercel eve agent framework
+
+- ソース: https://vercel.com/blog/introducing-eve
+- family: harness-engineering (N≈10, 採用率~60% PASS-warning)。TS production framework vs Claude Code CLI の scope mismatch でユーザーが light-phase2 選択
+- 結果: delta_methods 3 手法 (durable execution / needsApproval / connections-as-file) を Phase 2 まで検証 → 全 11 手法 Already or N/A、Gap 0 → adopt=0 (skip 同等)
+- Gemini 敵対レビュー (ユーザー要求): adopt=2 推奨も 4 提案全て却下 (Claude Code platform 機能の再実装 or 宣言済みへの config 追加 = imagination バイアス) → adopt=0 維持。副産物: platform が transcript/resume・MCP OAuth・skill on-demand を内蔵という強論拠を獲得
+- per-method 台帳 (全 11 手法) + 詳細: docs/research/2026-06-18-vercel-eve-agent-framework-absorb-analysis.md
+- 教訓: production agent framework 製品 (TS/Node deploy 型) は CLI harness と scope mismatch で構造的に採用0。N>=3 で family 横断教訓化判断
