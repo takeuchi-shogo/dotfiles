@@ -8,6 +8,58 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-20] ingest | The Self-Verifying Loop: 300 agents, 4,000 steps, 5 live data feeds on autopilot with Kimi K2.6
+
+- ソース: Kimi.ai ベンダーマーケ記事 (テキスト貼り付け、同日 2 本目の Kimi 記事)
+- 判定: Gap 0 / Partial 0 / Already 9 (強化不要) / N/A 2 (vendor framing)、**採用 0**
+- family: multi-agent-orchestration (N=30+ 同日午前の Khairallah で確認、本記事で +1)。**SATURATED-pure-rehash** (delta=0)
+- per-method 照合台帳 (全 9 手法 rehash、`matched_prior` 3点セット名指し):
+  - 1. Swarm + verify loop (Opus plans/verifies + Kimi executes) → `2026-06-18-kimi-k26-self-improving-swarm-loop` "Generator-Verifier swarm pattern" (同一ベンダー6日前 absorb)
+  - 2. 300 parallel agents → 同 6/18 absorb "300-agent swarm" + multi-agent-coordination-patterns.md fan-out
+  - 3. 4000 steps + 3 verify passes to zero → `2026-06-03-dynamic-workflows` "loop-until-done | Already" + completion-gate.py
+  - 4. PER-COMPANY CHECKLIST が verifier rubric → review-checklists/ + Codex Review Gate 7項目 + 6/18 deterministic verifier rubric
+  - 5. Reject → requeue → run until clean → best-of-n-guide.md + Workflow `loop-until-dry/loop-until-count`
+  - 6. 5 live data feeds (Binance/Yahoo/WB/IMF/stock) as source-of-truth → `/deep-research` skill "fan-out web searches, fetch sources, adversarially verify claims"
+  - 7. Opus 4.8 plan + Kimi K2.6 execute → references/model-routing.md Tier 表
+  - 8. "Quality equals the checklist" → skill-audit + Codex Review Gate rubric + `2026-06-17-agentic-code-review` "deterministic gate"
+  - 9. Citation URL resolvability + numerical tolerance → `/deep-research` "adversarially verify claims" の sub-check として内包
+  - (10/11. "DeepSeek moment"/Kimi $20B/OpenRouter #1/Finance強み = N/A vendor marketing)
+- user 選択: skip 推奨も continue (フル workflow) を選択 → 結論変わらず adopt 0
+- Phase 2 Pass 2 強化候補 3 件全棄却: (1) `/deep-research` description は組み込み skill で本体不可視・編集不能 (2) rejection telemetry は YAGNI overkill (3) "verifier checklist=contract" 1文追加は既存 Codex Review Gate 7項目で重複
+- Phase 2.5: **Codex silent exit (480s timeout で 0 byte) + Gemini sunset** の dual-degraded → Opus 自己分析で確定、台帳の `matched_prior` 3点セットで self-bias 補正の代替を立証
+- 教訓: 同一ベンダー連続マーケ記事は次回 Phase 1 でベンダー検出 → reference-only 短絡 (Cyril/Hermes と同型)。組み込み skill (description のみ可視) の強化は構造的に成立しない absorb 候補から除外
+- 詳細: docs/research/2026-06-20-kimi-k26-self-verifying-loop-absorb-analysis.md
+
+## [2026-06-20] ingest (Validation-only) | SKILL.md trajectory mining for CUA (arXiv:2606.20363)
+
+- ソース: Yuexing Hao & Xiaomin Li, "Automating SKILL.md Generation for Computer-Using Agents via Interaction Trajectory Mining", arXiv:2606.20363 (2026-06-18, cs.AI)
+- 判定: Gap 0 / Partial 0 / Already 2 (強化不要) / N/A 1 (GRPO RL fine-tuning は Claude API で構造的に不可能) + 論文 diagnostic finding を Validation-only follow-up として採用
+- 取り込み: 採用 0 mechanism + Validation-only 3 件 (MEMORY.md "改善ループ" academic 裏付け 1 行 / auto-triage skill に "Wave3 再開時の再注意 failure modes" 節 / docs/research/_index.md 索引)
+- per-method 照合台帳 (delta=0 立証):
+  - Trajectory segmentation → `2026-03-14-trajectory-informed-memory.md` "IBM Tips 自動抽出" (rehash: trajectory を意味境界で discrete unit 化する目的・粒度同一)
+  - Segment clustering → `2026-03-26-memcollab-contrastive-trajectory-distillation-analysis.md` + `2026-04-02-glean-trace-learning-analysis.md` (rehash: trajectory 集約からの帰納的パターン抽出として同等。本論文は単純 clustering で弱い)
+  - Skill-aware GRPO policy training → N/A (structural scope mismatch: Claude API 重み access 不可、dotfiles の `rl_advantage.py` は variant selection 用)
+- 価値: 論文が **明示的 diagnostic study (negative result)** として 3 failure modes (boundary detector / orderless segment representation / offline reward model insufficient) を self-disclose。これは dotfiles の sonicgarden Wave3 YAGNI 判定 (mechanical 0/139) への独立 academic 裏付け
+- Phase 2.5: skip (論文 self-disclose 済 + dotfiles 独立判定済で Codex/Gemini bias 補正余地小、ユーザー判断)
+- レポート: `docs/research/2026-06-20-skillmd-trajectory-mining-absorb-analysis.md`
+
+## [2026-06-20] ingest-skip | wtf is Loop Engineer & how to setup for real (JayZeeDesign/SuperDesignDev)
+
+- ソース: JayZeeDesign (SuperDesignDev), テキスト貼付 + repo https://github.com/JayZeeDesign/loop-engineer-template
+- 理由: topic family "loop-engineering / harness-engineering / self-improving-loop" 合算 N≥25 件目, SATURATED-pure-rehash (delta=0)
+- 根拠: 直近 3 件 (2026-06-17 loops-with-claude 採用0 / 2026-06-14 opik 採用0 / 2026-06-05 sonicgarden 採用2)、family 全体採用率 <15%。3 日前の twin (kumai_yu) と同じ「inner+outer 二層 + shared artifact + global LOG」framing。vendor marketing 性 high (@SuperDesignDev プロモ + loop-engineer-template 配布)。scope mismatch: 記事は business loops (Support/SEO/Ads/Product growth) のチーム+プロダクト前提、dotfiles は単一ユーザー dev harness
+- per-method 照合台帳 (delta=0 の立証 — 全 8 手法 → matched_prior 名指し):
+  - inner agent loop + outer loop 二層分離 → `2026-04-02-ralph-loop-harness-engineering-analysis.md` "Ralph wayne loop" + `2026-03-23-harness-engineering-article-analysis.md` "execution vs decision 分離" + Context Constitution P3 (rehash)
+  - outer loop 5 責務 (trigger/state/share/monitor/improve) → `2026-04-29-self-healing-harness-absorb-analysis.md` "CREAO 5 capabilities" + `2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md` "Issues→Routines→3段ゲート→PR" + AutoEvolve 4 層ループ (rehash)
+  - 複数ループの shared artifacts による compound → `2026-04-17-hermes-fleet-shared-memory-analysis.md` "Qdrant+mem0+Stop hook" + `2026-04-04-letta-memory-as-harness-analysis.md` "memory as harness" + `patterns.jsonl` + `promoted-ledger.jsonl` (rehash)
+  - artifact schema (frontmatter + type/status/sources/created_at) → `2026-06-12-fable5-14steps-absorb-analysis.md` で採用済 `references/memory-schema.md` (type=event/learning/proposal/summary + verification_status verified/hypothesis/stale/retracted) — dotfiles 側が precision 高い (rehash)
+  - loop contract (domain README に goal/cadence/workflow) → `~/.claude/skills/*/SKILL.md` frontmatter (name/description/triggers/Do NOT use for) + `.config/claude/agents/*.md` description — Skill SKILL.md と完全同型 (rehash)
+  - global LOG.md (cross-loop history, read latest 5-10 before major work) → `docs/wiki/log.md` (自己反映) + `docs/decommission-log.md` + `/checkpoint` RUNNING_BRIEF.md + `/recall` (contextual commit context 復元) (rehash)
+  - dedupe rules (returning ID / email / frequency 増分) → `2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md` で検討済、`patterns.jsonl` の `seen` set + `promoted-ledger.jsonl` で実装 (rehash)
+  - wikilink graph による artifact 間相互参照 → `MEMORY.md` `[[name]]` リンク (auto-memory) + Obsidian Vault wikilink + `references/cc-7-layer-memory-model.md` 7 層 memory model (rehash)
+- 該当 family のキーワード hit: loop engineer, outer loop, inner loop, agent harness, shared artifacts, signals, loop contract, global log, compound, dedupe
+- スキップ判定: Phase 1.5 gate (ユーザー確認: skip 承認、台帳全 8 行 rehash 立証)
+
 ## [2026-06-06] ingest-skip | 【完全保存版】トップ層が使うClaude Skills 72選 (東大Claude Code研究所/Buzzoni 67選 翻案)
 
 - ソース: 東大Claude Code研究所 (note, Buzzoni "67 Skills" 420万view 記事の日本ビジネス向け翻案, テキスト貼付)
@@ -1764,3 +1816,13 @@
 - Phase 2.5 (Codex+Gemini): domain mismatch で採用0確定のため **user 承認のもと省略**
 - validation-only: dotfiles メタパターンが公式 Cowork 規約と**整合・先行** (drift なし)。次回 role-plugin 記事は Phase 1 で「メタ層のみ照合・ドメイン N/A」短絡可
 - 詳細: docs/research/2026-06-20-knowledge-work-plugins-absorb-analysis.md
+
+## [2026-06-20] ingest | Khairallah "How to Build Your First Team of AI Agents Using Claude (Full Course)"
+
+- ソース: Twitter/X thread (@eng_khairallah1), agent team intro listicle (full course 形式)
+- 判定: **Gap 0 / Partial 0 / Already 8 / N/A 0、採用 0 件**
+- Saturation Gate: multi-agent-orchestration family **N=30+** (SATURATED-pure-rehash)、user は念のため "continue (フル workflow)" を選択 → 結論変わらず adopt 0
+- per-method 照合台帳 (delta=0 立証、全 8 手法に matched_prior 3点セット名指し): 3 roles → multi-agent-coordination-patterns 5パターン + code-reviewer/codex-reviewer / role-standard-format-boundaries → agent-design-lessons.md (Self-Rejection Rule + Codified Context) / worker-critic loop → Codex Review Gate (CLAUDE.md ワークフロー表) / MCP/connectors → settings.json + mcp-audit.py VeriGrey Tool Filter / sub-agent orchestration → Agent tool + Workflow tool (deliberate non-adopt) / 10-case eval → skill-audit + Codex Review Gate / persistent memory → 7-layer memory model / failure handling + loop hard limit → blueprint-pattern.md `max_iterations` 必須属性
+- Phase 2.5: **Codex 成功 (retry, bounded timeout)** / **Gemini 失敗 (IneligibleTierError → Antigravity 移行要求)**。Codex は条件付きで 2 件 drift 指摘 ((a) reproducible 10-case eval contract / (b) role/standard/format/boundaries の明文化テンプレート) → 両方とも実態は欠落だが既存仕組み (skill-audit + Review Gate / single-purpose enforcement) で代替済、ROI 低で validation-only に降格
+- 教訓: (1) Phase 1.5 台帳 name-pointing 立証は機能、(2) Codex via Bash tool は依然 silent exit、bounded timeout + 短縮プロンプト + tail -30 で retry 成功パターン確立、(3) **Gemini Code Assist for individuals は sunset**、`gemini -p` を Phase 2.5 で常用できなくなった (運用 drift)、(4) 入門 listicle の SATURATED 採用 0 でも台帳照合練習 + drift 露出の副産物あり
+- 詳細: docs/research/2026-06-20-khairallah-agent-team-intro-absorb-analysis.md
