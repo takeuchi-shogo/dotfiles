@@ -115,8 +115,9 @@ def _detect_test_command() -> str | None:
         try:
             with open(pkg_json) as f:
                 pkg = json.load(f)
-            if "test" in pkg.get("scripts", {}):
-                # Detect package manager
+            if "test" in pkg.get("scripts", {}) and os.path.isdir(
+                os.path.join(cwd, "node_modules")
+            ):
                 if os.path.exists(os.path.join(cwd, "bun.lockb")):
                     return "bun test"
                 if os.path.exists(os.path.join(cwd, "pnpm-lock.yaml")):
