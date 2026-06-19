@@ -195,6 +195,7 @@
     ],
     "disableBypassPermissionsMode": "disable"
   },
+  "model": "claude-opus-4-7[1m]",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
@@ -927,6 +928,5 @@
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true,
-  "model": "sonnet"
+  "agentPushNotifEnabled": true
 }
