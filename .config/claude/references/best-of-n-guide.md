@@ -151,6 +151,18 @@ N 個の結果から最良を選ぶ際:
 
 **self-evolution retry (cap=3) を先に試し、それでも失敗した場合の最終手段として使う。**
 
+### Cost-Arbitrage（安価生成 + 高価 verify-only）
+
+> 出典: Kimi K2.6 Agent Swarm 記事 (2026-06, ベンダー) の cost-arbitrage angle。ただし「無料同然の open-weight runner」前提は Claude Code harness に成立しないため適用条件を厳格化する (Codex/Gemini 批評で確認)。
+
+候補生成を**安いモデル**に、選定を**高 reasoning モデルの verify-only** に分離してコスト最適化できる。Generator-Verifier の経済版だが、**次を全て満たす場合のみ**:
+
+- 生成が**低単価**（Sonnet 等で足り、Opus/Codex credit を生成側で食わない）
+- **deterministic verifier** が存在する（テスト・型・lint で機械判定可能。主観タスクは凡庸な平均値に収束し失敗する）
+- 成功率が低い (p < 0.3)
+
+満たす場合: cheap workers で N≥3 並列生成 → high-reasoning verifier (Codex/Opus) は **refute/select のみ**（生成はさせない）→ winner を merge。満たさない（主観評価・生成も高単価）なら通常の階層 routing を使う。
+
 ## Multi-Objective Pareto Frontier
 
 > 出典: Lee et al. 2026 "Meta-Harness" — 精度・コンテキスト消費の tradeoff curve 上の複数候補を維持。単一目的最適化では発見できない設計を見つける。

@@ -1721,3 +1721,46 @@
 - Phase 2.5: Codex 格上げ提案2件を検証で棄却 — echo chamber=2026-06-02 で design note+watch 採用済(新規不要)、Nested Orchestrator cross-pollination=`multi-agent-coordination-patterns.md:89`(Agent Teams)+`:67`(親 synthesis)+Workflow patterns でカバー済(Codex は subagent-delegation-guide:138 のみ読み coordination-patterns 見落とし=狭く深い盲点)。Gemini 700s 不完全→失敗記録
 - ゲート教訓: Phase 1.5 で固有名詞 "hermes" を grep せず orchestration/skill キーワードで引いたため exact twin を見落とし(飽和結論には到達)。次回は著者/製品名を直 grep
 - 既存 anchor 通り: Hermes ツール記事は reference-only 短絡可 (twin/vendor content)
+
+## [2026-06-18] ingest-skip (light Phase 2, adopt=0) | Vercel eve agent framework
+
+- ソース: https://vercel.com/blog/introducing-eve
+- family: harness-engineering (N≈10, 採用率~60% PASS-warning)。TS production framework vs Claude Code CLI の scope mismatch でユーザーが light-phase2 選択
+- 結果: delta_methods 3 手法 (durable execution / needsApproval / connections-as-file) を Phase 2 まで検証 → 全 11 手法 Already or N/A、Gap 0 → adopt=0 (skip 同等)
+- Gemini 敵対レビュー (ユーザー要求): adopt=2 推奨も 4 提案全て却下 (Claude Code platform 機能の再実装 or 宣言済みへの config 追加 = imagination バイアス) → adopt=0 維持。副産物: platform が transcript/resume・MCP OAuth・skill on-demand を内蔵という強論拠を獲得
+- per-method 台帳 (全 11 手法) + 詳細: docs/research/2026-06-18-vercel-eve-agent-framework-absorb-analysis.md
+- 教訓: production agent framework 製品 (TS/Node deploy 型) は CLI harness と scope mismatch で構造的に採用0。N>=3 で family 横断教訓化判断
+
+## [2026-06-18] ingest | The Self-Improving Loop: 300-agent swarm on Kimi K2.6, verified by Opus 4.8
+- ソース: Kimi.ai ベンダーマーケ記事 (テキスト貼り付け)
+- 判定: Already 10, Gap 0, N/A 1 (Kimi 製品固有)。採用 1 (borderline, S)
+- family: multi-agent-orchestration + self-improving-loop (cross, 合算 N≈14)。SATURATED-pure-rehash (delta=0) だが user が continue 選択
+- per-method 台帳: 全10手法 rehash、Sonnet Explore で prior 実在裏取り (8 exists / 2 partial、hallucination なし)
+- Phase 2.5: Codex+Gemini 並列とも「採用0妥当」。Best-of-N/Generator-Verifier は AlphaCode 時代の標準、Kimi の差分は手法でなく安価大規模実行の経済性
+- 採用: best-of-n-guide.md に Cost-Arbitrage 小節 (低単価生成 + deterministic verifier + p<0.3 のときのみ cheap N≥3 → high-reasoning verify-only)。経済前提 (無料 open-weight runner) は Claude harness に transfer しない
+- 詳細: docs/research/2026-06-18-kimi-k26-self-improving-swarm-loop-absorb-analysis.md
+
+## [2026-06-18] ingest-skip | Claude Codeで10倍の生産性を手にいれる並列ループエージェント (熊井悠/ランスティア)
+- ソース: https://qiita.com/kumai_yu/items/54ded70a5a68a5ca15d5 (X 投稿テキスト貼り付け)
+- 理由: topic family "multi-agent-orchestration" saturated-borderline (N≈14, 採用率<20%, delta=1)
+- きっかけの Carlini Cコンパイラ実験 (16体Opus並列/$20k/Linuxカーネルコンパイル可) も同 family 既知事例、新規論点なし。6日前 kimi-k26 (2026-06-18) も同 family で Gap 0
+- per-method 照合台帳 (全7手法、matched_prior 名指し):
+  - 1. 無限ループで止めない (loop-until-done) → `2026-06-03-dynamic-workflows` "loop-until-done | Already | implement-loop/review-loop/completion-gate.py" (rehash)
+  - 2. 並列化 (fan-out 役割分担) → `2026-06-03-dynamic-workflows` "fan-out-and-synthesize | Already | research/dispatch" + multi-agent-coordination-patterns.md (rehash)
+  - 3. 仕様駆動×TDD → `2026-05-27-sairahul-7agent` "7-agent chain | Already | /epd" + "Acceptance tests | Already | test-engineer" (rehash)
+  - 4. 出力最小化でコンテキスト保護 → `2026-06-03-dynamic-workflows` "token budget | Partial" + ADR-0002/0007 Progressive Disclosure (rehash)
+  - 5. 5フェーズフロー (調査→spec承認→TDD実装→統合ゲート→並列レビュー) → `2026-05-27-sairahul-7agent` "7-agent chain | Already | /epd (Spec→Spike→Validate→Build→Review)"。構成要素全て Already、「並列グループ宣言=spec でファイル独立性明示」のみ partial で Task Parallelizability Gate でほぼカバー (ambiguous, delta に計上)
+  - 6. サボり封じ (implementer 禁止事項+reviewer 二重構造) → `2026-06-17-agentic-code-review` "test変更の精査(assertion書き換え)→採用" で test-analyzer 4c 追加済 + silent-failure-hunter.md + CLAUDE.md "暗黙フォールバック・モック・NO-OP 絶対禁止" (rehash)
+  - 7. CLAUDE.md は案内役、手順はスキルに → `2026-06-03-dynamic-workflows` + ADR-0007 thin-claudemd-thick-rules (rehash)
+- delta=1 (手法5 ambiguous のみ)。user が skip 選択 (手法5 も Task Parallelizability Gate でカバー済みと判断)
+- スキップ判定: Phase 1.5 gate (SATURATED-borderline)
+
+## [2026-06-20] ingest | Knowledge Work Plugins (Anthropic 公式 repo)
+- ソース: https://github.com/anthropics/knowledge-work-plugins
+- 判定: Gap 0 / Partial 1 / Already 7 / N/A (ドメインプラグイン 16+) — **採用 0**
+- family: anthropic-knowledge-work-plugins (新規, N=1) — PASS gate (新分野)
+- 正体: Claude Cowork 向けロール別ドメインプラグイン市場 (sales/legal/finance/HR/marketing/CS/PM/data/ops/design/bio/SMB/pdf + cowork-plugin-management メタ層)。**非エンジニア業務向けで開発者ハーネスと職務ミスマッチ**
+- ドメインプラグイン (営業/法務/財務等) は全 N/A。転用可能メタ層 8 中 7 が Already (dotfiles 先行): marketplace.json / skill-creator / 7層メモリ / design-skill-routing / careful+completion-gate / developer-onboarding / thin-thick。`~~placeholder` 配布 (1件 partial) は公式自身が「外部配布時のみ使え」と限定 → N/A
+- Phase 2.5 (Codex+Gemini): domain mismatch で採用0確定のため **user 承認のもと省略**
+- validation-only: dotfiles メタパターンが公式 Cowork 規約と**整合・先行** (drift なし)。次回 role-plugin 記事は Phase 1 で「メタ層のみ照合・ドメイン N/A」短絡可
+- 詳細: docs/research/2026-06-20-knowledge-work-plugins-absorb-analysis.md

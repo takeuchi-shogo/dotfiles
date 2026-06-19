@@ -9,8 +9,13 @@ set -euo pipefail
 # self-match 防止のためパターンを文字列連結で組み立てる
 pattern="knowledge[-]?""work"
 
+# allowlist: 公開リポジトリ参照 (会社内部文言ではない)
+# - anthropics/knowledge-work (GitHub URL パス形式)
+# - anthropic-knowledge-work / knowledge-work-plugins (Anthropic 公式 repo 派生ラベル)
+allowlist_pattern="anthropics?[/-]knowledge[-]?work|knowledge[-]?work[-]plugins"
+
 # staged diff の追加行のみ検査 (既存行・削除行・ファイルヘッダは対象外)
-hits=$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+' | grep -iE "$pattern" || true)
+hits=$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+' | grep -iE "$pattern" | grep -vE "$allowlist_pattern" || true)
 
 if [ -n "$hits" ]; then
   echo "❌ [company-content-guard] 会社関連の文言が staged diff に含まれています:" >&2
