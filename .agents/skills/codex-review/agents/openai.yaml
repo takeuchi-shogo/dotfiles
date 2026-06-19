@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Review"
+  short_description: "Loop read-only review until blocking issues clear"
+  default_prompt: "Use $codex-review after a substantive implementation to run a read-only review gate, fix blocking issues, and rerun review until it passes."
