@@ -28,6 +28,11 @@ if [ ! -f "$LOCKFILE" ]; then
   exit 2
 fi
 
+SCAN="$DOTFILES_ROOT/.config/claude/scripts/policy/skill-security-scan.py"
+if [ ! -f "$SCAN" ] || ! command -v python3 >/dev/null 2>&1; then
+  SCAN=""
+fi
+
 # Candidate install roots. An external skill may be under any of these.
 SKILL_ROOTS=(
   "$HOME/.claude/skills"
@@ -55,6 +60,7 @@ compute_hash() {
 mismatch=0
 checked=0
 skipped=0
+security_fail=0
 
 while IFS=$'\t' read -r name locked_hash; do
   if [ -z "$locked_hash" ] || [ "$locked_hash" = "null" ]; then
@@ -79,10 +85,15 @@ while IFS=$'\t' read -r name locked_hash; do
     echo "      actual: ${actual:0:16}"
     echo "      path:   $skill_dir"
   fi
+  if [ -n "$SCAN" ] && ! python3 "$SCAN" --critical-only "$skill_dir" >/dev/null 2>&1; then
+    security_fail=$((security_fail + 1))
+    echo "SECSCAN-FAIL  $name (CRITICAL: injection or dynamic code exec)"
+    echo "      path: $skill_dir"
+  fi
 done < <(
   jq -r '.skills | to_entries[] | [.key, (.value.computedHash // "null")] | @tsv' "$LOCKFILE"
 )
 
 echo ""
-echo "[summary] checked=$checked, skipped=$skipped, mismatch=$mismatch"
-[ "$mismatch" -eq 0 ]
+echo "[summary] checked=$checked, skipped=$skipped, mismatch=$mismatch, security_fail=$security_fail"
+[ "$mismatch" -eq 0 ] && [ "$security_fail" -eq 0 ]

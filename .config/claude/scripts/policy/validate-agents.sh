@@ -84,6 +84,13 @@ for file in "${agent_files[@]}"; do
     # Extract tools
     tools_raw="$(extract_tools_list "$file")"
 
+    if command -v ruby >/dev/null 2>&1; then
+        if ! awk '/^---/{f++; next} f==1' "$file" | ruby -ryaml -e 'YAML.load(STDIN.read)' >/dev/null 2>&1; then
+            echo "[validate-agents] WARN: ${agent_name} has invalid YAML frontmatter (e.g. unclosed quote)"
+            WARN_COUNT=$((WARN_COUNT + 1))
+        fi
+    fi
+
     # Check 1: tools undefined or empty
     if [[ -z "$tools_raw" ]]; then
         echo "[validate-agents] WARN: ${agent_name} has no tools defined"
