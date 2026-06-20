@@ -1893,4 +1893,19 @@
 - per-method 照合台帳 (delta=0 立証、全 8 手法に matched_prior 3点セット名指し): 3 roles → multi-agent-coordination-patterns 5パターン + code-reviewer/codex-reviewer / role-standard-format-boundaries → agent-design-lessons.md (Self-Rejection Rule + Codified Context) / worker-critic loop → Codex Review Gate (CLAUDE.md ワークフロー表) / MCP/connectors → settings.json + mcp-audit.py VeriGrey Tool Filter / sub-agent orchestration → Agent tool + Workflow tool (deliberate non-adopt) / 10-case eval → skill-audit + Codex Review Gate / persistent memory → 7-layer memory model / failure handling + loop hard limit → blueprint-pattern.md `max_iterations` 必須属性
 - Phase 2.5: **Codex 成功 (retry, bounded timeout)** / **Gemini 失敗 (IneligibleTierError → Antigravity 移行要求)**。Codex は条件付きで 2 件 drift 指摘 ((a) reproducible 10-case eval contract / (b) role/standard/format/boundaries の明文化テンプレート) → 両方とも実態は欠落だが既存仕組み (skill-audit + Review Gate / single-purpose enforcement) で代替済、ROI 低で validation-only に降格
 - 教訓: (1) Phase 1.5 台帳 name-pointing 立証は機能、(2) Codex via Bash tool は依然 silent exit、bounded timeout + 短縮プロンプト + tail -30 で retry 成功パターン確立、(3) **Gemini Code Assist for individuals は sunset**、`gemini -p` を Phase 2.5 で常用できなくなった (運用 drift)、(4) 入門 listicle の SATURATED 採用 0 でも台帳照合練習 + drift 露出の副産物あり
+
+## [2026-06-20] ingest-skip-equivalent | Self-Updating Prompt (100 User Decisions)
+
+- ソース: paste-only (Nick Mayhew/Anthropic on stage、recruiting 事例)
+- 理由: topic family "self-evolving" SATURATED-pure-rehash (N=21+, 直近3件 adopt 0, delta=0)
+- 判定経路: user continue 選択 → Phase 2 Pass 2 で adopt 0 確定 (Codex 批評で borderline 1件提案も user skip)
+- per-method 照合台帳 (全5手法 rehash):
+  - Markdown prose prompt → `2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md` (text-space optimizer)
+  - Batch decision update → `2026-06-05-recursive-self-improvement-anthropic-absorb-analysis.md` (calibration-verdict-logger.py)
+  - Two-layer split → `references/model-routing.md` (4-tier) + `2026-06-02-skillopt-...md` (objective/subjective lane)
+  - Human decision logging → `2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md` (patterns.jsonl + session_events)
+  - Feedback loop as product → `docs/superpowers/specs/2026-05-31-learned-promotion-loop-design.md` + Wave3 YAGNI 確定 (sonicgarden)
+- 採用: 0
+- レポート: `docs/research/2026-06-20-anthropic-100-decisions-self-updating-prompt-absorb-analysis.md`
+- 教訓: vendor blog 風記事 + family saturated + 経験則の数値根拠なし = 全 rehash の典型サイン。次回 keyword (self-update / apprentice / 100 decisions / feedback loop is product) 検出時は saturation gate skip 推奨可
 - 詳細: docs/research/2026-06-20-khairallah-agent-team-intro-absorb-analysis.md
