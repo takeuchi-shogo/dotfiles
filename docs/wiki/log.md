@@ -8,6 +8,20 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-20] ingest-skip | Loop Engineering 2 ソース同時提示 (Matt Van Horn LinkedIn + Addy Osmani blog)
+
+- ソース:
+  - https://x.com/mvanhorn/status/2063865685558903149 (Matt Van Horn "WTF Is a Loop?" — LinkedIn Pulse mirror 経由)
+  - https://addyosmani.com/blog/loop-engineering/ (Addy Osmani "Loop Engineering")
+- 理由: loop-engineering / multi-agent-orchestration family、SATURATED-pure-rehash (delta=0、19/19 全手法 rehash)。**Source 2 (Addy Osmani) は同日 6 時間前に absorb 完了済の essay と同一記事**。`continue` 検証で Phase 2 全 19 Already (強化不要) 確定
+- 根拠: per-method 照合台帳全 19 件 matched_prior 3 点セット完備 (詳細: `docs/research/2026-06-20-loop-engineering-double-source-absorb-analysis.md`)
+- per-method 照合台帳サマリ (Source 1 + Source 2、各行に prior 名指し):
+  - Source 1 全 9 手法 (5-stage lineage / Cherny loop 定義 / /loop babysit / 5 tips / Gas Town / roborev / Three hard stops / Skill-first thesis / Cron differential) → 全て `2026-06-20-loop-engineering-essay` + `2026-06-17-loops-with-claude` + `references/comprehension-debt-policy.md` + `2026-04-12-tan-thin-harness-fat-skills` + `references/resource-bounds.md` + `references/cmux-ecosystem.md` で名指し
+  - Source 2 全 10 手法 (Five pieces + memory / Automations heartbeat / /goal contract / Worktrees / Skills / Plugins/Connectors / Sub-agents maker-checker / morning automation / Three sharper problems / Codex vs Claude Code mapping) → 全て `2026-06-20-loop-engineering-essay` + `references/comprehension-debt-policy.md` (Osmani 出典明記、last_reviewed 2026-04-23) + `auto-morning-briefing.sh` + `references/multi-agent-coordination-patterns.md` + `2026-04-29-codex-vs-claudecode-role-split` で名指し
+- Phase 2.5: skipped (codex bash-unreachable + gemini sunset の dual-degraded、adopt=0 で議論余地なし、light-phase2 protocol)
+- Validation-only: なし (stale-plan audit + crontab memo は 6 時間前 twin absorb で完了済)
+- スキップ判定: per-method 照合台帳 + 同日 twin absorb 完了の double evidence
+
 ## [2026-06-20] memo | crontab 全 PAUSED (skill 更新 / nightly 移行中)
 
 - 状態: `crontab -l` 全 entry に `[PAUSED 20260616-012634]` marker (4日経過)
