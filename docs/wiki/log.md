@@ -8,6 +8,60 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-20] memo | crontab 全 PAUSED (skill 更新 / nightly 移行中)
+
+- 状態: `crontab -l` 全 entry に `[PAUSED 20260616-012634]` marker (4日経過)
+- 意図: 意図的 pause、skill 更新と nightly orchestrator (`docs/plans/active/2026-06-13-nightly-orchestrator-plan.md`) 移行中のため
+- resume 期限: 移行完了後 (期限未定)。期限が決まったらここを更新
+- 露出元: loop-engineering family absorb (2026-06-20) の Phase 2 stale-plan audit
+- 関連: `docs/plans/active/2026-05-19-pr-review-agent-plan.md` (kept-by: 2026-06-20)
+
+## [2026-06-20] ingest-skip | From Prompting Agents to Loop Engineering (Addy Osmani 系 essay、無署名版)
+
+- ソース: テキスト貼り付け (Addy Osmani / Steinberger / Cherny 引用、Cherny "auto + ultracode + /goal + cloud + self-verify" 5-step + crabfleet 紹介)
+- 理由: loop-engineering / multi-agent-orchestration family N=15+、SATURATED-pure-rehash (delta=0)、`continue` 検証でも Phase 2 全 13 手法 Already (強化不要) 確定
+- 根拠: 6/17 absorb (`2026-06-17-loops-with-claude-absorb-analysis.md`) の二次紹介 (kumai_yu/Qiita) と同系統で構造的に同一。記事末尾 "Other Useful References" が Osmani/Cherny/Steinberger を明示
+- per-method 照合台帳 (delta=0 の立証、3点セット):
+  - Loop 4-step (prompt/read/decide/re-prompt) → `2026-06-17-loops-with-claude` "4-step loop primitive" / Osmani 引用同定義 (rehash)
+  - Five-loop progression (ReAct→AutoGPT→ralph→/loop+/goal→orchestration) → `2026-06-17-loops-with-claude` "5-stage terminology progression" / 同進化系譜 (rehash)
+  - Six parts (trigger/isolation/context/tool-reach/verifier/state) → `2026-04-02-ralph-loop` + `2026-04-11-multi-agent-coordination-patterns` / 全構成要素 (cron-hooks / worktree / CLAUDE.md / MCP+gh / Codex Review Gate / docs/plans+MEMORY) 個別実装済 (rehash)
+  - PR babysitter pattern → `2026-06-17-loops-with-claude` "/babysit-prs cadence example" / 同名 example (rehash)
+  - /goal 4-element contract (end-state/evidence/constraints/budget) → `references/scheduling-decision-table.md:23-95` `/goal pilot` 行 + `2026-06-12-fable5-14steps` T3 採用 / 4 要素統合済 (rehash)
+  - Cherny 5-step unattended → `2026-06-17-loops-with-claude` "Cherny 5-step" + `2026-06-03-dynamic-workflows` "Workflow tool deliberate non-adopt" / 全要素照合済 (rehash)
+  - Multi-model role split (planner/executor/evaluator/vision) → `references/model-routing.md` Tier 表 + `2026-04-11-multi-agent-coordination-patterns` Generator-Verifier (rehash)
+  - crabfleet (board/durable/child-spawn/sandbox) → `references/cmux-ecosystem.md` + `2026-05-23-cmux-coding-agent-workflow` / cmux 同型、外部 product N/A (rehash)
+  - Cost = iterations not tokens → `2026-06-17-loops-with-claude` "iteration budget over token budget" / 同主張 (rehash)
+  - Weak-verifier as expensive bug → `2026-05-31-hermes-eval-loop` + `verification-before-completion` skill / verifier 設計 Codex Review Gate 集約済 (rehash)
+  - When-not-to-loop (one-shot/unscoped/no-check) → `references/governance-levels.md` + core_principles YAGNI (rehash)
+  - 6-step "build your own" → 上記要素の reorder、新規要素なし (rehash)
+  - Failure modes (verification debt/comprehension gap/silent drift) → `references/comprehension-debt-policy.md` (Osmani 出典明記 live, status: reference, last_reviewed 2026-04-23) + `silent-failure-hunter` agent (rehash)
+- Validation-only follow-up 1 件: `docs/plans/active/2026-05-19-pr-review-agent-plan.md` Phase A 31 日 stall を露出 → user 判定 `kept` で frontmatter に `kept-by: 2026-06-20` 追記
+- 副次観察: crontab 全 PAUSED (本 log 直前エントリ参照、別 absorb 由来でない drift)
+- スキップ判定: SATURATED-pure-rehash + Phase 2 adopt=0 確定。Phase 2.5 Codex+Gemini は dual-degraded (codex bash-unreachable / gemini sunset) のため省略
+- 分析レポート: `docs/research/2026-06-20-loop-engineering-essay-absorb-analysis.md`
+
+## [2026-06-20] ingest-skip | How to get Fable-level intelligence back (model council / fusion, weeklyaiops community marketing)
+
+- ソース: weeklyaiops.com community marketing (テキスト貼り付け、Fable 5 廃止後 council 再構築主張)
+- 理由: multi-agent-orchestration family N≥15、SATURATED-pure-rehash (delta=0)、続く `continue` 検証でも Phase 2 全 Already / tools 全 N/A 確定で adopt=0
+- 根拠: 全 11 手法に matched_prior 3点 (ファイル名+heading+同等性) を名指し済。Bash で `best-of-n-guide.md` Cost-Arbitrage / `multi-agent-coordination-patterns.md` Generator-Verifier+Orchestrator-Subagent / `model-routing.md` tier の実在と引用句一致を確認
+- per-method 照合台帳 (delta=0 の立証):
+  - Council = panel + judge synthesizer → `2026-06-18-kimi-k26-self-improving-swarm` Generator-Verifier + `best-of-n-guide.md` (rehash)
+  - Frontier judge + cheap panel → `model-routing.md` Opus=judge tier + Cost-Arbitrage 節 (rehash)
+  - Per-task judge tuning → `skills/review/SKILL.md` Step 0 tier (rehash)
+  - Migration: council decides cheap exec → `multi-agent-coordination-patterns.md` Orchestrator-Subagent + Hermes VPS Nested Orchestrator (rehash)
+  - Deep research panel + judge → `/research` + `/deep-research` (rehash)
+  - Long multi-step orchestration → `2026-06-03-dynamic-workflows` Workflow tool + `/rpi` + `/epd` (rehash)
+  - Briefing lighter agent → `/spec` → `/spike` → `/rpi` chain (rehash)
+  - KB building (structure + fill) → `/absorb` Phase 5+ + memory-vec indexer (rehash)
+  - Router ≠ Council → `2026-06-03-dynamic-workflows` で synthesis-step を council 条件として明示済 (rehash)
+  - Code judge runs tests → Codex Review Gate + `/verify` + lefthook (rehash)
+  - "Would I pay premium?" gut check → `model-routing.md` + `review/SKILL.md` S=light skip (rehash)
+  - tools 6 種 (openrouter fusion/orcarouter/gavel/openfusion/fusion-fable/llm-consortium) → N/A (Claude-Code harness 境界外、Plus 内 per-call 切替無価値)
+- スキップ判定: Phase 1.5 SATURATED-pure-rehash + Phase 2 adopt=0 確定。Phase 4-5+ (Plan / Wiki INDEX / Obsidian / MEMORY.md 追記) すべて省略
+- 分析レポート: `docs/research/2026-06-20-weeklyaiops-model-council-absorb-analysis.md`
+- 教訓: weeklyaiops.com community marketing は次回ベンダー検出で短絡可 (Hermes/Kimi に続く 3 系統目)。"Fable 5 廃止後の取り戻し" framing は council 系の marketing ハンドルだが council 自体は AlphaCode 時代の Generator-Verifier の言い換え、shape で家族飽和判定するので skill drift なし
+
 ## [2026-06-20] ingest | The Self-Verifying Loop: 300 agents, 4,000 steps, 5 live data feeds on autopilot with Kimi K2.6
 
 - ソース: Kimi.ai ベンダーマーケ記事 (テキスト貼り付け、同日 2 本目の Kimi 記事)
