@@ -34,6 +34,7 @@
 | Brand kit / Logo / Identity board     | `brandkit` |
 | Codex 専用 image→code pipeline         | `image-to-code-skill` (Codex only) |
 | Google Stitch 用 DESIGN.md 生成        | `stitch-skill` (Stitch only) |
+| プロジェクト root に DESIGN.md 配置 (grilling + awesome-design-md exemplar) | `design-md-init` |
 | Truncation 防止 (長文 code 切れ抑制)    | `output-skill` |
 | React/Next perf 最適化                 | `react-best-practices` |
 | React composition pattern              | `vercel-composition-patterns` |
@@ -54,6 +55,7 @@
 | `imagegen-frontend-mobile` | `imagegen-frontend-mobile` | Mobile screen / flow 画像生成 (mockup) | Code 生成、Web 用 | ChatGPT Images / Codex image / MCP |
 | `brandkit` | `brandkit` | Logo / identity / brand board 画像生成 | Code 生成、UI 実装 | ChatGPT Images / Codex image / MCP |
 | `stitch-skill` | `stitch-design-taste` | Google Stitch 用 DESIGN.md export | 一般 UI 実装、Stitch 非使用時 | Google Stitch |
+| `design-md-init` | (dotfiles 直置き) | プロジェクト root に DESIGN.md 配置 (grill-me 47 branch + awesome-design-md exemplar) | 既存 DESIGN.md の改修、Stitch 出力 (use stitch-skill)、greenfield UI 実装そのもの | Claude Code |
 | `output-skill` | `full-output-enforcement` | Truncation 防止、placeholder 禁止 enforce | 普通の短いタスク | All agents |
 | `frontend-design` (plugin) | (Anthropic) | Production-grade 独自 UI、component / page / app | (上書き不可、plugin) | Claude Code |
 | `ui-ux-pro-max` | `ui-ux-pro-max` | 10 stack 対応 UI/UX、accessibility 含む | Codex 専用 task (gpt-taste 使う) | Claude Code |
