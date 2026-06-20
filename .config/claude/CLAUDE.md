@@ -79,6 +79,14 @@
 
 </important>
 
+<important if="you are designing or refining a user-facing surface — UI components, public API contracts, CLI UX, error/empty/loading states, user-visible copy">
+
+- 基礎姿勢: `references/design-stance.md` (Vercel Design Engineer + Apple HIG 8 principles の並列転載 + 適用境界)
+- skill ルーティング: `references/design-skill-routing.md` (19 個の UI/frontend 系 skill の使い分け)
+- 衝突時: scope 内 = stance、scope 外 = `<core_principles>` (minimum change / leave neighbors untouched)
+
+</important>
+
 ---
 
 ## ワークフロー
