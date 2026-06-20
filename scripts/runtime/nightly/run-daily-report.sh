@@ -112,6 +112,54 @@ GIT_COMMITS=$(cd "$HOME/dotfiles" && git log --since=midnight --oneline 2>/dev/n
 GIT_COUNT=$(echo "$GIT_COMMITS" | grep -cE '^[0-9a-f]' || true)
 GIT_COUNT="${GIT_COUNT:-0}"
 
+# === 朝の TODO 収集 (3 カテゴリ別 git 状態) ===
+# 副業=hearable / AI 改善=dotfiles / 自己学習=その他 dev-app の git repo
+# 各 repo の uncommitted + 直近 commit + open PR を朝の TODO 草案として codex に渡す
+
+_collect_repo_state() {
+    local repo="$1"
+    [[ ! -d "$repo/.git" ]] && return
+    local branch uncommitted recent open_pr remote_url nwo
+    branch=$(git -C "$repo" branch --show-current 2>/dev/null)
+    uncommitted=$(git -C "$repo" status --short 2>/dev/null | head -8)
+    recent=$(git -C "$repo" log --since='2 days ago' --oneline 2>/dev/null | head -5)
+    # ponytail: remote 未設定なら gh は呼ばない (空 -R は cwd フォールバックで誤った PR が混入)
+    open_pr=""
+    remote_url=$(git -C "$repo" config --get remote.origin.url 2>/dev/null)
+    if [[ -n "$remote_url" ]] && command -v gh &>/dev/null; then
+        nwo=$(echo "$remote_url" | sed -E 's|.*[:/]([^/]+/[^/.]+)(\.git)?$|\1|')
+        if [[ -n "$nwo" ]]; then
+            open_pr=$(gh -R "$nwo" pr list --author=@me --state=open --json number,title,headRefName 2>/dev/null \
+                | jq -r '.[] | "  #\(.number) \(.title) [\(.headRefName)]"' 2>/dev/null | head -5)
+        fi
+    fi
+    local repo_short="${repo/#$HOME/~}"
+    echo "#### \`${repo_short}\` (branch: ${branch:-?})"
+    echo "- uncommitted:"
+    if [[ -z "$uncommitted" ]]; then echo "  (clean)"; else echo "$uncommitted" | sed 's/^/    /'; fi
+    echo "- 直近 commit:"
+    if [[ -z "$recent" ]]; then echo "  (なし)"; else echo "$recent" | sed 's/^/  - /'; fi
+    echo "- 自分の open PR:"
+    if [[ -z "$open_pr" ]]; then echo "  (なし)"; else echo "$open_pr" | sed 's/^/  /'; fi
+}
+
+# 副業: hearable (app2 は app の並列作業用 clone のため除外)
+SIDEJOB_STATE=""
+for repo in "$HOME/dev-app/hearable/app" "$HOME/dev-app/hearable/survey"; do
+    SIDEJOB_STATE+="$(_collect_repo_state "$repo")"$'\n'
+done
+
+# AI 改善: dotfiles
+AI_STATE=$(_collect_repo_state "$HOME/dotfiles")
+
+# 自己学習: dev-app 配下 (hearable 除外) で git 管理されてる repo
+LEARN_STATE=""
+while IFS= read -r repo; do
+    [[ -z "$repo" ]] && continue
+    [[ "$repo" == */hearable/* ]] && continue
+    LEARN_STATE+="$(_collect_repo_state "$repo")"$'\n'
+done < <(find "$HOME/dev-app" -maxdepth 3 -name '.git' -type d 2>/dev/null | sed 's|/.git$||')
+
 # Friction events today
 FRICTION_LOG="$HOME/.claude/agent-memory/learnings/friction-events.jsonl"
 FRICTION_TODAY=""
@@ -169,7 +217,24 @@ ${GIT_COMMITS:-(なし)}
 ${FRICTION_TODAY:-(なし)}
 \`\`\`
 
-# 出力フォーマット (Markdown、20-40 行で簡潔に)
+## 朝の TODO 草案 用データ (3 カテゴリ別 git 状態)
+
+### 副業 (~/dev-app/hearable)
+\`\`\`
+${SIDEJOB_STATE:-(なし)}
+\`\`\`
+
+### AI 改善 (~/dotfiles)
+\`\`\`
+${AI_STATE:-(なし)}
+\`\`\`
+
+### 自己学習 (~/dev-app/* git repo, hearable 除く)
+\`\`\`
+${LEARN_STATE:-(なし)}
+\`\`\`
+
+# 出力フォーマット (Markdown、30-60 行で簡潔に)
 
 # Daily Report (${NIGHTLY_DATE})
 
@@ -185,8 +250,20 @@ ${FRICTION_TODAY:-(なし)}
 ## 気づき / Friction
 - (friction events と sessions から 1-3 個)
 
-## 明日へ持ち越し
-- (進行中の話題、未解決の問いから 1-3 個、なければ「特になし」)
+## 朝の TODO 草案
+
+上記「朝の TODO 草案 用データ」の uncommitted / 直近 commit / open PR から、3 カテゴリ別に「途中で止まっているもの = 朝再開しやすいもの」だけを抽出する。各カテゴリで該当なしは「特になし」と書く (フェイク TODO を作らない)。各項目に対応する repo パスを括弧付きで添える。
+
+**重複排除**: 同じ remote を共有する複数 subrepo (例: hearable/app と hearable/app2 は同じ hearableinc/hearable-app) の open PR は 1 つにまとめる。subrepo 内で uncommitted や recent commit がある方を「現在の作業 clone」として扱う。
+
+### 副業 (hearable)
+- (途中の uncommitted, 未マージ PR, WIP commit から 1-3 個。なければ「特になし」)
+
+### AI 改善 (dotfiles)
+- (同上、1-3 個)
+
+### 自己学習 (dev-app)
+- (同上、1-3 個)
 
 ## 全セッション一覧
 (上記「全セッション詳細 metadata」を 1 セッション 1-2 行で清書、cwd でプロジェクト推測 + 起点発話から内容を 1 文で要約。時刻順、最大 30 件)
