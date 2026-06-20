@@ -1,7 +1,7 @@
 ---
 name: react-best-practices
 description: >
-  React/Next.js パフォーマンス最適化 40+ rule (waterfalls 解消、bundle 最適化、レンダリング改善)。
+  React/Next.js のパフォーマンスボトルネックを潰す: waterfall を切る、bundle を絞る、再レンダリングを止める (40+ rule)。
   Triggers: 'React パフォーマンス', 'bundle size', 'waterfall', 'Server Components'.
   Not for: UI/UXデザイン (/ui-ux-pro-max)。
 origin: self
