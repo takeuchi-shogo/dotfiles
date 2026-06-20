@@ -3,7 +3,7 @@ name: react-best-practices
 description: >
   React/Next.js パフォーマンス最適化 40+ rule (waterfalls 解消、bundle 最適化、レンダリング改善)。
   Triggers: 'React パフォーマンス', 'bundle size', 'waterfall', 'Server Components'.
-  Not for: アーキ決定 (/senior-frontend)、UI/UXデザイン (/ui-ux-pro-max)。
+  Not for: UI/UXデザイン (/ui-ux-pro-max)。
 origin: self
 version: 1.0.0
 author: Vercel Engineering
@@ -223,3 +223,9 @@ When optimizing a React application:
 | 全ルールを一度に適用する | 優先度の高いボトルネックから順に対処する。計測なしの最適化は無意味 |
 | Server Components を盲目的に使う | クライアント側の状態が必要な箇所では Client Component が正解 |
 | バンドルサイズだけ見てUXを無視する | 体感速度（LCP/INP）が本当の指標。サイズは手段であって目的ではない |
+
+## Gotchas
+
+- **perf rule 提案前に Server Components / RSC モードを確認** — 同名 hook (`useState` / `useEffect` 等) が App Router と Pages Router で挙動と適用境界が違う。client/server boundary を確定してから rule を当てる
+- **計測なしの最適化禁止** — Quick reference の rule は「ボトルネック確定後」に適用するもの。React DevTools Profiler / Lighthouse / Web Vitals で計測してから着手
+- **40+ rule 一括 dump 禁止** — 該当カテゴリ (waterfalls / bundle / rendering / data) のみ参照。全 rule をコンテキストに載せると判断が浅くなる

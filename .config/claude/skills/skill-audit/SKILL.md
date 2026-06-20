@@ -28,18 +28,18 @@ Use this skill when you want to:
 Skills whose domains overlap heavily with the base model's knowledge. These are most likely to show marginal or negative delta vs baseline:
 
 - `react-best-practices`
-- `react-expert`
-- `senior-architect`
-- `senior-backend`
-- `senior-frontend`
-- `search-first`
+- `security-scan`
+- `graphql-expert`
+- `ast-grep-practice`
+- `vercel-composition-patterns`
+- `web-design-guidelines`
 
 ### Batch 2 — Competing Pairs (trigger conflicts)
 
 Skill pairs whose descriptions may cause incorrect or ambiguous triggering:
 
 - `frontend-design` vs `ui-ux-pro-max`
-- `codex-review` vs `review`
+- `security-scan` vs `security-review`
 
 The user can override these defaults with a custom skill list.
 
