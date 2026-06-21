@@ -1,9 +1,10 @@
 # PR Review Agent (cmux + サブスク Claude) Plan
 
-> **Status**: 🟢 B 検証完了 / Phase A 未着手
+> **Status**: 🟢 B 検証完了 / Phase A 未着手 (kept)
 > **Owner**: ShogoTakeuchi
 > **Started**: 2026-05-19
-> **Last updated**: 2026-05-20
+> **Last updated**: 2026-06-20
+> **kept-by**: 2026-06-20 (loop-engineering absorb stale-plan audit、意図的保留で active 維持。実装は追いかける)
 > **Resume command**: このファイルを読んだ後 `## 次に再開する手順` セクションへ
 
 ## ゴール

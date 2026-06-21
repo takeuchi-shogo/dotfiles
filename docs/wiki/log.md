@@ -8,6 +8,74 @@
 
 <!-- Parseable with: grep "^## \[" docs/wiki/log.md | tail -10 -->
 
+## [2026-06-20] ingest-skip | Loop Engineering 2 ソース同時提示 (Matt Van Horn LinkedIn + Addy Osmani blog)
+
+- ソース:
+  - https://x.com/mvanhorn/status/2063865685558903149 (Matt Van Horn "WTF Is a Loop?" — LinkedIn Pulse mirror 経由)
+  - https://addyosmani.com/blog/loop-engineering/ (Addy Osmani "Loop Engineering")
+- 理由: loop-engineering / multi-agent-orchestration family、SATURATED-pure-rehash (delta=0、19/19 全手法 rehash)。**Source 2 (Addy Osmani) は同日 6 時間前に absorb 完了済の essay と同一記事**。`continue` 検証で Phase 2 全 19 Already (強化不要) 確定
+- 根拠: per-method 照合台帳全 19 件 matched_prior 3 点セット完備 (詳細: `docs/research/2026-06-20-loop-engineering-double-source-absorb-analysis.md`)
+- per-method 照合台帳サマリ (Source 1 + Source 2、各行に prior 名指し):
+  - Source 1 全 9 手法 (5-stage lineage / Cherny loop 定義 / /loop babysit / 5 tips / Gas Town / roborev / Three hard stops / Skill-first thesis / Cron differential) → 全て `2026-06-20-loop-engineering-essay` + `2026-06-17-loops-with-claude` + `references/comprehension-debt-policy.md` + `2026-04-12-tan-thin-harness-fat-skills` + `references/resource-bounds.md` + `references/cmux-ecosystem.md` で名指し
+  - Source 2 全 10 手法 (Five pieces + memory / Automations heartbeat / /goal contract / Worktrees / Skills / Plugins/Connectors / Sub-agents maker-checker / morning automation / Three sharper problems / Codex vs Claude Code mapping) → 全て `2026-06-20-loop-engineering-essay` + `references/comprehension-debt-policy.md` (Osmani 出典明記、last_reviewed 2026-04-23) + `auto-morning-briefing.sh` + `references/multi-agent-coordination-patterns.md` + `2026-04-29-codex-vs-claudecode-role-split` で名指し
+- Phase 2.5: skipped (codex bash-unreachable + gemini sunset の dual-degraded、adopt=0 で議論余地なし、light-phase2 protocol)
+- Validation-only: なし (stale-plan audit + crontab memo は 6 時間前 twin absorb で完了済)
+- スキップ判定: per-method 照合台帳 + 同日 twin absorb 完了の double evidence
+
+## [2026-06-20] memo | crontab 全 PAUSED (skill 更新 / nightly 移行中)
+
+- 状態: `crontab -l` 全 entry に `[PAUSED 20260616-012634]` marker (4日経過)
+- 意図: 意図的 pause、skill 更新と nightly orchestrator (`docs/plans/active/2026-06-13-nightly-orchestrator-plan.md`) 移行中のため
+- resume 期限: 移行完了後 (期限未定)。期限が決まったらここを更新
+- 露出元: loop-engineering family absorb (2026-06-20) の Phase 2 stale-plan audit
+- 関連: `docs/plans/active/2026-05-19-pr-review-agent-plan.md` (kept-by: 2026-06-20)
+
+## [2026-06-20] ingest-skip | From Prompting Agents to Loop Engineering (Addy Osmani 系 essay、無署名版)
+
+- ソース: テキスト貼り付け (Addy Osmani / Steinberger / Cherny 引用、Cherny "auto + ultracode + /goal + cloud + self-verify" 5-step + crabfleet 紹介)
+- 理由: loop-engineering / multi-agent-orchestration family N=15+、SATURATED-pure-rehash (delta=0)、`continue` 検証でも Phase 2 全 13 手法 Already (強化不要) 確定
+- 根拠: 6/17 absorb (`2026-06-17-loops-with-claude-absorb-analysis.md`) の二次紹介 (kumai_yu/Qiita) と同系統で構造的に同一。記事末尾 "Other Useful References" が Osmani/Cherny/Steinberger を明示
+- per-method 照合台帳 (delta=0 の立証、3点セット):
+  - Loop 4-step (prompt/read/decide/re-prompt) → `2026-06-17-loops-with-claude` "4-step loop primitive" / Osmani 引用同定義 (rehash)
+  - Five-loop progression (ReAct→AutoGPT→ralph→/loop+/goal→orchestration) → `2026-06-17-loops-with-claude` "5-stage terminology progression" / 同進化系譜 (rehash)
+  - Six parts (trigger/isolation/context/tool-reach/verifier/state) → `2026-04-02-ralph-loop` + `2026-04-11-multi-agent-coordination-patterns` / 全構成要素 (cron-hooks / worktree / CLAUDE.md / MCP+gh / Codex Review Gate / docs/plans+MEMORY) 個別実装済 (rehash)
+  - PR babysitter pattern → `2026-06-17-loops-with-claude` "/babysit-prs cadence example" / 同名 example (rehash)
+  - /goal 4-element contract (end-state/evidence/constraints/budget) → `references/scheduling-decision-table.md:23-95` `/goal pilot` 行 + `2026-06-12-fable5-14steps` T3 採用 / 4 要素統合済 (rehash)
+  - Cherny 5-step unattended → `2026-06-17-loops-with-claude` "Cherny 5-step" + `2026-06-03-dynamic-workflows` "Workflow tool deliberate non-adopt" / 全要素照合済 (rehash)
+  - Multi-model role split (planner/executor/evaluator/vision) → `references/model-routing.md` Tier 表 + `2026-04-11-multi-agent-coordination-patterns` Generator-Verifier (rehash)
+  - crabfleet (board/durable/child-spawn/sandbox) → `references/cmux-ecosystem.md` + `2026-05-23-cmux-coding-agent-workflow` / cmux 同型、外部 product N/A (rehash)
+  - Cost = iterations not tokens → `2026-06-17-loops-with-claude` "iteration budget over token budget" / 同主張 (rehash)
+  - Weak-verifier as expensive bug → `2026-05-31-hermes-eval-loop` + `verification-before-completion` skill / verifier 設計 Codex Review Gate 集約済 (rehash)
+  - When-not-to-loop (one-shot/unscoped/no-check) → `references/governance-levels.md` + core_principles YAGNI (rehash)
+  - 6-step "build your own" → 上記要素の reorder、新規要素なし (rehash)
+  - Failure modes (verification debt/comprehension gap/silent drift) → `references/comprehension-debt-policy.md` (Osmani 出典明記 live, status: reference, last_reviewed 2026-04-23) + `silent-failure-hunter` agent (rehash)
+- Validation-only follow-up 1 件: `docs/plans/active/2026-05-19-pr-review-agent-plan.md` Phase A 31 日 stall を露出 → user 判定 `kept` で frontmatter に `kept-by: 2026-06-20` 追記
+- 副次観察: crontab 全 PAUSED (本 log 直前エントリ参照、別 absorb 由来でない drift)
+- スキップ判定: SATURATED-pure-rehash + Phase 2 adopt=0 確定。Phase 2.5 Codex+Gemini は dual-degraded (codex bash-unreachable / gemini sunset) のため省略
+- 分析レポート: `docs/research/2026-06-20-loop-engineering-essay-absorb-analysis.md`
+
+## [2026-06-20] ingest-skip | How to get Fable-level intelligence back (model council / fusion, weeklyaiops community marketing)
+
+- ソース: weeklyaiops.com community marketing (テキスト貼り付け、Fable 5 廃止後 council 再構築主張)
+- 理由: multi-agent-orchestration family N≥15、SATURATED-pure-rehash (delta=0)、続く `continue` 検証でも Phase 2 全 Already / tools 全 N/A 確定で adopt=0
+- 根拠: 全 11 手法に matched_prior 3点 (ファイル名+heading+同等性) を名指し済。Bash で `best-of-n-guide.md` Cost-Arbitrage / `multi-agent-coordination-patterns.md` Generator-Verifier+Orchestrator-Subagent / `model-routing.md` tier の実在と引用句一致を確認
+- per-method 照合台帳 (delta=0 の立証):
+  - Council = panel + judge synthesizer → `2026-06-18-kimi-k26-self-improving-swarm` Generator-Verifier + `best-of-n-guide.md` (rehash)
+  - Frontier judge + cheap panel → `model-routing.md` Opus=judge tier + Cost-Arbitrage 節 (rehash)
+  - Per-task judge tuning → `skills/review/SKILL.md` Step 0 tier (rehash)
+  - Migration: council decides cheap exec → `multi-agent-coordination-patterns.md` Orchestrator-Subagent + Hermes VPS Nested Orchestrator (rehash)
+  - Deep research panel + judge → `/research` + `/deep-research` (rehash)
+  - Long multi-step orchestration → `2026-06-03-dynamic-workflows` Workflow tool + `/rpi` + `/epd` (rehash)
+  - Briefing lighter agent → `/spec` → `/spike` → `/rpi` chain (rehash)
+  - KB building (structure + fill) → `/absorb` Phase 5+ + memory-vec indexer (rehash)
+  - Router ≠ Council → `2026-06-03-dynamic-workflows` で synthesis-step を council 条件として明示済 (rehash)
+  - Code judge runs tests → Codex Review Gate + `/verify` + lefthook (rehash)
+  - "Would I pay premium?" gut check → `model-routing.md` + `review/SKILL.md` S=light skip (rehash)
+  - tools 6 種 (openrouter fusion/orcarouter/gavel/openfusion/fusion-fable/llm-consortium) → N/A (Claude-Code harness 境界外、Plus 内 per-call 切替無価値)
+- スキップ判定: Phase 1.5 SATURATED-pure-rehash + Phase 2 adopt=0 確定。Phase 4-5+ (Plan / Wiki INDEX / Obsidian / MEMORY.md 追記) すべて省略
+- 分析レポート: `docs/research/2026-06-20-weeklyaiops-model-council-absorb-analysis.md`
+- 教訓: weeklyaiops.com community marketing は次回ベンダー検出で短絡可 (Hermes/Kimi に続く 3 系統目)。"Fable 5 廃止後の取り戻し" framing は council 系の marketing ハンドルだが council 自体は AlphaCode 時代の Generator-Verifier の言い換え、shape で家族飽和判定するので skill drift なし
+
 ## [2026-06-20] ingest | The Self-Verifying Loop: 300 agents, 4,000 steps, 5 live data feeds on autopilot with Kimi K2.6
 
 - ソース: Kimi.ai ベンダーマーケ記事 (テキスト貼り付け、同日 2 本目の Kimi 記事)
@@ -1825,4 +1893,19 @@
 - per-method 照合台帳 (delta=0 立証、全 8 手法に matched_prior 3点セット名指し): 3 roles → multi-agent-coordination-patterns 5パターン + code-reviewer/codex-reviewer / role-standard-format-boundaries → agent-design-lessons.md (Self-Rejection Rule + Codified Context) / worker-critic loop → Codex Review Gate (CLAUDE.md ワークフロー表) / MCP/connectors → settings.json + mcp-audit.py VeriGrey Tool Filter / sub-agent orchestration → Agent tool + Workflow tool (deliberate non-adopt) / 10-case eval → skill-audit + Codex Review Gate / persistent memory → 7-layer memory model / failure handling + loop hard limit → blueprint-pattern.md `max_iterations` 必須属性
 - Phase 2.5: **Codex 成功 (retry, bounded timeout)** / **Gemini 失敗 (IneligibleTierError → Antigravity 移行要求)**。Codex は条件付きで 2 件 drift 指摘 ((a) reproducible 10-case eval contract / (b) role/standard/format/boundaries の明文化テンプレート) → 両方とも実態は欠落だが既存仕組み (skill-audit + Review Gate / single-purpose enforcement) で代替済、ROI 低で validation-only に降格
 - 教訓: (1) Phase 1.5 台帳 name-pointing 立証は機能、(2) Codex via Bash tool は依然 silent exit、bounded timeout + 短縮プロンプト + tail -30 で retry 成功パターン確立、(3) **Gemini Code Assist for individuals は sunset**、`gemini -p` を Phase 2.5 で常用できなくなった (運用 drift)、(4) 入門 listicle の SATURATED 採用 0 でも台帳照合練習 + drift 露出の副産物あり
+
+## [2026-06-20] ingest-skip-equivalent | Self-Updating Prompt (100 User Decisions)
+
+- ソース: paste-only (Nick Mayhew/Anthropic on stage、recruiting 事例)
+- 理由: topic family "self-evolving" SATURATED-pure-rehash (N=21+, 直近3件 adopt 0, delta=0)
+- 判定経路: user continue 選択 → Phase 2 Pass 2 で adopt 0 確定 (Codex 批評で borderline 1件提案も user skip)
+- per-method 照合台帳 (全5手法 rehash):
+  - Markdown prose prompt → `2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md` (text-space optimizer)
+  - Batch decision update → `2026-06-05-recursive-self-improvement-anthropic-absorb-analysis.md` (calibration-verdict-logger.py)
+  - Two-layer split → `references/model-routing.md` (4-tier) + `2026-06-02-skillopt-...md` (objective/subjective lane)
+  - Human decision logging → `2026-06-05-sonicgarden-self-improving-loop-absorb-analysis.md` (patterns.jsonl + session_events)
+  - Feedback loop as product → `docs/superpowers/specs/2026-05-31-learned-promotion-loop-design.md` + Wave3 YAGNI 確定 (sonicgarden)
+- 採用: 0
+- レポート: `docs/research/2026-06-20-anthropic-100-decisions-self-updating-prompt-absorb-analysis.md`
+- 教訓: vendor blog 風記事 + family saturated + 経験則の数値根拠なし = 全 rehash の典型サイン。次回 keyword (self-update / apprentice / 100 decisions / feedback loop is product) 検出時は saturation gate skip 推奨可
 - 詳細: docs/research/2026-06-20-khairallah-agent-team-intro-absorb-analysis.md

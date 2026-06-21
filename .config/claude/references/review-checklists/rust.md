@@ -127,3 +127,13 @@ Effective Rust に基づく。
 - `must:` 公開 API の破壊的変更が major バージョンと整合しているか
 - `#[non_exhaustive]` で enum/struct の将来の拡張を許可しているか
 - 依存クレートの型が公開 API に露出する場合は `pub use` で再エクスポートする
+
+## RS-21. Performance / N+1 (CC-17 言語別補足)
+
+- `must:` Diesel で関連を取得するコードは `.inner_join(users::table)` で 1 クエリにまとめる
+  - NG: `let posts = posts::table.load::<Post>(conn)?; for p in posts { users::table.find(p.author_id).first::<User>(conn)?; }`
+  - OK: `posts::table.inner_join(users::table).load::<(Post, User)>(conn)?`
+- `must:` SQLx は `query!` macro 内で JOIN を書く / 多数 ID 解決は `WHERE id = ANY($1)` で IN 句バッチ化 (ループ内 `fetch_one` 禁止)
+- `consider:` `.select((posts::id, posts::title))` で必要列に限定 (over-fetch 抑制)
+- `consider:` 大量レコード処理は `fetch_all()` (全件メモリ載せ) を避け、`fetch(&pool)` が返す `Stream` を `futures_util::TryStreamExt::try_chunks(n)` で chunk 処理する
+- 詳細パターン・false positive 抑制: cross-cutting CC-17
