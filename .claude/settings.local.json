@@ -1,8 +1,16 @@
 {
-	"includeCoAuthoredBy": false,
-	"enableAllProjectMcpServers": true,
-	"enabledMcpjsonServers": ["playwright", "context7"],
-	"permissions": {
-		"allow": ["mcp__plugin_discord_discord__reply"]
-	}
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "mcp__plugin_discord_discord__reply"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright",
+    "context7"
+  ],
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true
+  }
 }
