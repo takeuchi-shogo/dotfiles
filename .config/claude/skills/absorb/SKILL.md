@@ -550,7 +550,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 /absorb docs/research/existing-report.md   # 既存レポートの再分析
 ```
 
-## Anti-Patterns
+## Gotchas
 
 | NG | 理由 |
 |----|------|
