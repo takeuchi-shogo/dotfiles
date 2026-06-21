@@ -114,7 +114,7 @@ def _check_memory_md_line_lengths(files: list[Path]) -> None:
         try:
             with open(f, encoding="utf-8") as fh:
                 lines = fh.readlines()
-        except OSError:
+        except (OSError, UnicodeDecodeError):
             continue
         long_lines: list[tuple[int, int]] = []
         for i, line in enumerate(lines, 1):
@@ -133,7 +133,6 @@ def _check_memory_md_line_lengths(files: list[Path]) -> None:
             f"(feedback_memory_style.md)."
         )
         print(msg, file=sys.stderr)
-        output_context("SessionStart", msg)
 
 
 def _main() -> None:
