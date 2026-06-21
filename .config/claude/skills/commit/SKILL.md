@@ -194,3 +194,13 @@ decision(http-client): switched from axios to native fetch for zero-dependency H
 3. **具体性**: body の `intent/decision/rejected/constraint/learned` が vague でなく、具体的なファイル/関数/数値/参照を含むか？
 4. **why over what**: subject + body の 1 文目で why が伝わるか？ diff から自明な what の言い換えになっていないか？
 5. **レビュー可能性**: このコミットを修正なしで PR に含めても、reviewer が文脈を再構築できるか？
+
+## Gotchas
+
+| NG | 理由 / 対処 |
+|----|------------|
+| `git commit --no-verify` で hook を skip | 品質ゲート (lefthook の lint/format/build-claude-check) が全て無効化される — **絶対禁止**。settings.json deny で block 済み。失敗時は `--no-verify` ではなく失敗の根本を直す |
+| lint config (.eslintrc*, biome.json, .prettierrc*) を「直す」 | hook 体系が壊れる。設定ではなくコードを直す (`protect-linter-config` hook で強制) |
+| `git add -A` / `git add .` で broad staging | `.env` などの機密ファイルを誤って commit するリスク。staging は具体的にファイル名指定する |
+| Conventional emoji 以外を subject に使う (例: ✂️) | `conventional-commit` lefthook で reject される。許可一覧: ✨ 🐛 📝 ♻️ 🔧 🚀 ⬆️ 🔒 ✅ 🏗️ 🗑️ 🎨 ⚡ 🔥 💥 🚑 💄 🏷️ |
+| git mutation 前に `git branch --show-current` 確認を怠る | dotfiles は worktree+PR 運用で別 routine の branch に干渉する事故 (PR#60、2026-06-21 b17661bc 混合 commit) を起こす |
