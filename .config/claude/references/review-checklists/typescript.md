@@ -142,3 +142,13 @@ Effective TypeScript (2nd Ed.) に基づく。
 
 - optional プロパティが多い型（5個超）は設計の見直しを検討
 - 必須と optional を別の型に分離するか、discriminated union で表現する
+
+## TS-24. Performance / N+1 (CC-17 言語別補足)
+
+- `must:` Prisma で関連を使うコードは `include` / `select` で 1 クエリにまとめる
+  - NG: `const posts = await prisma.post.findMany(); for (const p of posts) await prisma.user.findUnique({where:{id:p.authorId}})`
+  - OK: `await prisma.post.findMany({include: {author: true}})`
+- `must:` 多数 ID 解決は `findMany({where:{id:{in:ids}}})` でバッチ化 (DataLoader / `Promise.all` の N 連打は避ける)
+- `consider:` `select: {id: true, name: true}` で必要列のみ取得 (over-fetch 抑制)
+- `consider:` `.map(async ...)` 内の `await` は `Promise.all(items.map(...))` で並列化 (TS-8 と合わせる)
+- 詳細パターン・false positive 抑制: cross-cutting CC-17

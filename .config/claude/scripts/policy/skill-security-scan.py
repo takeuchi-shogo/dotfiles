@@ -211,11 +211,15 @@ def scan_directory(skill_dir):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <skill-directory>", file=sys.stderr)
+    critical_only = "--critical-only" in sys.argv[1:]
+    args = [a for a in sys.argv[1:] if a != "--critical-only"]
+    if not args:
+        print(
+            f"Usage: {sys.argv[0]} [--critical-only] <skill-directory>", file=sys.stderr
+        )
         sys.exit(2)
 
-    skill_dir = sys.argv[1]
+    skill_dir = args[0]
     if not os.path.isdir(skill_dir):
         print(f"Error: {skill_dir} is not a directory", file=sys.stderr)
         sys.exit(2)
@@ -227,7 +231,7 @@ def main():
     for f in findings:
         counts[f["severity"]] = counts.get(f["severity"], 0) + 1
 
-    has_blocking = counts["CRITICAL"] > 0 or counts["HIGH"] > 0
+    has_blocking = counts["CRITICAL"] > 0 or (not critical_only and counts["HIGH"] > 0)
     verdict = "FAIL" if has_blocking else "PASS"
 
     # Make paths relative to skill_dir for readability

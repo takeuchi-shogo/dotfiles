@@ -1,6 +1,6 @@
 ---
 name: ui-ux-pro-max
-description: "Use when designing or implementing UI/UX for web and mobile apps — component styling, color systems, typography, layout, accessibility, or chart visualization. Supports 10 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui, HTML/CSS). Triggers: 'UI設計', 'デザイン', 'カラーパレット', 'フォント選定', 'アクセシビリティ', 'チャート'. Do NOT use for: frontend architecture decisions (use senior-frontend), React performance optimization (use react-best-practices)."
+description: "Use when designing or implementing UI/UX for web and mobile apps — component styling, color systems, typography, layout, accessibility, or chart visualization. Supports 10 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui, HTML/CSS). Triggers: 'UI設計', 'デザイン', 'カラーパレット', 'フォント選定', 'アクセシビリティ', 'チャート'. Do NOT use for: React performance optimization (use react-best-practices), creative build/refine of new UI surfaces (use /frontend-design)."
 origin: external
 metadata:
   pattern: tool-wrapper+generator
@@ -343,3 +343,8 @@ python3 skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system 
 > **App UI common rules:** Read `instructions/common-rules-app.md` for frequently overlooked professional UI rules (Icons, Interaction, Light/Dark Mode, Layout & Spacing).
 >
 > **Pre-delivery checklist:** Read `eval/pre-delivery-checklist.md` and verify all items before delivering UI code.
+
+## Gotchas
+
+- **10-stack KB は CLI 経由で domain を指定** — 一括引きは context 浪費。React / SwiftUI / Tailwind など、対象スタックを最初に絞り、必要な instructions ファイルだけ Read する
+- **frontend-design と同時起動しない** — 体系参照 (本 skill) と新規 build/refine (frontend-design) は排他。「デザインシステム / a11y / KB」が要件なら本 skill、「新しい UI を作る・磨く」が要件なら frontend-design

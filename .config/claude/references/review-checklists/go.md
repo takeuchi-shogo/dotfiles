@@ -113,3 +113,13 @@ Go Code Review Comments・Effective Go に基づく。
 
 - 新しいパッケージには `func ExampleFoo()` を検討
 - パフォーマンスが重要な箇所には `func BenchmarkFoo(b *testing.B)` を検討
+
+## GO-18. Performance / N+1 (CC-17 言語別補足)
+
+- `must:` GORM の関連フィールドを使うコードでは `Preload("Field")` で eager-load する
+  - NG: `db.Find(&posts); for _, p := range posts { fmt.Println(p.Author.Name) }`
+  - OK: `db.Preload("Author").Find(&posts)`
+- `must:` sqlx で複数行の関連取得は `SELECT ... JOIN` で 1 クエリに集約する (ループ内 `db.Get` 禁止)
+- `consider:` 大量レコード処理は `FindInBatches(&items, 100, func(tx *gorm.DB, batch int) error { ... })` で chunk 処理する
+- `consider:` `.Select("col1, col2")` で必要列のみ取得 (over-fetch 抑制)
+- 詳細パターン・false positive 抑制: cross-cutting CC-17
