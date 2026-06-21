@@ -5,7 +5,7 @@ description: >
   artifacts, posters, or applications AND for refining existing UI code (polish, distill, critique, energize, calm).
   Avoids generic AI aesthetics.
   Triggers: 'UI作って', 'ページ作成', 'コンポーネント', 'デザイン改善', 'UI磨いて', 'polish', 'distill', 'UIがダサい', 'AI臭い'.
-  Do NOT use for: UIレビュー/監査（use /web-design-guidelines）、フロントエンドアーキテクチャ（use /senior-frontend）、パフォーマンス最適化（use /react-best-practices）。
+  Do NOT use for: UIレビュー/監査（use /web-design-guidelines）、パフォーマンス最適化（use /react-best-practices）、デザインシステム/アクセシビリティ/キーボード操作の体系設計（use /ui-ux-pro-max）。
 origin: self
 license: Complete terms in LICENSE.txt
 metadata:
@@ -118,6 +118,11 @@ Five operations, each with a distinct lens. Apply one or combine as needed:
 - 地味すぎる → **energize**
 - 過剰すぎる → **calm**
 - 判断つかない → **critique** で診断してから提案
+
+## Gotchas
+
+- **ui-ux-pro-max と同時起動しない** — Refine ops (本 skill) と design-system / a11y / KB-lookup (ui-ux-pro-max) は排他。両方マッチした場合は本 skill が「新規/磨き」、ui-ux-pro-max が「体系参照」と切り分ける
+- **Refine 指示の曖昧さに注意** — 「もっと良く」だけでは hallucination が起きる。Polish / Distill / Critique / Energize / Calm のどれかを明示してから着手
 
 ## Skill Assets
 
