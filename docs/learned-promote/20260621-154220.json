@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-21",
+  "branch": "auto/learned-promote-20260621-154220",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "dbfc71ee80a87d18051e4292d51fdda7a5f68a70",
+      "decision": "rejected",
+      "scope": "design-skill-routing-unsurfaced",
+      "reason": "already covered: .config/claude/CLAUDE.md",
+      "detail_excerpt": "design-skill-routing は CLAUDE.md に配線済み"
+    },
+    {
+      "key": "3c24956818d55f70092d5b93edb1d3f71f2eee6f",
+      "decision": "rejected",
+      "scope": "multi-model",
+      "reason": "already covered: .config/claude/skills/review/SKILL.md",
+      "detail_excerpt": "claude-octopus 3-way review は review skill に明記済み"
+    },
+    {
+      "key": "122d9f5016dbdab181714432002eb9ba463441be",
+      "decision": "rejected",
+      "scope": "tocs-paper",
+      "reason": "already covered: .config/claude/references/workflow-guide.md",
+      "detail_excerpt": "config 優先 3x と依存理解 +14 F1 は記載済み"
+    },
+    {
+      "key": "70d74cf4243c84ece8990d7815baa4f45596c99f",
+      "decision": "rejected",
+      "scope": "docker-safety",
+      "reason": "already covered: .config/claude/scripts/policy/docker-safety.py",
+      "detail_excerpt": "multiline docker 検出の re.DOTALL は実装済み"
+    },
+    {
+      "key": "fb0b43b64538b3f051dfefd602ca5bb449d135c0",
+      "decision": "rejected",
+      "scope": "cross-domain-mapper",
+      "reason": "already covered: .config/claude/scripts/lib/storage.py",
+      "detail_excerpt": "HOME 未設定時の Path.home() fallback は実装済み"
+    }
+  ]
+}
