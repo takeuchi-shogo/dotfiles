@@ -1,6 +1,6 @@
 ---
 name: dispatch
-description: "cmux Worker Router — タスクをサブエージェントまたは cmux Worker (Claude Code / Codex / Gemini) に振り分けて実行する。長時間タスク・マルチモデル・高並列の場合に cmux Worker を使用。self-improve preset (/improve 後継): 各軸 Skill を cmux ペインで並列起動し提案を集約する自己改善ループ。Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', 'Codex に投げて', '別のモデルで', '長時間タスク', 'バックグラウンドで', '並列で実行', 'route this task', '改善ループ', 'self-improve', 'self improve', '自己改善'. Do NOT use for: 単純なサブエージェント委譲（use Agent tool directly）、リサーチ（use /research）、単発の Codex/Gemini 質問（use /codex or /gemini directly）。"
+description: "cmux Worker Router — タスクをサブエージェント / cmux Worker (Claude/Codex/Gemini) に振り分け。長時間・マルチモデル・高並列に Worker、self-improve preset で各軸 Skill 並列起動。Triggers: 'dispatch', '振り分けて', 'Worker で実行', 'cmux で', 'Gemini に投げて', '長時間タスク', '並列で実行', 'self-improve'. Do NOT use for: 単純な Agent 委譲 (use Agent tool)、リサーチ (use /research)、単発の Codex/Gemini 質問 (use /codex or /gemini)。"
 origin: self
 user-invocable: true
 metadata:
