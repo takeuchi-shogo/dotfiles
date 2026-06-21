@@ -100,12 +100,49 @@ def _save_checksums(checksums: dict[str, str]) -> None:
         )
 
 
+def _check_memory_md_line_lengths(files: list[Path]) -> None:
+    """MEMORY.md の >200 chars 行を列挙する actionable advisory.
+
+    built-in の "MEMORY.md is XX KB" 警告は具体的行が分からない。本 check は
+    `MEMORY.md` の長行を line 番号 + chars で列挙し、どこを切り出すべきか
+    可視化する。`feedback_memory_style.md` の「index のみ・1 行 ~200 chars 以下」
+    に対する drift advisory。
+    """
+    for f in files:
+        if f.name != "MEMORY.md":
+            continue
+        try:
+            with open(f, encoding="utf-8") as fh:
+                lines = fh.readlines()
+        except (OSError, UnicodeDecodeError):
+            continue
+        long_lines: list[tuple[int, int]] = []
+        for i, line in enumerate(lines, 1):
+            n = len(line.rstrip("\n"))
+            if n > 200:
+                long_lines.append((i, n))
+        if not long_lines:
+            continue
+        long_lines.sort(key=lambda x: -x[1])
+        top = long_lines[:3]
+        top_str = ", ".join(f"L{ln}={n}c" for ln, n in top)
+        msg = (
+            f"[Memory Integrity] {f.parent.parent.name}/{f.name}: "
+            f"{len(long_lines)} lines >200 chars (top: {top_str}). "
+            f"Move details to topic files, keep MEMORY.md as index "
+            f"(feedback_memory_style.md)."
+        )
+        print(msg, file=sys.stderr)
+
+
 def _main() -> None:
     load_hook_input()
 
     files = _glob_memory_files()
     if not files:
         return
+
+    _check_memory_md_line_lengths(files)
 
     current = _compute_checksums(files)
     stored = _load_stored_checksums()

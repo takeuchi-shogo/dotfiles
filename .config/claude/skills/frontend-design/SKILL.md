@@ -1,11 +1,9 @@
 ---
 name: frontend-design
 description: >
-  Create or refine frontend interfaces with high design quality. Use for building new web components, pages,
-  artifacts, posters, or applications AND for refining existing UI code (polish, distill, critique, energize, calm).
-  Avoids generic AI aesthetics.
+  Build or refine frontend interfaces with distinctive design (polish/distill/critique/energize/calm)、generic AI 美学を避ける。
   Triggers: 'UI作って', 'ページ作成', 'コンポーネント', 'デザイン改善', 'UI磨いて', 'polish', 'distill', 'UIがダサい', 'AI臭い'.
-  Do NOT use for: UIレビュー/監査（use /web-design-guidelines）、パフォーマンス最適化（use /react-best-practices）、デザインシステム/アクセシビリティ/キーボード操作の体系設計（use /ui-ux-pro-max）。
+  Do NOT use for: UIレビュー (use /web-design-guidelines)、パフォーマンス (use /react-best-practices)、デザインシステム/a11y/キーボード (use /ui-ux-pro-max)。
 origin: self
 license: Complete terms in LICENSE.txt
 metadata:
