@@ -39,6 +39,37 @@ for path_str in json_files:
     print(f"ok  {path_str}")
 PY
 
+echo "==> Validate gate counts (deny-rules-catalog drift)"
+python3 - <<'PY'
+import json, re, pathlib, sys
+
+perm = json.loads(pathlib.Path(".config/claude/settings.json").read_text())["permissions"]
+live = {k: len(perm.get(k, [])) for k in ("deny", "allow", "ask")}
+
+cat = pathlib.Path(".config/claude/references/deny-rules-catalog.md").read_text()
+def declared(tier):
+    m = re.search(rf"^## {tier} \((\d+)\)", cat, re.M)
+    return int(m.group(1)) if m else None
+
+errors = []
+for tier, key in (("DENY", "deny"), ("ALLOW", "allow")):
+    d = declared(tier)
+    if d is None:
+        errors.append(f"deny-rules-catalog.md に '## {tier} (N)' ヘッダがない")
+    elif d != live[key]:
+        errors.append(f"{tier}: 台帳宣言={d} / settings.json 実数={live[key]} (drift)")
+if live["ask"] != 0:
+    errors.append(f"ask tier が {live['ask']} 件出現。deny-rules-catalog.md に ASK セクションを追加して同期せよ")
+
+if errors:
+    print("NG  gate count drift:")
+    for e in errors:
+        print("    - " + e)
+    print("    fix: deny-rules-catalog.md のヘッダ・合計・カテゴリ件数を settings.json に一致させる")
+    sys.exit(1)
+print(f"ok  deny-rules-catalog.md (deny={live['deny']} allow={live['allow']} ask={live['ask']})")
+PY
+
 echo "==> Validate shell scripts"
 while IFS= read -r file; do
   bash -n "$file"

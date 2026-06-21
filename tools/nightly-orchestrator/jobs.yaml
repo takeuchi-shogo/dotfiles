@@ -23,6 +23,10 @@ jobs:
     script: scripts/runtime/nightly/run-daily-report.sh
     timeout_sec: 720
     retry: 1
+  - name: weekly-report
+    script: scripts/runtime/nightly/run-weekly-report.sh
+    timeout_sec: 900
+    retry: 1
   - name: audit
     script: scripts/runtime/nightly/run-audit.sh
     timeout_sec: 1440   # bash 1200s + 余裕
