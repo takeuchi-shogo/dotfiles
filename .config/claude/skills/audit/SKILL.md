@@ -1,15 +1,9 @@
 ---
 name: audit
 description: >
-  コードベース全体の品質監査を実行し、優先度付き QUESTIONS.md を生成する。セキュリティ、アーキテクチャ、
-  パフォーマンス、テスト、コード品質を網羅的にスキャンし、file:line 参照と Answer フィールド付きの
-  構造化レポートを出力する。回答後は /spec や /epd に接続して改善を実装する。
-  Triggers: 'コードベース監査', 'codebase audit', '全体レビュー', 'QUESTIONS.md', '品質監査',
-  'コード監査', 'full audit', 'プロジェクト診断', '技術的負債の洗い出し', 'tech debt audit',
-  'コードの健全性', 'codebase health'.
-  Do NOT use for: 直近の差分レビュー (use /review)、ドキュメント鮮度チェック (use /check-health)、
-  AI ワークフロー監査 (use /ai-workflow-audit)、skill 定義の health/衝突検出 (use skill-audit)、
-  アーキテクチャ深化候補の診断 (use improve-codebase-architecture)。
+  コードベース全体の品質監査 → 優先度付き QUESTIONS.md (security/arch/perf/test/quality、file:line+Answer 付き)。
+  Triggers: 'コードベース監査', 'codebase audit', '全体レビュー', 'QUESTIONS.md', '品質監査', 'tech debt audit', 'プロジェクト診断'.
+  Do NOT use for: 差分レビュー (use /review)、ドキュメント鮮度 (use /check-health)、AI ワークフロー監査 (use /ai-workflow-audit)、skill 衝突 (use skill-audit)、アーキ深化 (use improve-codebase-architecture)。
 origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:

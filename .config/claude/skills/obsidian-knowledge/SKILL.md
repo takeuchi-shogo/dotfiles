@@ -1,6 +1,6 @@
 ---
 name: obsidian-knowledge
-description: "Obsidian Vault のナレッジ整理・検索・リンク化を行う。ノート検索、bulk タグ変更、リンク候補発見、Literature → Permanent Note 昇格、MOC 自動生成、意思決定の判断材料を vault から集約。Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート', 'Vault整理', 'ナレッジ整理', 'ノート整理', '関連ノート探して', 'リンク追加', 'permanent note 化', '意思決定の判断材料', 'decision brief', '判断材料を集めて'. Do NOT use for: コンテンツ生成 (use obsidian-content)、Vault 初期セットアップ (use obsidian-vault-setup)、Markdown syntax/properties/callouts (defer to obsidian:obsidian-markdown)、CLI commands (defer to obsidian:obsidian-cli)、Literature Note 作成 (use /digest)、思考の壁打ち・意思決定の構造化 (use /think decision)。"
+description: "Obsidian Vault のナレッジ整理・検索・リンク化・MOC 自動生成・意思決定の判断材料を vault から集約。Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート', 'Vault整理', 'ナレッジ整理', '判断材料を集めて'. Do NOT use for: コンテンツ生成 (use obsidian-content)、Vault 初期化 (use obsidian-vault-setup)、Markdown syntax (defer obsidian:obsidian-markdown)、CLI (defer obsidian:obsidian-cli)、Literature Note (use /digest)、思考の壁打ち (use /think)。"
 origin: self
 user-invocable: true
 metadata:

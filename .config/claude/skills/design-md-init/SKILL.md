@@ -1,6 +1,6 @@
 ---
 name: design-md-init
-description: プロジェクト root に DESIGN.md を配置する skill。grill-me を呼んで 47 branch のデザイン意図(vibe / color / typography / spacing / components / motion / a11y / brand voice)を引き出し、VoltAgent/awesome-design-md の 73 exemplar から vibe 一致の 1 件を WebFetch、grilling delta を上書きして配置。CLAUDE.md / AGENTS.md 末尾に参照段落を追記して agent に確実に読ませる。新規プロジェクトで UI 作業を始める前に 1 度だけ実行。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'DESIGN.md init', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; Google Stitch 用 DESIGN.md 生成 (use stitch-design-taste), 既存 UI の overhaul (use redesign-skill), DESIGN.md 既存時の改修 (手動で rm or rename), greenfield UI 実装そのもの (use taste-skill / frontend-design). Claude Code セッションから起動する (Codex には grill-me が無い、生成物のみ Codex セッションで読まれる).
+description: プロジェクト root に DESIGN.md を 1 度だけ配置 (grill-me で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き)。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; Stitch 用 (use stitch-design-taste), 既存 UI overhaul (use redesign-skill), 既存 DESIGN.md 改修 (手動 rm/rename), UI 実装 (use taste-skill / frontend-design).
 ---
 
 # design-md-init — Project DESIGN.md Bootstrap
