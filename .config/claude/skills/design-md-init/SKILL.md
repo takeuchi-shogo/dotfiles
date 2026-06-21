@@ -1,6 +1,6 @@
 ---
 name: design-md-init
-description: プロジェクト root に DESIGN.md を 1 度だけ配置 (grill-me で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き)。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; Stitch 用 (use stitch-design-taste), 既存 UI overhaul (use redesign-skill), 既存 DESIGN.md 改修 (手動 rm/rename), UI 実装 (use taste-skill / frontend-design).
+description: プロジェクト root に DESIGN.md を 1 度だけ配置 (grill-me で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き)。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; 既存 UI overhaul (use redesign-skill), 既存 DESIGN.md 改修 (手動 rm/rename), UI 実装 (use taste-skill / frontend-design).
 ---
 
 # design-md-init — Project DESIGN.md Bootstrap

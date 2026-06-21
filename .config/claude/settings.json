@@ -246,7 +246,6 @@
     "refactor-session": "off",
     "rewrite": "user-invocable-only",
     "salesforce-rest-api": "off",
-    "stitch-skill": "off",
     "tech-article-reproducibility": "user-invocable-only",
     "ubiquitous-language": "off",
     "vercel-composition-patterns": "off",
