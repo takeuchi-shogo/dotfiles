@@ -16,6 +16,7 @@ Output: JSON with additionalContext on stdout (if tests fail)
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shlex
@@ -133,10 +134,11 @@ def _detect_test_command() -> str | None:
     if os.path.exists(os.path.join(cwd, "go.mod")):
         return "go test ./..."
 
-    # Python — pytest if pyproject.toml or conftest.py exists
-    if os.path.exists(os.path.join(cwd, "pyproject.toml")) or os.path.exists(
-        os.path.join(cwd, "conftest.py")
-    ):
+    # Python — pytest if pyproject.toml/conftest.py exists and pytest is installed
+    if (
+        os.path.exists(os.path.join(cwd, "pyproject.toml"))
+        or os.path.exists(os.path.join(cwd, "conftest.py"))
+    ) and importlib.util.find_spec("pytest") is not None:
         return "python3 -m pytest --tb=short -q"
 
     # Rust

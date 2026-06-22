@@ -12,10 +12,17 @@ Usage:
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
 import sys
+
+
+def pytest_available() -> bool:
+    """Whether pytest is importable, so `python3 -m pytest` can actually run."""
+    return importlib.util.find_spec("pytest") is not None
+
 
 # ============================================================================
 # Test file naming conventions (shared with completion-gate.py)
@@ -245,9 +252,10 @@ def _detect_full_test_command(project_root: str) -> str | None:
     if os.path.exists(os.path.join(project_root, "go.mod")):
         return "go test ./..."
 
-    if os.path.exists(os.path.join(project_root, "pyproject.toml")) or os.path.exists(
-        os.path.join(project_root, "conftest.py")
-    ):
+    if (
+        os.path.exists(os.path.join(project_root, "pyproject.toml"))
+        or os.path.exists(os.path.join(project_root, "conftest.py"))
+    ) and pytest_available():
         return "python3 -m pytest --tb=short -q"
 
     if os.path.exists(os.path.join(project_root, "Cargo.toml")):
@@ -297,7 +305,7 @@ def build_selective_test_command(
         return "go test " + " ".join(sorted(packages))
 
     # Python
-    if exts & {".py"}:
+    if exts & {".py"} and pytest_available():
         py_files = [f for f in test_files if f.endswith(".py")]
         return "python3 -m pytest " + " ".join(py_files) + " --tb=short -q"
 
