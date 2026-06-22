@@ -6,6 +6,7 @@ let
 
   # nixpkgs 未収載の自前パッケージ。Go 1.26 必須 (buildGo126Module)。
   ghqr = pkgs.callPackage ../pkgs/ghqr.nix {};
+  crit = pkgs.callPackage ../pkgs/crit.nix {};
 in
 {
   home.username = userName;
@@ -44,6 +45,8 @@ in
     zoxide
     # 自前 derivation: GitHub 設定の best-practices 監査 CLI (microsoft/ghqr)
     ghqr
+    # 自前 derivation: AI エージェント出力のレビュー CLI (tomasz-tomczyk/crit)
+    crit
   ];
 
   # Phase B2.1: symlink.sh の block 1-5 を home-manager に移植 (D6 実証済み)。
@@ -104,6 +107,7 @@ in
     # B2.0 whitelist 翻訳表 (docs/plans/active/2026-04-25-phase-b2-whitelist.md) に基づく。
 
     # Top-level dotfiles (5)
+    ".crit.config.json" = outLink ".crit.config.json";  # crit global config (agent_cmd: Send to agent → Claude Code)
     ".cursorignore"     = outLink ".cursorignore";
     ".tmux.conf"        = outLink ".tmux.conf";
     ".worktreeinclude"  = outLink ".worktreeinclude";
