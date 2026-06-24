@@ -1,13 +1,13 @@
 ---
 status: active
-last_reviewed: 2026-04-23
+last_reviewed: 2026-06-25
 ---
 
 # Routing & Capability Observability — Closed Loop
 
 **Date**: 2026-04-11
 **Owner**: harness maintainer
-**Status**: proposed (not started)
+**Status**: proposed (not started) — 2026-06-25 ACRouter 検証で着手条件を明文化、data-regime 回復まで保留 (末尾「着手条件」セクション参照)
 **Size**: L (Wave 1 は M 相当、Wave 2-3 は spike 前提)
 **Origin**: Codex critique during `/absorb` of "Mixture of Experts Explained" (2026-04-11)
 
@@ -136,3 +136,17 @@ last_reviewed: 2026-04-23
 - `.config/claude/agents/autoevolve-core.md` — 改善サイクル
 - `docs/research/2026-04-11-moe-article-analysis.md` — MoE 記事分析の Codex 部分批評
 - Better Harness (eval hill-climbing) パターン — `docs/plans/2026-04-09-skill-eval-improvement-plan.md` と連動
+
+## 着手条件 — ACRouter 検証で確定 (2026-06-25)
+
+ACRouter (Agent-as-a-Router, arxiv 2606.22902) を本 plan の Wave 2-3 に取り込めるか `/absorb` で徹底検証した (Workflow 9 agents、over-engineering / low-data / minimal-loop の 3 レンズ adversarial)。結論: **現時点の着手は YAGNI**。3 レンズ全てが「フル ACRouter は data regime 不一致で不採用」に収斂した。
+
+**着手前提 (これが満たされるまで Wave 2-3 は保留)**:
+- `agent-invocations.jsonl` の model 多様性が回復する — 現状 996/1299 が `model=None`、記録分も sonnet 90% / opus は 73 日で 6 件 = 選択が Sonnet に収束し **learnable regret ≈ 0**
+- `score` フィールドに非ゼロの信号が乗る — 現状全 1299 件が 0.0 = F→C の Feedback が定数で情報量ゼロ
+
+**なぜ今は不要か**: ACRouter は「多モデル間で誤選択していた router」を起点とするベンチ (+15.3%) で光る手法。選択が収束した当 harness では削れる regret が無く、閉ループを作っても改善する母数がない。中心洞察 "information deficit > reasoning failure" は既に CLAUDE.md `<core_principles>` の "Scaffolding > Model" に codify 済み。
+
+着手するなら ACRouter 移植ではなく、本 plan Wave 2 を「計測のみ」スコープに絞る (`agent-invocation-logger.py` に outcome_quality を `/review` verdict から遅延付与) → 3 ヶ月貯めて「sonnet 偏重を覆すモデル差がデータに出るか」を先に検証 → 出なければ Build to Delete で計測ごと撤去する。
+
+詳細分析: `docs/research/2026-06-25-acrouter-absorb-analysis.md`

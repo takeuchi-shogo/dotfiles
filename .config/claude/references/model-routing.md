@@ -149,3 +149,7 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 4. **extra usage 有効化 + API rate 受け入れ** — 上記が不可な場合のみ
 
 判断ポイント: 起動前に「subscription pool で済むか、credit 消費か」を意識する。`/research` `/autonomous` の `claude -p` 多用はヘビー枠扱い、Codex/Gemini 委譲を先に検討する。Subagent (`Agent` tool) 経由は Claude Code 内部呼び出しで subscription 扱いのため影響なし。
+
+## Routing 改善の方針 (ACRouter 検証, 2026-06-25)
+
+routing の質は学習器の賢さではなく **どの実績信号を Context に運ぶか (information deficit)** で決まる (ACRouter, arxiv 2606.22902 — dimension 別実績統計を vanilla router に足すだけで +15.3%)。ただし当 harness の routing 決定は実測で **~90% Sonnet に収束**しており **learnable regret が小さい**。閉ループ化 (`routing-decisions.jsonl` / kNN Memory / fine-tune router) は **model 選択の分散が実測で増えてから** 着手する。それまで YAGNI。根拠: `docs/research/2026-06-25-acrouter-absorb-analysis.md`、着手条件: `docs/plans/2026-04-11-routing-observability-closed-loop.md`。
