@@ -15,7 +15,7 @@
 - **モデル階層の徹底 (メイン=Fable は指揮 / Opus=推論 / Sonnet=実装)**: メインは判断・統合・最深推論に限定。実装・探索・テストは `Agent(model:'sonnet')` に渡し並列実行、複数ファイル+verify は `Workflow({name:'delegate-implementation'})`、推論サブタスク (Plan 草案・設計分析・根因調査) は `Agent(model:'opus')`。組み込み agent (Explore/Plan/general-purpose) は `model` 明示必須。Tier 表: `references/model-routing.md`
 - **決定表の総索引**: `references/decision-tables-index.md` (どの判断はどこを見れば決まるか)
 - **コード変更後のレビュー**: `/review` skill に従う
-- **ブラッシュアップ系 (improve/debate/absorb) は cmux Worker 優先**: 設計判断・セカンドオピニオン・改善提案は `scripts/runtime/launch-worker.sh --model codex --task ...` で対話ラリー。サブエージェントに逃げない。CI/SSH 単独 (cmux 不在) では `codex exec --sandbox read-only` 直接呼び出しに fallback。`Skill(codex:rescue)` と `Agent(codex:codex-rescue)` は両方失敗事例あり (詳細: memory `feedback_codex_casual_use.md`)
+- **ブラッシュアップ系 (improve/debate/absorb) は cmux Worker で hub-and-spoke (デフォルト)**: 設計判断・セカンドオピニオン・比較は **複数モデルを spoke に並列起動 → メイン=conductor が統合** する (Sakana Fugu の conductor パターンを手作り再現)。subagent/Workflow に逃げない。骨子: `launch-worker.sh --model {codex,claude} --task ...` ×N → `collect-result.sh` で回収 → conductor が統合 (撤退条件つき結論)。詳細手順・運用 tip は `references/cmux-ecosystem.md`。単一視点で足る軽い委譲のみ単発 codex。CI/SSH 単独 (cmux 不在) は `codex exec --sandbox read-only` に fallback。`Skill(codex:rescue)`/`Agent(codex:codex-rescue)` は失敗事例あり (memory `feedback_codex_casual_use.md`)
 - 日本語で応答する
 
 ## コード設計原則

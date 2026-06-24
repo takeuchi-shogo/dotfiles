@@ -97,6 +97,41 @@ $CMUX list-workspaces
 
 **理由**: 同一 workspace に詰め込むとペインが極端に狭くなり、`read-screen` の出力が破損する。
 
+## hub-and-spoke (conductor = メイン Claude)
+
+ブラッシュアップ系 (debate / 設計判断 / セカンドオピニオン / 比較) のデフォルト型。
+複数モデルを spoke に並列起動し、メイン Claude が conductor として統合する。
+Sakana Fugu の「学習済み conductor が役割を割り当てて統合」を、conductor = メイン
+(ルールベース) で手作り再現したもの。
+
+### 手順
+
+```bash
+# 1. spoke を並列起動 (役割を割り当てる: 主張役 / 反証役 / 検証役 など)
+launch-worker.sh --model codex  --task '反証・検証の役割...'   # => workspace:N w-...-codex
+launch-worker.sh --model claude --task '主張・設計の役割...'   # => workspace:M w-...-claude
+
+# 2. 回収 (結果ファイル /tmp/cmux-results/<worker_id>.md を検出)。codex は exec で数分
+#    かかるので background 推奨
+collect-result.sh --workspace workspace:N --worker w-...-codex  --timeout 600
+collect-result.sh --workspace workspace:M --worker w-...-claude --timeout 600
+
+# 3. conductor = メインが両者を統合 → 撤退条件つき結論
+```
+
+### 運用 tip (実証 2026-06-24)
+
+- **env 不要**: `dispatch_logger.sh` が `DISPATCH_RESULT_DIR=/tmp/cmux-results` と
+  `DISPATCH_DONE_SIGNAL` のデフォルトを供給する。`launch-worker.sh` /
+  `collect-result.sh` は `DISPATCH_*` を export せず直接呼べる。
+- **claude worker は workspace が残る** (codex/gemini は成功時に `&& close-workspace`
+  で自動 close)。統合後に `cmux close-workspace --workspace workspace:M` で掃除する。
+- **gemini は sunset** (IneligibleTierError) なので実質 codex + claude の 2 spoke。
+- **独立 context が価値**: 各 spoke は別 workspace = 別 context なので視点が割れる。
+  単一モデルの fan-out (同一 context) より多様性が出る。
+- **多数決・無制限ラリーは品質を上げない** (「収束して見える誤答」を作る)。conductor
+  が撤退条件つきで統合判断するのが核心 — fan-out + judge より文脈適合ルーティング + 検証。
+
 ## cmux-team 4層アーキテクチャ
 
 ```
