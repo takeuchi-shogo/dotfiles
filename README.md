@@ -161,7 +161,6 @@ Cursor エディタの AI 設定。rules・skills・agents・hooks で構成。
 | [AGENTS.md](AGENTS.md) | エージェント向け contract |
 | [PLANS.md](PLANS.md) | 長時間・複数ステップ作業の plan contract |
 | [docs/agent-harness-contract.md](docs/agent-harness-contract.md) | Claude / Codex 共通ハーネス contract |
-| [docs/guides/ai-workflow-audit.md](docs/guides/ai-workflow-audit.md) | AI workflow の監査と昇格基準 |
 | [docs/playbooks/](docs/playbooks/) | 変更手順の playbook |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 

@@ -40,7 +40,7 @@
 
 ## Codex Skills
 - project-local skills は `.agents/skills/`、selected skill は compatibility のため `~/.codex/skills/` と `~/.agents/skills/` の両方へ公開する
-- 主な候補: `$codex-search-first` (実装前調査) / `$ai-workflow-audit` (harness 改善・横展開判断) / `$codex-obsidian-knowledge` (Codex から Obsidian Vault 検索・参照) / `$openai-frontend-prompt-workflow` (GPT-5.4 frontend prompt) / `$frontend-skill` (visually strong UI) / `$github-review-workflow` (PR / CI) / `$artifact-workflow` (doc/pdf/slides) / `$codex-verification-before-completion` / `$dotfiles-config-validation` / `$codex-checkpoint-resume` / `$codex-memory-capture` / `$codex-session-hygiene`
+- 主な候補: `$codex-search-first` (実装前調査) / `$codex-obsidian-knowledge` (Codex から Obsidian Vault 検索・参照) / `$openai-frontend-prompt-workflow` (GPT-5.4 frontend prompt) / `$frontend-skill` (visually strong UI) / `$github-review-workflow` (PR / CI) / `$artifact-workflow` (doc/pdf/slides) / `$codex-verification-before-completion` / `$dotfiles-config-validation` / `$codex-checkpoint-resume` / `$codex-memory-capture` / `$codex-session-hygiene`
 - Claude 向け skill を参照する場合は、Claude 固有の `Agent`、`AskUserQuestion`、slash command、plugin 前提をそのまま実行せず、文書として必要部分だけ採用する
 
 ## Frontend UI Work
@@ -53,7 +53,6 @@
 
 ## Mandatory Skill Usage
 - 実装前の調査: `$codex-search-first`
-- harness 改善・workflow 設計・他 repo への横展開判断: `$ai-workflow-audit`
 - 完了前の検証コマンド選定: `$dotfiles-config-validation`
 - 30 分以上 / handoff / resume / compact が絡む作業: `$codex-checkpoint-resume`
 - 同じ長時間タスクで thread 継続や再開判断: `$codex-session-hygiene`
