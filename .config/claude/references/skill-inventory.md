@@ -75,7 +75,6 @@ workflow 自体を改善するときに使う。
 | skill-audit | reviewer | Workflow |
 | skill-creator | pipeline+inversion | Workflow |
 | setup-background-agents | generator | Workflow |
-| ai-workflow-audit | reviewer | Workflow |
 
 ## Personal Ops
 

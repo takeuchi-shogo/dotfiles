@@ -3,7 +3,7 @@ name: audit
 description: >
   コードベース全体の品質監査 → 優先度付き QUESTIONS.md (security/arch/perf/test/quality、file:line+Answer 付き)。
   Triggers: 'コードベース監査', 'codebase audit', '全体レビュー', 'QUESTIONS.md', '品質監査', 'tech debt audit', 'プロジェクト診断'.
-  Do NOT use for: 差分レビュー (use /review)、ドキュメント鮮度 (use /check-health)、AI ワークフロー監査 (use /ai-workflow-audit)、skill 衝突 (use skill-audit)、アーキ深化 (use improve-codebase-architecture)。
+  Do NOT use for: 差分レビュー (use /review)、ドキュメント鮮度 (use /check-health)、skill 衝突 (use skill-audit)、アーキ深化 (use improve-codebase-architecture)。
 origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 metadata:
