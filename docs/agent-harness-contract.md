@@ -66,7 +66,7 @@ Runtime Charter に SOP を昇格させる際は、**Operational Contract** の 
 | **Exit Criteria** | 終了条件（成功/失敗の判定基準） | `git log -1` で commit 確認、CI が走り出す |
 
 3 要素を満たさない手順は Harness Logic 側（skill / agent）に留め、Runtime Charter には昇格させない。
-昇格判定は `docs/guides/ai-workflow-audit.md` の **SOP Promotion Criteria** を参照。
+昇格判定は上記3要素が全て明文化されていることを確認する。
 
 ## Durable State の3性質
 

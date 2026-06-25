@@ -75,7 +75,7 @@ if log_path.exists():
                 pass
 
 track_a = [
-    'ai-workflow-audit', 'autocover', 'refactor-session', 'setup-background-agents',
+    'autocover', 'refactor-session', 'setup-background-agents',
     'recall', 'analyze-tacit-knowledge', 'prompt-review', 'developer-onboarding',
 ]
 print('| skill | calls | recommendation |')

@@ -5,7 +5,7 @@ description: >
   Use when users want to create a skill from scratch, edit, or optimize an existing skill,
   run evals to test a skill, or benchmark skill performance.
   Triggers: 'skill-creator', 'スキル作成', 'create skill', 'スキル改善', 'skill eval', 'スキルのテスト'.
-  Do NOT use for: スキル一括監査（use /skill-audit）、AI ワークフロー監査（use /ai-workflow-audit）。
+  Do NOT use for: スキル一括監査（use /skill-audit）。
 origin: self
 metadata:
   pattern: pipeline+inversion

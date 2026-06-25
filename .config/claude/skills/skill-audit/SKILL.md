@@ -4,7 +4,7 @@ description: >
   Batch A/B benchmarking and health audit for skills. Runs A/B tests across multiple skills,
   detects description conflicts, and generates audit reports.
   Triggers: 'audit skills', 'benchmark skills', 'skill health check', 'retire unused skills', 'check skill quality', 'スキル監査'.
-  Do NOT use for: creating or editing individual skills (use skill-creator instead), コードベース監査（use /audit）、AI ワークフロー監査（use /ai-workflow-audit）。
+  Do NOT use for: creating or editing individual skills (use skill-creator instead), コードベース監査（use /audit）。
 origin: self
 metadata:
   pattern: reviewer
