@@ -35,6 +35,10 @@ jobs:
     script: scripts/runtime/nightly/run-skill-audit.sh
     timeout_sec: 1080
     retry: 1
+  - name: security-scan
+    script: scripts/runtime/nightly/run-security-scan.sh
+    timeout_sec: 600
+    retry: 1
   - name: plan-close-scan
     script: scripts/runtime/nightly/run-plan-close-scan.sh
     timeout_sec: 300
