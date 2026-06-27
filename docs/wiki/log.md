@@ -3,6 +3,49 @@
 > Append-only record of wiki operations. Each entry follows the format:
 > `## [YYYY-MM-DD] operation | Title`
 >
+
+## [2026-06-27] ingest-skip | Loop Engineering: The Anthropic Playbook (Osmani Orange Book, HuaShu 再編集 PDF)
+
+- ソース: Google Drive PDF (10p, HuaShu reformat of Addy Osmani "Orange Book" guide "Loop Engineering: Stop Asking Me What It Is", v260615)
+- 理由: loop-engineering family **SATURATED-pure-rehash** (N=15+, 過去 absorb 3件全て adopt 0、一次ソース Osmani は `comprehension-debt-policy.md` に出典付き absorb 済)
+- 根拠: `2026-06-17-loops-with-claude` (SATURATED-pure-rehash, 採用0) + `2026-06-20-loop-engineering-double-source` + `2026-06-20-loop-engineering-essay`。本書は同著者の同内容のより完全な版
+- per-concept 照合台帳 (全概念 → 既存 reference を名指し):
+  - 4層スタック (loop=harness+1) → cc-7-layer-memory-model.md + workflow tier
+  - 5つの動き (Discovery/Handoff/Verification/Persistence/Scheduling) → scheduling-decision-table.md + subagent-delegation-guide.md
+  - Generator/Evaluator 分離・懐疑 evaluator (GAN) → **Codex Review Gate** + trust-verification-policy.md + defense-matrix.md
+  - /goal 停止条件 → scheduling-decision-table.md Step 6.5
+  - Verification debt → verification-before-completion + workflow-guide.md
+  - Comprehension rot → comprehension-debt-policy.md (本書概念から命名済)
+  - Cognitive surrender / 判断=希少資源 / stay-the-engineer / 増幅器 → agency-safety-framework.md + core principle "Scaffolding > Model"
+  - Token blowout (per-run/daily/max-retry cap) → resource-bounds + cc-7-layer-memory-model.md
+  - Worktree 並列分離 → using-git-worktrees.md + agent-conflict-patterns.md
+  - 5アンチパターン (Nodding/Amnesiac/Manual/Blind/Tangled) → 各 move 欠落として既存 gate がカバー
+- semi-fresh 候補2点 (棄却): evaluator-should-act → ui-observer/design-reviewer agent が既実装 / 4コスト相互強化サイクル (Fig 6) → 概念図に留まる
+- スキップ判定: Phase 1.5 gate (pure-rehash) → user skip 選択
+
+## [2026-06-27] ingest (adopt=3, structural) | ai-driven-dev/framework AGENTS.md (project-memory skill asset)
+
+- ソース: github.com/ai-driven-dev/framework next `plugins/aidd-context/skills/02-project-memory/assets/AGENTS.md`
+- 判定: harness-engineering family、SATURATED-but-novel (delta=2)。ルールは大半既存カバー、価値は構造比較
+- 採用 3 件 (全 S): (1) instruction DRY を core_principle 化 (`principles.md`) — 新ルール追加前に既存照合・parallel 禁止 / (2) anti-sycophancy tripwire「あなたは正しい で始めない」を `prose.md` 応答作法に追記 / (3) Codex `.codex/AGENTS.md` に `## Behavior` 新設 (anti-sycophancy / evidence 全タスク化 / 最短決定行引用) + Editing Defaults に instruction-DRY clause
+- 構造発見: root `AGENTS.md` / `.codex/AGENTS.md` 両方に behavioral/communication 層が grep 0 だった。behavioral=ツール横断ゆえ root AGENTS.md でなく Codex global (`.codex/AGENTS.md`) に集約 (採用したメタルール「parallel 禁止」の自己適用)
+- 不採用: 残り全手法 rehash (answer-first/surgical/don't-guess/batch/fan-out 等は global CLAUDE.md core_principles + memory feedback で既存)。aidd_docs/ memory 構造は独自 memory system で N/A
+- 検証: `task validate-configs` PASS。validate-symlinks の FAIL は `.claude/settings.json` 実ファイル化 (本変更と無関係の既存環境状態)
+
+- ソース: movez.substack.com 「How to run Claude on autopilot in 14 steps」(/loop, Routines, Auto Mode の overview listicle)
+- 判定: automation-stack / claude-code-tips family、SATURATED-borderline (N=15+, delta=1)。ユーザー continue 選択でフル workflow 実行も**記事採用 0 件**
+- per-method 照合台帳 (14手法、13 rehash + 1 ambiguous):
+  - /loop / 自然言語スケジュール / cron式 / loop制約4種 → 組込 `loop` skill + `scheduling-decision-table.md` (rehash)
+  - /loop+/goal → fable5-14steps が table に /goal 行追加済 (rehash)
+  - Desktop tasks / scheduler選択ルール → `scheduling-decision-table.md` (rehash)
+  - token budget / permission設定(allow/deny/.claudeignore/audit) → boris-30tips #7 + claudeignore-template.md + auto-accept-policy.md (rehash)
+  - Cloud Routines (schedule/API/GitHub trigger) / Routine安全境界 → `2026-05-14-claude-code-routines` M1/M2/M8 (rehash)
+  - Skills+Dynamic Workflows 合成 → `2026-06-03-dynamic-workflows` + routines M6 (rehash)
+  - **Auto Mode (AI分類permission)** → ambiguous: `rejected: LLM permission classifier` (cursor-run-mode #4 / fable5-14steps) だが公式1st-party の platform delta
+- Phase 2.5: Codex (codex exec read-only) + claude-code-guide grounding。Gemini は IneligibleTierError (sunset) で degraded → grounding 代替
+- Auto Mode 結論: Codex+grounding 一致で **reject 維持** (deterministic deny+hooks > LLM classifier、監査可能性/false-negative)。記事の「Pro 不可」主張は grounding で誤りと判明 (公式 docs "All plans")
+- validation-only 1件採用: `auto-accept-policy.md` に Auto Mode 不採用の judgment anchor 追記 (公式実在・全プラン・research preview を grounding 付きで記録)
+- スキップ判定: Phase 1.5 gate (borderline) → continue → adopt 0 + validation-only 1
 > Operations: `ingest` (absorb), `compile` (compile-wiki), `update` (compile-wiki update),
 > `lint` (compile-wiki lint), `query` (compile-wiki query), `index` (compile-wiki index)
 
