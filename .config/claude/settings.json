@@ -408,6 +408,16 @@
             "statusMessage": "Input guard..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/scripts/runtime/memory-vec-recall-hook.py",
+            "timeout": 10,
+            "statusMessage": "Vault recall..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
