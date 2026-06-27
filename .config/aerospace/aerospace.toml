@@ -257,3 +257,7 @@ run = 'move-node-to-workspace 3'
 [[on-window-detected]]
 if.app-id = 'com.cmuxterm.app'
 run = ['move-node-to-workspace 4', 'layout accordion']
+
+[[on-window-detected]]
+if.app-id = 'com.stablyai.orca'
+run = 'move-node-to-workspace R'

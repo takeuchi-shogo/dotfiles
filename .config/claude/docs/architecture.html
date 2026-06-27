@@ -449,17 +449,15 @@
         <li><b>graphql-expert / buf-protobuf</b> — スキーマ設計</li>
         <li><b>edge-case-analysis</b> — 異常系・境界値</li>
         <li><b>webapp-testing</b> — agent-browser テスト</li>
-        <li><b>security-review / security-scan</b> — 監査</li>
+        <li><b>security-scan</b> — 監査</li>
       </ul>
     </div>
     <div class="card accent-amber">
       <h4>🔧 Automation / Meta</h4>
       <p class="muted">ワークフロー自体を改善</p>
       <ul class="clean">
-        <li><b>autonomous</b> — マルチセッション自律実行</li>
         <li><b>create-pr-wait</b> — PR→CI 監視→自動修正</li>
         <li><b>skill-creator / skill-audit</b> — skill 作成・監査</li>
-        <li><b>ai-workflow-audit</b> — AI ワークフロー監査</li>
         <li><b>promote-learnings / auto-triage</b> — 学習昇格</li>
         <li><b>eureka</b> — ブレイクスルー記録</li>
       </ul>
@@ -469,7 +467,7 @@
       <p class="muted">GTD・知識管理（coding の前提にしない）</p>
       <ul class="clean">
         <li><b>daily-report / weekly-review</b> — 振り返り</li>
-        <li><b>morning-briefing / timekeeper</b> — 朝計画</li>
+        <li><b>timekeeper</b> — 朝計画</li>
         <li><b>obsidian-knowledge / digest</b> — ナレッジ整理</li>
         <li><b>note / decision</b> — 即時記録</li>
         <li><b>think / challenge</b> — 思考の壁打ち</li>
@@ -498,7 +496,7 @@
 
 <!-- ============ AGENTS ============ -->
 <section id="agents">
-  <h2><span class="num">04</span>Agents — 専門実行コンテキスト（23）</h2>
+  <h2><span class="num">04</span>Agents — 専門実行コンテキスト（21）</h2>
   <p class="lead">
     Agents は隔離されたサブエージェント。Skills が知識を提供し、Agents がそれを実行する。
     別途 <b>10 個が <code>_archived/</code></b> に退避（30 日評価後に削除する Harness Stability 方針）。
@@ -554,14 +552,6 @@
       <ul class="clean">
         <li><b>gemini-explore</b> — Gemini 1M 分析・リサーチ</li>
       </ul>
-    </div>
-    <div class="card accent-purple">
-      <h4>♻️ AutoEvolve / Meta <span class="tag">2</span></h4>
-      <ul class="clean">
-        <li><b>autoevolve-core</b> — Analyze / Improve / Garden 統合</li>
-        <li><b>meta-analyzer</b> — セッション分析・改善候補抽出</li>
-      </ul>
-      <p style="margin-top:10px;" class="muted">自己改善ループの実行主体。local データのみ参照し master を直接変更しない。</p>
     </div>
     <div class="card">
       <h4>📦 _archived <span class="tag">10</span></h4>

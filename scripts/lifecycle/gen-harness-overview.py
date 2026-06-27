@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+"""Generate docs/share/ai-harness-overview.html from live sources.
+
+旧ファイルは手書きスナップショットで、skill/agent の追加・退役のたびに drift し
+削除済みエントリ (幽霊) と手書きハードコード件数が腐っていた。本スクリプトは
+.config/claude/{skills,agents}/ と settings.json を single source of truth として
+毎回 HTML を再生成する。幽霊は dir に存在しないので自動的に消え、件数は計算で出る。
+
+Usage:
+  python3 scripts/lifecycle/gen-harness-overview.py [--check]
+
+  --check : 再生成して既存ファイルと差分があれば exit 1 (CI/nightly drift 検出用)。
+
+grouping signal は frontmatter に無い (category 94/102 空、pattern 断片化) ため、
+編集的グループは作らずアルファベット順のフラットリストにする。導出できない構造は
+捏造しない — name はディレクトリ名 (= 呼び出し名の正本)、説明は best-effort 1 文。
+"""
+
+from __future__ import annotations
+
+import html
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[2]
+SKILLS_DIR = REPO / ".config/claude/skills"
+AGENTS_DIR = REPO / ".config/claude/agents"
+SETTINGS = REPO / ".config/claude/settings.json"
+OUT = REPO / "docs/share/ai-harness-overview.html"
+
+
+def first_sentence(text: str, limit: int = 110) -> str:
+    """説明の冒頭 1 文を取り出す ('。' / '. ' / 改行で切り、長ければ truncate)。"""
+    text = " ".join(text.split())
+    for sep in ("。", ". "):
+        idx = text.find(sep)
+        if 0 <= idx <= limit:
+            return text[: idx + (1 if sep == "。" else 0)].strip()
+    return (text[:limit].rstrip() + "…") if len(text) > limit else text
+
+
+def _folded_lines(block: list[str], base_indent: int) -> str:
+    """folded/literal scalar: base_indent より深い後続行だけを連結する。"""
+    out = []
+    for nxt in block:
+        if not nxt.strip():
+            out.append("")
+        elif (len(nxt) - len(nxt.lstrip())) > base_indent:
+            out.append(nxt.strip())
+        else:
+            break
+    return " ".join(out).strip()
+
+
+def _frontmatter(md: Path) -> list[str]:
+    """frontmatter (先頭 '---' と 2 つ目 '---' の間) を返す。無ければ空リスト。"""
+    lines = md.read_text(encoding="utf-8", errors="replace").splitlines()
+    if not lines or lines[0].strip() != "---":
+        return []
+    try:
+        end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+    except StopIteration:
+        return []
+    return lines[1:end]
+
+
+def extract_description(md: Path) -> str:
+    """frontmatter の description を tolerant に取り出す (PyYAML 不在前提)。
+
+    対応: 1) quoted single-line  2) folded '>' / literal '|'  3) plain。
+    パースに失敗しても空文字を返すだけ — name は dir 名なので listing は壊れない。
+    """
+    fm = _frontmatter(md)
+    for i, line in enumerate(fm):
+        if not line.startswith("description:"):
+            continue
+        rest = line[len("description:") :].strip()
+        if rest in (">", "|", ">-", "|-", ">+", "|+"):
+            base_indent = len(line) - len(line.lstrip())
+            return first_sentence(_folded_lines(fm[i + 1 :], base_indent))
+        if rest and rest[0] in "\"'":
+            quote = rest[0]
+            close = rest[1:].find(quote)
+            return first_sentence(rest[1:] if close < 0 else rest[1 : close + 1])
+        return first_sentence(rest)
+    return ""
+
+
+def collect_skills() -> list[tuple[str, str]]:
+    items = []
+    for d in sorted(SKILLS_DIR.iterdir()):
+        skill_md = d / "SKILL.md"
+        if d.is_dir() and skill_md.is_file():
+            items.append((d.name, extract_description(skill_md)))
+    return items
+
+
+def collect_agents() -> list[tuple[str, str]]:
+    items = []
+    for f in sorted(AGENTS_DIR.glob("*.md")):
+        if f.stem.upper() == "README":
+            continue
+        items.append((f.stem, extract_description(f)))
+    return items
+
+
+def collect_plugins() -> list[str]:
+    data = json.loads(SETTINGS.read_text(encoding="utf-8"))
+    return sorted(
+        k.split("@")[0] for k, v in data.get("enabledPlugins", {}).items() if v
+    )
+
+
+def git_rev() -> str:
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(REPO), "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        return r.stdout.strip() if r.returncode == 0 else "unknown"
+    except (subprocess.TimeoutExpired, OSError):
+        return "unknown"
+
+
+def render(skills, agents, plugins) -> str:
+    def entries(items):
+        rows = []
+        for name, desc in items:
+            n = html.escape(name)
+            if desc:
+                rows.append(
+                    f'      <li class="entry"><code>{n}</code>'
+                    f"<span>{html.escape(desc)}</span></li>"
+                )
+            else:
+                rows.append(f'      <li class="entry"><code>{n}</code></li>')
+        return "\n".join(rows)
+
+    def plugin_entries(names):
+        return "\n".join(
+            f'      <li class="entry"><code>{html.escape(n)}</code></li>' for n in names
+        )
+
+    rev = git_rev()
+    return f"""<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Harness Overview</title>
+<!-- GENERATED by scripts/lifecycle/gen-harness-overview.py — DO NOT EDIT BY HAND.
+     再生成: python3 scripts/lifecycle/gen-harness-overview.py -->
+<style>
+  :root {{ --bg:#0f1115; --panel:#171a21; --txt:#e6e8ec; --txt-faint:#9aa3b2;
+          --accent:#7aa2f7; --border:#262b36; }}
+  * {{ box-sizing:border-box; }}
+  body {{ margin:0; background:var(--bg); color:var(--txt);
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         line-height:1.6; }}
+  .wrap {{ max-width:960px; margin:0 auto; padding:40px 20px 80px; }}
+  h1 {{ font-size:1.6rem; margin:0 0 4px; }}
+  .meta {{ color:var(--txt-faint); font-size:.82rem; margin-bottom:28px; }}
+  .group {{ background:var(--panel); border:1px solid var(--border);
+           border-radius:10px; margin:0 0 16px; padding:14px 18px; }}
+  .group > summary {{ cursor:pointer; font-weight:600; font-size:1.02rem;
+                     display:flex; align-items:center; }}
+  .g-n {{ color:var(--txt-faint); font-size:.74rem; margin-left:auto; }}
+  ul.entries {{ list-style:none; margin:12px 0 0; padding:0; }}
+  .entry {{ padding:5px 0; border-top:1px solid var(--border);
+           display:flex; gap:10px; flex-wrap:wrap; }}
+  .entry:first-child {{ border-top:none; }}
+  .entry code {{ color:var(--accent); font-size:.86rem; flex:0 0 auto; }}
+  .entry span {{ color:var(--txt-faint); font-size:.82rem; }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AI Harness Overview</h1>
+  <p class="meta">.config/claude/{{skills,agents}} + settings.json から自動生成
+    (rev {rev})。手書き禁止 — 編集は SKILL.md / agent 定義側で行い再生成する。</p>
+
+  <details open class="group">
+    <summary>Skills <span class="g-n">{len(skills)}</span></summary>
+    <ul class="entries">
+{entries(skills)}
+    </ul>
+  </details>
+
+  <details open class="group">
+    <summary>Agents <span class="g-n">{len(agents)}</span></summary>
+    <ul class="entries">
+{entries(agents)}
+    </ul>
+  </details>
+
+  <details open class="group">
+    <summary>Plugins <span class="g-n">{len(plugins)}</span></summary>
+    <ul class="entries">
+{plugin_entries(plugins)}
+    </ul>
+  </details>
+</div>
+</body>
+</html>
+"""
+
+
+def main() -> None:
+    check = "--check" in sys.argv[1:]
+    skills = collect_skills()
+    agents = collect_agents()
+    plugins = collect_plugins()
+    rendered = render(skills, agents, plugins)
+
+    if check:
+        current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
+        if current != rendered:
+            print(
+                f"DRIFT: {OUT} is stale — run gen-harness-overview.py", file=sys.stderr
+            )
+            sys.exit(1)
+        print(f"ok: {OUT} up to date")
+        return
+
+    OUT.write_text(rendered, encoding="utf-8")
+    print(
+        f"wrote {OUT}: skills={len(skills)} agents={len(agents)} plugins={len(plugins)}"
+    )
+
+
+if __name__ == "__main__":
+    main()
