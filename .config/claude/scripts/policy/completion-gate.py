@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -1071,9 +1072,245 @@ def _check_clean_state() -> str | None:
         return None
 
 
+_CLAIM_GATE_MARKER_DIR = os.path.join(
+    os.environ.get(
+        "CLAUDE_SESSION_STATE_DIR",
+        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
+    ),
+    "claim-gate",
+)
+
+_CLAIM_VERB_RE = re.compile(
+    r"(?:書いた|書きました|書き出した|書き込んだ|作成した|作成しました"
+    r"|生成した|生成しました|保存した|保存しました|作った|作りました"
+    r"|出力した|出力しました|配置した|配置しました)"
+    r"(?!い|たい|ら|り|ほうが|方が|べき|だけ|もの|そう)"
+    r"|実在(?:を)?確認|確認済み|ls\s*で.*確認|stat\s*で.*確認"
+    r"|\bwrote\b|\bcreated\b|\bsaved\b|\bgenerated the file\b|\bverified\b.*\bfile\b",
+    re.IGNORECASE,
+)
+
+_ABSENCE_RE = re.compile(
+    r"存在しない|存在せず|見つから|不在|なかった|ありません|消えて|削除"
+    r"|does not exist|doesn'?t exist|not found|no such|absent|missing"
+    r"|never (?:written|created)",
+    re.IGNORECASE,
+)
+
+_SHELL_CMD_TOKENS = frozenset(
+    {
+        "ls",
+        "cat",
+        "stat",
+        "grep",
+        "rg",
+        "ag",
+        "fd",
+        "head",
+        "tail",
+        "sed",
+        "awk",
+        "find",
+        "cp",
+        "mv",
+        "rm",
+        "echo",
+        "touch",
+        "mkdir",
+        "chmod",
+        "diff",
+        "wc",
+        "sort",
+        "uniq",
+        "jq",
+        "bat",
+        "less",
+        "more",
+        "tree",
+        "open",
+        "git",
+        "python3",
+        "node",
+        "cd",
+    }
+)
+
+_BACKTICK_PATH_RE = re.compile(r"`([^`\n]+)`")
+_BARE_PATH_RE = re.compile(r"(?<![\w`:/])((?:/|~/)[\w./\-]+\.\w{1,8})")
+_TRANSCRIPT_TAIL_BYTES = 262144
+
+
+def _normalize_claim_path(raw: str) -> str | None:
+    """Normalize a mentioned path to an abspath; None if it is not path-like.
+
+    Rejects backticked commands (`ls -la /x`, `stat <path>`), URLs, and
+    placeholders — these share the path surface but are not file claims.
+    """
+    p = raw.strip().strip("'\"() 　")
+    if "/" not in p or not p:
+        return None
+    if "://" in p or "<" in p or ">" in p:
+        return None
+    if re.search(r"\s", p):
+        first = p.split()[0].lstrip("$")
+        if " -" in p or first in _SHELL_CMD_TOKENS:
+            return None
+    expanded = os.path.expanduser(p)
+    if not os.path.isabs(expanded):
+        expanded = os.path.join(os.getcwd(), expanded)
+    return os.path.normpath(expanded)
+
+
+def _parse_transcript_for_claims(transcript_path: str) -> tuple[set[str], str]:
+    """Return (paths written via Write tool_use, text of the last assistant turn).
+
+    Only the final assistant turn's text is kept — that is where a wrap-up
+    completion claim lives — which bounds false positives from earlier mentions.
+    """
+    try:
+        with open(transcript_path, "rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            size = fh.tell()
+            fh.seek(max(0, size - _TRANSCRIPT_TAIL_BYTES))
+            blob = fh.read()
+    except OSError:
+        return set(), ""
+
+    lines = blob.decode("utf-8", errors="replace").split("\n")
+    if size > _TRANSCRIPT_TAIL_BYTES and lines:
+        lines = lines[1:]
+
+    written: set[str] = set()
+    last_assistant = ""
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        msg = entry.get("message")
+        if not isinstance(msg, dict) or msg.get("role") != "assistant":
+            continue
+        content = msg.get("content")
+        if not isinstance(content, list):
+            continue
+        texts: list[str] = []
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            btype = block.get("type")
+            if btype == "tool_use" and block.get("name") in ("Write", "NotebookEdit"):
+                fp = (block.get("input") or {}).get("file_path")
+                norm = _normalize_claim_path(fp) if isinstance(fp, str) else None
+                if norm:
+                    written.add(norm)
+            elif btype == "text" and isinstance(block.get("text"), str):
+                texts.append(block["text"])
+        if texts:
+            last_assistant = "\n".join(texts)
+    return written, last_assistant
+
+
+def _find_unbacked_claimed_paths(text: str, written: set[str]) -> list[str]:
+    """Paths claimed (near a claim verb) but absent on disk AND never written."""
+    paras = re.split(r"\n\s*\n", text)
+    has_verb = [bool(_CLAIM_VERB_RE.search(p)) for p in paras]
+    has_absence = [bool(_ABSENCE_RE.search(p)) for p in paras]
+
+    flagged: list[str] = []
+    seen: set[str] = set()
+    for i, para in enumerate(paras):
+        near_claim = (
+            has_verb[i]
+            or (i > 0 and has_verb[i - 1])
+            or (i + 1 < len(paras) and has_verb[i + 1])
+        )
+        if not near_claim:
+            continue
+        near_absence = (
+            has_absence[i]
+            or (i > 0 and has_absence[i - 1])
+            or (i + 1 < len(paras) and has_absence[i + 1])
+        )
+        if near_absence:
+            continue
+        candidates = [m.group(1) for m in _BACKTICK_PATH_RE.finditer(para)]
+        candidates += [m.group(1) for m in _BARE_PATH_RE.finditer(para)]
+        for raw in candidates:
+            norm = _normalize_claim_path(raw)
+            if not norm or norm in seen:
+                continue
+            if os.path.exists(norm) or norm in written:
+                continue
+            seen.add(norm)
+            flagged.append(norm)
+    return flagged
+
+
+def _check_fabricated_claims(data: dict) -> dict | None:
+    """Block stop once if the final message claims file writes that never happened."""
+    transcript_path = data.get("transcript_path") if isinstance(data, dict) else None
+    if not transcript_path or not os.path.isfile(transcript_path):
+        return None
+
+    written, last_text = _parse_transcript_for_claims(transcript_path)
+    if not last_text or not _CLAIM_VERB_RE.search(last_text):
+        return None
+
+    missing = _find_unbacked_claimed_paths(last_text, written)
+    if not missing:
+        return None
+
+    shown = "\n".join(f"  - {p}" for p in missing[:8])
+    extra = f"\n  ...他 {len(missing) - 8} 件" if len(missing) > 8 else ""
+    body = (
+        "[Claim Verification Gate] 完了主張がツール実行と一致しません。\n"
+        "最終メッセージで「書いた / 作成した / 確認済み」と述べているパスのうち、"
+        "ディスクに存在せず Write も実行されていないものがあります:\n"
+        f"{shown}{extra}\n\n"
+    )
+
+    session_id = str(data.get("session_id", "nosid"))
+    marker = os.path.join(_CLAIM_GATE_MARKER_DIR, f"blocked-{session_id}")
+    if os.path.exists(marker):
+        return None
+
+    try:
+        os.makedirs(_CLAIM_GATE_MARKER_DIR, exist_ok=True)
+        with open(marker, "w", encoding="utf-8") as fh:
+            fh.write("1")
+    except OSError as exc:
+        print(f"[completion-gate] claim marker write failed: {exc}", file=sys.stderr)
+        return None
+
+    return {
+        "decision": "block",
+        "reason": body
+        + (
+            "対応: (1) 実際に Write で作成する、または "
+            "(2) `stat <path>` で不在を確認し主張を訂正してから停止する。\n"
+            "ツール出力テキストの成功表示・exit code を証拠にしないこと。"
+        ),
+    }
+
+
 def main() -> None:
     if os.environ.get("CLAUDE_SKIP_TEST_GATE") == "1":
         return
+
+    hook_data: dict = {}
+    if not sys.stdin.isatty():
+        try:
+            hook_data = json.load(sys.stdin)
+        except (json.JSONDecodeError, EOFError, ValueError):
+            hook_data = {}
+    if hook_data:
+        claim_result = _check_fabricated_claims(hook_data)
+        if claim_result is not None:
+            json.dump(claim_result, sys.stdout)
+            return
 
     retries = _get_retry_count()
 
