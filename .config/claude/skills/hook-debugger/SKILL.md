@@ -86,6 +86,7 @@ grep -A 5 'timeout' ~/.claude/settings.json ~/.claude/settings.local.json
 
 - **shebang 行**: `#!/usr/bin/env python3` がないと実行環境が不定になる
 - **stdin の消費**: PreToolUse/PostToolUse は stdin から JSON を読む。`input()` で先に読むと `json.load(sys.stdin)` が空になる
+- **イベント境界**: Python や shell が直接 agent-memory 等へ書く I/O は Write/Edit tool ではないため、PostToolUse(Write|Edit) は発火しない。session learner や集約処理は Stop/SessionEnd hook か明示的な emit 経路で扱う
 - **PATH の違い**: hook 実行時の PATH はユーザーのシェルと異なる場合がある。フルパス推奨
 - **並行実行**: 同じイベントに複数の hook が登録されている場合、実行順序は保証されない
 - **SKILL.md hooks vs settings.json hooks**: SKILL.md の hooks はスキルが active な時のみ有効。settings.json はグローバル
