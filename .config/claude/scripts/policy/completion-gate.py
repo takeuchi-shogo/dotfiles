@@ -1081,11 +1081,58 @@ _CLAIM_GATE_MARKER_DIR = os.path.join(
 )
 
 _CLAIM_VERB_RE = re.compile(
-    r"(?:書いた|書き出した|書き込んだ|作成した|作成しました|生成した|保存した|作った)"
+    r"(?:書いた|書きました|書き出した|書き込んだ|作成した|作成しました"
+    r"|生成した|生成しました|保存した|保存しました|作った|作りました"
+    r"|出力した|出力しました|配置した|配置しました)"
     r"(?!い|たい|ら|り|ほうが|方が|べき|だけ|もの|そう)"
     r"|実在(?:を)?確認|確認済み|ls\s*で.*確認|stat\s*で.*確認"
     r"|\bwrote\b|\bcreated\b|\bsaved\b|\bgenerated the file\b|\bverified\b.*\bfile\b",
     re.IGNORECASE,
+)
+
+_ABSENCE_RE = re.compile(
+    r"存在しない|存在せず|見つから|不在|なかった|ありません|消えて|削除"
+    r"|does not exist|doesn'?t exist|not found|no such|absent|missing"
+    r"|never (?:written|created)",
+    re.IGNORECASE,
+)
+
+_SHELL_CMD_TOKENS = frozenset(
+    {
+        "ls",
+        "cat",
+        "stat",
+        "grep",
+        "rg",
+        "ag",
+        "fd",
+        "head",
+        "tail",
+        "sed",
+        "awk",
+        "find",
+        "cp",
+        "mv",
+        "rm",
+        "echo",
+        "touch",
+        "mkdir",
+        "chmod",
+        "diff",
+        "wc",
+        "sort",
+        "uniq",
+        "jq",
+        "bat",
+        "less",
+        "more",
+        "tree",
+        "open",
+        "git",
+        "python3",
+        "node",
+        "cd",
+    }
 )
 
 _BACKTICK_PATH_RE = re.compile(r"`([^`\n]+)`")
@@ -1102,8 +1149,12 @@ def _normalize_claim_path(raw: str) -> str | None:
     p = raw.strip().strip("'\"() 　")
     if "/" not in p or not p:
         return None
-    if re.search(r"\s", p) or "://" in p or "<" in p or ">" in p:
+    if "://" in p or "<" in p or ">" in p:
         return None
+    if re.search(r"\s", p):
+        first = p.split()[0].lstrip("$")
+        if " -" in p or first in _SHELL_CMD_TOKENS:
+            return None
     expanded = os.path.expanduser(p)
     if not os.path.isabs(expanded):
         expanded = os.path.join(os.getcwd(), expanded)
@@ -1166,6 +1217,7 @@ def _find_unbacked_claimed_paths(text: str, written: set[str]) -> list[str]:
     """Paths claimed (near a claim verb) but absent on disk AND never written."""
     paras = re.split(r"\n\s*\n", text)
     has_verb = [bool(_CLAIM_VERB_RE.search(p)) for p in paras]
+    has_absence = [bool(_ABSENCE_RE.search(p)) for p in paras]
 
     flagged: list[str] = []
     seen: set[str] = set()
@@ -1176,6 +1228,13 @@ def _find_unbacked_claimed_paths(text: str, written: set[str]) -> list[str]:
             or (i + 1 < len(paras) and has_verb[i + 1])
         )
         if not near_claim:
+            continue
+        near_absence = (
+            has_absence[i]
+            or (i > 0 and has_absence[i - 1])
+            or (i + 1 < len(paras) and has_absence[i + 1])
+        )
+        if near_absence:
             continue
         candidates = [m.group(1) for m in _BACKTICK_PATH_RE.finditer(para)]
         candidates += [m.group(1) for m in _BARE_PATH_RE.finditer(para)]

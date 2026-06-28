@@ -129,6 +129,34 @@ def test_ignores_url(tmp_path):
     assert gate._check_fabricated_claims(_data(tmp_path, tr)) is None
 
 
+def test_ignores_absence_confirmation(tmp_path):
+    missing = tmp_path / "phantom.md"
+    for phrase in (
+        "は存在しないことを確認済みです",
+        "は見つからなかった",
+        " does not exist",
+    ):
+        text = f"`{missing}`{phrase}。"
+        tr = _transcript(tmp_path, _assistant_text(text))
+        assert gate._check_fabricated_claims(_data(tmp_path, tr)) is None, phrase
+
+
+def test_blocks_fabricated_path_with_space(tmp_path):
+    missing = tmp_path / "My Report.md"
+    text = f"`{missing}` を作成した。"
+    tr = _transcript(tmp_path, _assistant_text(text))
+    result = gate._check_fabricated_claims(_data(tmp_path, tr))
+    assert result is not None and result.get("decision") == "block"
+
+
+def test_blocks_polite_past_verb(tmp_path):
+    missing = tmp_path / "polite.md"
+    text = f"`{missing}` を保存しました。"
+    tr = _transcript(tmp_path, _assistant_text(text))
+    result = gate._check_fabricated_claims(_data(tmp_path, tr))
+    assert result is not None and result.get("decision") == "block"
+
+
 def test_second_block_allows_to_bound_loop(tmp_path):
     missing = tmp_path / "ghost.md"
     text = f"`{missing}` を作成した。"
