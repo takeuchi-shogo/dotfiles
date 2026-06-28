@@ -43,9 +43,9 @@ TOP_K = 3
 STDERR_LOG_CAP = 500
 
 # Intent gate. Japanese terms are matched as plain substrings (\b misbehaves on
-# Japanese — see memory). English terms get an ASCII boundary guard so "design"
-# does not fire inside unrelated tokens. Mirrors the CLAUDE.md judgment/decision
-# /research condition that this hook makes deterministic.
+# Japanese — see memory). English terms get a leading ASCII boundary guard so
+# "decide" does not fire inside "undecided". Mirrors the CLAUDE.md judgment
+# /decision/research condition that this hook makes deterministic.
 _JP_TERMS = (
     "どっち",
     "どちら",
