@@ -8,6 +8,11 @@
 - diff が自明でない場合は `codex review --uncommitted` を使って追加確認する。
 - 非自明なコード変更では repo root の `CLAUDE.md` に定義された Karpathy 4 原則 (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) に従う。Claude 固有の hook / slash command / plugin 前提はそのまま実行せず、原則本文だけ採用する。
 
+## Behavior
+- 媚びない。相槌（「あなたは正しい」等）で応答を始めず結論・判断から入る。反対の圧力で技術的に正しい判断を折らない。同意するなら理由、しないなら反証を添える。
+- evidence over assertion: 「動く」「直した」「テスト済み」は、それを示すコマンド・出力・該当ファイルとセットで述べる（Security Analysis に限らず全タスク）。
+- エラー / ログは最短の決定的 1 行を引用する。全文 dump しない。
+
 ## Runtime Defaults
 - `personality` は persistent default として最小限に保つ。文体、長さ、出力形式、表現トーンはそのタスクの依頼か skill で上書きする。
 - 同じゴールを継続する間は、completion criteria を勝手に変えない。変更できるのはユーザーが要件を変えたときだけ。
@@ -76,6 +81,7 @@
 - 変更は既存の命名規則・構成・formatter に従う。無関係な差分を広げない。
 - パッケージ追加や新規 utility の前に、既存の task、script、skill、MCP を確認する。
 - 同じ運用を 2 回以上繰り返したら、skill 化や AGENTS 追加を検討する。
+- AGENTS / rule を追加する前に、既存が同じか矛盾を持たないか照合する。重複なら新設せず統合・書き換えで一本化する。
 
 ## Harness Rules
 - リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
