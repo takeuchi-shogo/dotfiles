@@ -37,6 +37,9 @@ def test_routine_prompts_do_not_fire():
         "git status を見せて",
         "add a log line here",
         "import を整理して消す",
+        "fix the bug in design.py",
+        "vs code is my editor",
+        "this approach is fine, ship it",
     ]:
         assert not is_intent_prompt(p), p
 
@@ -46,8 +49,22 @@ def test_empty_is_false():
     assert not is_intent_prompt("   ")
 
 
-def test_english_boundary_guard():
-    # "design" must fire, but it should be a real word, not a substring hit
-    # inside an unrelated token.
-    assert is_intent_prompt("review the design doc")
-    assert not is_intent_prompt("update the redesignation field")
+def test_english_leading_boundary_guard():
+    assert is_intent_prompt("let's decide now")
+    assert not is_intent_prompt("this is still undecided for now")
+
+
+def test_format_hint_distance_filter():
+    rows = [
+        {"path": "/v/near.md", "name": "near", "distance": 1.2},
+        {"path": "/v/far.md", "name": "far", "distance": 1.4},
+    ]
+    out = recall_hook._format_hint(rows)
+    assert "/v/near.md" in out
+    assert "/v/far.md" not in out
+    assert (
+        recall_hook._format_hint(
+            [{"path": "/v/far.md", "name": "far", "distance": 1.9}]
+        )
+        == ""
+    )

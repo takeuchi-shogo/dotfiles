@@ -84,11 +84,8 @@ _EN_TERMS = (
     "decision",
     "evaluate",
     "which is better",
-    "approach",
     "adopt",
-    "vs ",
     "pros and cons",
-    "design",
     "second opinion",
 )
 _JP_PATTERN = re.compile("|".join(re.escape(t) for t in _JP_TERMS))
@@ -165,6 +162,14 @@ def _read_prompt() -> str | None:
         prompt = payload.get("prompt")
         if isinstance(prompt, str) and prompt.strip():
             return prompt
+        _log_event(
+            "prompt_unusable",
+            {
+                "keys": list(payload)
+                if isinstance(payload, dict)
+                else type(payload).__name__
+            },
+        )
     except (OSError, ValueError, TypeError) as exc:
         _log("payload_parse", exc)
     return None
@@ -172,6 +177,10 @@ def _read_prompt() -> str | None:
 
 def _run_query(query: str, node_bin: str) -> list[dict] | None:
     if not INDEX_DB.is_file() or not QUERY_SCRIPT.is_file():
+        _log_event(
+            "index_unavailable",
+            {"index_db": INDEX_DB.is_file(), "query_script": QUERY_SCRIPT.is_file()},
+        )
         return None
     try:
         result = subprocess.run(
