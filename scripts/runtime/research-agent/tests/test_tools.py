@@ -22,7 +22,7 @@ def test_search_parses_arxiv_xml():
         results = tools.search.invoke({"query": "test", "max_results": 5})
     assert len(results) == 1
     assert results[0]["title"] == "Test Paper"
-    assert results[0]["url"] == "http://arxiv.org/abs/1234.5678"
+    assert results[0]["url"] == "https://arxiv.org/abs/1234.5678"
     assert results[0]["abstract"] == "An example abstract."
 
 

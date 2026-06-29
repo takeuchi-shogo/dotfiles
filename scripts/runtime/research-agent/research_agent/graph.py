@@ -12,7 +12,7 @@ from langgraph.prebuilt import ToolNode
 
 from . import config, experience, reflexion
 from .llm import make_llm
-from .reflexion import _text
+from .reflexion import text
 from .state import ResearchState
 from .tools import fetch, save_report, search
 
@@ -78,7 +78,7 @@ def synthesize_node(state: ResearchState) -> dict:
     llm = make_llm(0.0)
     prompt = _SYNTH.format(q=state["research_question"])
     resp = llm.invoke([*state["messages"], HumanMessage(content=prompt)])
-    return {"draft_report": _text(resp), "status": "synthesizing"}
+    return {"draft_report": text(resp), "status": "synthesizing"}
 
 
 def reflect_node(state: ResearchState) -> dict:
@@ -128,7 +128,7 @@ def _summarize_approach(state: ResearchState) -> str:
             ),
         ]
     )
-    return _text(resp).strip()
+    return text(resp).strip()
 
 
 def _maybe_persist(state: ResearchState) -> None:

@@ -32,6 +32,7 @@ def test_persist_writes_frontmatter(tmp_path, monkeypatch):
 
 
 def test_retrieve_parses_query_json(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "EXPERIENCE_DIR", tmp_path)
     exp_file = tmp_path / "e1.md"
     exp_file.write_text("過去の調査メモ", encoding="utf-8")
     query_stub = tmp_path / "query.ts"
@@ -53,6 +54,19 @@ def test_retrieve_parses_query_json(tmp_path, monkeypatch):
     with patch("research_agent.experience.subprocess.run", return_value=fake):
         out = experience.retrieve("調査")
     assert out == ["過去の調査メモ"]
+
+
+def test_retrieve_rejects_path_outside_experience_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "EXPERIENCE_DIR", tmp_path / "exp")
+    (tmp_path / "exp").mkdir()
+    outside = tmp_path / "secret.md"
+    outside.write_text("/etc/passwd 相当", encoding="utf-8")
+    query_stub = tmp_path / "query.ts"
+    query_stub.write_text("// stub", encoding="utf-8")
+    monkeypatch.setattr(config, "MEMORY_VEC_QUERY", query_stub)
+    fake = MagicMock(returncode=0, stdout=json.dumps([{"path": str(outside)}]))
+    with patch("research_agent.experience.subprocess.run", return_value=fake):
+        assert experience.retrieve("調査") == []
 
 
 def test_retrieve_degrades_when_query_absent(tmp_path, monkeypatch):

@@ -65,10 +65,17 @@ def retrieve(question: str, k: int | None = None) -> list[str]:
         _log(f"experience retrieve degraded (bad JSON): {e}")
         return []
     out: list[str] = []
+    exp_root = config.EXPERIENCE_DIR.resolve()
     for hit in hits[:k]:
         p = hit.get("path") if isinstance(hit, dict) else None
-        if p and Path(p).exists():
-            out.append(Path(p).read_text(encoding="utf-8")[:2000])
+        if not p:
+            continue
+        rp = Path(p).resolve()
+        if not rp.is_relative_to(exp_root):
+            _log(f"experience retrieve: skipped out-of-dir path {p}")
+            continue
+        if rp.exists():
+            out.append(rp.read_text(encoding="utf-8")[:2000])
     return out
 
 
@@ -95,8 +102,9 @@ def persist(traj: SuccessTrajectory) -> Path:
         for s in traj.sources
     )
     refl_block = "\n".join("- " + r for r in traj.reflections) or "- (なし)"
+    q_oneline = " ".join(traj.question.split())
     body = (
-        f"---\nquestion: {traj.question}\noutcome: success\nscore: {traj.score}\n"
+        f"---\nquestion: {q_oneline}\noutcome: success\nscore: {traj.score}\n"
         f"model: {traj.model}\ncreated_at: {now.isoformat()}\nsources:\n{src_block}\n"
         f"---\n## Approach (what worked)\n{traj.approach}\n\n"
         f"## Reflections / pitfalls avoided\n{refl_block}\n"

@@ -25,5 +25,6 @@ def test_scan_dirs_defaults_to_home_vault_without_env(monkeypatch):
     monkeypatch.delenv("OBSIDIAN_VAULT_PATH", raising=False)
     mod = _load()
     dirs = mod.scan_dirs()
-    assert len(dirs) == 3
+    assert len(dirs) == 4
     assert any(str(d).endswith("Obsidian Vault/05-Literature") for d in dirs)
+    assert any(str(d).endswith(".cache/research-agent/experience") for d in dirs)
