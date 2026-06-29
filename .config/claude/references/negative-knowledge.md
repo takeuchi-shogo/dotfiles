@@ -15,6 +15,14 @@ last_reviewed: 2026-04-23
 | 2026-04-14 | dotfiles | [FM-000] (exit_code!=0, no output) — post-bash hook test entry | hook self-test | failure |
 | 2026-04-14 | dotfiles | [FM-008] TypeError: Cannot read property | hook self-test | failure |
 | 2026-04-14 | dotfiles | [FM-009] 設定ファイルが見つかりません (config file not found) | hook self-test | failure |
+| 2026-06-28 | tmp0ikmt39b | [FM-006] Permission denied |  | failure |
+| 2026-06-28 | tmpvsd386tf | [FM-009] OOM killed |  | failure |
+| 2026-06-28 | tmpvsd386tf | warning: unused var |  | failure |
+| 2026-06-28 | tmp9o3ufmg6 | [FM-001] TypeError: x is undefined |  | failure |
+| 2026-06-28 | tmpru2ivsle | [FM-006] Permission denied |  | failure |
+| 2026-06-28 | tmpru2ivsle | build failed |  | failure |
+| 2026-06-28 | tmplb2u2zzv | [FM-009] OOM killed |  | failure |
+| 2026-06-28 | tmporcvehs_ | warning: unused variable |  | failure |
 | 2026-06-28 | tmpmx5tte6f | [FM-006] Permission denied |  | failure |
 | 2026-06-28 | tmp8y5_0aqx | [FM-009] OOM killed |  | failure |
 | 2026-06-28 | tmp8y5_0aqx | warning: unused var |  | failure |
