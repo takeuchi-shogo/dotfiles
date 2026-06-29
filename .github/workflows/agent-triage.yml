@@ -19,6 +19,12 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # PUBLIC repo guard: 第三者が Issue を開いただけで、secret (ANTHROPIC_API_KEY) を
+    # 持つ job が untrusted Issue 本文を Claude prompt に渡して起動するのを防ぐ。
+    # workflow_dispatch は repo の write 権限が必要なので許可する。
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +33,7 @@ jobs:
             CLAUDE.md
 
       - name: Setup Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code@2.1.195
 
       - name: Determine issue number
         id: issue

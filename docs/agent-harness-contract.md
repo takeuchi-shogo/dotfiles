@@ -105,6 +105,22 @@ OpenDev paper (arxiv 2603.05344) に基づくアーキテクチャ境界:
   - compaction reminders
   - agent routing and learnings flush
 
+### GitHub Actions 上の Claude は別 trust domain
+
+`agent-triage.yml` / `agent-quality.yml` で `claude -p` として走る Claude は、ローカルの harness guard（`~/.claude/settings.json` の deny ルール・PreToolUse/PostToolUse hooks・completion-gate）の**保護下にない**。Actions の checkout は sparse（`.github/agent-config` + `CLAUDE.md` のみ）で `settings.json` も `scripts/` も load されず、これらの hook は発火しない。
+
+Actions 上の Claude の guard は workflow YAML 側だけにある:
+
+| Guard | 実装 |
+|-------|------|
+| capability 制限 | `--allowedTools`（triage は add-label のみ、quality は限定 task のみ） |
+| コスト上限 | `--max-cost` |
+| トリガー権限 | job-level `if:`（triage は `author_association`、quality は `head_repository` + branch guard） |
+| supply-chain | `npm install -g @anthropic-ai/claude-code@<version>` をバージョン pin（未 pin だと未検証の最新版が secret 付き環境で実行される） |
+| prompt injection | `.github/agent-config/*.md` の Security セクション（untrusted Issue/log を信頼しない） |
+
+**PUBLIC repo では、secret を持つ Actions job を起動できる主体を job-level `if:` で必ず絞る。** ローカル harness の deny ルールは Actions に効かない。
+
 ### Hook 閾値サマリー（Obliviousness 対策）
 
 エージェントが自分を保護しているインフラの具体的なパラメータ:

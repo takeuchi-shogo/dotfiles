@@ -62,7 +62,7 @@ jobs:
           tail -200 /tmp/ci-failure.log > /tmp/ci-failure-trimmed.log
 
       - name: Setup Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code@2.1.195
 
       - name: Attempt fix
         env:

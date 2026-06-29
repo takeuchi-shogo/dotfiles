@@ -102,6 +102,7 @@ last_reviewed: 2026-04-23
 ### セキュリティ
 
 - VeriGrey, Vibe Code, Verbalized Sampling
+- **IssueOps: GitHub Issues + Actions 自動化 (GitHub 公式 Engineering, 2026-06-30)** — github-issueops family **新規 (N=1)**。記事主手法 7 件 Already/N/A、**採用 3 件 (S×3)**: (1) `agent-triage.yml` に `author_association` guard — PUBLIC repo で第三者 Issue が `ANTHROPIC_API_KEY` 消費 triage を無条件起動する弱点を封じる (2) claude-code を `@2.1.195` に pin (両 workflow、supply-chain) (3) `agent-harness-contract.md` に「Actions 上の Claude は別 trust domain」明文化。Phase 2.5 Codex が #2 guard の self-preference bias (sparse-checkout はローカル harness を載せない → Actions の Claude は deny/hook 保護下にない) を補正し Already→Partial 降格 + #10 pinning gap を露出。Gemini sunset で Codex 単独。逆方向の気づき: 記事は issue body prompt injection 無防備、dotfiles の `triage.md` Security が上回る → `docs/research/2026-06-30-issueops-absorb-analysis.md`
 
 ### 初期統合（03-08〜03-29）
 
