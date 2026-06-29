@@ -56,6 +56,10 @@ const SOURCES: SourceRoot[] = [
 	{ root: MEMORY_DIR, source: "memory" },
 	{ root: join(VAULT_PATH, "05-Literature"), source: "vault" },
 	{ root: join(VAULT_PATH, "09-TechTrends"), source: "vault" },
+	{
+		root: join(HOME, ".cache/research-agent/experience"),
+		source: "research-experience",
+	},
 ];
 const SKILL_DATA = join(HOME, ".claude/skill-data/memory-vec");
 const DB_PATH = join(SKILL_DATA, "index.db");

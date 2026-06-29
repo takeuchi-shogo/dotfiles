@@ -33,7 +33,12 @@ def _vault_path() -> Path:
 
 def scan_dirs() -> list[Path]:
     vault = _vault_path()
-    return [MEMORY_DIR, vault / "05-Literature", vault / "09-TechTrends"]
+    return [
+        MEMORY_DIR,
+        vault / "05-Literature",
+        vault / "09-TechTrends",
+        Path.home() / ".cache" / "research-agent" / "experience",
+    ]
 
 
 def _log(stage: str, error: BaseException) -> None:
