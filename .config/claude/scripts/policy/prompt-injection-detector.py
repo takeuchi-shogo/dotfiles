@@ -183,25 +183,22 @@ def _scan(data: dict) -> tuple[bool, str, str]:
         if tool_name == "Bash" and _count_max_nesting(text) >= 3:
             return True, "nested-command-substitution", "depth >= 3"
 
+        sanitized = _sanitize(text)
+
         # 6. Sensitive file access (Bash only)
-        if tool_name == "Bash" and SENSITIVE_FILE_RE.search(text):
+        if tool_name == "Bash" and SENSITIVE_FILE_RE.search(sanitized):
             return True, "sensitive-file-access", "sensitive file pattern in command"
 
         # 7. Dangerous Bash commands (Bash only)
-        if tool_name == "Bash" and DANGEROUS_BASH_RE.search(text):
+        if tool_name == "Bash" and DANGEROUS_BASH_RE.search(sanitized):
             return True, "dangerous-bash-command", "dangerous command pattern detected"
 
         # Dual-mode: re-scan sanitized text (quoted/heredoc stripped)
-        sanitized = _sanitize(text)
         if sanitized != text:
             if ZERO_WIDTH_RE.search(sanitized):
                 return True, "zero-width-unicode(sanitized)", "hidden in quotes"
             if ANSI_ESCAPE_RE.search(sanitized):
                 return True, "ansi-escape(sanitized)", "hidden in quotes"
-            if tool_name == "Bash" and SENSITIVE_FILE_RE.search(sanitized):
-                return True, "sensitive-file-access(sanitized)", "hidden in quotes"
-            if tool_name == "Bash" and DANGEROUS_BASH_RE.search(sanitized):
-                return True, "dangerous-bash-command(sanitized)", "hidden in quotes"
 
     return False, "", ""
 

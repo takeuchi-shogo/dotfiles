@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-28",
+  "branch": "auto/learned-promote-20260628-222524",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "7ff54e1f8c0f2788c8926e275bb94734cfeae2da",
+      "decision": "rejected",
+      "scope": "adversarial-review",
+      "reason": "already covered: .config/claude/agents/codex-reviewer.md",
+      "detail_excerpt": "単一モデルの盲点は異モデルレビューで排除"
+    },
+    {
+      "key": "dae320b2475987bec7c7fec6f55e59a75c4d7ab0",
+      "decision": "rejected",
+      "scope": "regex-extraction",
+      "reason": "manual: .config/claude/scripts/policy/stagnation-detector.py",
+      "detail_excerpt": "Error/Exception regex は1文字しか拾わない"
+    },
+    {
+      "key": "b299d9c5effbc93a5924d5f4ed66fb6a3730696e",
+      "decision": "rejected",
+      "scope": "skill-contract",
+      "reason": "already covered: .config/claude/skills/skill-creator/instructions/skill-writing-guide.md",
+      "detail_excerpt": "書くことと生成中の毎回照合は別物"
+    },
+    {
+      "key": "127ee9c35f0005441b6a833437f5c80c667b1f85",
+      "decision": "adopted",
+      "scope": "session-learner",
+      "target_artifact": ".config/claude/skills/hook-debugger/SKILL.md",
+      "detail_excerpt": "Python I/O では PostToolUse Write/Edit が発火しない"
+    },
+    {
+      "key": "f227d712355c9b89a2ad48189f9db661ee319277",
+      "decision": "rejected",
+      "scope": "analyzer-bias",
+      "reason": "already covered: .config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "Phase 2.5 Refine はスキップ不可"
+    }
+  ]
+}

@@ -23,3 +23,11 @@ last_reviewed: 2026-04-23
 | 2026-06-28 | tmpru2ivsle | build failed |  | failure |
 | 2026-06-28 | tmplb2u2zzv | [FM-009] OOM killed |  | failure |
 | 2026-06-28 | tmporcvehs_ | warning: unused variable |  | failure |
+| 2026-06-28 | tmpmx5tte6f | [FM-006] Permission denied |  | failure |
+| 2026-06-28 | tmp8y5_0aqx | [FM-009] OOM killed |  | failure |
+| 2026-06-28 | tmp8y5_0aqx | warning: unused var |  | failure |
+| 2026-06-28 | tmp1hduu94l | [FM-001] TypeError: x is undefined |  | failure |
+| 2026-06-28 | tmp35ohwzks | [FM-006] Permission denied |  | failure |
+| 2026-06-28 | tmp35ohwzks | build failed |  | failure |
+| 2026-06-28 | tmp14ij3ab0 | [FM-009] OOM killed |  | failure |
+| 2026-06-28 | tmpxufj1bj9 | warning: unused variable |  | failure |
