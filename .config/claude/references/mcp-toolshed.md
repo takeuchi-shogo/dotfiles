@@ -20,6 +20,28 @@ last_reviewed: 2026-04-23
 - **トークンコスト**: 低（クエリ単位）
 - **利用シーン**: 外部ライブラリの API 確認、バージョン固有の仕様調査
 
+### Docs: x-docs
+
+- **用途**: X API 公式ドキュメントの検索・参照
+- **トークンコスト**: 低（URL-based MCP、認証不要）
+- **利用シーン**: X API v2 エンドポイント仕様、OAuth スコープ、レート制限の確認
+- **URL**: `https://docs.x.com/mcp`
+- **備考**: Claude / Codex 両方に定義。`enabledMcpjsonServers` で有効化済み
+
+### API: xapi
+
+- **用途**: X API の呼び出し（投稿検索、ユーザー lookup、ブックマーク、トレンド等）
+- **トークンコスト**: 中（hosted MCP + xurl bridge）
+- **利用シーン**: X 上のデータ取得、API 動作確認
+- **セットアップ**:
+  1. [X Developer Portal](https://developer.x.com/) で OAuth 2.0 有効な App を作成
+  2. Redirect URI `http://localhost:8080/callback` を登録
+  3. シェルに `CLIENT_ID` / `CLIENT_SECRET` を export（git 管理外）
+  4. Claude: `enabledMcpjsonServers` に `"xapi"` を追加
+  5. Codex: `.codex/config.toml` の `[mcp_servers.xapi]` で `enabled = true`
+- **初回起動**: ブラウザ OAuth ログインあり。`startup_timeout_sec = 300` 推奨
+- **公式**: <https://docs.x.com/tools/mcp>
+
 ### Browser: agent-browser CLI（MCP 不要）
 
 - **用途**: ブラウザ操作、UI テスト、スクリーンショット取得、ネットワーク分析

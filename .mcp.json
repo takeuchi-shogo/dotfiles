@@ -7,6 +7,14 @@
 		"code-review-graph": {
 			"command": "uvx",
 			"args": ["code-review-graph", "serve"]
+		},
+		"x-docs": {
+			"url": "https://docs.x.com/mcp"
+		},
+		"xapi": {
+			"command": "npx",
+			"args": ["-y", "@xdevplatform/xurl", "mcp", "https://api.x.com/mcp"],
+			"startup_timeout_sec": 300
 		}
 	}
 }
