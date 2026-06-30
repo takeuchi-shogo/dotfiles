@@ -198,7 +198,8 @@
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
-    "code-review-graph"
+    "code-review-graph",
+    "x-docs"
   ],
   "skillOverrides": {
     "alloydb-basics": "off",
