@@ -11,9 +11,14 @@
 
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # AI エージェント multiplexer。overlay 経由で自分の nixpkgs toolchain でビルドするため
+    # follows で herdr 側の pinned nixpkgs を lock に混ぜない。
+    herdr.url = "github:ogulcancelik/herdr";
+    herdr.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, herdr, ... }:
     let
       mkDarwin = { system, hostName, hostModule, userName }:
         nix-darwin.lib.darwinSystem {
@@ -24,8 +29,12 @@
             home-manager.darwinModules.home-manager
             {
               networking.hostName = hostName;
+              # herdr を pkgs.herdr として供給。useGlobalPkgs=true なので home 側にも波及する。
+              nixpkgs.overlays = [ herdr.overlays.default ];
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              # 既存の実ファイル/ディレクトリと衝突したら *.backup に退避してから link する
+              home-manager.backupFileExtension = "backup";
               home-manager.extraSpecialArgs = { inherit userName; };
               home-manager.users.${userName} = import ./home;
               _module.args.userName = userName;

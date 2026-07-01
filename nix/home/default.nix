@@ -47,6 +47,8 @@ in
     ghqr
     # 自前 derivation: AI エージェント出力のレビュー CLI (tomasz-tomczyk/crit)
     crit
+    # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
+    herdr
   ];
 
   # Phase B2.1: symlink.sh の block 1-5 を home-manager に移植 (D6 実証済み)。
