@@ -1,6 +1,11 @@
 {
 	"version": 1,
 	"hooks": {
+		"sessionStart": [
+			{
+				"command": "bash '/Users/shogo_takeuchi/.cursor/herdr-agent-state.sh' session"
+			}
+		],
 		"stop": [
 			{
 				"command": "bash .cursor/hooks/quality-gate.sh"
