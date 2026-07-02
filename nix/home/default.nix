@@ -104,6 +104,11 @@ in
     ".cursor/commands"   = outLink ".cursor/commands";
     ".cursor/hooks"      = outLink ".cursor/hooks";
 
+    # block 6: herdr (.config/herdr → ~/.config/herdr)
+    # NOTE: ~/.config/herdr にはランタイムファイル (*.sock, *.log, session.json) が
+    # 同居するため dir 単位ではなく config.toml 単体を symlink (memory-vec と同パターン)。
+    ".config/herdr/config.toml" = outLink ".config/herdr/config.toml";
+
     # Phase B2.3: auto-discovered (block 7) を whitelist 方式で展開。
     # symlink.sh の find-walk + 37 exclude regex を「明示的に列挙」に置換。
     # B2.0 whitelist 翻訳表 (docs/plans/active/2026-04-25-phase-b2-whitelist.md) に基づく。

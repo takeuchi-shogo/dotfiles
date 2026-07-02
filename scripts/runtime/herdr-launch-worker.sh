@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# herdr-launch-worker.sh — herdr ペインに Worker を起動する (launch-worker.sh の herdr 版)
+#
+# Usage:
+#   herdr-launch-worker.sh --model claude --task "タスク内容"
+#   herdr-launch-worker.sh --model codex --task "タスク内容" [--keep]
+#   herdr-launch-worker.sh --model gemini --task "タスク内容" [--keep]
+#
+# 完了検出は herdr-collect-result.sh (ブロッキング wait) で行う。
+# 単発 worker (codex/gemini) は失敗時に pane が残り観察できる。
+# 回収後の pane 掃除は herdr-collect-result.sh --close に委ねる
+# (cmux 版と違い launch 側で close チェーンを組むと DONE 検出とレースするため)。
+#
+# Output: pane_id worker_id (space-separated)
+# ponytail: --worktree は未移植。worktree 分離が要る場合は cmux 版 launch-worker.sh を使う
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+LIB_DIR="$(cd "$SCRIPT_DIR/../lib" 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
+source "${LIB_DIR}/dispatch_logger.sh"
+
+command -v herdr >/dev/null 2>&1 || { echo "[herdr-launch-worker] herdr not found" >&2; exit 3; }
+herdr status server >/dev/null 2>&1 || { echo "[herdr-launch-worker] herdr server is not running" >&2; exit 1; }
+
+MODEL=""
+TASK=""
+KEEP=""
+DONE_SIGNAL="${DISPATCH_DONE_SIGNAL}"
+
+# --- 引数パース ---
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --model) MODEL="$2"; shift 2 ;;
+    --task)  TASK="$2"; shift 2 ;;
+    --keep)  KEEP=1; shift ;;
+    *) echo "[herdr-launch-worker] Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
+if [[ -z "$MODEL" || -z "$TASK" ]]; then
+  echo "[herdr-launch-worker] Usage: herdr-launch-worker.sh --model <claude|codex|gemini> --task \"タスク内容\"" >&2
+  exit 1
+fi
+
+# --- ワーカーID生成 ---
+# 末尾の model 名は herdr-collect-result.sh の完了検出方式の分岐に使う
+WORKER_ID="w-$(date +%s)-${MODEL}"
+RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
+
+# タスク内容をファイルに書き出す（コマンドインジェクション防止）
+TASK_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.task"
+mkdir -p "$DISPATCH_RESULT_DIR"
+printf '%s' "$TASK" > "$TASK_FILE"
+chmod 600 "$TASK_FILE"
+
+dispatch_log_state "$WORKER_ID" "pending" "launching"
+
+# --- エージェント起動 (JSON 出力から pane_id を抽出) ---
+start_agent() {
+  herdr agent start "$WORKER_ID" --cwd "$PWD" --no-focus -- "$@" \
+    | jq -r '.result.agent.pane_id'
+}
+
+PANE=""
+case "$MODEL" in
+  claude)
+    # 結果はファイルでなく応答末尾で回収する。worker の claude はユーザーの
+    # permission 設定 (disableBypassPermissionsMode) に従うため cwd 外への
+    # ファイル書き出しは blocked になる (memory: feedback_bg_agent_edit_permission)
+    PROMPT="以下のタスクを実行してください。
+
+## タスク
+${TASK}
+
+## 完了時の手順
+結果を応答の最後にまとめて出力してください。ファイルへの書き出しは不要です。"
+    PANE=$(start_agent claude --dangerously-skip-permissions)
+    # 起動完了 (= idle 検出) を待ってからプロンプト送信。検出失敗時は cmux 版と同じ固定待ち
+    herdr wait agent-status "$PANE" --status idle --timeout 30000 >/dev/null 2>&1 || sleep 5
+    # agent send は入力欄に入れるだけで submit しない — paste 完了を待って Enter を送る
+    herdr agent send "$WORKER_ID" "$PROMPT" >/dev/null
+    sleep 2
+    herdr pane send-keys "$PANE" enter >/dev/null
+    # submit 確認: working 遷移を待つ。paste 処理直後の enter は飲まれることが
+    # あるため、遷移しなければ一度だけ再送する。
+    # ponytail: 数秒で終わるタスクは working を見逃して誤失敗しうる。実運用の
+    #           worker タスクは分単位なので許容
+    if ! herdr wait agent-status "$PANE" --status working --timeout 10000 >/dev/null 2>&1; then
+      herdr pane send-keys "$PANE" enter >/dev/null
+      herdr wait agent-status "$PANE" --status working --timeout 10000 >/dev/null 2>&1 || {
+        echo "[herdr-launch-worker] プロンプト送信を確認できなかった (pane: ${PANE})" >&2
+        exit 1
+      }
+    fi
+    dispatch_log_prompt "$WORKER_ID" "$PROMPT"
+    ;;
+  codex|gemini)
+    # argv 直接 spawn なのでコマンドラインは画面にエコーされない。
+    # DONE_SIGNAL が画面に出る = 実行終了時のみ、が保証される (成否は .status で判別)。
+    # 変数は positional args で渡し quoting 破壊 (DONE_SIGNAL の env override 等) を防ぐ。
+    # 終了後も bash に落として pane を保持 (close は collect 側)
+    if [[ "$MODEL" == "codex" ]]; then
+      WORKER_CMD='codex exec --skip-git-repo-check --color never "$(cat "$1")"'
+    else
+      WORKER_CMD='gemini -p "$(cat "$1")"'
+    fi
+    PANE=$(start_agent bash -c \
+      "${WORKER_CMD}"' > "$2" 2>&1; echo $? > "$2.status"; echo "$3"; exec bash' \
+      bash "$TASK_FILE" "$RESULT_FILE" "$DONE_SIGNAL")
+    ;;
+  *)
+    echo "[herdr-launch-worker] Unknown model: $MODEL" >&2
+    exit 1
+    ;;
+esac
+
+if [[ -z "$PANE" || "$PANE" == "null" ]]; then
+  echo "[herdr-launch-worker] failed to start agent (no pane_id)" >&2
+  exit 1
+fi
+
+# --- ログ記録 ---
+dispatch_log_dispatch "$WORKER_ID" "$MODEL" "$TASK" "$PANE"
+dispatch_log_state "$WORKER_ID" "launching" "running"
+
+# --keep はここでは記録のみ (collect 側の --close を付けない運用で pane が残る)
+[[ -n "$KEEP" ]] && echo "[herdr-launch-worker] --keep: collect 時に --close を付けないこと" >&2
+
+# --- 結果を stdout に出力 ---
+echo "${PANE} ${WORKER_ID}"
