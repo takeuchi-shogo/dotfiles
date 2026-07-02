@@ -1,5 +1,5 @@
 model = "gpt-5.5"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 plan_mode_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
 review_model = "gpt-5.5"
@@ -45,11 +45,11 @@ model_reasoning_summary = "detailed"
 sandbox_mode = "workspace-write"
 
 [features]
+hooks = true                  # hooks framework (stable since v0.124.0). 必須: false/未設定だと hooks がサイレントに無視される
 memories = true               # Codex memories を明示有効化。Chronicle は Codex app 側で opt-in
 shell_snapshot = true        # 環境スナップショット（beta）
 undo = true                  # per-turn git ghost snapshots を有効化
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
-codex_hooks = true           # hooks framework (stable since v0.124.0). 必須: false/未設定だと hooks がサイレントに無視される
 
 # === Hooks pilot ===
 # 公式: https://developers.openai.com/codex/hooks
