@@ -12,7 +12,8 @@ local appearance = {
   font_size = 13.0,
   font = wezterm.font_with_fallback({
     "Hack Nerd Font",
-    "HackGen Console NF",  -- 日本語フォールバック
+    "HackGen Console NF",  -- 日本語フォールバック (未インストール; nix Phase C 予定)
+    "Hiragino Kaku Gothic ProN",  -- HackGen 不在時の日本語 fallback。韓国語 Apple SD Gothic Neo の誤当てを防ぐ
   }),
   unicode_version = 14,
 
