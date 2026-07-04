@@ -60,6 +60,7 @@ const SOURCES: SourceRoot[] = [
 		root: join(HOME, ".cache/research-agent/experience"),
 		source: "research-experience",
 	},
+	{ root: join(HOME, "dotfiles/docs/wiki/concepts"), source: "wiki" },
 ];
 const SKILL_DATA = join(HOME, ".claude/skill-data/memory-vec");
 const DB_PATH = join(SKILL_DATA, "index.db");

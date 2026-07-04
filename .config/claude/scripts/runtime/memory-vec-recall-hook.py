@@ -3,9 +3,9 @@
 
 Mechanizes the CLAUDE.md `<important if="...judgment/decision/research...">` rule:
 when the prompt looks like a judgment / design / research turn, run a semantic
-top-K against the Vault slice of ~/.claude/skill-data/memory-vec/index.db and
-print a PATH-ONLY [Vault Recall] block. File body is never included — the agent
-expands with Read on demand (pointer push, body pull).
+top-K against the vault+wiki slices of ~/.claude/skill-data/memory-vec/index.db
+and print a PATH-ONLY [Knowledge Recall] block. File body is never included —
+the agent expands with Read on demand (pointer push, body pull).
 
 Why gate on prompt intent, not distance: the index corpus is topically
 homogeneous (all AI/agent/dotfiles), so cosine distance cannot separate
@@ -191,7 +191,7 @@ def _run_query(query: str, node_bin: str) -> list[dict] | None:
                 str(QUERY_SCRIPT),
                 query[:QUERY_MAX_CHARS],
                 "--source",
-                "vault",
+                "vault,wiki",
             ],
             capture_output=True,
             text=True,
@@ -233,16 +233,16 @@ def _format_hint(rows: list[dict]) -> str:
     if not filtered:
         return ""
 
-    lines = [
-        "[Vault Recall] この判断に関連しうる Vault ノート (top-{0}, ephemeral):".format(
-            len(filtered)
-        )
-    ]
+    header = (
+        "[Knowledge Recall] この判断に関連しうるノート "
+        "(Vault/wiki, top-{0}, ephemeral):"
+    )
+    lines = [header.format(len(filtered))]
     for r in filtered:
         lines.append(f"- {r['path']} (rel: {r['distance']:.2f})")
     lines.append("")
     lines.append(
-        "必要時のみ Read で展開。Vault は単方向同期のスナップショット — "
+        "必要時のみ Read で展開。Vault/wiki は単方向同期のスナップショット — "
         "現行コード/事実と矛盾したら現状を優先。本 hint に file 内容は含まれません。"
     )
     return "\n".join(lines) + "\n"

@@ -65,5 +65,18 @@ test("queryIndex returns source field and filters by source", async () => {
 	assert.ok(memOnly.length >= 1);
 	assert.ok(memOnly.every((r) => r.source === "memory"));
 
+	const trailing = await queryIndex(dbPath, "go concurrency", {
+		source: "memory, ",
+	});
+	assert.ok(trailing.length >= 1);
+	assert.ok(trailing.every((r) => r.source === "memory"));
+
+	const multi = await queryIndex(dbPath, "go concurrency", {
+		source: "memory,vault",
+	});
+	assert.ok(multi.some((r) => r.source === "memory"));
+	assert.ok(multi.some((r) => r.source === "vault"));
+	assert.ok(multi.every((r) => r.source === "memory" || r.source === "vault"));
+
 	rmSync(base, { recursive: true, force: true });
 });
