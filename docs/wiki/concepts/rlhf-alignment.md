@@ -3,6 +3,9 @@ title: RLHFアライメント
 topics: [ml-rl]
 sources: [2026-03-18-policy-gradients-rlhf-analysis.md, 2026-03-20-rlhf-book-ch4-ch5-analysis.md, 2026-04-02-verbalized-sampling-analysis.md, 2026-04-04-overconfidence-circuits-analysis.md]
 updated: 2026-04-04
+last_validated: 2026-04-04
+source_count: 4
+confidence: speculative
 ---
 
 # RLHFアライメント

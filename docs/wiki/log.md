@@ -1952,3 +1952,10 @@
 - レポート: `docs/research/2026-06-20-anthropic-100-decisions-self-updating-prompt-absorb-analysis.md`
 - 教訓: vendor blog 風記事 + family saturated + 経験則の数値根拠なし = 全 rehash の典型サイン。次回 keyword (self-update / apprentice / 100 decisions / feedback loop is product) 検出時は saturation gate skip 推奨可
 - 詳細: docs/research/2026-06-20-khairallah-agent-team-intro-absorb-analysis.md
+
+## [2026-07-05] update | 2026-04-08〜07-04 の 170 レポートを一括統合 (catch-up compile)
+
+- 対象: 前回 compile (2026-04-07) 以降のレポート 170 件 (INDEX 未掲載 116 + 概念未統合 54)
+- 結果: 既存 36 概念記事を更新、新規 10 概念を記事化 (model-routing / pruning-first / sonnet-imagination-bias / contradiction-detection / surgical-changes / observability-signals / usage-analysis / confirmation-bias / config-drift-audit / prose-writing-style)、INDEX.md 全再生成 (47 concepts / レポート表 170 行)
+- 実行: Sonnet 抽出 6 並列 + 記事生成 14 並列、概念マップはユーザー承認済み
+- 副次: submodular-optimization の旧リンク重複を解消、rlhf-alignment の frontmatter 補完 (speculative 降格)。既存 dead link 3 件 (docs/plans/ 参照) は未修正で lint 対象として残置
