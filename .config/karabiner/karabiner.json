@@ -76,6 +76,16 @@
                                         "key_code": "right_arrow"
                                     }
                                 ],
+                                "conditions": [
+                                    {
+                                        "type": "frontmost_application_unless",
+                                        "bundle_identifiers": [
+                                            "^com\\.github\\.wez\\.wezterm$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.cmuxterm\\.app$"
+                                        ]
+                                    }
+                                ],
                                 "type": "basic"
                             },
                             {
@@ -93,6 +103,16 @@
                                 "to": [
                                     {
                                         "key_code": "left_arrow"
+                                    }
+                                ],
+                                "conditions": [
+                                    {
+                                        "type": "frontmost_application_unless",
+                                        "bundle_identifiers": [
+                                            "^com\\.github\\.wez\\.wezterm$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.cmuxterm\\.app$"
+                                        ]
                                     }
                                 ],
                                 "type": "basic"
