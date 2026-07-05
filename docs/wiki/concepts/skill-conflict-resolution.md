@@ -1,8 +1,11 @@
 ---
 title: スキル競合解決
 topics: [skill]
-sources: [2026-04-12-tan-thin-harness-fat-skills-analysis.md]
-updated: 2026-04-12
+sources: [2026-04-12-tan-thin-harness-fat-skills-analysis.md, 2026-04-26-skill-md-15min-guide-absorb-analysis.md, 2026-04-29-claude-skills-six-laws-absorb-analysis.md]
+updated: 2026-07-05
+last_validated: 2026-07-05
+source_count: 3
+confidence: established
 ---
 
 # スキル競合解決
@@ -64,6 +67,10 @@ updated: 2026-04-12
 
 衝突が検出された場合、Negative Routing の追加か `supersedes` 宣言が推奨される。
 
+## Near-miss Negative Example
+
+100個のSKILL.mdをリバースエンジニアリングした調査（zodchiii氏）では、高品質なスキルの70%が Out of Scope（`Do NOT use for:`）を明記していた一方、低品質なスキルにはほぼ存在しないことが確認された。この知見を受け、trigger phrase には「類似しているが発火すべきでないリクエスト」の near-miss negative example を最低3つ添えることを validation-checklist に追加した。全スキルへの Out of Scope 強制は過剰正規化としてスキップし、near-miss negative example のみを軽量に取り込んでいる。
+
 ## 関連概念
 
 - [スキル設計](skill-design.md) — スキル設計の基本原則（テリトリー衝突検出を含む）
@@ -74,3 +81,5 @@ updated: 2026-04-12
 ## ソース
 
 - [Tan "Thin Harness, Fat Skills" 分析](../../research/2026-04-12-tan-thin-harness-fat-skills-analysis.md) — 原則 #5 Negative Routing, #7 Narrow Tools の解説と dotfiles 既実装との差分分析
+- [SKILL.md 15分ガイド分析](../../research/2026-04-26-skill-md-15min-guide-absorb-analysis.md) — SKILL.md初級ガイドを分析、成熟済みで不採用と判定
+- [Claude Code Skills 6つの設計法則分析](../../research/2026-04-29-claude-skills-six-laws-absorb-analysis.md) — Skill設計6法則を分析、near-miss例等2件を軽量統合

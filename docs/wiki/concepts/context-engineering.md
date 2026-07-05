@@ -2,7 +2,10 @@
 title: コンテキストエンジニアリング
 topics: [claude-code, memory]
 sources: [2026-03-24-ace-agentic-context-engineering-analysis.md, 2026-03-19-important-if-conditional-tags-analysis.md, 2026-03-25-context-and-impact-analysis.md, 2026-03-18-evaluating-agentsmd-analysis.md]
-updated: 2026-04-04
+updated: 2026-07-05
+last_validated: 2026-07-05
+source_count: 33
+confidence: established
 ---
 
 # コンテキストエンジニアリング
@@ -22,6 +25,11 @@ updated: 2026-04-04
 - **Temporal Decay**: `exp(-0.1 × days)` でコンテキストの鮮度を自動管理（7日で 49.7%、30日で 5% に減衰）
 - **コードベース概要は無効**: AGENTS.md にファイルツリーを含めても関連ファイルへの到達ステップ数に有意差がない（ETH Zurich 実証）
 - **既存ドキュメントとの冗長排除**: docs が存在する場合、LLM 生成 CLAUDE.md は開発者記述を -2.7% 下回る。Documentation = Infrastructure 原則が重要
+- **Task-Scoped Context Injection**: コンテキストを常時全量注入するのではなく、タスクのスコープに応じて必要な範囲だけを注入する原則。過剰注入によるノイズと指示バジェットの浪費を防ぐ
+- **Filesystem as Context Engineering**: スキルはプロンプト本文に情報を詰め込む代わりに、ファイルシステム自体（scripts/config/logs）をコンテキスト管理の基盤として使える。プロンプトは「何をするか」、ファイルシステムは「状態と詳細」を担う分離
+- **Reasoning Sandwich**: 推論ステージごとに配分を変える（plan=high、build=reduced、verify=high）方が全ステージ max より高精度になる。LangChain Terminal Bench 2.0 実測で 66.5%（Sandwich）対 53.9%（全段 max）
+- **WebFetch 内部要約による Silent Truncation**: WebFetch は取得コンテンツを内部で Haiku が要約してからモデルに渡すため、信頼済みドメイン以外では表示上の受信バイト数と実際にモデルが読む内容が乖離しうる。取得できた=読めた、ではない
+- **出力フォーマットの Re-ingest Tax**: HTML など高密度フォーマットへの最適化は、後続エージェントが再度読み込む際のトークンコストを 1.3〜1.8 倍に増やす。version control diff・grep・memory 索引を重視する用途では markdown が既定であるべき
 
 ## 実践的な適用
 
@@ -40,3 +48,31 @@ dotfiles の CLAUDE.md は `<important if>` 条件タグを 6 セクションに
 - [Context and Impact Analysis](../../research/2026-03-25-context-and-impact-analysis.md) — 5層コンテキスト収集・Temporal Decay・Ensemble Quality Gate を含む包括的パイプライン
 - [Evaluating AGENTS.md Analysis](../../research/2026-03-18-evaluating-agentsmd-analysis.md) — ETH Zurich による大規模実証。LLM 生成 vs 人間記述のコンテキストファイル性能比較
 - [Harnesses Are Everything (2026-04)](../../research/2026-04-19-harness-everything-absorb-analysis.md) — **instruction budget の真の総量** = CLAUDE.md 本文 + hook 注入 + description + MCP tool 定義。Stanford "Lost in the Middle" 研究が裏付け: 2000 トークン超で指示遵守率 20-30% 低下。**Progressive Disclosure** (lean .md → references → rules) で常時露出を最小化し、dumb zone を回避する。
+- [Claude Code Harness Blueprint (leaked CC internals)](../../research/2026-04-08-cc-harness-blueprint-analysis.md) — CC内部4層設計を分析、7項目をharnessに統合済み
+- [Single-Agent vs Multi-Agent Thinking Budget (Stanford, arXiv:2604.02460)](../../research/2026-04-08-sas-vs-mas-thinking-budget-analysis.md) — SAS対MAS論文を分析、委譲判断基準にDPI根拠明文化を提案
+- [12 Claude Patterns You've Never Tried (@sharbel)](../../research/2026-04-09-12-claude-patterns-analysis.md) — Claude活用12パターンを分析、全項目を既存スキル強化に統合
+- [30 Claude Prompts, Workflows & Automations (@eng_khairallah1)](../../research/2026-04-09-30-claude-prompts-analysis.md) — 実務プロンプト30選を分析、決定ジャーナルなど9タスク採用
+- [PostHog『The golden rules of agent-first product engineering』(Jina Yoon) 分析](../../research/2026-04-11-posthog-agent-first-rules-analysis.md) — PostHog記事、wrapper境界文書化とfriction→evalループを採用
+- [Skills for Claude Code: The Ultimate Guide (Anthropic Engineer, Medium) 分析](../../research/2026-04-11-skills-for-claude-code-ultimate-guide-analysis.md) — Anthropicエンジニア記事、config.json標準とGotchas監査を追加実装
+- [Claude Codeセッション管理と1Mコンテキスト記事 (Anthropic Applied AI) 分析](../../research/2026-04-17-claude-code-session-mgmt-analysis.md) — Claude Code公式1Mコンテキスト記事分析、Rewind等6項目を全採用
+- [コンテキストデザイン組織活用記事 (久保星哉) 分析](../../research/2026-04-17-context-design-absorb-analysis.md) — コンテキストデザイン記事分析、MCP分散とTelemetry品質を最優先Gapと特定
+- [Obsidian × Claude Code — .claude ディレクトリ設計パターン (@akira_papa_AI)](../../research/2026-04-21-obsidian-claudecode-absorb-analysis.md) — Obsidianのcommands/skills設計を分析、Inbox連携等5タスクを採用
+- [A good AGENTS.md is a model upgrade (Slava Zhenylenko, Augment)](../../research/2026-04-23-agents-md-patterns-absorb-analysis.md) — AGENTS.md記事分析、sprawl監査等7タスク採用(module化棄却)
+- [claudecode-harness — Team Claude Code Harness Template (anothervibecoder-s)](../../research/2026-04-23-team-harness-template-analysis.md) — チームharnessテンプレ記事を分析、team-project雛形一式を新設
+- [A Closer Look at Harness Engineering from Top AI Companies (AlphaSignal)](../../research/2026-04-24-harness-engineering-absorb-analysis.md) — Harness Engineering記事分析、reasoning budget表等3タスクを追記
+- [graphify (知識グラフ変換ツール) absorb分析](../../research/2026-04-27-graphify-absorb-analysis.md) — 知識グラフツールgraphifyを分析、本体棄却し3件軽量採用
+- [Subagent Context Fork absorb分析 (aitmpl系記事)](../../research/2026-04-27-subagent-context-fork-absorb-analysis.md) — Subagent context fork記事を分析、fork機能非採用・観測3件採用
+- [What to Learn, Build, and Skip in AI Agents (2026) absorb分析](../../research/2026-04-30-learn-build-skip-2026-absorb-analysis.md) — AIエージェント要点記事を分析、機会費用フィルター1件のみ採用
+- [Claude Code Overhead 9 Patterns absorb分析](../../research/2026-05-04-claude-code-overhead-9patterns-absorb-analysis.md) — Claude Codeオーバーヘッド9パターンを分析、skill tax削減等5件採用
+- [SessionStart Hook監査レポート (absorb 9patterns T2)](../../research/2026-05-04-sessionstart-audit.md) — SessionStartフック6個を実測監査、latency 71%削減実施
+- [WebFetch内部Haiku要約問題 absorb分析 (著者: sherry)](../../research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md) — WebFetch内部Haiku要約の盲点を分析、decision table等8件全採用
+- [The Unreasonable Effectiveness of HTML absorb分析 (Thariq Shihipar)](../../research/2026-05-09-html-effectiveness-absorb-analysis.md) — HTML出力最大化論を分析、全面採用棄却し決定表2件採用
+- [SocratiCode codebase intelligence MCP](../../research/2026-05-17-socraticode-absorb-analysis.md) — codebase intelligence MCPを比較検証、循環依存記録のみ採用
+- [Codex Research Agent Workflow (中国語記事、10分構築)](../../research/2026-05-28-codex-research-agent-workflow-absorb-analysis.md) — 朝ブリーフ記事、注釈欄と週次差分提案など3件採用
+- [Claude Code Harness (Chachamaru127、契約駆動デリバリ)](../../research/2026-05-30-claude-code-harness-absorb-analysis.md) — 契約駆動ハーネス記事と比較、退役概念追跡等4件採用
+- [Hermes Harness Architecture (NousResearch)](../../research/2026-05-30-hermes-harness-architecture-absorb-analysis.md) — Hermesハーネス記事、cwd設定ファイルのinjection対策のみ採用
+- [The Claude Opus 4.8 Setup Guide (zodchixquant)](../../research/2026-05-30-opus48-setup-guide-absorb-analysis.md) — Opus4.8設定ガイド記事、Fast Mode指針採用・誤情報2件検出
+- [32 Claude Code hacks (movez.substack)](../../research/2026-05-31-32-claude-code-hacks-absorb-analysis.md) — 32個のCC hacks記事、ultracode表記追記のみ採用
+- [agents-best-practices (provider-neutral Agent Skill) (DenisSergeevitch)](../../research/2026-06-02-agents-best-practices-absorb-analysis.md) — provider-neutral harness skillを分析、8原則は全Already、reference扱いで不採用
+- [movez「Claudeの14ステップ活用法」](../../research/2026-06-02-how-to-actually-use-claude-14-steps-absorb-analysis.md) — Claude活用14ステップ記事、既存判断で全手法カバー済み・採用0件
+- [MUSE-Autoskill: Self-Evolving Agents via Skill Lifecycle](../../research/2026-06-05-muse-autoskill-self-evolving-agents-absorb-analysis.md) — MUSE論文のスキル生涯管理を分析、per-skill memoryなど新規性ゼロ採用0件
