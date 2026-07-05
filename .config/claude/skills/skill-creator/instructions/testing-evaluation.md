@@ -108,7 +108,7 @@ This is the only opportunity to capture this data — it comes through the task 
 
 Once all runs are done:
 
-1. **Grade each run** — spawn a grader subagent (or grade inline) that reads `agents/grader.md` and evaluates each assertion against the outputs. Save results to `grading.json` in each run directory. The grading.json expectations array must use the fields `text`, `passed`, and `evidence` (not `name`/`met`/`details` or other variants) — the viewer depends on these exact field names. For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
+1. **Grade each run** — spawn an independent grader subagent (inline grading is a provisional smoke check only — see judge independence below) that reads `agents/grader.md` and evaluates each assertion against the outputs. Save results to `grading.json` in each run directory. The grading.json expectations array must use the fields `text`, `passed`, and `evidence` (not `name`/`met`/`details` or other variants) — the viewer depends on these exact field names. For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
 
    **Dual-Axis Evaluation (mizchi/empirical-prompt-tuning)**: In addition to assertion pass/fail, the grader MUST populate these fields in `grading.json`:
 
@@ -134,6 +134,8 @@ Once all runs are done:
    ```
 
    Additionally, append the same payload as one line to `~/.claude/agent-memory/qualitative-signals/qualitative_signals.jsonl` (redact secrets first). Schema: `references/qualitative-signals-spec.md`. Purpose: detect Reward Hacking (arXiv:2403.03023) by requiring Precision of Tool Use alongside tool_count, and enable Convergence detection via ambiguity-gone-to-zero + ±10-15% metric stability over 2 consecutive iterations.
+
+   **Judge independence and process adherence**: For final/benchmark grading, spawn an independent grader subagent — inline grading is a provisional smoke check only, since an inline grader has already seen the authoring conversation. The independent grader must not see expected outputs or the skill-authoring conversation — it grades only from run outputs against the assertions/checklist. A judge that knows what "should" happen rubber-stamps plausible artifacts. Include at least one process-adherence check per eval: did the run actually execute the workflow's steps (conducted the interview, ran the validation), not just produce a good-looking artifact? Documented failure mode: a skill's first version produced excellent artifacts while skipping its required conversation entirely — artifact-only grading would have passed it; a blind process-adherence judge failed it 0/2. For detection-type skills, planted-landmine fixtures (test codebases seeded with known traps) let you grade on whether the traps are caught.
 
 2. **Aggregate into benchmark** — run the aggregation script from the skill-creator directory:
 

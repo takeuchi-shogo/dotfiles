@@ -20,6 +20,21 @@ last_reviewed: 2026-04-23
 
 ---
 
+## Pre-plan Unknowns Pass（着手前）
+
+不慣れな領域（新しい codebase 区画・未経験ドメイン）で Plan を書き始める前に、starting point を 1 ブロックで宣言する:
+
+- **Known**: 確認済みの事実
+- **Assumptions**: 検証していない仮定
+- **High-impact unknowns**: 答え次第でアーキテクチャ・データモデル・UX が変わる不確実性
+- **Blind spots**: 何を聞くべきかすら分からない領域 — 自分の経験・知識レベルを開示した上で「blindspot pass / unknown unknowns の洗い出し」を Claude に依頼する
+
+高影響 unknown は黙って仮定せず解消してから Plan に進む（CLAUDE.md 実装ルール準拠）。出力は Plan の `## Unknowns` セクションに残す。
+
+> 出典: "A Field Guide to Fable: Finding Your Unknowns" absorb (2026-07-06)。既存 5 項目 checklist が「立てた Plan の失敗モード検証」なのに対し、本 pass は「Plan を立てる前の視界確保」。
+
+---
+
 ## Checklist (5 項目)
 
 Plan 策定の最後に、以下 5 項目に書面で答える:
