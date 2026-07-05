@@ -65,9 +65,18 @@ export async function queryIndex(
          ORDER BY v.distance ASC`,
 			)
 			.all(blob, OVERFETCH_K) as QueryRow[];
-		const filtered = opts.source
-			? rows.filter((r) => r.source === opts.source)
-			: rows;
+		const wanted = opts.source
+			? new Set(
+					opts.source
+						.split(",")
+						.map((s) => s.trim())
+						.filter(Boolean),
+				)
+			: null;
+		const filtered =
+			wanted && wanted.size > 0
+				? rows.filter((r) => wanted.has(r.source))
+				: rows;
 		return filtered.slice(0, TOP_K);
 	} finally {
 		db.close();
