@@ -93,6 +93,8 @@ PROMPT
 
 4. Codex の出力をそのまま返す（追加の編集や要約は不要）
 
+呼び出し側は findings を次 iteration の修正 TODO へ機械的に戻す。codex-reviewer の本質は単発評価ではなく、評価→修正→再評価の閉ループを保つこと。
+
 ## reasoning_effort の選択
 
 レビューは常に `xhigh` を使用する。深い推論による高品質なレビューが最優先。
