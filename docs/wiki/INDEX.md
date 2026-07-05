@@ -49,7 +49,7 @@
 - [スキル競合解決](concepts/skill-conflict-resolution.md) — 複数のスキルが同一トリガーやユースケースに応答しようとする場合の衝突を検出・解決するパターン。 | sources: 3 | established
 - [スキル設計](concepts/skill-design.md) — スキルは Claude Code に対して再利用可能な知識・手順・ワークフローをパッケージ化する仕組みである。 | sources: 41 | established
 - [スキル呼び出しパターン](concepts/skill-invocation-patterns.md) — 同一スキルを異なる「world」（呼び出し文脈・前提状態・モデル）で再利用するための設計パターン。 | sources: 11 | established
-- [Skill ↔ Subagent 合成パターン](concepts/skill-subagent-composition.md) —  | sources: 5 | established
+- [Skill ↔ Subagent 合成パターン](concepts/skill-subagent-composition.md) — Skills と Subagents は Claude Code の2つの再利用単位であり、相互参照が可能。 | sources: 5 | established
 - [使用実態分析](concepts/usage-analysis.md) — skill/agentのインベントリ（存在するもの）と実際のセッショントランスクリプト（使われたもの）を突き合わせ、死蔵・過小利用・過剰利用を可視化する棚卸し手法。 | sources: 2 | emerging
 
 ### security — セキュリティ
@@ -66,7 +66,7 @@
 
 ### decision — 意思決定
 
-- [失敗できる意思決定 (Reversible Decisions)](concepts/reversible-decisions.md) —  | sources: 15 | established
+- [失敗できる意思決定 (Reversible Decisions)](concepts/reversible-decisions.md) — 正解を探すのではなく「失敗してもやり直せる状態」を先に設計することで素早く決める意思決定原則。 | sources: 15 | established
 
 ### coding — コーディング
 
@@ -77,7 +77,7 @@
 ### evaluation — 評価・観測
 
 - [エージェント評価](concepts/agent-evaluation.md) — エージェント評価とは、AIコーディングエージェントの品質・能力・劣化傾向を定量的に測定するフレームワークを指す。 | sources: 26 | established
-- [Criticism as First-Class Artifact](concepts/criticism-as-artifact.md) —  | sources: 6 | established
+- [Criticism as First-Class Artifact](concepts/criticism-as-artifact.md) — 批評 (criticism) を会話の副産物ではなく、pre-mortem / review / retrospective の 1st-class artifact として扱う原則。 | sources: 6 | established
 - [HITL非対称評価](concepts/hitl-asymmetric-evaluation.md) — Human-in-the-Loop (HITL) 評価において、見逃し（false negative）と過検出（false positive）のコストは対称ではない。 | sources: 5 | established
 
 ### routing — ルーティング・モデル選択

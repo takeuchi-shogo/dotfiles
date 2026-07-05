@@ -10,6 +10,10 @@ confidence: established
 
 # Criticism as First-Class Artifact
 
+## 概要
+
+批評 (criticism) を会話の副産物ではなく、pre-mortem / review / retrospective の 1st-class artifact として扱う原則。批評は監査可能な構造化レコードとして残し、self-preference bias を避けるため分離された checker が生成し、指摘ゼロという「批評の不在」さえも盲点シグナルとして成果物化する。CLAUDE.md core_principles に明記され、Codex Review Gate や /review Step4 (Negative Signal Review Rule) が実装にあたる。
+
 ## 原則
 
 批評 (criticism) は会話の副産物ではなく、pre-mortem / review / retrospective の 1st-class artifact として扱う。

@@ -10,7 +10,9 @@ confidence: established
 
 # Skill ↔ Subagent 合成パターン
 
-Skills と Subagents は Claude Code の2つの再利用単位であり、相互参照が可能。組み合わせ方向によって異なるユースケースに対応する。
+## 概要
+
+Skills と Subagents は Claude Code の2つの再利用単位であり、相互参照が可能。Agent → Skills (ロール定義: 知識を起動時に注入) と Skill → Agent (タスク隔離: fork したコンテキストで実行) の 2 方向の合成があり、組み合わせ方向によって異なるユースケースに対応する。
 
 ## 2つの合成方向
 
