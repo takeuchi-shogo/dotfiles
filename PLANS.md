@@ -43,6 +43,10 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
 - 壊してはいけない挙動
 - 既存ルール、互換性、承認条件
 
+## Unknowns
+- 検証していない仮定と高影響 unknown（答えでアーキテクチャ・データモデル・UX が変わる不確実性）
+- 不慣れな領域なら着手前に pre-plan unknowns pass を実施（`.config/claude/references/pre-mortem-checklist.md`）
+
 ## Validation
 - 実行する task / test / lint / review
 
@@ -71,6 +75,7 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
 
 - plan は作って終わりではなく、作業中に更新する
 - goal、scope、validation を途中で暗黙に変えない
+- 変わりやすい判断（データモデル・型・UX・user 確認が要る事項）を先頭の Step に置き、機械的作業は後ろに置く
 - 想定外を見つけたら `Surprises & Discoveries` に残す
 - 重要な方針変更は `Decision Log` に残す
 - 中断前は checkpoint と plan の両方を最新化する
