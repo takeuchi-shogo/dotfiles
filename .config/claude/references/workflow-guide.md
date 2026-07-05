@@ -113,6 +113,7 @@ select → generate → edit
 ### Plan 前の必須チェック
 
 - **M/L タスク**: Plan 作成前に `/check-health` を実行し、関連ドキュメントの矛盾・陳腐化を検出する。矛盾情報は Plan に伝播し、下流の全実装を汚染する（OpenForage: "Pre-Task Contradiction Check"）
+- **harness / architecture / workflow 変更時**: `docs/adr/README.md` から該当 ADR を照合し、過去の設計判断と矛盾しないか確認する。矛盾・関連があれば Plan の Constraints / Decision Log に反映する（Zenn dk_ dev-flow: 実装前 ADR 確認の配線。全タスクでの強制はしない — reversible-decisions / pre-mortem との重複を避ける）
 - **L タスク — 複数プラン生成（任意）**: 不確実性が高い場合、N=3 の異なるアプローチを列挙し、保守性・拡張性・シンプルさの 3 軸で比較して選択する。`/debate` を活用してもよい
 
 ### Plan 実行中の中間検証（L 規模）
@@ -333,6 +334,8 @@ Spec/Plan 作成後、実装前に Codex(gpt-5.5) で批評するゲート。
    - **修正すべき**と明確に判断できるもの → Claude が自動修正 → 修正内容をユーザーに報告 → 修正箇所のみ再レビュー
    - **迷う**もの（トレードオフ・複数の選択肢・確信なし）→ ユーザーに選択肢を提示 → ユーザーが判断
 3. ユーザー承認で Implement に進む
+
+**grill-interview（任意ステップ）**: ADR 追加・workflow 変更・不可逆判断を含む高不確実性プランでは、Codex Gate の前に `/grill-interview` でプランをストレステストする。superpowers:brainstorming（要件の探索）とは役割が異なり、grill-interview は確定済みプランの決定木の各分岐を尋問して潰す。全 M/L への必須化はしない（Gate 遅延を避ける）。
 
 ### 2. Implement（実装）
 

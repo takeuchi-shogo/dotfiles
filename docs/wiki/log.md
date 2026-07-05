@@ -4,6 +4,12 @@
 > `## [YYYY-MM-DD] operation | Title`
 >
 
+## [2026-07-06] ingest | Claude Code Skills で開発フロー強制 + 自己改善ループ (Zenn dk_)
+
+- ソース: https://zenn.dev/dk_/articles/1f3fbc506827ac
+- 判定: Gap 0, Partial 2 (採用2), Already 7, N/A 1 (deliberate non-adopt)
+- 取り込み: (1) workflow-guide「Plan 前の必須チェック」に harness/architecture/workflow 変更時の docs/adr/README.md 照合を追記 (2) Codex Gate 節に grill-interview 任意ステップ (ADR 追加・workflow 変更・不可逆判断で推奨) を追記。#3 Adversary「否定から入れ」は coldness bias ガード + agency-safety-framework と衝突のため不採用 (設計退化)。詳細: docs/research/2026-07-06-dk-devflow-superpowers-absorb-analysis.md
+
 ## [2026-06-27] ingest-skip | Loop Engineering: The Anthropic Playbook (Osmani Orange Book, HuaShu 再編集 PDF)
 
 - ソース: Google Drive PDF (10p, HuaShu reformat of Addy Osmani "Orange Book" guide "Loop Engineering: Stop Asking Me What It Is", v260615)
