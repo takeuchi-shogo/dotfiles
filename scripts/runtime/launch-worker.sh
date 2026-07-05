@@ -94,9 +94,19 @@ fi
 case "$MODEL" in
   claude)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "claude --dangerously-skip-permissions\n"
+      "claude --permission-mode auto\n"
     echo "[launch-worker] Waiting for Claude Code to start..." >&2
-    sleep 5
+    # 起動完了 (バナー/モデル表示) を待つ。固定 sleep 5 では起動完了前に後続の
+    # PROMPT+return が送られ、return が無視されて worker が入力待ちで停止する
+    # (2026-06-06 観測: claude v2.1.166 + MCP ロードは 5s 超)。
+    for _ in $(seq 1 20); do
+      sleep 2
+      if "$CMUX_CLI" read-screen --workspace "$WS" --surface "$SURFACE" 2>/dev/null \
+          | grep -qE "Claude Code|Opus|Sonnet|Haiku"; then
+        sleep 2  # 入力受付が安定するまでの猶予
+        break
+      fi
+    done
     ;;
   codex)
     # Codex は単発実行なのでプロンプトごと送る

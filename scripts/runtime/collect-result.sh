@@ -39,6 +39,12 @@ if [[ -z "$WORKSPACE" || -z "$WORKER_ID" ]]; then
 fi
 
 RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
+# worker の surface を動的解決 (cmux の surface ref はグローバルで surface:1 固定ではない。
+# launch-worker と同様 list-pane-surfaces で起動先 surface を解決する。
+# 2026-06-06 修正: surface:1 ハードコードだと worker 画面を読めず DONE 検出/retry が機能しなかった)
+SURFACE=$("$CMUX_CLI" list-pane-surfaces --workspace "$WORKSPACE" 2>/dev/null \
+  | grep -oE 'surface:[0-9]+' | head -1)
+[ -z "$SURFACE" ] && SURFACE="surface:1"
 ELAPSED=0
 RETRY_COUNT=0
 
@@ -58,7 +64,7 @@ while [[ $ELAPSED -lt $TIMEOUT ]]; do
   fi
 
   # 方法2: 画面から完了シグナル検出（フォールバック）
-  SCREEN=$("$CMUX_CLI" read-screen --workspace "$WORKSPACE" --surface surface:1 --scrollback 50 2>/dev/null || echo "")
+  SCREEN=$("$CMUX_CLI" read-screen --workspace "$WORKSPACE" --surface "$SURFACE" --scrollback 50 2>/dev/null || echo "")
   if echo "$SCREEN" | grep -q "$DONE_SIGNAL"; then
     echo "[collect-result] Done signal detected on screen" >&2
     if [[ ! -f "$RESULT_FILE" ]]; then
@@ -80,9 +86,9 @@ while [[ $ELAPSED -lt $TIMEOUT ]]; do
       dispatch_log_retry "$WORKER_ID" "$RETRY_COUNT"
       dispatch_log_state "$WORKER_ID" "running" "failed"
       echo "[collect-result] Retrying (${RETRY_COUNT}/${MAX_RETRY})..." >&2
-      "$CMUX_CLI" send --workspace "$WORKSPACE" --surface surface:1 \
+      "$CMUX_CLI" send --workspace "$WORKSPACE" --surface "$SURFACE" \
         "前回エラーが発生しました。タスクを再試行してください。"
-      "$CMUX_CLI" send-key --workspace "$WORKSPACE" --surface surface:1 return
+      "$CMUX_CLI" send-key --workspace "$WORKSPACE" --surface "$SURFACE" return
       dispatch_log_state "$WORKER_ID" "failed" "running"
     else
       dispatch_log_escalate "$WORKER_ID" "max retries exceeded"
