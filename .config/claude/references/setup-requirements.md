@@ -41,6 +41,7 @@ bootstrap_gated   darwin-rebuild   -         test -x /run/current-system/sw/bin/
 ## 更新方針
 
 - rtk のように commit 由来で minimum version を引き上げたい時はこのファイルを編集する (single source)
+- `rtk init` は live `~/.claude/settings.json` の symlink を unlink して実ファイルで上書きするため、実行後は dotfiles 側へ手動 port し、絶対 `$HOME` パスを正規化する
 - 新規 binary 追加は **`required` のハードルを慎重に**: 不在で bootstrap 全停止するため、recommended から始めて運用実績を貯める
 - minimum version の権威ソース:
   - rtk: upstream release notes

@@ -1,0 +1,42 @@
+{
+  "date": "2026-07-06",
+  "branch": "auto/learned-promote-20260706-063913",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "ae73d48844c7ce16eb98a369152dde2ea576954f",
+      "decision": "adopted",
+      "scope": "symlink-break",
+      "target_artifact": ".config/claude/references/setup-requirements.md",
+      "detail_excerpt": "rtk init は既存 symlink を unlink して実ファイルで上書き"
+    },
+    {
+      "key": "ab81bd4461de70521ba95615e3060760b6ca5af2",
+      "decision": "adopted",
+      "scope": "hook-permission",
+      "target_artifact": ".config/claude/references/deny-rules-catalog.md",
+      "detail_excerpt": "rtk hook は permissionDecision:allow を返す"
+    },
+    {
+      "key": "a4eb17ee6f5d7549867f6877bc67c5f26c972c0a",
+      "decision": "adopted",
+      "scope": "absorb-workflow",
+      "target_artifact": ".config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "Gemini peripheral pass validates setup direction"
+    },
+    {
+      "key": "8d8b38a85567e3a7815aef43855c0f5d6870d464",
+      "decision": "adopted",
+      "scope": "codex-review",
+      "target_artifact": ".config/claude/agents/codex-reviewer.md",
+      "detail_excerpt": "本質は閉ループ運用定義"
+    },
+    {
+      "key": "ef3d1cb7b7ea6ac8742e65fccdfa1044c50160af",
+      "decision": "rejected",
+      "scope": "veri-grey",
+      "reason": "contradicted by current code: .config/claude/scripts/policy/mcp-audit.py",
+      "detail_excerpt": "mcp-audit.py は skill の mcp-tools 宣言に無い MCP ツール呼びを soft block"
+    }
+  ]
+}

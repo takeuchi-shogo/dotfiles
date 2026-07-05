@@ -53,6 +53,7 @@ last_reviewed: 2026-06-18
 - deny は **不可逆操作 + exfiltration boundary + 秘密ファイル/ディレクトリ + shell rc** の 4 系統に集約される。
   秘密系は Read/Write/Edit の 3 tool 経路すべてを塞ぐ多層構成 (glob + 明示 ~/ パス)。
 - allow は **read-only 検査 + 既知の安全なツールチェーン** が中心。書き込み系で許可されるのは git の通常操作のみ。
+- `rtk hook claude` は hooks 側で `permissionDecision: "allow"` を返すため、hook のためだけに `Bash(rtk *)` を allow へ追加しない。
 - 新規 deny/allow 追加時は本表の該当カテゴリに反映し、合計を settings.json と一致させる。
 
 ## 再生成 (drift チェック)
