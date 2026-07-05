@@ -1214,7 +1214,12 @@ def _parse_transcript_for_claims(transcript_path: str) -> tuple[set[str], str]:
 
 
 def _find_unbacked_claimed_paths(text: str, written: set[str]) -> list[str]:
-    """Paths claimed (near a claim verb) but absent on disk AND never written."""
+    """Paths claimed (near a claim verb) but absent on disk AND never written.
+
+    Bare (non-backticked) paths are matched only when they carry an extension
+    (see _BARE_PATH_RE); extensionless paths like /tmp/output are intentionally
+    not flagged here. Backticked mentions still cover those.
+    """
     paras = re.split(r"\n\s*\n", text)
     has_verb = [bool(_CLAIM_VERB_RE.search(p)) for p in paras]
     has_absence = [bool(_ABSENCE_RE.search(p)) for p in paras]
@@ -1272,7 +1277,7 @@ def _check_fabricated_claims(data: dict) -> dict | None:
         f"{shown}{extra}\n\n"
     )
 
-    session_id = str(data.get("session_id", "nosid"))
+    session_id = os.path.basename(str(data.get("session_id", "nosid"))) or "nosid"
     marker = os.path.join(_CLAIM_GATE_MARKER_DIR, f"blocked-{session_id}")
     if os.path.exists(marker):
         return None
