@@ -42,8 +42,9 @@ RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
 # worker の surface を動的解決 (cmux の surface ref はグローバルで surface:1 固定ではない。
 # launch-worker と同様 list-pane-surfaces で起動先 surface を解決する。
 # 2026-06-06 修正: surface:1 ハードコードだと worker 画面を読めず DONE 検出/retry が機能しなかった)
+# grep no-match (exit 1) で set -e/pipefail に捕まらないよう || true で空文字に倒す
 SURFACE=$("$CMUX_CLI" list-pane-surfaces --workspace "$WORKSPACE" 2>/dev/null \
-  | grep -oE 'surface:[0-9]+' | head -1)
+  | grep -oE 'surface:[0-9]+' | head -1 || true)
 [ -z "$SURFACE" ] && SURFACE="surface:1"
 ELAPSED=0
 RETRY_COUNT=0
