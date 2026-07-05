@@ -43,6 +43,10 @@ jobs:
     script: scripts/runtime/nightly/run-plan-close-scan.sh
     timeout_sec: 300
     retry: 0
+  - name: orphan-artifact-scan
+    script: scripts/runtime/nightly/run-orphan-artifact-scan.sh
+    timeout_sec: 300
+    retry: 0
   - name: tech-researcher
     script: scripts/runtime/tech-researcher/run-tech-researcher.sh
     timeout_sec: 900
