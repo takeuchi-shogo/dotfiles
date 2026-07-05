@@ -93,20 +93,27 @@ fi
 # --- モデル別起動 ---
 case "$MODEL" in
   claude)
+    # dontAsk: allowlist 外は自動 deny でプロンプトが出ない = worker が入力待ちで hang しない
+    # (auto は safety check からプロンプトに escalation しうる research preview、
+    #  bypassPermissions は全許可で worker には過剰。deny は collect-result の retry で顕在化)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "claude --permission-mode auto\n"
+      "claude --permission-mode dontAsk\n"
     echo "[launch-worker] Waiting for Claude Code to start..." >&2
     # 起動完了 (バナー/モデル表示) を待つ。固定 sleep 5 では起動完了前に後続の
     # PROMPT+return が送られ、return が無視されて worker が入力待ちで停止する
     # (2026-06-06 観測: claude v2.1.166 + MCP ロードは 5s 超)。
+    started=0
     for _ in $(seq 1 20); do
       sleep 2
       if "$CMUX_CLI" read-screen --workspace "$WS" --surface "$SURFACE" 2>/dev/null \
-          | grep -qE "Claude Code|Opus|Sonnet|Haiku"; then
+          | grep -qE "Claude Code|Fable|Opus|Sonnet|Haiku"; then
         sleep 2  # 入力受付が安定するまでの猶予
+        started=1
         break
       fi
     done
+    [ "$started" -eq 1 ] || \
+      echo "[launch-worker] WARNING: Claude Code バナー検知タイムアウト (40s) — プロンプト送信を続行" >&2
     ;;
   codex)
     # Codex は単発実行なのでプロンプトごと送る
