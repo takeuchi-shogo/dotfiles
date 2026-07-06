@@ -257,7 +257,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/session-load.js",
+            "command": "/opt/homebrew/bin/node $HOME/.claude/scripts/runtime/session-load.js",
             "timeout": 15
           }
         ]
@@ -363,7 +363,7 @@
           },
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/session-save.js",
+            "command": "/opt/homebrew/bin/node $HOME/.claude/scripts/runtime/session-save.js",
             "timeout": 15
           },
           {
@@ -810,7 +810,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/pre-compact-save.js && bash $HOME/dotfiles/tools/half-clone/half-clone.sh",
+            "command": "/opt/homebrew/bin/node $HOME/.claude/scripts/runtime/pre-compact-save.js && bash $HOME/dotfiles/tools/half-clone/half-clone.sh",
             "timeout": 15
           }
         ]
@@ -821,7 +821,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $HOME/.claude/scripts/runtime/post-compact-verify.js",
+            "command": "/opt/homebrew/bin/node $HOME/.claude/scripts/runtime/post-compact-verify.js",
             "timeout": 10
           }
         ]
