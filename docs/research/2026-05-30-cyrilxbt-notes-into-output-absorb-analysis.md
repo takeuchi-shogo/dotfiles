@@ -1,7 +1,8 @@
 ---
 title: "@cyrilXBT Turn Every Note Into Something You Actually Use — absorb analysis (light-phase2)"
 date: 2026-05-30
-status: light-phase2-only
+status: implemented
+implemented_verified: 2026-07-05 (capture.md テンプレート + obsidian-knowledge SKILL.md の Decision Feeder 実在を grep 確認)
 adopt_count: 2
 family: obsidian-second-brain
 family_entry: 16

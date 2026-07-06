@@ -10,6 +10,32 @@
 - 判定: Gap 0, Partial 2 (採用2), Already 7, N/A 1 (deliberate non-adopt)
 - 取り込み: (1) workflow-guide「Plan 前の必須チェック」に harness/architecture/workflow 変更時の docs/adr/README.md 照合を追記 (2) Codex Gate 節に grill-interview 任意ステップ (ADR 追加・workflow 変更・不可逆判断で推奨) を追記。#3 Adversary「否定から入れ」は coldness bias ガード + agency-safety-framework と衝突のため不採用 (設計退化)。詳細: docs/research/2026-07-06-dk-devflow-superpowers-absorb-analysis.md
 
+## [2026-07-06] ingest | A Field Guide to Fable: Finding Your Unknowns
+
+- ソース: Anthropic 関係者ブログ + X 引用 (@dzhng explore-unknowns skill eval-hardening)
+- 判定: Gap 1 (→降格・統合), Partial 2, Already 5 (うち強化可能 1), N/A 2
+- 取り込み: pre-plan unknowns pass (`pre-mortem-checklist.md`) / `PLANS.md` に `## Unknowns` + volatile-first Working Rule / skill-creator eval に judge 独立性 + process-adherence + planted-landmine fixture / CLAUDE.md 高影響 unknown 規定統合 (PR #157, branch `absorb/fable-unknowns`)
+- Saturation Gate: family 分類なし (claude-code-tips 隣接だが listicle でなく方法論エッセイ) を明示判断 → PASS
+- Codex Review Gate: inline grading と judge 独立性の矛盾検出で BLOCK×2 → 修正 → PASS (Gemini は sunset で degraded、Codex 単独 Phase 2.5)
+- レポート: `docs/research/2026-07-06-fable-field-guide-unknowns-absorb-analysis.md`
+
+## [2026-07-05] ingest | leopardracer Second Brain 1,500 Conversations + claude-obsidian plugin
+
+- ソース: X 投稿 (AgriciDaniel/claude-obsidian plugin) + leopardracer Substack 記事 (テキスト直貼り)
+- 判定: Gap 1 (条件付き), Partial 1, Already 強化可能 1, Already 強化不要 7, N/A 2
+- 取り込み: T1 orphan-artifact-scan (S) / T2 行動観測 profile 検証 (S) / T3 Claude.ai export → memory-vec (M, export 待ち)
+- Saturation Gate: family 21 件目、形式 PASS (warning) → user 明示判断で continue。delta 7 (novel 3 + ambiguous 4)、rehash 5 件は照合台帳で立証 (分析レポート参照)
+- レポート: `docs/research/2026-07-05-leopardracer-second-brain-1500-convos-absorb-analysis.md`
+
+## [2026-07-04] ingest-skip (light Phase 2, adopt=0) | Position: Coding Benchmarks Are Misaligned with Agentic Software Engineering
+
+- ソース: https://arxiv.org/abs/2606.17799 (Gorinova et al., academic position paper, 2026-06-16)
+- 理由: eval-loop / harness-quality-gate 隣接 family (厳密 taxonomy 非該当を明示判断)。PASS (warning) + Step 4.5 trending (直近 2 件 Opik/Hermes 連続採用 0) → user 選択 light-phase2
+- 結果: delta 4 手法 (3 層フィードバック / 非モデル軸 ablation / 複数形状 verifier / コンポーネント単位評価) を Phase 2 まで検証、**全て Already/Partial で採用 0**。Partial 残余 (汎用 harness ablation / outer-loop 持続) は /improve 退役の意図的判断と衝突する方向で、論文側に反証なし
+- 除外 3 手法: M1 分解フレーム (rehash: CLAUDE.md "Scaffolding > Model" + harness-engineering N=20+) / M6 仕様形式化 (論文自身が open problem と明示、解法なし) / M7 リーダーボード乖離監視 (運営者向け N/A)
+- Reference 価値: "Scaffolding > Model" への academic backing (同一モデルでハーネス差 20pt+、AIDev 実世界受入 35-64% vs bench >70%)
+- 台帳・判定表: docs/research/2026-07-04-coding-benchmarks-misaligned-absorb-analysis.md
+
 ## [2026-06-27] ingest-skip | Loop Engineering: The Anthropic Playbook (Osmani Orange Book, HuaShu 再編集 PDF)
 
 - ソース: Google Drive PDF (10p, HuaShu reformat of Addy Osmani "Orange Book" guide "Loop Engineering: Stop Asking Me What It Is", v260615)
@@ -1958,6 +1984,26 @@
 - レポート: `docs/research/2026-06-20-anthropic-100-decisions-self-updating-prompt-absorb-analysis.md`
 - 教訓: vendor blog 風記事 + family saturated + 経験則の数値根拠なし = 全 rehash の典型サイン。次回 keyword (self-update / apprentice / 100 decisions / feedback loop is product) 検出時は saturation gate skip 推奨可
 - 詳細: docs/research/2026-06-20-khairallah-agent-team-intro-absorb-analysis.md
+
+## [2026-06-30] ingest-skip | Loop Engineering: The Anthropic Playbook (HuaShu Orange Book リフォーマット, PDF)
+- ソース: Google Drive PDF (11p, IEEE風 working note)。著者 HuaShu が Addy Osmani "Orange Book" (Loop Engineering: Stop Asking Me What It Is, v260615) を会議論文形式に再構成
+- 理由: topic family "loop-engineering / multi-agent-orchestration" SATURATED-borderline (N=15+, 採用率<20%, delta=1)
+- 決定的証拠: 一次ソース Osmani は既に `references/comprehension-debt-policy.md` に出典明記で absorb 済み。同 family 直近 `2026-06-17-loops-with-claude` (同 Osmani 素材) が delta=0/採用0。本PDFは二次リフォーマットゆえ構造的に新規 mechanism なし
+- per-method 照合台帳 (全11手法 → matched_prior 名指し):
+  - 4層スタック(Prompt/Context/Harness/Loop) → `blueprint-pattern.md` + Harness Blueprint 4層 (rehash)
+  - Generator/Evaluator 分離 → `multi-agent-coordination-patterns.md` Generator-Verifier + `review-consensus-policy.md` + code-reviewer×codex-reviewer 並列ゲート (rehash)
+  - 評価器は行動する(Playwright MCP) → `ui-observer` agent + `webapp-testing` skill + `design-reviewer` (rehash)
+  - /goal 停止条件 fresh model 判定(maker-checker) → `2026-06-12-fable5-14steps` で `scheduling-decision-table.md` に absorb 済 (rehash)
+  - 5動き(Discovery/Handoff/Verification/Persistence/Scheduling) → `2026-06-17-loops-with-claude` 台帳 row38-47 で6部品=同概念 全名指し済 (rehash)
+  - 6部品(Automations/Worktrees/Skills/Connectors/Sub-agents/Memory) → 同上 `2026-06-17` 台帳 (rehash)
+  - Discovery は skill 経由(intent debt) → `2026-04-12-tan-thin-harness-fat-skills` intent debt 同概念 + skills/ 100+ (rehash)
+  - Stripe 決定論ゲート interlock → completion-gate/golden-check + lefthook + core_principle「mechanism に寄せる」 (rehash)
+  - ハードキャップ(per-run/daily/max retries) → `resource-bounds.md` Doom-Loop + `deny-rules-catalog.md` (rehash)
+  - 4コスト reinforcing cycle → comprehension rot=`comprehension-debt-policy.md` / verification debt=`trust-verification-policy.md` / token blowout=`resource-bounds.md` / cognitive surrender=`2026-06-17` row49 で「naming-only 追記は instruction cost の無駄」と既判定 (rehash)
+  - 5失敗モード taxonomy(Nodding/Amnesiac/Manual/Blind/Tangled ↔ skipped move) → `failure-taxonomy.md`(21 FM)はあるが「各失敗=1動きスキップ」の diagnostic mapping は未文書化、基盤概念は negative-knowledge/resource-bounds に分散既存、新規 mechanism なし (ambiguous)
+- delta=1 (ambiguous: 失敗モード命名 taxonomy のみ。名指し不可な novel はゼロ)
+- スキップ判定: Phase 1.5 gate、ユーザー選択 skip
+- 教訓: 一次ソース absorb 済み (`comprehension-debt-policy.md`) なら、その学術リフォーマット/二次紹介は構造的に採用0。次回 keyword (loop engineering / Orange Book / generator-evaluator / nodding loop / 5 moves of a loop / four costs) 検出時は saturation gate skip 推奨可
 
 ## [2026-07-05] update | 2026-04-08〜07-04 の 170 レポートを一括統合 (catch-up compile)
 

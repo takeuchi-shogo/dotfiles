@@ -1,10 +1,10 @@
 ---
 title: 批評という成果物
 topics: [evaluation, harness]
-sources: [2026-04-09-12-claude-patterns-analysis.md, 2026-04-14-creao-ai-first-analysis.md, 2026-05-28-openclaw-autoreview-absorb-analysis.md, 2026-05-31-hermes-eval-loop-absorb-analysis.md, 2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md, 2026-06-14-opik-self-repairing-harness-absorb-analysis.md]
-updated: 2026-07-05
-last_validated: 2026-07-05
-source_count: 6
+sources: [2026-04-09-12-claude-patterns-analysis.md, 2026-04-14-creao-ai-first-analysis.md, 2026-05-28-openclaw-autoreview-absorb-analysis.md, 2026-05-31-hermes-eval-loop-absorb-analysis.md, 2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md, 2026-06-14-opik-self-repairing-harness-absorb-analysis.md, 2026-07-06-fable-field-guide-unknowns-absorb-analysis.md]
+updated: 2026-07-06
+last_validated: 2026-07-06
+source_count: 7
 confidence: established
 ---
 
@@ -60,3 +60,4 @@ confidence: established
 - [How To Fix AI Slop (Using Hermes) — absorb analysis](../../research/2026-05-31-hermes-eval-loop-absorb-analysis.md) — 自動批評ループの precision 未担保リスクを反証データとして記録 (採用0)
 - [コードレビュー6段階と AI/人間の境界 absorb 分析](../../research/2026-06-02-code-review-6-stages-ai-human-boundary-absorb-analysis.md) — AI沈黙=盲点シグナルの Negative Signal Rule を `/review` に実装
 - [Opik Self-Repairing Harness + Karpathy Loop Engineering 分析レポート](../../research/2026-06-14-opik-self-repairing-harness-absorb-analysis.md) — 全 rehash だが検証過程で退役済み self-healing orphan を発見・整理
+- [A Field Guide to Fable: Finding Your Unknowns absorb 分析](../../research/2026-07-06-fable-field-guide-unknowns-absorb-analysis.md) — 「批評は自己採点でなく分離された checker が行う」原則を skill-creator eval に judge 独立性 (final grading は独立 grader 必須、inline は smoke check のみ) として補強
