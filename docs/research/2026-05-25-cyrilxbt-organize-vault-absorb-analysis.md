@@ -1,7 +1,8 @@
 ---
 title: "@cyrilXBT How to Organize Your Obsidian Vault — absorb analysis (light-phase2)"
 date: 2026-05-25
-status: light-phase2-only
+status: implemented
+implemented_verified: 2026-07-05 (vault-maintenance.sh に check_rare_tags()/check_naming_compliance() 実在を grep 確認)
 adopt_count: 2
 family: obsidian-second-brain
 family_entry: 15
