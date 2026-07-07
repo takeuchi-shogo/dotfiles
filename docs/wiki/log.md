@@ -2028,3 +2028,11 @@
 - 変更: docs/superpowers/specs/2026-05-31-learned-promotion-loop-design.md (additive)
 - 核心: 一次サーベイが corpus の既存方針を frontier lab 文献で validation。記事引用文献 (ACE/MCE/Meta-Harness/ADAS/AFlow/DGM/Hyperagents/AutoHarness/GEPA) は improve-policy.md に名指し吸収済
 - レポート: docs/research/2026-07-08-lilian-weng-harness-rsi-absorb-analysis.md
+
+## [2026-07-08] ingest | Cómo crear Loops en Fable 5 (angeldot_, スペイン語)
+
+- ソース: https://x.com/angeldot_/status/2074528618630574393 (全文貼付、fetch 不要)
+- 判定: Gap 0 / Partial 0 / Already 8 / N/A 2 — 記事採用 0、validation-only 2
+- Saturation: loop-engineering N=16, SATURATED-pure-rehash (delta=0)、user continue でフル workflow
+- 取り込み: managed-agents-scheduling.md に Outcomes 用語 alias 1 行 (validation-only)。/goal pilot pending (06-12 から 26 日) をレポート記録
+- レポート: docs/research/2026-07-08-loop-engineering-es-absorb-analysis.md

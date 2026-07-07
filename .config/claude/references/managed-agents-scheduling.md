@@ -101,6 +101,8 @@ Recipe R1-R5 を月 1 回回す程度であれば Pro credit $20 で十分。週
 
 Routine 公開前は必ず [`routine-prompt-rubric.md`](routine-prompt-rubric.md) の 6 要素 (Role/Task/Process/Output/Error Handling/Constraints) + Pre-flight Checklist を通すこと。
 
+> 用語 alias: CMA 公式機能 **Outcomes** = rubric ベースの完了判定 (評価可能な基準を列挙し、corrector subagent が毎 iteration 評価、`max_iterations` で上限)。本節の rubric (prompt 記述の 6 要素) とは**別物**。CMA 自体が deferred のため未採用 (`docs/research/2026-06-12-fable5-14steps-absorb-analysis.md` #9)。
+
 Routine は無人実行で会話 context を持たないため、prompt の自己完結性が品質を決める。曖昧な prompt は run ごとの出力 drift を生み、無人ゆえに事後発見になる。
 
 ## Routine Recipe Catalog
