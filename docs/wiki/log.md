@@ -2011,3 +2011,20 @@
 - 結果: 既存 36 概念記事を更新、新規 10 概念を記事化 (model-routing / pruning-first / sonnet-imagination-bias / contradiction-detection / surgical-changes / observability-signals / usage-analysis / confirmation-bias / config-drift-audit / prose-writing-style)、INDEX.md 全再生成 (47 concepts / レポート表 170 行)
 - 実行: Sonnet 抽出 6 並列 + 記事生成 14 並列、概念マップはユーザー承認済み
 - 副次: submodular-optimization の旧リンク重複を解消、rlhf-alignment の frontmatter 補完 (speculative 降格)。既存 dead link 3 件 (docs/plans/ 参照) は未修正で lint 対象として残置
+
+## [2026-07-08] ingest | How to Build An Agentic OS using Fable 5 (Builder's Guide)
+
+- ソース: pasted text (user notes, edited by Opus 4.8 max)
+- 判定: Already 5 / N/A 5 (うち3は却下済無人loop) / 採用 A+C, validation-only B
+- 取り込み: model-routing.md に reasoning-echo禁止(予防) + stop_reason note + Fable5 effort規律を追記
+- family: harness-engineering (N=17 飽和, PASS warning)
+- レポート: docs/research/2026-07-08-agentic-os-fable5-builders-guide-absorb-analysis.md
+
+## [2026-07-08] ingest (light Phase 2) | Harness Engineering for Self-Improvement (Lilian Weng)
+
+- ソース: https://lilianweng.github.io/posts/2026-07-04-harness/ (@SakanaAILabs 引用ツイート経由)
+- 判定: SATURATED-but-novel (family harness-engineering, N≫3)。rehash 10 / ambiguous 4 / novel-but-N/A 3 / novel 3
+- 取り込み: 採用 2 (Self-Harness 両側regression gate → design doc B4 / long-term repo health 盲点 → 未解決事項)。6 failure modes bulk-add は verify で却下 (FM-016 が over-optimism を既カバー、taste/domain-intel は binary制約違反)
+- 変更: docs/superpowers/specs/2026-05-31-learned-promotion-loop-design.md (additive)
+- 核心: 一次サーベイが corpus の既存方針を frontier lab 文献で validation。記事引用文献 (ACE/MCE/Meta-Harness/ADAS/AFlow/DGM/Hyperagents/AutoHarness/GEPA) は improve-policy.md に名指し吸収済
+- レポート: docs/research/2026-07-08-lilian-weng-harness-rsi-absorb-analysis.md

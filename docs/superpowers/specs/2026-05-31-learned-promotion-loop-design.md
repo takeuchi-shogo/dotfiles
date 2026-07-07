@@ -126,6 +126,10 @@ learnings/promoted-ledger.jsonl  (新規・追記専用)
 
 ## 未解決事項
 - **echo chamber の自動ガード**: リスク3 の watch 条件を満たすまで意図的に未実装(YAGNI)。観測トリガーで再検討する。
+- **最適化ゴールの短期性 (long-term repo health)**: 本ループの目的関数 (agreement rate / mechanical 捕捉率) は
+  単発 artifact の正しさに閉じており、maintainability / ownership 境界 / migration cost / 将来のデバッグ負荷といった
+  長期健全性を測らない。sandbox rollout で捕捉できない盲点として明示 (codify のみ、機構化は YAGNI)。
+  出典: Lilian Weng "Harness Engineering for Self-Improvement" (2026-07-04) Future Challenges "Long-term success"。
 
 ## Wave3 entry requirements (governance)
 
@@ -153,6 +157,12 @@ Wave3 を起票するときは下記を同時に満たすこと (後付けでな
 - **C3: review gaming ガード (Wave3 で enforce)** — mechanical/advisory 比率の水増し
   (無人化対象を増やすため安易に mechanical 分類する gaming) を `gaming-detector.py` の
   `_detect_*` パターンに追加。dry-run 期は無人化対象が無いので未配線。
+- **B4: 昇格ゲートの両側 regression (Wave3 が非 mechanical 昇格に scope 拡張する場合の precondition)** —
+  held-in (calibration に使った $D_{in}$) **と** held-out (未見 $D_{out}$) の**両方**で regression が無い提案のみ採択する。
+  片側 pass は overfit を通す。eval-generator/regression-gate は退役 (2026-06-21) 済のため、scope 拡張時は holdout eval harness の再建が前提。
+  mechanical 限定の現行 Wave3 では変更が deterministic ゆえ N/A (scope 拡張時に有効化)。
+  出典: Lilian Weng "Harness Engineering for Self-Improvement" (2026-07-04) の Self-Harness (Zhang+ 2026) —
+  propose→evaluate→accept で held-in/held-out 両 regression-free のときのみ harness 更新。
 
 → 元の統合プラン (A+B+C を即実装) は `docs/plans/active/2026-06-05-rsi-governance-frontier-plan.md` を参照。
 本ループ配線後に retarget した経緯もそこに記録。
