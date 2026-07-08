@@ -99,6 +99,8 @@ Tier はメインセッション内の Claude モデル段階。Codex / Gemini /
 
 **使い方**: Codex Spec/Plan Gate は `-c reasoning_effort=high`、Review Gate は `-c reasoning_effort=high`、Implement は medium 以下で十分。強制ではなく任意の参考。自動配分 (stage-aware routing) は運用複雑性が増えるため採用しない。
 
+**Fable 5 の effort 規律**: Fable 5 は `low`/`medium` でも旧モデルの `xhigh` を上回ることが多い (公式 docs)。worker (Sonnet 相当の実装段) の effort を安易に上げない。`xhigh` は 30 分超・token budget millions の long-running agentic task 専用で、default は `high` (パラメータ省略時)。`high`/`xhigh` で `claude -p` を叩く時は `max_tokens` を大きく (64k+) — thinking + response text の合算ハード上限のため思考が途中で切れる。
+
 **由来**: `docs/research/2026-04-24-harness-engineering-absorb-analysis.md` (AlphaSignal Harness Engineering absorb)
 
 ## WebFetch 委譲注記 (Haiku 内部要約対策)
@@ -136,6 +138,8 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 
 1. **Platform 側 domain safety fallback (server-side、こちらで実装するものではない)**: Fable 5 は cyber/bio/chem/distillation 領域の要求を検出すると **server 側で Opus 4.8 に透過的に自動切替**する (billing は cache hit 扱い)。security-reviewer 系タスク・脆弱性調査・暗号 primitive のレビューは Fable 指定でも実質 Opus 4.8 で走りうる。挙動が想定とズレたらこの透過 fallback を疑い、明示的に `Agent(model: "opus")` を指定して切り分ける
 2. **ローカル Bash permission classifier の outage (これは別物)**: `/model claude-fable-5` で Bash auto-mode classifier がセッション全体で死亡した実績 (2026-06-10)。trivial コマンドの成功を復帰の証拠にしない。復旧は `/model` で実績モデルへ。詳細: memory `feedback_model_fable_classifier_outage.md`
+3. **reasoning-echo は refusal を誘発する (skill/prompt 監査対象)**: skill・prompt・harness 指示に `show your thinking` / `explain your reasoning` / 「思考を出力せよ」等の **reasoning echo 要求を書かない** — Fable 5 の `reasoning_extraction` refusal カテゴリを誘発し fallback を増やす (公式: platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)。構造化 thinking ブロックを読む前提で設計する。現状 grep で違反 0 = **予防ルール**
+4. **refusal は HTTP 200 (stop_reason で判定する)**: safety classifier の拒否は `stop_reason: "refusal"` の SUCCESS レスポンスで返る (exit code は 0)。無人 `claude -p` ジョブが exit code だけで成否判定すると refusal を取りこぼす。ただし platform 側 fallback (上記 1) と、現行の無人ジョブ prompt が reasoning-echo/cyber/bio を含まないことから **発生確率は実質ゼロ → ハンドラ構築は YAGNI**。無人ジョブに reasoning-echo/cyber/bio 系 prompt を足す時だけ `stop_reason` チェックを入れる
 
 **Haiku grader 境界**: Tier 3 の Haiku は「非権威の cheap prefilter / 形式チェック grader」(`/goal` evaluator も Haiku) までに限定する。**permission/safety 判定・最終 verify・マージ判断には使わない** — LLM に Tool Use 権限を判定させる permission classifier は determinism boundary 違反 + prompt injection 耐性なしとして reject 済み (`docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md` #4)。最終評価の権威は Tier 0 の不可譲な責務 (上記「主エージェント (現在のメインモデル) の不可譲な責務」)。
 

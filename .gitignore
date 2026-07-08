@@ -36,6 +36,7 @@ CLAUDE.local.md
 .config/claude/skills/implementing-recording-ait/
 __pycache__/
 .worktrees/
+worktrees/
 .triage/
 
 # Raycast secrets

@@ -336,6 +336,16 @@
         ]
       },
       {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Model Routing] 非自明な実装・探索・テスト作成は Sonnet subagent (Agent, model=sonnet) へ委譲 — 速い&トークン節約。1行修正だけメインで可。'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "*",
         "hooks": [
           {
