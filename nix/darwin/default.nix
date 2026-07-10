@@ -59,6 +59,10 @@
       "rtk"
       # Task runner (Taskfile.yml executor)
       "go-task"
+      # Terminal IDE (LSP/git/SSH remote editing)
+      "fresh-editor"
+      # Review-first terminal diff viewer for agent-authored changesets
+      "hunk"
     ];
 
     casks = [
