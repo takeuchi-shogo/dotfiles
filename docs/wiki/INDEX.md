@@ -94,6 +94,10 @@
 
 - [矛盾検出](concepts/contradiction-detection.md) — 矛盾検出は、複数の情報源やナレッジベース内の主張を突き合わせ、対立する claim を明示的に洗い出す手法である。 | sources: 2 | emerging
 
+### task-management — タスク管理
+
+- [タスク管理の責務分担 (判断=人間 / 更新=エージェント / 計算=スクリプト)](../research/2026-07-11-layerx-uphy-taskmgmt-absorb-analysis.md) — daily note SSoT 一本化 + task-lint.py validator、writer agent は YAGNI defer。 | sources: 1 | emerging
+
 ## レポート一覧 (2026-04-08 以降の 171 件)
 
 2026-04-07 以前の約 180 件は初回 compile (2026-04-07) で概念記事に統合済み。個別レポートは `docs/research/` を直接参照。
