@@ -9,7 +9,7 @@ description: >
 origin: self
 argument-hint: plan | midday | review
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob
+allowed-tools: Read, Write, Edit, Glob, Grep
 metadata:
   pattern: inversion+generator
 ---
@@ -132,7 +132,7 @@ tags:
 - {Q1の回答}
 
 ### やることリスト
-1. {タスク} — {時間ブロック} — {見積もり}
+1. {タスク or [[task note リンク]]} — {時間ブロック} — {見積もり}
 2. ...
 
 ### やらないこと
@@ -144,6 +144,18 @@ tags:
 
 5. 「保存しました: `07-Daily/YYYY-MM-DD.md`」と表示
 6. 「今日も良い1日を！」で締める
+
+### タスクノート接続 (SSoT)
+
+Q2 のタスクのうち **複数日にまたがる・継続的なタスク** のみ対象とする（当日限りの todo は daily note 直書きで良い、追加質問はしない）。
+
+1. 保存前に `01-Projects/` 配下を Grep (`type: task`) で検索する
+2. 既存の task note が見つかれば、やることリストの該当項目を `[[wikilink|タスク名]]` 形式にする
+3. 見つからなければ Step 3 の確認表示に「task note 化候補: {タスク名}」を併記し、**ユーザーが承認した場合のみ** `01-Projects/proj-{プロジェクト名}/{タスク名}.md` を作成する
+   - frontmatter: `type: task` / `status: open` / `due: YYYY-MM-DD`（分かる場合）/ `priority: high|medium|low`
+   - 本文は `## 目的` と `## 完了条件` の2見出し（1-2行ずつ、ユーザーの言葉のまま）
+4. **タスクの真実（status/due/priority）は task note のみが持つ**。daily note にはリンクと時間ブロックだけを書き、status や期日を複製しない
+5. タスク完了時は task note の `status: complete` に遷移する（ファイル削除・06-Archive 移動はしない）
 
 ---
 
@@ -297,6 +309,7 @@ tags:
 - **plan の項目が空のまま先に進まない** — 全項目が埋まるまで続ける
 - **review で plan の達成/未達成を勝手に判定しない** — ユーザー自身に振り返らせる
 - **既存セクションを無断で上書きしない** — plan/review が既にある場合は必ず確認する
+- **タスクの真実を daily note に複製しない** — status/期日は task note が SSoT、daily note はリンクと時間ブロックのみ
 
 ## Skill Assets
 

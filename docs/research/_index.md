@@ -15,6 +15,10 @@ last_reviewed: 2026-04-23
 
 ## 統合済み（60+記事/論文）
 
+### タスク管理
+
+- **LayerX uphy 判断は人間・更新はエージェント・計算はスクリプト (2026-07-11)** — task-management family 初 absorb (Saturation PASS 新分野)。10手法中 採用3 (T1 daily note 分裂解消=00-Inbox/07-Daily 二重化の Critical Gap 露出 / T2 タスク SSoT 最小構築=timekeeper 接続 / T3 task-lint.py validator)。writer agent は Codex 指摘で YAGNI defer (導入条件記録)。核心=真実の置き場所を1つに → `docs/research/2026-07-11-layerx-uphy-taskmgmt-absorb-analysis.md`
+
 ### ハーネス理論
 
 - NLAH, Meta-Harness, AutoHarness(2件), Harness Wars/Books

@@ -25,14 +25,14 @@ flat 単一フォルダ設計 (例: cyrilXBT "One-Folder Life System") を採用
 
 | フォルダ | 目的 |
 |---------|------|
-| 00-Inbox | 未整理ノートの一時置き場。キャプチャしたらここに入れる |
+| 00-Inbox | 未整理ノートの一時置き場。キャプチャしたらここに入れる。capture と棚卸し対象レポート専用 — daily note は置かない (07-Daily へ) |
 | 01-Projects | アクティブなプロジェクト。完了期限があるもの |
 | 02-Areas | 継続的に管理する領域。健康、財務、キャリア等 |
 | 03-Resources | リファレンス・参考資料。いつか使うかもしれない情報 |
 | 04-Galaxy | Zettelkasten パーマネントノート。自分の言葉で書いた知識の原子 |
 | 05-Literature | 読書・動画・記事のノート。ソースからの抽出 |
 | 06-Archive | 完了・非アクティブ項目 |
-| 07-Daily | 日報。/daily-report の出力が自動同期される |
+| 07-Daily | 統合 daily note。morning briefing (自動生成)・timekeeper の plan/review が `YYYY-MM-DD.md` に、日報が `YYYY-MM-DD-report.md` に集約される |
 | 08-Agent-Memory | Claude Code の memory が自動同期される。エージェントの蓄積知識 |
 
 ## Naming Conventions

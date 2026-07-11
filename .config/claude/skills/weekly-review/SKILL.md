@@ -172,7 +172,17 @@ ls -lt "$VAULT_PATH/00-Inbox/vault-maintenance-"*.md 2>/dev/null | head -3
 
 **重要 (Codex 指摘)**: report を読んで終わりにせず、各項目を Horizon 1 decisions（来週の具体アクション）に変換する。変換できない項目は「Someday」か「削除候補」に分類。
 
-#### 2.5.3 統合後の分類
+#### 2.5.3 task-lint.py の実行
+
+task note (`type: task`) の schema 違反・重複・二重管理をスクリプトで機械的に検出する（判断はここでなく Phase 6 で行う）。
+
+```bash
+python3 ~/.claude/scripts/runtime/task-lint.py
+```
+
+violations があれば生成されたレポート (`00-Inbox/task-lint-report-*.md`) を 2.5.1 の Inbox 棚卸し対象に含める。「clean」の場合はスキップ。
+
+#### 2.5.4 統合後の分類
 
 Phase 2.5 の結果は Phase 6「来週の計画」で Horizon 1 タスクとして組み込む。
 
