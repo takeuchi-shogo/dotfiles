@@ -195,6 +195,7 @@
     ],
     "disableBypassPermissionsMode": "disable"
   },
+  "model": "opus[1m]",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7",
@@ -933,6 +934,7 @@
     }
   },
   "effortLevel": "xhigh",
+  "advisorModel": "fable",
   "plansDirectory": "./tmp/plans",
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
