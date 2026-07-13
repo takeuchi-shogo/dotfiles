@@ -1,0 +1,42 @@
+{
+  "date": "2026-07-12",
+  "branch": "auto/learned-promote-20260712-222511",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "fa773e6a601d07d2e1b8ae9a737a9bc37def6b7b",
+      "decision": "adopted",
+      "scope": "claude-mcp-registry",
+      "target_artifact": ".config/claude/references/mcp-toolshed.md",
+      "detail_excerpt": "claude mcp remove は ~/.claude.json 側の登録を消す"
+    },
+    {
+      "key": "1004bb5d268d2daacac91fd3d4fe097458cdc62a",
+      "decision": "rejected",
+      "scope": "moe-vs-moa",
+      "reason": "already covered: .config/claude/references/subagent-delegation-guide.md",
+      "detail_excerpt": "MoA は task/response 粒度、MoE は token 粒度"
+    },
+    {
+      "key": "43bd07ae390c5b4d184b84122e67ffd812331e9d",
+      "decision": "rejected",
+      "scope": "absorb-gotchas",
+      "reason": "already covered: .config/claude/skills/skill-audit/SKILL.md",
+      "detail_excerpt": "Already 判定は実ファイル走査なしだと過大評価"
+    },
+    {
+      "key": "54c82b2e60ee9cc6b6f39ef43e77d5bcee43041d",
+      "decision": "rejected",
+      "scope": "absorb-phase2",
+      "reason": "already covered: .config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "Already は品質保証ではなく Phase 2.5 が必須"
+    },
+    {
+      "key": "b1aad2671a2a51433b3342fb00c68c4bea5b9b5e",
+      "decision": "rejected",
+      "scope": "harvey-case",
+      "reason": "already covered: .config/claude/references/model-debt-register.md",
+      "detail_excerpt": "model-specific rules は削除条件とセットで運用"
+    }
+  ]
+}

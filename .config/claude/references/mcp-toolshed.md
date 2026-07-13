@@ -78,6 +78,11 @@ last_reviewed: 2026-04-23
 
 ## MCP サーバー追加時のチェックリスト
 
+### 設定ソースの切り分け
+
+- `claude mcp add/remove` で管理する user/global scope の登録先は `~/.claude.json`。CLI 登録を消すときは `claude mcp remove <name>` を使い、repo の `.mcp.json` を編集して解決しようとしない
+- project scope の MCP 定義は引き続き repo root の `.mcp.json` と `.config/claude/settings.json` `enabledMcpjsonServers` で管理する
+
 新しい MCP サーバーを追加する前に確認:
 
 - [ ] **必要性**: 既存ツール（Bash, Grep, WebFetch 等）で代替できないか
