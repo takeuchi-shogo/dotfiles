@@ -16,6 +16,8 @@ base64 eval payload) を検出したら additionalContext で警告する。
   難読化系は正規の CLAUDE.md には絶対に現れない高シグナル指標なので、
   trust-skip (dotfiles 自身を除外する allowlist) なしで全 cwd をスキャンしても
   誤警告が出ない。
+- symlink: repo 内の相対リンク (例: CLAUDE.md -> AGENTS.md) は正規運用として
+  follow + 中身スキャン。絶対パスや cwd 外へ逃げるリンクだけを hostile として警告する。
 - warn-only (exit 2 でブロックしない)。起動を妨げず、判断は人間に委ねる。
 - 出典: Hermes Harness (NousResearch) の "context tier runs prompt-injection
   scanning before loading cwd project files" を /absorb (2026-05-30) で採用。
@@ -112,6 +114,30 @@ def _scan_text(text: str) -> tuple[str, str] | None:
     return None
 
 
+def _is_in_repo_relative_symlink(fpath: Path, cwd: Path) -> bool:
+    """True when symlink target stays inside cwd via a relative link.
+
+    Allows CLAUDE.md -> AGENTS.md (monorepo 等の正規運用)。
+    Absolute targets and links that resolve outside cwd remain hostile.
+    """
+    try:
+        raw = os.readlink(fpath)
+    except OSError:
+        return False
+    if os.path.isabs(raw):
+        return False
+    try:
+        resolved = fpath.resolve(strict=True)
+        cwd_resolved = cwd.resolve(strict=True)
+    except OSError:
+        return False
+    try:
+        resolved.relative_to(cwd_resolved)
+    except ValueError:
+        return False
+    return True
+
+
 def _log(
     cwd: str, rel_path: str, pattern_name: str, detail: str, session_id: str
 ) -> None:
@@ -135,16 +161,16 @@ def main() -> None:
     data = load_hook_input()
     cwd = data.get("cwd") or os.getcwd()
     session_id = data.get("session_id", "unknown")
+    cwd_path = Path(cwd)
 
     findings = []
     for rel_path in CONTEXT_FILES:
-        fpath = Path(cwd) / rel_path
+        fpath = cwd_path / rel_path
         try:
-            # symlink された context ファイルは読まない。CLAUDE.md -> /etc/passwd の
-            # ような hostile symlink を follow すると「CLAUDE.md をスキャンした」という
-            # false assurance になる。正規 repo は context ファイルを tree 外に
-            # symlink しないため、symlink 自体を injection シグナルとして報告する。
-            if fpath.is_symlink():
+            # Hostile: absolute or cwd-escaping symlink (e.g. CLAUDE.md -> /etc/passwd).
+            # Safe: in-repo relative symlink (e.g. CLAUDE.md -> AGENTS.md) — follow
+            # and scan target contents for obfuscation instead of warning on the link.
+            if fpath.is_symlink() and not _is_in_repo_relative_symlink(fpath, cwd_path):
                 detail = f"-> {os.readlink(fpath)}"
                 _log(cwd, rel_path, "symlink", detail, session_id)
                 findings.append((rel_path, "symlink", detail))
