@@ -18,8 +18,13 @@ Your findings will be aggregated with other subagents' results.
 
 1. **{finding_title}**
    - Source: {source_url_or_reference}
+   - Source type: {PRIMARY/SECONDARY}
+   - Published: {publication date} / Data period: {period the data covers, if different}
    - Confidence: {HIGH/MEDIUM/LOW}
+   - Counter-evidence: {conflicting evidence found, or "none found"}
    - Details: {concise_description}
+
+If numbers conflict across sources, do not silently pick one — note the discrepancy and estimate why (definition, period, or methodology difference).
 
 ### Key Takeaways
 
