@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sync-daily-report.sh — ~/daily-reports/*.md → Obsidian Vault 07-Daily/
+# sync-daily-report.sh — ~/daily-reports/*.md → Obsidian Vault 07-Daily/ (YYYY-MM-DD-report.md)
 set -euo pipefail
 
 VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
@@ -19,7 +19,8 @@ synced=0
 for src_file in "$SOURCE_DIR"/*.md; do
     [[ -f "$src_file" ]] || continue
     filename="$(basename "$src_file")"
-    dest_file="$TARGET/$filename"
+    # timekeeper/briefing の統合 daily note (YYYY-MM-DD.md) を上書きしないよう -report suffix を付ける
+    dest_file="$TARGET/${filename%.md}-report.md"
 
     # Skip if already synced and source hasn't changed
     if [[ -f "$dest_file" ]] && [[ ! "$src_file" -nt "$dest_file" ]]; then

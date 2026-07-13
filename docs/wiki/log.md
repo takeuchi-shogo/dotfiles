@@ -4,6 +4,16 @@
 > `## [YYYY-MM-DD] operation | Title`
 >
 
+## [2026-07-11] ingest | LayerX uphy 判断は人間・更新はエージェント・計算はスクリプト
+
+- ソース: https://zenn.dev/layerx/articles/797bb5b8935bf6
+- 判定: Gap/Foundational-Gap 系 4, Partial 2, Already 3, N/A 1 (10手法)
+- 取り込み (採用3): T1 daily note を 07-Daily に一本化 (00-Inbox/07-Daily 二重化の Critical Gap 解消) / T2 タスク SSoT 最小構築 (timekeeper に type:task note 接続) / T3 task-lint.py 決定論 validator (schema/重複/二重管理検出 + weekly-review 接続)
+- defer: task-manager 単一 writer agent (個人・低volume で YAGNI、導入条件を分析レポートに記録) / PostToolUse hook ビュー再生成 / ガント・依存図 / Bases 移行
+- family: task-management (新分野、初 absorb、Saturation PASS)
+- レポート: docs/research/2026-07-11-layerx-uphy-taskmgmt-absorb-analysis.md
+- PR: #161
+
 ## [2026-07-06] ingest | Claude Code Skills で開発フロー強制 + 自己改善ループ (Zenn dk_)
 
 - ソース: https://zenn.dev/dk_/articles/1f3fbc506827ac
