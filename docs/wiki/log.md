@@ -2036,3 +2036,12 @@
 - Saturation: loop-engineering N=16, SATURATED-pure-rehash (delta=0)、user continue でフル workflow
 - 取り込み: managed-agents-scheduling.md に Outcomes 用語 alias 1 行 (validation-only)。/goal pilot pending (06-12 から 26 日) をレポート記録
 - レポート: docs/research/2026-07-08-loop-engineering-es-absorb-analysis.md
+
+## [2026-07-14] ingest | 努力の天才「落合陽一」がやってるAI活用術
+
+- ソース: テキスト貼り付け (URL なし、著者不明の Web 記事)
+- 判定: Gap 1 (弱, 見送り) / Partial 1 / Already 12 / N/A 2 — 採用 2
+- Saturation: taxonomy 4族すべて閾値未達 → PASS (celebrity-ai-workflow 新分野)
+- 取り込み: research templates に証拠台帳フィールド (Primary-Secondary / Published vs Data period / Counter-evidence / 数値相違理由推定) + /note に保存前分類 schema (事実/解釈/仮説/アイデア/矛盾、自動昇格なし)
+- Phase 2.5: Gemini sunset により Codex 単独 (縮退明記)。Validation-only: improve-policy.md Friction→Eval Loop producer 死亡を記録
+- レポート: docs/research/2026-07-14-ochiai-ai-effort-os-absorb-analysis.md
