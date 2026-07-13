@@ -16,6 +16,12 @@
 
 set -euo pipefail
 
+# このスクリプトが作る一時ファイル (TASK_FILE / .keep) を private に。
+# 注: worker 本体が書く RESULT_FILE / .status は herdr が spawn する
+# プロセスの umask に従うため、これらの perms は共通 lib (dispatch_logger.sh)
+# の /tmp/cmux-results 設計に依存する (cmux 版から継承、本 PR の scope 外)。
+umask 077
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LIB_DIR="$(cd "$SCRIPT_DIR/../lib" 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
 source "${LIB_DIR}/dispatch_logger.sh"
@@ -45,7 +51,9 @@ fi
 
 # --- ワーカーID生成 ---
 # 末尾の model 名は herdr-collect-result.sh の完了検出方式の分岐に使う
-WORKER_ID="w-$(date +%s)-${MODEL}"
+# nonce (pid + $RANDOM) で同一秒・並列起動時の ID 衝突と予測を防ぐ。
+# model は末尾に置き、collect 側の `${WORKER_ID##*-}` 抽出と検証正規表現に合わせる。
+WORKER_ID="w-$(date +%s)-$$-${RANDOM}-${MODEL}"
 RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
 
 # タスク内容をファイルに書き出す（コマンドインジェクション防止）
@@ -55,6 +63,14 @@ printf '%s' "$TASK" > "$TASK_FILE"
 chmod 600 "$TASK_FILE"
 
 dispatch_log_state "$WORKER_ID" "pending" "launching"
+
+# launching 以降の失敗は state ログに failed を残してから exit する
+# (JSONL ログから worker 状態を再構築する側が「launching のままハング」と誤読しないため)
+_fail() {
+  dispatch_log_state "$WORKER_ID" "launching" "failed"
+  echo "[herdr-launch-worker] $1" >&2
+  exit 1
+}
 
 # --- エージェント起動 (JSON 出力から pane_id を抽出) ---
 start_agent() {
@@ -75,23 +91,28 @@ ${TASK}
 
 ## 完了時の手順
 結果を応答の最後にまとめて出力してください。ファイルへの書き出しは不要です。"
-    PANE=$(start_agent claude --dangerously-skip-permissions)
+    # set -e の暗黙 exit では _fail (failed state ログ) を経由しないため if で受ける
+    if ! PANE=$(start_agent claude --dangerously-skip-permissions); then
+      _fail "herdr agent start に失敗した (claude)"
+    fi
     # 起動完了 (= idle 検出) を待ってからプロンプト送信。検出失敗時は cmux 版と同じ固定待ち
     herdr wait agent-status "$PANE" --status idle --timeout 30000 >/dev/null 2>&1 || sleep 5
     # agent send は入力欄に入れるだけで submit しない — paste 完了を待って Enter を送る
-    herdr agent send "$WORKER_ID" "$PROMPT" >/dev/null
+    herdr agent send "$WORKER_ID" "$PROMPT" >/dev/null || _fail "agent send に失敗した (pane: ${PANE})"
     sleep 2
-    herdr pane send-keys "$PANE" enter >/dev/null
+    herdr pane send-keys "$PANE" enter >/dev/null || _fail "send-keys に失敗した (pane: ${PANE})"
     # submit 確認: working 遷移を待つ。paste 処理直後の enter は飲まれることが
     # あるため、遷移しなければ一度だけ再送する。
-    # ponytail: 数秒で終わるタスクは working を見逃して誤失敗しうる。実運用の
-    #           worker タスクは分単位なので許容
     if ! herdr wait agent-status "$PANE" --status working --timeout 10000 >/dev/null 2>&1; then
-      herdr pane send-keys "$PANE" enter >/dev/null
-      herdr wait agent-status "$PANE" --status working --timeout 10000 >/dev/null 2>&1 || {
-        echo "[herdr-launch-worker] プロンプト送信を確認できなかった (pane: ${PANE})" >&2
-        exit 1
-      }
+      herdr pane send-keys "$PANE" enter >/dev/null || _fail "send-keys に失敗した (pane: ${PANE})"
+      if ! herdr wait agent-status "$PANE" --status working --timeout 10000 >/dev/null 2>&1; then
+        # 数秒で終わるタスクは working を見逃しうる。done = 完走済み (未閲覧) なので
+        # 送信成功とみなす。idle は「未送信で入力欄のまま」と区別できないため失敗に倒す
+        STATUS=$(herdr agent get "$PANE" 2>/dev/null \
+          | jq -r '.result.agent.agent_status // "unknown"' 2>/dev/null || echo unknown)
+        [[ "$STATUS" == "done" ]] || \
+          _fail "プロンプト送信を確認できなかった (pane: ${PANE}, status: ${STATUS})"
+      fi
     fi
     dispatch_log_prompt "$WORKER_ID" "$PROMPT"
     ;;
@@ -100,32 +121,40 @@ ${TASK}
     # DONE_SIGNAL が画面に出る = 実行終了時のみ、が保証される (成否は .status で判別)。
     # 変数は positional args で渡し quoting 破壊 (DONE_SIGNAL の env override 等) を防ぐ。
     # 終了後も bash に落として pane を保持 (close は collect 側)
+    # codex は positional prompt なので `--` で option 終端し、task 文字列が
+    # `--sandbox=...` 等の option として解釈される injection を塞ぐ。
+    # gemini は `-p <value>` で束縛済みだが対称性のため同様に扱う。
     if [[ "$MODEL" == "codex" ]]; then
-      WORKER_CMD='codex exec --skip-git-repo-check --color never "$(cat "$1")"'
+      WORKER_CMD='codex exec --skip-git-repo-check --color never -- "$(cat "$1")"'
     else
       WORKER_CMD='gemini -p "$(cat "$1")"'
     fi
-    PANE=$(start_agent bash -c \
+    if ! PANE=$(start_agent bash -c \
       "${WORKER_CMD}"' > "$2" 2>&1; echo $? > "$2.status"; echo "$3"; exec bash' \
-      bash "$TASK_FILE" "$RESULT_FILE" "$DONE_SIGNAL")
+      bash "$TASK_FILE" "$RESULT_FILE" "$DONE_SIGNAL"); then
+      _fail "herdr agent start に失敗した (${MODEL})"
+    fi
+    dispatch_log_prompt "$WORKER_ID" "$TASK"
     ;;
   *)
-    echo "[herdr-launch-worker] Unknown model: $MODEL" >&2
-    exit 1
+    _fail "Unknown model: $MODEL"
     ;;
 esac
 
 if [[ -z "$PANE" || "$PANE" == "null" ]]; then
-  echo "[herdr-launch-worker] failed to start agent (no pane_id)" >&2
-  exit 1
+  _fail "failed to start agent (no pane_id)"
+fi
+
+# --keep はマーカーファイルで enforce する (collect が --close 指定でも close をスキップ)。
+# running ログより先に作成し、ログ駆動で collect する observer が marker 作成前に
+# close するレースを防ぐ
+if [[ -n "$KEEP" ]]; then
+  touch "${RESULT_FILE}.keep"
 fi
 
 # --- ログ記録 ---
 dispatch_log_dispatch "$WORKER_ID" "$MODEL" "$TASK" "$PANE"
 dispatch_log_state "$WORKER_ID" "launching" "running"
-
-# --keep はここでは記録のみ (collect 側の --close を付けない運用で pane が残る)
-[[ -n "$KEEP" ]] && echo "[herdr-launch-worker] --keep: collect 時に --close を付けないこと" >&2
 
 # --- 結果を stdout に出力 ---
 echo "${PANE} ${WORKER_ID}"

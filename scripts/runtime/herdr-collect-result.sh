@@ -5,8 +5,13 @@
 #   herdr-collect-result.sh --pane <pane_id> --worker <worker_id> [--timeout 1800] [--close]
 #
 # herdr wait はブロッキングなので cmux 版のポーリングループは不要。
-# --close: 回収成功後に pane を閉じる (単発 worker の使い捨て用。--keep 運用では付けない)
+# --close: 回収成功後に pane を閉じる (単発 worker の使い捨て用。launch --keep の
+#          マーカーがある場合は --close 指定でも close をスキップする)
 # ponytail: 画面のエラーパターン検出→自動リトライは未移植。失敗時は pane が残るので conductor が判断する
+#
+# Trust boundary: task 文字列と worker は conductor (親 AI) が発行する trusted 入力で、
+# 敵対者ではない前提。よって DONE_SIGNAL は固定文字列で十分としている。task を
+# 外部の untrusted 入力から組む運用に変える場合は per-worker random token に変えること。
 #
 # Output: 結果テキスト (stdout)
 # Exit: 0=completed, 1=error, 2=timeout, 3=herdr not found, 4=blocked (人間の承認待ち)
@@ -41,6 +46,20 @@ if [[ -z "$PANE" || -z "$WORKER_ID" ]]; then
   exit 1
 fi
 
+# WORKER_ID は RESULT_FILE の path とモデル分岐の両方に使うため厳格に検証する。
+# launch が生成する形式 `w-<ts>-<pid>-<rand>-<model>` に一致させ、slash/.. による
+# path traversal と、未知 model が codex/gemini 分岐に落ちる誤判定を同時に防ぐ。
+if [[ ! "$WORKER_ID" =~ ^w-[0-9]+(-[0-9]+)*-(claude|codex|gemini)$ ]]; then
+  echo "[herdr-collect-result] invalid --worker: ${WORKER_ID}" >&2
+  exit 1
+fi
+
+# timeout は算術展開 ($((TIMEOUT * 1000))) に使うため数値であることを保証する
+if [[ ! "$TIMEOUT" =~ ^[0-9]+$ ]]; then
+  echo "[herdr-collect-result] --timeout must be a positive integer: ${TIMEOUT}" >&2
+  exit 1
+fi
+
 RESULT_FILE="${DISPATCH_RESULT_DIR}/${WORKER_ID}.md"
 MODEL="${WORKER_ID##*-}"
 
@@ -71,7 +90,7 @@ if [[ "$MODEL" == "claude" ]]; then
     STATUS=$(herdr agent get "$PANE" 2>/dev/null \
       | jq -r '.result.agent.agent_status // .result.agent_status // "unknown"' 2>/dev/null || echo unknown)
     case "$STATUS" in
-      done) break ;;
+      done|idle) break ;;
       blocked)
         dispatch_log_state "$WORKER_ID" "running" "blocked"
         echo "[herdr-collect-result] Worker is blocked (承認待ち)。pane ${PANE} で人間の対応が必要" >&2
@@ -136,7 +155,12 @@ dispatch_log_result "$WORKER_ID" "completed" "$RESULT_FILE"
 dispatch_log_state "$WORKER_ID" "running" "completed"
 
 if [[ -n "$CLOSE" ]]; then
-  herdr pane close "$PANE" >/dev/null 2>&1 || true
+  # launch --keep のマーカーがあれば close しない (観察用に pane を残す意図を enforce)
+  if [[ -f "${RESULT_FILE}.keep" ]]; then
+    echo "[herdr-collect-result] --keep マーカーがあるため pane ${PANE} は残します" >&2
+  else
+    herdr pane close "$PANE" >/dev/null 2>&1 || true
+  fi
 fi
 
 cat "$RESULT_FILE"
