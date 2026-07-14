@@ -784,17 +784,6 @@
         ]
       },
       {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $HOME/.claude/scripts/runtime/save-briefing-to-vault.sh",
-            "timeout": 10,
-            "statusMessage": "Saving briefing to Vault..."
-          }
-        ]
-      },
-      {
         "hooks": [
           {
             "type": "command",
@@ -934,7 +923,7 @@
     }
   },
   "effortLevel": "xhigh",
-  "advisorModel": "fable",
+  "advisorModel": "opus",
   "plansDirectory": "./tmp/plans",
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
