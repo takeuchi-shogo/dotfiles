@@ -58,9 +58,10 @@ tasks:
       Post-clone / post-nix:switch orchestration. Idempotent — safe to re-run.
       Pre-req: `task nix:bootstrap PROFILE=...` (first machine) or `task nix:switch PROFILE=...`.
       Chains the steps that are NOT covered by nix-darwin / init-install.sh:
-        build-hooks → lefthook:install → build-claude → patch-claude → claude:plugins → doctor
+        build-hooks → lefthook:install → build-claude → patch-claude → claude:plugins → herdr:plugins → doctor
       Skills are vendored in the repo (symlinked by nix), so nix:switch already
-      provides them; claude:plugins fetches the plugin payloads that are machine-local.
+      provides them; claude:plugins / herdr:plugins fetch plugin payloads that
+      are machine-local.
       Excluded (run manually if needed): cmux:link, cmux:worktree-daemon:install.
     cmds:
       - task: build-hooks
@@ -68,6 +69,7 @@ tasks:
       - task: build-claude
       - task: patch-claude
       - task: claude:plugins
+      - task: herdr:plugins
       - task: doctor
 
   brew:
@@ -292,6 +294,20 @@ tasks:
     desc: 'Read-only: report plugins declared in settings.json but not installed (exit 1 if any missing)'
     cmds:
       - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh check
+
+  herdr:plugins:
+    desc: |
+      Install herdr plugins declared in .config/herdr/plugins.txt (owner/repo
+      list). Idempotent. Plugin payloads live under ~/.config/herdr/plugins/,
+      which is machine-local (fetched/built from GitHub) and not vendored by
+      nix — only config.toml is symlinked (nix/home/default.nix block 6).
+    cmds:
+      - bash ~/dotfiles/scripts/lifecycle/herdr-plugins-sync.sh install
+
+  herdr:plugins:check:
+    desc: 'Read-only: report herdr plugins declared but not installed (exit 1 if any missing)'
+    cmds:
+      - bash ~/dotfiles/scripts/lifecycle/herdr-plugins-sync.sh check
 
   codex-janitor:
     desc: Run the repo-local Codex janitor workflow runner
