@@ -1,0 +1,5 @@
+# herdr plugins — one <owner>/<repo> per line (herdr plugin install <owner>/<repo>).
+# Source of truth for `task herdr:plugins`. Payloads are fetched/built locally
+# under ~/.config/herdr/plugins/ (machine-local, not vendored — see
+# nix/home/default.nix block 6 and scripts/lifecycle/herdr-plugins-sync.sh).
+smarzban/herdr-file-viewer
