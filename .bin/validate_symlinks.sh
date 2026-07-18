@@ -24,7 +24,9 @@ managed_links = [
 
     # block 2: Claude (.config/claude → ~/.claude)
     (home / ".claude/CLAUDE.md", root / ".config/claude/CLAUDE.md", ".claude/CLAUDE.md"),
-    (home / ".claude/settings.json", root / ".config/claude/settings.json", ".claude/settings.json"),
+    # ~/.claude/settings.json は意図的に symlink でなく実体ファイル (Superset/Orca が hook を
+    # runtime 注入するため。symlink に戻すと注入が repo に書き込まれる)。symlink 検証から除外。
+    # drift 管理は memory project_claude_settings_live_drift + 手動 surgical 反映で運用。
     (home / ".claude/settings.local.json", root / ".config/claude/settings.local.json", ".claude/settings.local.json"),
     (home / ".claude/statusline.sh", root / ".config/claude/statusline.sh", ".claude/statusline.sh"),
     (home / ".claude/agents", root / ".config/claude/agents", ".claude/agents"),
