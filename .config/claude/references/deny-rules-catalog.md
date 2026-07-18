@@ -6,7 +6,7 @@ last_reviewed: 2026-06-18
 # Deny Rules Catalog (settings.json permissions auditability)
 
 `.config/claude/settings.json` の `permissions` を **カテゴリ別**に読めるようにした台帳。
-目的は auditability — 104 件の deny / 71 件の allow の **意図** をカテゴリ単位で追えるようにする
+目的は auditability — 88 件の deny / 71 件の allow の **意図** をカテゴリ単位で追えるようにする
 (claude-code-harness の番号付きガードレールレジストリに相当、ただし「生成」はせず読み物に留める)。
 
 > **single source は `settings.json` の `permissions` ブロック。本ファイルは編集しても挙動を変えない**
@@ -14,7 +14,7 @@ last_reviewed: 2026-06-18
 > (`.bin/validate_configs.sh`) が settings.json と自動照合し、drift すると CI が fail する。
 > 手動同期に頼らず、件数が変わったらヘッダ・合計・カテゴリを直すこと。`ask` tier は現状 0 件。
 
-## DENY (104)
+## DENY (88)
 
 | tier (category) | 件数 | 代表パターン | rationale |
 |-----------------|------|--------------|-----------|
@@ -23,11 +23,10 @@ last_reviewed: 2026-06-18
 | 環境変数・秘密露出 Bash | 16 | `printenv`, `env`, `* .env*`, `* ~/.ssh/*`, `* ~/.aws/*`, `* ~/.gnupg/*`, `* ~/.config/gcloud/*`, `* ~/.git-credentials`, `* ~/.netrc`, `* ~/.npmrc`, `* ~/.vault-token` ほか | Bash 経由での環境変数 dump / 秘密ディレクトリ・認証ファイルの読み出しを遮断 |
 | 秘密ファイル Read (glob) | 19 | `Read(.env*)`, `Read(**/*.pem)`, `Read(**/*.p12)`, `Read(**/*credentials*)`, `Read(**/*secret*)`, `Read(**/*.key)`, `Read(**/id_rsa*)`, `Read(**/*password*)`, `Read(**/.htpasswd)`, `Read(**/*.kdbx)`, `Read(**/auth.json)` ほか | Read tool での秘密ファイル混入を内容パターンで遮断 |
 | 秘密ディレクトリ Read (~/) | 13 | `Read(~/.ssh/**)`, `Read(~/.gnupg/**)`, `Read(~/.aws/**)`, `Read(~/.config/gcloud/**)`, `Read(~/.password-store/**)`, `Read(~/.config/gh/**)`, `Read(~/.git-credentials)`, `Read(~/.netrc)`, `Read(~/.npmrc)` ほか | ユーザーホームの認証情報ディレクトリを明示パスで遮断 (glob の取りこぼし対策) |
-| 秘密ディレクトリ Write (~/) | 12 | `Write(~/.ssh/**)`, `Write(~/.aws/**)`, `Write(~/.gnupg/**)`, `Write(~/.config/gcloud/**)`, `Write(~/.config/gh/**)`, `Write(~/.git-credentials)`, `Write(~/.vault-token)` ほか | 認証情報ディレクトリへの書き込み (汚染・上書き) を遮断 |
-| 秘密ディレクトリ Edit (~/) | 12 | `Edit(~/.ssh/**)`, `Edit(~/.aws/**)`, `Edit(~/.gnupg/**)`, `Edit(~/.config/gcloud/**)`, `Edit(~/.config/gh/**)`, `Edit(~/.git-credentials)`, `Edit(~/.vault-token)` ほか | 同上 (Edit tool 経路) |
-| shell rc Write/Edit | 8 | `Write/Edit(~/.zshrc)`, `Write/Edit(~/.bashrc)`, `Write/Edit(~/.zprofile)`, `Write/Edit(~/.bash_profile)` | shell 起動ファイルの改変 (永続的バックドア・PATH 汚染) を遮断。dotfiles 管理外の直接編集も禁止 |
+| 秘密ディレクトリ Edit (~/) | 12 | `Edit(~/.ssh/**)`, `Edit(~/.aws/**)`, `Edit(~/.gnupg/**)`, `Edit(~/.config/gcloud/**)`, `Edit(~/.config/gh/**)`, `Edit(~/.git-credentials)`, `Edit(~/.vault-token)` ほか | 認証情報ディレクトリへの書き込み・編集を遮断。Edit ルールは Write 含む全 file-editing tool に適用されるため Write() ルールは不要 (Write() は permission check にマッチせず警告になる) |
+| shell rc Edit | 4 | `Edit(~/.zshrc)`, `Edit(~/.bashrc)`, `Edit(~/.zprofile)`, `Edit(~/.bash_profile)` | shell 起動ファイルの改変 (永続的バックドア・PATH 汚染) を遮断。dotfiles 管理外の直接編集も禁止 |
 
-**deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 12 + 8 = 104** (settings.json と一致)
+**deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 4 = 88** (settings.json と一致)
 
 ## ALLOW (71) — カテゴリ要約
 
@@ -51,7 +50,7 @@ last_reviewed: 2026-06-18
 ## 監査の観察 (2026-05-30)
 
 - deny は **不可逆操作 + exfiltration boundary + 秘密ファイル/ディレクトリ + shell rc** の 4 系統に集約される。
-  秘密系は Read/Write/Edit の 3 tool 経路すべてを塞ぐ多層構成 (glob + 明示 ~/ パス)。
+  秘密系は Read/Edit の 2 ルールで全経路を塞ぐ (Edit ルールが Write 含む全 file-editing tool をカバー。glob + 明示 ~/ パス)。
 - allow は **read-only 検査 + 既知の安全なツールチェーン** が中心。書き込み系で許可されるのは git の通常操作のみ。
 - `rtk hook claude` は hooks 側で `permissionDecision: "allow"` を返すため、hook のためだけに `Bash(rtk *)` を allow へ追加しない。
 - 新規 deny/allow 追加時は本表の該当カテゴリに反映し、合計を settings.json と一致させる。
