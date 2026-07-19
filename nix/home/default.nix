@@ -62,8 +62,11 @@ in
     ".config/zsh"  = outLink ".config/zsh";
 
     # block 2: Claude (.config/claude → ~/.claude)
+    # NOTE: settings.json は意図的に非管理。live (~/.claude/settings.json) は
+    # Superset/Orca が hook を runtime 注入する実体ファイルで、symlink 化すると
+    # 注入や /model 変更が消える (memory: project_claude_settings_live_drift)。
+    # 新PC bootstrap は dotfiles/.config/claude/settings.json を手動 cp する。
     ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
-    ".claude/settings.json"        = outLink ".config/claude/settings.json";
     ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";
     ".claude/statusline.sh"        = outLink ".config/claude/statusline.sh";
     ".claude/agents"               = outLink ".config/claude/agents";
