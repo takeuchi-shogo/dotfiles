@@ -121,6 +121,16 @@
 # type = "pane"
 # command = "lazygit"
 
+# herdr-file-viewer を popup で起動 (plugin は .config/herdr/plugins.txt で管理、
+# 実体パスは commit hash 入りでマシンごとに変わるため plugin list --json から動的解決)
+[[keys.command]]
+key = "prefix+f"
+type = "popup"
+width = "90%"
+height = "90%"
+description = "File viewer (popup)"
+command = '''exec "$(herdr plugin list --json | jq -r '.result.plugins[] | select(.plugin_id=="herdr-file-viewer").plugin_root')/target/release/herdr-file-viewer"'''
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]

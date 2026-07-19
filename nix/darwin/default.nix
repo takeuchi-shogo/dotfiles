@@ -77,6 +77,7 @@
       "jordanbaird-ice"
       "raycast"
       "zed"                   # provides `zed` CLI via binary stanza
+      "vibe-island"           # AI agent monitor in the notch (macOS >= 14)
     ];
   };
 }
