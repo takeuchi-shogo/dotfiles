@@ -1,0 +1,79 @@
+# Renovate PR の CI が落ちたときだけ Claude が修正を試みる。
+# 成功パス (CI green) では一切動かない — automerge は Renovate + GitHub auto-merge に任せる。
+#
+# 必要 secret: CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token` で発行して `gh secret set` で登録)。
+# 未設定の場合この job は失敗するが、CI が既に落ちている PR でしか動かないため実害はない。
+#
+# ループガード: 修正 push → CI 再実行 → 再失敗 → 本 workflow 再発火、のループを
+# 「ブランチ先頭コミットが github-actions[bot] なら skip」で 1 回試行に制限する。
+#
+# 注意: この workflow が PR ブランチに push すると Renovate はその PR を「編集済み」と
+# みなし以降 rebase しない (仕様)。修正後のマージ判断は人間が行う。
+# KEEP IN SYNC: workflows: ["CI"] は ci.yml の name を参照。agent-quality.yml の
+# renovate/* 除外条件とペア — こちらが renovate/*、agent-quality が他ブランチを担当。
+name: "Renovate Autofix"
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: renovate-autofix-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  autofix:
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_branch, 'renovate/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Skip if autofix already attempted
+        id: guard
+        run: |
+          if [[ "$(git log -1 --format=%an)" == "github-actions[bot]" ]]; then
+            echo "autofix already attempted on this branch; skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: anthropics/claude-code-action@v1
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            This branch is a Renovate dependency-update PR whose CI failed.
+            Reproduce the failure locally with the CI commands:
+              uvx pytest scripts/tests/ -q
+              (cd .config/claude/scripts && uvx pytest tests/ -q)
+            Make the minimal file edits to fix breakage caused by the dependency update.
+            Do NOT run git commands — a later workflow step commits and pushes for you.
+            Never revert the dependency update itself and never touch renovate.json.
+          claude_args: '--allowedTools "Read,Write,Edit,Glob,Grep,Bash(uvx *),Bash(cd *)" --max-cost 5.00'
+
+      - name: Commit, push and re-run CI
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A -- ':!.github/' ':!renovate.json' ':!*.env*' ':!*.key' ':!*.pem'
+            git commit -m "🐛 fix: adapt to dependency update (renovate autofix)"
+            git push origin "HEAD:$HEAD_BRANCH"
+            gh workflow run ci.yml --ref "$HEAD_BRANCH"
+          else
+            echo "no fix produced; leaving CI red for human triage"
+          fi
