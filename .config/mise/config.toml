@@ -10,15 +10,17 @@
 #
 # 背景・設計判断: docs/research/2026-06-02-typhoon-nix-mise-absorb-analysis.md
 
+# バージョンは exact pin — 更新は Renovate (renovate.json) が cooldown 付き PR で追従する。
+# 供給網攻撃対策で "latest" は使わない (docs: https://zenn.dev/himkt/articles/b811e1ea846f99)
 [tools]
-node = "lts"      # 現行は野良 brew の v25 (非LTS)。再現性のため LTS に固定。最新が要れば "25"
-go = "1.25"       # 野良 brew が amd64(Rosetta) だった → mise で arm64 ネイティブ化
-python = "3.13"   # brew 実体 3.14 / 旧 .tool-versions 3.12 から安定版 3.13 に集約
-uv = "latest"     # Nix home.packages から移管 (Intel brew の /usr/local/bin/uv 二重管理を解消)
+node = "24.13.0"  # LTS 系。major 更新 (非LTS 含む) は automerge されず手動判断
+go = "1.25.4"     # 野良 brew が amd64(Rosetta) だった → mise で arm64 ネイティブ化
+python = "3.13.6" # brew 実体 3.14 / 旧 .tool-versions 3.12 から安定版 3.13 に集約
+uv = "0.9.7"      # Nix home.packages から移管 (Intel brew の /usr/local/bin/uv 二重管理を解消)
 
 # NotebookLM CLI (非公式・更新頻繁) — 動画/記事→notebook→分析→fulltext を CLI 化。
 # extras="browser" で playwright 同梱 (chromium は初回 login 時に DL)。認証は `notebooklm login`。
-"pipx:notebooklm-py" = { version = "latest", extras = "browser" }
+"pipx:notebooklm-py" = { version = "0.7.1", extras = "browser" }
 
 # rust は当面 rustup (~/.cargo) 維持 — mise の rust backend は rustup を内部利用するため
 # 共存が複雑。シンプルさ優先で現状維持。mise に寄せたくなったら rust = "1.85" を追加。
