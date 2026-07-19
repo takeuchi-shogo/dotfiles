@@ -1,0 +1,46 @@
+# Renovate PR の CI が落ちたときだけ Claude が修正を試みる。
+# 成功パス (CI green) では一切動かない — automerge は Renovate + GitHub auto-merge に任せる。
+#
+# 必要 secret: CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token` で発行して `gh secret set` で登録)。
+# 未設定の場合この job は失敗するが、CI が既に落ちている PR でしか動かないため実害はない。
+#
+# 注意: この workflow が PR ブランチに push すると Renovate はその PR を「編集済み」と
+# みなし以降 rebase しない (仕様)。修正後のマージ判断は人間が行う。
+name: "Renovate Autofix"
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  autofix:
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'renovate/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            This branch is a Renovate dependency-update PR whose CI failed.
+            Reproduce the failure locally with the CI commands:
+              uvx pytest scripts/tests/ -q
+              (cd .config/claude/scripts && uvx pytest tests/ -q)
+            Make the minimal fix for breakage caused by the dependency update,
+            then commit and push to the current branch.
+            Never revert the dependency update itself and never touch renovate.json.
+          claude_args: '--allowedTools "Bash,Edit,Write,Read,Glob,Grep"'
+      - name: Re-run CI on the fixed branch
+        run: gh workflow run ci.yml --ref "${{ github.event.workflow_run.head_branch }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
