@@ -59,6 +59,7 @@ metadata:
 | 5+: Wiki/Obsidian/Log | Sonnet BG | 書き込み作業を並列委譲 |
 
 large-context absorb で Codex CLI が 14 分程度 no-progress になった場合は、Codex 側を失敗として記録し、Gemini-only の Phase 3 fallback に進んでよい。fallback 理由と未取得の Codex 批評は分析レポートに明記する。
+ただし最終 assistant message が無くても、worker 画面/stdout/検索ログに実ファイル発見や照合結果が残っていれば、Phase 2 判定の補正材料として採用する。Codex 側は未完了扱いのまま、どの footprint を使ったかをレポートに明記する。
 
 ## Phase 1: Extract（要点抽出） [Haiku / Gemini に委譲]
 

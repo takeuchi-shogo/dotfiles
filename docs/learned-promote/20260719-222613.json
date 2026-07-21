@@ -1,0 +1,42 @@
+{
+  "date": "2026-07-19",
+  "branch": "auto/learned-promote-20260719-222613",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "604457b436e157433020974652b79dba8f4406ed",
+      "decision": "adopted",
+      "scope": "codex-search-value",
+      "target_artifact": ".config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "Codex 批評は timeout しても search footprint に価値がある"
+    },
+    {
+      "key": "32f230c37d3a52c71ff357279d2a0d732be481f9",
+      "decision": "rejected",
+      "scope": "karpathy-kb",
+      "reason": "already covered: .config/claude/skills/compile-wiki/SKILL.md",
+      "detail_excerpt": "compile-wiki promote と graduation は直交し補完する"
+    },
+    {
+      "key": "4085750dcf982595a3f4e391d6425a7a4c9f830e",
+      "decision": "adopted",
+      "scope": "anti-vision",
+      "target_artifact": ".config/claude/skills/timekeeper/SKILL.md",
+      "detail_excerpt": "未来の痛みの可視化ではなく Stop-doing list にする"
+    },
+    {
+      "key": "cad700a1aba36de3e95f8781f4667c9685d5bee6",
+      "decision": "rejected",
+      "scope": "refine-phase",
+      "reason": "already covered: .config/claude/skills/absorb/SKILL.md",
+      "detail_excerpt": "exists != closed-loop working を Phase 2.5 で検証する"
+    },
+    {
+      "key": "a596d40872d633bb4c8107a50b29267d0817e0d8",
+      "decision": "rejected",
+      "scope": "a1-audit",
+      "reason": "already covered: .config/claude/scripts/lib/redactor.py",
+      "detail_excerpt": "A1 audit の FP 分布を redactor heuristic に反映する"
+    }
+  ]
+}
