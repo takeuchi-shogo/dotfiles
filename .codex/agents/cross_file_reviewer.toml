@@ -1,7 +1,7 @@
 # Cross-File Reviewer — ファイル境界をまたぐ不整合検出
 # 親 agent から並列委譲される read-only subagent
 # 2 ファイル以上の変更時に起動
-# 深い推論が必要なため gpt-5.5 + high を使用
+# 深い推論が必要なため gpt-5.6-terra + high を使用
 
 name = "cross_file_reviewer"
 description = "Detect cross-file inconsistencies: interface drift, signature changes not propagated to callers, broken imports, missing migration of dependent code"
@@ -16,7 +16,7 @@ Return prioritized findings with explicit `file:line` references for both the ch
 Do not modify files.
 """
 
-model = "gpt-5.5"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 approval_policy = "never"

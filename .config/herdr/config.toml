@@ -91,17 +91,17 @@ switch_workspace = "prefix+shift+1..9"
 # close_tab = "prefix+shift+x"
 # rename_pane = "prefix+shift+p"
 # edit_scrollback = "prefix+e"
-# focus_pane_left = "prefix+h"
-# focus_pane_down = "prefix+j"
-# focus_pane_up = "prefix+k"
-# focus_pane_right = "prefix+l"
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
 # cycle_pane_next = "prefix+tab"
 # cycle_pane_previous = "prefix+shift+tab"
 # last_pane = ""          # optional, unset by default; bind e.g. "prefix+tab" for global back-and-forth
 # split_vertical = "prefix+v"
 # split_horizontal = "prefix+minus"
 # close_pane = "prefix+x"
-# zoom = "prefix+z"       # legacy alias: fullscreen
+zoom = "prefix+z"       # legacy alias: fullscreen
 # resize_mode = "prefix+r"
 # toggle_sidebar = "prefix+b"
 
@@ -117,12 +117,9 @@ switch_workspace = "prefix+shift+1..9"
 # Custom commands use the same binding syntax.
 # type = "shell" runs detached in the background.
 # type = "pane" opens a temporary pane and closes it when the command exits.
-# [[keys.command]]
-# key = "prefix+alt+g"
-# type = "pane"
-# command = "lazygit"
+# type = "popup" opens a session-modal terminal without changing the tab layout (0.7.4+).
 
-# herdr-file-viewer を popup で起動 (0.7.4+ で type=popup 対応)
+# herdr-file-viewer を popup で起動
 [[keys.command]]
 key = "prefix+f"
 type = "popup"
@@ -130,6 +127,22 @@ width = "90%"
 height = "90%"
 description = "File viewer (popup)"
 command = '''exec "$(herdr plugin list --json | jq -r '.result.plugins[] | select(.plugin_id=="herdr-file-viewer").plugin_root')/target/release/herdr-file-viewer"'''
+
+[[keys.command]]
+key = "prefix+alt+g"
+type = "popup"
+width = "90%"
+height = "90%"
+description = "lazygit (popup)"
+command = "lazygit"
+
+[[keys.command]]
+key = "prefix+alt+d"
+type = "popup"
+width = "90%"
+height = "90%"
+description = "hunk (popup)"
+command = "hunk"
 
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.

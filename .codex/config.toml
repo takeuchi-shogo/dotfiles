@@ -1,8 +1,8 @@
-model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "high"
 model_reasoning_summary = "detailed"
-review_model = "gpt-5.5"
+review_model = "gpt-5.6-terra"
 personality = "pragmatic"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
@@ -12,6 +12,8 @@ sandbox_mode = "workspace-write"
 # personality は persistent default だけに使う。出力形式や長さは task / skill 側で制御する
 # approval_policy = "on-request" と sandbox_mode = "workspace-write" を既定にして
 # 低摩擦に編集できる状態を保ちつつ、危険な操作は都度確認する
+
+notify = ["/Users/shogo_takeuchi/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [profiles.fast]
 model_reasoning_effort = "medium"
@@ -50,6 +52,7 @@ memories = true               # Codex memories を明示有効化。Chronicle �
 shell_snapshot = true        # 環境スナップショット（beta）
 undo = true                  # per-turn git ghost snapshots を有効化
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
+js_repl = false
 
 # === Hooks pilot ===
 # 公式: https://developers.openai.com/codex/hooks
@@ -68,6 +71,11 @@ statusMessage = "Pilot hook firing"
 
 [hooks.state."/Users/shogo_takeuchi/.codex/config.toml:post_tool_use:0:0"]
 trusted_hash = "sha256:1c240a504f27189f09e938e7fb71dffb87fed1399e74d45d1f8553fbf55bfab6"
+enabled = true
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:49ce36456a4d19511d5b5fcb13328ab576aba93f3e552a131a575cff4cbdafb5"
+enabled = false
 
 [memories]
 use_memories = true
@@ -97,6 +105,32 @@ url = "https://docs.x.com/mcp"
 command = "npx"
 args = ["-y", "@xdevplatform/xurl", "mcp", "https://api.x.com/mcp"]
 startup_timeout_sec = 300
+enabled = false
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shogo_takeuchi/.codex"
+CODEX_HOME = "/Users/shogo_takeuchi/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "1491199f46178eb038259aaea144492b8a8ade32bba5d2b4843c94936be551bb,6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.707.41301"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
 enabled = false
 
 [notifications]
@@ -137,5 +171,53 @@ max_depth = 1    # subagent の subagent は禁止。orchestration コスト増�
 [plugins."github@openai-curated"]
 enabled = true
 
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."slack@openai-curated"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[desktop]
+default-service-tier = "priority"
+dock-icon-preference = "codex-system"
+conversationDetailMode = "STEPS_COMMANDS"
+ambient-suggestions-enabled = true
+followUpQueueMode = "queue"
+
+[marketplaces.openai-bundled]
+last_updated = "2026-07-13T06:11:26Z"
+source_type = "local"
+source = "/Users/shogo_takeuchi/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-07-10T03:08:59Z"
+source_type = "local"
+source = "/Users/shogo_takeuchi/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"

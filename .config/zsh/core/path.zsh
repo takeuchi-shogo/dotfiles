@@ -17,6 +17,7 @@ export PATH="/usr/local/opt/php@8.0/bin:$PATH"
 export PATH="/usr/local/opt/php@8.0/sbin:$PATH"
 export PATH="$PATH:$GOPATH/bin"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.rd/bin:$PATH"  # Rancher Desktop (docker/nerdctl/kubectl)
 export PATH="/Applications/WezTerm.app/Contents/MacOS:$PATH"
 
 # Added by Windsurf

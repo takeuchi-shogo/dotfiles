@@ -44,7 +44,7 @@ Agent ツールで以下を **1メッセージに並列起動**:
 ### Codex（深い推論・リスク検出）
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.5 \
+codex exec --skip-git-repo-check -m gpt-5.6-terra \
   --config model_reasoning_effort="high" \
   --sandbox read-only \
   "{english_prompt}" 2>/dev/null

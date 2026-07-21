@@ -16,3 +16,7 @@
 
 **/.claude/settings.local.json
 **/.claude/worktrees/
+**/.claude/agent-memory/
+
+# Scratch/temp dirs
+tmp/

@@ -1,0 +1,196 @@
+{
+  "date": "2026-07-14",
+  "branch": "manual/learned-promote-20260714",
+  "max": 41,
+  "promotions": [
+    {
+      "key": "79c231bad11d8b0c02990a61fe491304b055f2a2",
+      "decision": "rejected",
+      "reason": "already covered: memory feedback_bg_agent_edit_permission"
+    },
+    {
+      "key": "dc7881a7be30738315825db62c828d082bf08904",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "e7e65c78c68840ca963fb117cfb1c2cb294ae376",
+      "decision": "adopted",
+      "scope": "time-sub",
+      "target_artifact": "memory/reference_go_time_zero_value_gotchas.md",
+      "detail_excerpt": "time.Time{}.Sub(modern) overflows int64 and clamps to MinDuration inst"
+    },
+    {
+      "key": "5105513b94d412fd2c16353eeb7ec743ef5a7010",
+      "decision": "adopted",
+      "scope": "mysql-zero-datetime",
+      "target_artifact": "memory/reference_go_time_zero_value_gotchas.md",
+      "detail_excerpt": "MySQL 0000-00-00 maps to Go time.Time{} but caller's Add() can silentl"
+    },
+    {
+      "key": "2fb0f109b955342598a3f54295e5f48b768c2644",
+      "decision": "adopted",
+      "scope": "mysql-zero-datetime",
+      "target_artifact": "memory/reference_go_time_zero_value_gotchas.md",
+      "detail_excerpt": "go-sql-driver/mysql special-cases time.Time{} (IsZero=true) to '0000-0"
+    },
+    {
+      "key": "05d8b5ae34b17d50150a4f709a61da3e20fb59cc",
+      "decision": "adopted",
+      "scope": "go-sql-driver",
+      "target_artifact": "memory/reference_go_time_zero_value_gotchas.md",
+      "detail_excerpt": "time.Time{}.IsZero() を検出するとリテラル '0000-00-00' を書くが、time.Time{}.Add(dura"
+    },
+    {
+      "key": "d228c1102f9caa2d9a44b5c99469599acb5daeef",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "388eaf779618ab2b61fdc86779249675ac7a9dee",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "e105c7f2157de0ad1baf54aa923fa5151271a5db",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "24fb8a6e2b049cf6e89fbe65546ed12107921ed2",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "a7f85be6b28f27befc289933e5859d20d2d27121",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "08c68d649cdb3942bc585082c835860d64a038a1",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "0a8f1fa950380d313929f77980da437c9f3cf71c",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "ba20e56c7c83654a51887e566b7475a78448fa5d",
+      "decision": "adopted",
+      "scope": "cmux-pane",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "cmux 子プロセスの PATH は mise activate を経由しないため、shim ディレクトリ (~/.local/share/"
+    },
+    {
+      "key": "babbcc866170bdf7527776490b6c1ae3de735b4e",
+      "decision": "adopted",
+      "scope": "pdf-extraction",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "gemini CLI / pdftoppm 不在環境では uv run --with pypdf が PDF 抽出の fallback とし"
+    },
+    {
+      "key": "4c0a2fb42e717bd7ca944baf55bd689ec566d28c",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "b132ceb0b6d8c7f36e77352b208e8c68fac4955a",
+      "decision": "adopted",
+      "scope": "github-api",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "pulls/reviews API defaults to per_page=30 — idempotency check needs --"
+    },
+    {
+      "key": "c592d65a7ae9df7fc9d7e01fdf5ea62c2e796287",
+      "decision": "adopted",
+      "scope": "patcher",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "native installer の Claude Code は ~/.local/share/claude/versions/ のコンパイ"
+    },
+    {
+      "key": "7a85354cc500070b4d64d5f2544142a5c76ae2fe",
+      "decision": "adopted",
+      "scope": "build-claude",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "build-claude.sh は echo で --- セパレータ/空行を挿入するため、テンプレートは --- を含まず連結後の行構造に一"
+    },
+    {
+      "key": "1cf802ecddc05674e795428bbf96daf43210f41b",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "61a413d6ee11832474582dbc015aa4d1e64364ea",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "b1e437bd37a0c4cc9e35c4cead1a9d6b9ee67b92",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "10aca4d932bfe0d50f612bc8802ba1e5f0010f01",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "fea4fe425dc2d41d435d7ce82e0b341ba9561569",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "51a3f92377e3be86c9310964a46b796d7c98e99f",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "922db3bd784940ceb833469479aa6c67281bb068",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "b127f184095832bc33498fbfe6065f9ebf6fee4b",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "0fdc6b4574f9525bdd6abb46660921c5ebeef59a",
+      "decision": "adopted",
+      "scope": "gorm-limit",
+      "target_artifact": "memory/reference_go_time_zero_value_gotchas.md",
+      "detail_excerpt": "GORM clause.Limit.Build は limit >= 0 のときのみ LIMIT 句を出力し、負値は LIMIT なしの全件"
+    },
+    {
+      "key": "236680d2d3c0cc24e29951a32f046a68efbe2f89",
+      "decision": "adopted",
+      "scope": "completion-gate",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "_detect_test_command() は1実行で main/Layer0/handback から複数回呼ばれる。副作用 (stder"
+    },
+    {
+      "key": "b86094083199b9ad81033347914ba4f9eefbc82e",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "a75ba7f64881c51d9a46758095effa84f245e7bc",
+      "decision": "rejected",
+      "reason": "out of scope for public dotfiles (project-specific learning)"
+    },
+    {
+      "key": "73dad454c159e28caca15c7cbb0a286df23b93da",
+      "decision": "rejected",
+      "reason": "already covered: memory project_herdr_migration"
+    },
+    {
+      "key": "3047111a2519f321950267c9d327ceb59e64502f",
+      "decision": "adopted",
+      "scope": "wezterm-font",
+      "target_artifact": "memory/project_dotfiles_tooling_gotchas.md",
+      "detail_excerpt": "WezTerm auto fallback picks Korean Apple SD Gothic Neo before Japanese"
+    }
+  ]
+}

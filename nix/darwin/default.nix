@@ -40,6 +40,7 @@
       "FelixKratz/formulae"   # borders
       "k1LoW/tap"             # mo
       "nikitabobko/tap"       # aerospace
+      "stablyai/orca"         # orca (Agent Development Environment)。初回は `brew trust stablyai/orca` が必要 (machine-local、宣言不可)
     ];
 
     brews = [
@@ -78,6 +79,7 @@
       "raycast"
       "zed"                   # provides `zed` CLI via binary stanza
       "vibe-island"           # AI agent monitor in the notch (macOS >= 14)
+      "stablyai/orca/orca"    # ADE (onorca.dev)。full name 必須 — homebrew-cask の orca (plotly, deprecated) と衝突するため
     ];
   };
 }

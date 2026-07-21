@@ -256,6 +256,39 @@ def _detect_full_test_command(project_root: str) -> str | None:
     return None
 
 
+def _script_runner(repo_root: str) -> tuple[str, str]:
+    """Return (run_prefix, arg_sep) for running a package.json script via the
+    locally-installed runner. pnpx/npx dlx-fetch a standalone runner that
+    ignores vitest/jest config and globs nested worktrees, producing
+    false-positive failures. PM is keyed off the repo-root lockfile."""
+    if os.path.exists(os.path.join(repo_root, "bun.lockb")):
+        return ("bun run", " ")
+    if os.path.exists(os.path.join(repo_root, "pnpm-lock.yaml")):
+        return ("pnpm", " ")
+    return ("npm", " -- ")
+
+
+def _owning_package_dir(rel_file: str, root: str) -> str | None:
+    """Nearest ancestor dir (relative to root) whose package.json declares a
+    test script. Returns "" for the root package, None if none found."""
+    d = os.path.dirname(rel_file)
+    while True:
+        pkg_path = os.path.join(root, d, "package.json")
+        if os.path.exists(pkg_path):
+            try:
+                with open(pkg_path) as f:
+                    if "test" in json.load(f).get("scripts", {}):
+                        return d
+            except (OSError, json.JSONDecodeError) as exc:
+                _log(f"skipping unreadable package.json at {pkg_path}: {exc}")
+        if not d:
+            return None
+        parent = os.path.dirname(d)
+        if parent == d:
+            return None
+        d = parent
+
+
 # ============================================================================
 # Selective command building
 # ============================================================================
@@ -317,7 +350,19 @@ def build_selective_test_command(
         if node_runner == "jest":
             return f"{pkg_mgr} jest --findRelatedTests " + " ".join(node_files)
         if node_runner == "vitest":
-            return f"{pkg_mgr} vitest run " + " ".join(node_files)
+            owners = {_owning_package_dir(f, project_root) for f in node_files}
+            if len(owners) != 1 or None in owners:
+                return None
+            pkgdir = owners.pop()
+            run_prefix, sep = _script_runner(project_root)
+            rel_files = [
+                os.path.relpath(f, pkgdir) if pkgdir else f for f in node_files
+            ]
+            if not pkgdir:
+                return f"{run_prefix} test{sep}" + " ".join(rel_files)
+            if run_prefix == "pnpm":
+                return f"pnpm -C {pkgdir} test{sep}" + " ".join(rel_files)
+            return None
 
     # Rust
     if exts & {".rs"}:
