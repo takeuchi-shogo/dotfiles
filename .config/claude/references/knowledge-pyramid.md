@@ -99,3 +99,7 @@ L4 Golden principles       × Tier 3（必須）
 - 呼び出し元が明示的に指定した場合はそちらを優先
 - Garden フェーズで tier と score を再評価し、昇格・降格を判定
 - Garden フェーズで同一タグ 3+ 知見の doctrine 合成チェックを行う
+
+## 関連
+
+- 本ピラミッドは「知見のエビデンス品質」の軸。**自動最適化の対象にしてよいか**は別軸で、`references/optimizer-eligibility.md` (objective-checkable lane vs judgement lane) が入口を判別する

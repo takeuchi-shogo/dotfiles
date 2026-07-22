@@ -166,3 +166,11 @@ Wave3 を起票するときは下記を同時に満たすこと (後付けでな
 
 → 元の統合プラン (A+B+C を即実装) は `docs/plans/active/2026-06-05-rsi-governance-frontier-plan.md` を参照。
 本ループ配線後に retarget した経緯もそこに記録。
+
+---
+
+**関連 (2026-07-22 追記)**: 昇格対象 artifact を自動最適化に回してよいかの入口判別は
+`references/optimizer-eligibility.md` (objective-checkable lane vs judgement lane) を参照。
+objective lane の strict accept gate は `scripts/eval/holdout_accept_gate.py` +
+`docs/playbooks/objective-lane-optimization.md` (SkillOpt absorb 2026-06-02 由来)。
+B4 の held-in/held-out 両側 regression 要件と同型の tie-reject gate が実装済み。
