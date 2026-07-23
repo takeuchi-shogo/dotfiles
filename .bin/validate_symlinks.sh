@@ -51,6 +51,9 @@ managed_links = [
     (home / ".cursor/commands", root / ".cursor/commands", ".cursor/commands"),
     (home / ".cursor/hooks", root / ".cursor/hooks", ".cursor/hooks"),
 
+    # block 6: herdr (config.toml のみ — ランタイムファイル同居のため dir 単位にしない)
+    (home / ".config/herdr/config.toml", root / ".config/herdr/config.toml", ".config/herdr/config.toml"),
+
     # B2.3: top-level dotfiles
     (home / ".cursorignore", root / ".cursorignore", ".cursorignore"),
     (home / ".tmux.conf", root / ".tmux.conf", ".tmux.conf"),

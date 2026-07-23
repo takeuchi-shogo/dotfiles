@@ -102,7 +102,7 @@
 - Chronicle が生成した markdown は必要に応じて削除・編集して忘れさせる。手動で新規情報を追加する場合は `~/.codex/memories/` ではなく `$codex-memory-capture` か checked-in docs を使う。
 
 ## Security Analysis
-- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.5 -p security "..."`
+- セキュリティ深掘り調査には `profiles.security`（xhigh + read-only）を使用する: `codex exec --skip-git-repo-check -m gpt-5.6-terra -p security "..."`
 - 対象: 認証・認可ロジック、暗号化・トークン管理、外部入力処理、依存関係の変更
 - 攻撃ベクトルのマッピング、権限昇格パス、暗号の弱点、レースコンディション、サプライチェーンリスクを分析する
 - findings list や scanner 出力を起点にしすぎず、まず trust boundary、sensitive path、decode/parse/normalize をまたぐ invariant を確認する

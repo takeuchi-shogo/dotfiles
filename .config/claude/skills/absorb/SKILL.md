@@ -372,7 +372,7 @@ Codex と Gemini を **並列** で起動する:
 軽量・単発・cmux 外でよい場合は `codex exec` の直接呼び出しでも可:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.5 --sandbox read-only \
+codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only \
   --config model_reasoning_effort="xhigh" "<prompt>" 2>/dev/null
 ```
 
