@@ -98,7 +98,7 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 主な機能:
 
 - **AutoEvolve**: セッションデータから自動で設定改善を提案
-- **マルチモデル連携**: Claude ↔ Codex (gpt-5.5) ↔ Gemini (1M ctx) の自動委譲
+- **マルチモデル連携**: Claude ↔ Codex (gpt-5.6-terra) ↔ Gemini (1M ctx) の自動委譲
 - **Progressive Disclosure**: `CLAUDE.md` → `references/` → `rules/` の段階的情報開示
 - **EPD ワークフロー**: Spec → Spike → Validate → Implement → Review
 

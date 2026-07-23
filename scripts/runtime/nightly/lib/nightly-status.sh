@@ -370,11 +370,11 @@ release_claude_lock() {
 # サーバ等が壊れると codex 起動ごと失敗するため)。auth は CODEX_HOME から読むので維持される。
 #
 # モデル/推論強度は env で上書き可:
-#   NIGHTLY_CODEX_MODEL  (既定 gpt-5.5)
+#   NIGHTLY_CODEX_MODEL  (既定 gpt-5.6-terra)
 #   NIGHTLY_CODEX_EFFORT (既定 high — golden パイロットで検証済)
 #   NIGHTLY_CODEX_BIN    (既定 codex — install 時に絶対パスへ解決)
 # ============================================================
-NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.5}"
+NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.6-terra}"
 NIGHTLY_CODEX_EFFORT="${NIGHTLY_CODEX_EFFORT:-high}"
 NIGHTLY_CODEX_BIN="${NIGHTLY_CODEX_BIN:-codex}"
 

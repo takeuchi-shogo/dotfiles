@@ -1,9 +1,11 @@
 ---
 source: "https://github.com/mizchi/chezmoi-dotfiles/blob/main/dot_claude/skills/empirical-prompt-tuning/SKILL.md"
 date: 2026-04-19
-status: integrated
+status: partially-superseded
 author: mizchi
 ---
+
+> **[2026-07-22 訂正]** T1/T2/T4 は `.config/claude/skills/improve/` を実装ターゲットにしていたが、/improve は 2026-05-03 に retire (false-positive 多発) しタスクが孤児化した。T1 成果物の `qualitative_signals.jsonl` は未作成 (scripts/eval/ に存在せず確認済)。T3 (spec template の scenarios 構造化) のみ実施済。T1/T2/T4 の holdout・drift 対策は SkillOpt absorb (`docs/research/2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md`) の objective-lane gate (`scripts/eval/holdout_accept_gate.py` + `docs/playbooks/objective-lane-optimization.md`) へ統合し直した。
 
 ## Source Summary
 

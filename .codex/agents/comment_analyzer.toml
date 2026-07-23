@@ -1,6 +1,6 @@
 # Comment Analyzer — コメント正確性・長期保守性の検証
 # 親 agent から並列委譲される read-only subagent
-# 深い推論が必要なため gpt-5.5 + high を使用
+# 深い推論が必要なため gpt-5.6-terra + high を使用
 
 name = "comment_analyzer"
 description = "Analyze code comments and documentation for accuracy, completeness, and long-term maintainability. Detect comment rot (stale, lying, or refactor-signaling comments)"
@@ -15,7 +15,7 @@ Return prioritized findings with explicit `file:line` references.
 Do not modify files.
 """
 
-model = "gpt-5.5"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 approval_policy = "never"

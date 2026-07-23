@@ -21,6 +21,7 @@ uv = "0.9.7"      # Nix home.packages から移管 (Intel brew の /usr/local/bi
 # NotebookLM CLI (非公式・更新頻繁) — 動画/記事→notebook→分析→fulltext を CLI 化。
 # extras="browser" で playwright 同梱 (chromium は初回 login 時に DL)。認証は `notebooklm login`。
 "pipx:notebooklm-py" = { version = "0.7.1", extras = "browser" }
+gemini = { version = "latest", allow_builds = ["@github/keytar", "node-pty"] }
 
 # rust は当面 rustup (~/.cargo) 維持 — mise の rust backend は rustup を内部利用するため
 # 共存が複雑。シンプルさ優先で現状維持。mise に寄せたくなったら rust = "1.85" を追加。

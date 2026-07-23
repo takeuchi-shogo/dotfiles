@@ -17,7 +17,7 @@ VAULT_PATH="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 # 明示固定する (env で上書き可。run-*.sh / lib も同じ既定にフォールバックする)。
 # CODEX_HOME を明示注入し headless で認証経路を確定させる (未注入だと OPENAI_API_KEY 等への
 # 暗黙フォールバックで挙動がぶれる)。
-NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.5}"
+NIGHTLY_CODEX_MODEL="${NIGHTLY_CODEX_MODEL:-gpt-5.6-terra}"
 NIGHTLY_CODEX_EFFORT="${NIGHTLY_CODEX_EFFORT:-high}"
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 

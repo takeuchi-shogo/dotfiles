@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-06-18
+last_reviewed: 2026-07-16
 ---
 
 # Deny Rules Catalog (settings.json permissions auditability)

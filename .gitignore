@@ -32,6 +32,9 @@ CLAUDE.local.md
 # Private overlay (実体は ~/dotfiles-private、symlink は install.sh が管理)
 # trailing slash を付けない: overlay は symlink (= git 的にはファイル) のため dir/ パターンに match しない
 .config/claude/skills/pr-review-routine
+# Private overlay: proto codegen skill/rule (symlink from ~/dotfiles-private)
+.config/claude/skills/kw-proto-codegen
+.cursor/rules/kw-proto-codegen.mdc
 # product/recording 固有の AIT 実装スキル — user scope で使うが dotfiles では管理しない
 .config/claude/skills/implementing-recording-ait/
 __pycache__/
@@ -93,8 +96,6 @@ tools/claude-hooks/target/
 
 # Nix build result (home-manager activation package symlink into /nix/store)
 nix/result
-# Nested git metadata for local Homebrew tap (recreated by ensure-local-homebrew-tap.sh)
-nix/homebrew/.git/
 
 # Taskfile local cache (checksums/timestamps for sources/generates)
 .task/

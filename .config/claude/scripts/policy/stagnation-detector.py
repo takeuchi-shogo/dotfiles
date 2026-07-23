@@ -232,7 +232,7 @@ def detect_stagnation(state: dict) -> tuple[str, str] | None:
             f"連続 {consecutive} 回失敗しています。"
             "cmux Worker で Codex に根本原因分析を依頼するか"
             " (`scripts/runtime/launch-worker.sh --model codex --task ...`)、"
-            "`codex exec --skip-git-repo-check -m gpt-5.5 --sandbox read-only` で"
+            "`codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only` で"
             "直接相談してください。"
             "現在のアプローチに固執せず、問題を再定義してください。",
         )

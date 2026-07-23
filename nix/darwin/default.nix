@@ -40,13 +40,7 @@
       "FelixKratz/formulae"   # borders
       "k1LoW/tap"             # mo
       "nikitabobko/tap"       # aerospace
-      # Local tap for casks not yet in homebrew-cask (AgentPeek, etc.).
-      # clone_target must be a git root (brew clones it). Nested .git is created by
-      # nix/scripts/ensure-local-homebrew-tap.sh (Taskfile nix:switch runs it first).
-      {
-        name = "local/dotfiles";
-        clone_target = "/Users/${userName}/dotfiles/nix/homebrew";
-      }
+      "stablyai/orca"         # orca (Agent Development Environment)。初回は `brew trust stablyai/orca` が必要 (machine-local、宣言不可)
     ];
 
     brews = [
@@ -85,9 +79,7 @@
       "raycast"
       "zed"                   # provides `zed` CLI via binary stanza
       "vibe-island"           # AI agent monitor in the notch (macOS >= 14)
-      # Local tap cask (nix/homebrew/Casks/agentpeek.rb). Trust once:
-      #   brew trust --cask local/dotfiles/agentpeek
-      "local/dotfiles/agentpeek"
+      "stablyai/orca/orca"    # ADE (onorca.dev)。full name 必須 — homebrew-cask の orca (plotly, deprecated) と衝突するため
     ];
   };
 }

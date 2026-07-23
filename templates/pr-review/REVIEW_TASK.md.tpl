@@ -365,7 +365,7 @@ T_PARALLEL_END=$(date +%s)
 - 「自己批判」セクションに精度低下を記載
 
 #### 観点②.5 Codex 深掘り (並列実行内)
-Claude (Opus 4.7) とは別モデル (Codex CLI / gpt-5.5) で **独立した第三者視点** のレビューを 1 回挟む。
+Claude (Opus 4.7) とは別モデル (Codex CLI / gpt-5.6-terra) で **独立した第三者視点** のレビューを 1 回挟む。
 
 ```bash
 codex exec review --base "{{BASE_BRANCH}}" "PR #{{PR_NUMBER}} を深掘りレビュー。観点①② で見落としそうな structural issue / business logic risk / breaking change / 同 flow への波及を指摘してください。深い推論が必要な箇所に集中。加えて、diff 行に対する品質向上提案 (可読性 / 簡潔性 / 構造の改善、「こうすると綺麗になる」) があれば [POLISH] として Before/After コード付きで 1〜3 件提示 (マージブロックしない提案として明示、無理に捻り出さない)。⚠️ 指摘は diff 行に関連するものに限定。diff が他を破壊している場合は波及先も対象、ただし無関係な領域へのリファクタ提案は禁止。⚠️ 著者が PR body で明示した技術判断 (例: 3 env 共通鍵、特定ライブラリ採用、migration 戦略) と矛盾する代替設計を BLOCKING 根拠としない。代替案は FYI / SHOULD に留める。著者判断は事前に Phase 0.5 で抽出済み (prompt に含む想定)。 ⚠️ 実装方針への指摘は KW 既存実装 (\`product/**\`) に同パターンが無いか確認してから出す。確立パターンなら FYI 止まり。ただしバグ / breaking / セキュリティはパターン一致でも指摘 (override)。"

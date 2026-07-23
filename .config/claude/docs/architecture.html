@@ -288,7 +288,7 @@
     <div class="layer l-ext">
       <div class="lbl">External Models / Integrations</div>
       <div class="chips">
-        <div class="chip"><b>Codex CLI</b><small>gpt-5.5 · 深い推論</small></div>
+        <div class="chip"><b>Codex CLI</b><small>gpt-5.6-terra · 深い推論</small></div>
         <div class="chip"><b>Gemini CLI</b><small>1M · 大規模分析</small></div>
         <div class="chip"><b>cmux Worker</b><small>長時間並列ペイン</small></div>
         <div class="chip"><b>Obsidian Vault</b><small>知識橋渡し (memory→Vault)</small></div>
@@ -313,7 +313,7 @@
       <thead><tr><th>層</th><th>モデル</th><th>コンテキスト</th><th>役割</th><th>委譲ルール</th></tr></thead>
       <tbody>
         <tr><td><b>Orchestrator</b></td><td>Claude Opus 4.8</td><td>1M</td><td>全体制御・コード生成・レビュー統合</td><td>—</td></tr>
-        <tr><td><b>Deep Reasoning</b></td><td>Codex CLI (gpt-5.5)</td><td>~400K</td><td>設計・推論・複雑なデバッグ・セカンドオピニオン</td><td><code>rules/codex-delegation.md</code></td></tr>
+        <tr><td><b>Deep Reasoning</b></td><td>Codex CLI (gpt-5.6-terra)</td><td>~400K</td><td>設計・推論・複雑なデバッグ・セカンドオピニオン</td><td><code>rules/codex-delegation.md</code></td></tr>
         <tr><td><b>Large Context</b></td><td>Gemini CLI</td><td>1M</td><td>大規模コードベース分析・外部リサーチ・PDF/動画</td><td><code>rules/gemini-delegation.md</code></td></tr>
       </tbody>
     </table>
@@ -632,7 +632,7 @@
     </div>
     <div class="card accent-teal">
       <h4>🔷 Codex CLI <code>~/.codex</code></h4>
-      <p>OpenAI Codex（gpt-5.5）。<code>config.toml</code> + 12 agents + <code>rules/default.rules</code>。Claude のサブエージェントとしても起動。</p>
+      <p>OpenAI Codex（gpt-5.6-terra）。<code>config.toml</code> + 12 agents + <code>rules/default.rules</code>。Claude のサブエージェントとしても起動。</p>
       <ul class="clean">
         <li><b>役割</b> 深い推論・Spec/Plan ゲート・Review ゲート</li>
         <li><b>agents</b> reviewer, debugger, security_auditor, edge_case_hunter, silent_failure_hunter …(12)</li>
