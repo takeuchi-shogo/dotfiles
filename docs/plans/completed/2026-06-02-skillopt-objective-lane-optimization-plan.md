@@ -1,5 +1,6 @@
 # Plan: SkillOpt 由来 — objective-lane skill optimization
 
+- **Status**: implemented 2026-07-22 (VO / #1 / #2 完了。#3 は gate 内蔵の rejected-edits.jsonl buffer で drift 非依存部分を実装、旧 rejected-patterns.jsonl の Rule 14 再配線は learned-promotion-loop の category drift 修復待ちで pending)
 - **Created**: 2026-06-02
 - **Source absorb**: `docs/research/2026-06-02-skillopt-self-evolving-skills-absorb-analysis.md`
 - **Scale**: L (新 reference + 新 script + playbook + 既存3ファイル編集 + drift 訂正)
