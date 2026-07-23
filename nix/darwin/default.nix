@@ -40,6 +40,13 @@
       "FelixKratz/formulae"   # borders
       "k1LoW/tap"             # mo
       "nikitabobko/tap"       # aerospace
+      # Local tap for casks not yet in homebrew-cask (AgentPeek, etc.).
+      # clone_target must be a git root (brew clones it). Nested .git is created by
+      # nix/scripts/ensure-local-homebrew-tap.sh (Taskfile nix:switch runs it first).
+      {
+        name = "local/dotfiles";
+        clone_target = "/Users/${userName}/dotfiles/nix/homebrew";
+      }
     ];
 
     brews = [
@@ -78,6 +85,9 @@
       "raycast"
       "zed"                   # provides `zed` CLI via binary stanza
       "vibe-island"           # AI agent monitor in the notch (macOS >= 14)
+      # Local tap cask (nix/homebrew/Casks/agentpeek.rb). Trust once:
+      #   brew trust --cask local/dotfiles/agentpeek
+      "local/dotfiles/agentpeek"
     ];
   };
 }

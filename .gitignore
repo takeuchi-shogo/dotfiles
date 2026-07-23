@@ -93,6 +93,8 @@ tools/claude-hooks/target/
 
 # Nix build result (home-manager activation package symlink into /nix/store)
 nix/result
+# Nested git metadata for local Homebrew tap (recreated by ensure-local-homebrew-tap.sh)
+nix/homebrew/.git/
 
 # Taskfile local cache (checksums/timestamps for sources/generates)
 .task/

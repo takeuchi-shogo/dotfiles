@@ -95,6 +95,8 @@ tasks:
     vars:
       PROFILE: '{{.PROFILE | default "private"}}'
     cmds:
+      # brew tap clone_target requires nix/homebrew to be a git root
+      - ~/dotfiles/nix/scripts/ensure-local-homebrew-tap.sh
       # Recent nix-darwin requires root for system activation.
       # HOME fallback warning (/var/root) is benign — nix daemon handles user profile correctly.
       - sudo nix run github:nix-darwin/nix-darwin#darwin-rebuild -- switch --flake ~/dotfiles/nix#{{.PROFILE}}
@@ -104,6 +106,8 @@ tasks:
     vars:
       PROFILE: '{{.PROFILE | default "private"}}'
     cmds:
+      # brew tap clone_target requires nix/homebrew to be a git root
+      - ~/dotfiles/nix/scripts/ensure-local-homebrew-tap.sh
       - sudo /run/current-system/sw/bin/darwin-rebuild switch --flake ~/dotfiles/nix#{{.PROFILE}}
 
   nix:rollback:
