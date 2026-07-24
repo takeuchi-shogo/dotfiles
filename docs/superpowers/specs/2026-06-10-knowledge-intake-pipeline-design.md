@@ -114,6 +114,7 @@ researcher  mechanicalのみ      (clickable  approve/        absorb/digest   so
 - **死蔵化リスク（最大）**: ② を作っても読まなければ次の死蔵。→ **撤退条件**: Phase 1 稼働 2 週間で `task trends`/digest を一度も使わなければ、push② を作らず Phase 1 を縮退 or 撤去（C5 の自己適用）。
 - **可逆性**: 全て追加（既存 tech-researcher / notify-discord / nightly-wake.env を破壊しない）。Taskfile target・zsh hook・launchd は個別に外せる。
 - **C1–C5 違反の自己監査**: SP2 以降で「judgment を auto-merge していないか」「未配線機構を貯めていないか」を各 plan の完了条件に含める。
+- **撤退条件の評価結果 (2026-07-24 実施)**: pull (`task trends`) はマージ後 6 週間で自発使用 0（trends-usage.log の 5 件は 2026-06-11 実装当日の smoke のみ）。push (digest) は毎日正常表示されるがユーザー申告は「タイトルだけ流し見、中身は読んでいない、あまり目に止まっていない」→ 撤退条件に該当。**判定: Phase 2（朝 Discord push + 朝 wake 再arm）は不採用、SP1-5 roadmap は凍結、Phase 1 は縮退（機構は現状維持のまま凍結 — digest は ~1ms/日でタイトル流し見の限界価値あり、撤去工数 > 維持コスト）**。
 
 ## 10. 確定事項 / 先送り
 - **確定**: 単一ソース=ledger / mechanical-auto + judgment-gate / ②先行 / embedding等スコープ外 / Phase 1 が MVP。

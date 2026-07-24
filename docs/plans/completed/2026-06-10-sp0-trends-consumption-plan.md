@@ -1,6 +1,9 @@
 ---
-status: active
+status: archive
+lifecycle: completed
 ---
+
+> **クローズ記録 (2026-07-24)**: SP0 実装は PR #76 で merge 済 (2026-06-11)。design §9 の 2 週間使用ゲートを 2026-07-24 に評価 — `task trends` は 6 週間で自発使用 0、digest はタイトル流し見のみ (ユーザー申告)。**Phase 2 不採用・SP1-5 凍結・Phase 1 縮退 (現状維持で凍結) で確定**。詳細は design doc §9 の評価結果を参照。
 
 # SP0: Trends 消費層 (②) Implementation Plan
 
