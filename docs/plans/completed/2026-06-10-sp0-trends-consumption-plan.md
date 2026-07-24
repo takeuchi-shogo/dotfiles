@@ -1,5 +1,5 @@
 ---
-status: completed
+status: archive
 lifecycle: completed
 ---
 
