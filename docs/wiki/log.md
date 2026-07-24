@@ -2055,3 +2055,27 @@
 - 取り込み: research templates に証拠台帳フィールド (Primary-Secondary / Published vs Data period / Counter-evidence / 数値相違理由推定) + /note に保存前分類 schema (事実/解釈/仮説/アイデア/矛盾、自動昇格なし)
 - Phase 2.5: Gemini sunset により Codex 単独 (縮退明記)。Validation-only: improve-policy.md Friction→Eval Loop producer 死亡を記録
 - レポート: docs/research/2026-07-14-ochiai-ai-effort-os-absorb-analysis.md
+
+## [2026-07-22] ingest-skip (light Phase 2, adopt=0) | Graph Engineering with Claude: 11-Step Roadmap (@0xRafy)
+
+- ソース: https://x.com/0xRafy/status/2079542513317118268 (Vault raw/ ローカル保存済み)
+- 理由: multi-agent-orchestration (主) × loop-engineering (副) cross-family、SATURATED-borderline (delta=1)。user light-phase2 選択 → 検証対象 #10 も Already/N-A 確定、採用 0
+- 判定: rehash 10 / ambiguous 1 (#10 Fallback Paths) — light Phase 2 で (a)timeout部分結果=graduated-completion (b)reviewer crash→human=completion-gate handback (c)state保存+alert=checkpoint_manager+patrol-agent (d)graceful=failure-taxonomy+hook-failure-policy が全て Already、ノード別 on_failure 宣言は blueprint-pattern 仕様化済み+実行エンジン /autonomous 退役 (2026-06-21, decommission-log) で N/A
+- per-method 照合台帳 (要約、全文はレポート):
+  - 単一ループ問題/4プリミティブ/Sequential/Router/Fan-out/実装例 → `2026-06-03-dynamic-workflows` の 12 パターン表 (rehash)
+  - 4時代区分 → `2026-06-17-loops-with-claude` Osmani era framing (rehash)
+  - Builder≠Reviewer → `2026-04-11-multi-agent-coordination-patterns` Generator-Verifier + `2026-07-08-agentic-os` 原則2 (rehash)
+  - Human-in-loop → `2026-07-08-loop-engineering-es` #6 governance-levels (rehash)
+  - State+Model Tiering → `2026-07-08-agentic-os` #1 DISPATCH/model-routing Tier 0-3 (rehash)
+  - Fallback Paths → ambiguous → light Phase 2 で Already/N-A 確定
+- 該当 family のキーワード hit: graph engineering, node/edge/router/state, multi-agent, loop→graph era framing
+- スキップ判定: Phase 1.5 gate (light-phase2 経由)
+- レポート: docs/research/2026-07-22-graph-engineering-0xrafy-absorb-analysis.md
+
+## [2026-07-25] ingest (light Phase 2) | Graph Engineering: build 1000+ agent loops in one window (0xCodila/Substack)
+
+- ソース: https://substack.com/@0xcodila (pasted text)
+- 判定: delta=3 (ambiguous 3) のうち Already 2 / Partial 1、Gap 0
+- 取り込み: 1件 — subagent-delegation-guide.md の Agent Teams 適性フィルターに「探索対象が未確定な調査」Red 行追加 + Green 行に限定句
+- 備考: multi-agent-orchestration family N>=17、3日前の 0xRafy 記事と同一 era リブランド
+- レポート: docs/research/2026-07-25-graph-engineering-0xcodila-absorb-analysis.md
