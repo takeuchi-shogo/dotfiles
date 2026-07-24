@@ -1,6 +1,6 @@
 ---
 name: commit
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Bash(git log:*)
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Bash(git log:*), Bash(ls tmp/plans:*), Bash(rm tmp/plans/:*)
 argument-hint: [message] | --amend | --no-verify
 description: >
   conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。
@@ -20,6 +20,7 @@ Create well-formatted commit: $ARGUMENTS
 - Staged changes: !`git diff --cached --stat`
 - Unstaged changes: !`git diff --stat`
 - Recent commits: !`git log --oneline -5`
+- Ephemeral plans: !`ls tmp/plans/*.md 2>/dev/null`
 
 ## What This Command Does
 
@@ -124,6 +125,19 @@ EOF
 ```bash
 git commit -m "🐛 fix(button): correct alignment on mobile viewport"
 ```
+
+## Plan の畳み込み (PLANS.md > Plan Retirement)
+
+`tmp/plans/` に今回の作業の plan があり、その作業が完了しているなら、plan を body に畳んでファイルを消す。
+
+1. plan のセクションをアクションラインに変換する
+   - `## Goal` → `intent()`
+   - `## Decision Log` → `decision()` / `rejected()`
+   - `## Surprises & Discoveries` → `learned()` / `constraint()`
+   - 5 行を超えるならコミット分割を提案する (fabrication 禁止ルールはそのまま適用)
+2. コミット成功後に削除: `rm tmp/plans/<topic>.md`
+
+未完了の plan は畳まない。`docs/plans/` の plan はここでは触らず、`Outcome` を埋めて `docs/plans/completed/` に移す。
 
 ## AutoEvolve 連携
 
