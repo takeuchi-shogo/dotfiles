@@ -137,7 +137,7 @@ AgentFixer 論文: LLM コールの 64-88% で軽微な違反を検出。1件は
 
 ## Review Discipline (Google eng-practices)
 
-Google eng-practices `eng-practices/review/` 由来の規律。各セクションは独立して参照可能 (anchor: `#section-x-...`)。各セクション見出し末尾の `(#NN)` は `docs/research/2026-05-24-google-eng-practices-absorb-analysis.md` で割り当てた discipline 番号で、`docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md` の採用/棄却項目と対応する。
+Google eng-practices `eng-practices/review/` 由来の規律。各セクションは独立して参照可能 (anchor: `#section-x-...`)。各セクション見出し末尾の `(#NN)` は `docs/research/2026-05-24-google-eng-practices-absorb-analysis.md` で割り当てた discipline 番号で、`docs/plans/completed/2026-05-24-google-eng-practices-integration-plan.md` の採用/棄却項目と対応する。
 
 ### Section A: Cleanup-Later Boundary (#14)
 
