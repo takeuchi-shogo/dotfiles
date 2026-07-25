@@ -74,11 +74,19 @@ PR commit 直前の closeout として、以下の順序で並列化する。for
 
 Google eng-practices `small-cls.md` 由来の規律。PR (CL) は "one thing" に focus し、レビュー可能なサイズに保つ。
 
-### Threshold: 300 行
+### Threshold
 
-- **目安: insertions + deletions = 300 行**を超える PR は分割検討必須
-- 生成コード (`.pb.go` / lockfile / `_gen.go`) は threshold 計算から除外可
-- threshold は `skills/github-pr/self-review.md` および `agents/golang-reviewer.md` (#16) と統一
+insertions + deletions で判定する。生成コード (`.pb.go` / lockfile / `_gen.go`) は計算から除外可。
+
+| 行数 | 扱い |
+|------|------|
+| **~100 行** | 推奨サイズ。Google eng-practices の "typical CL" |
+| **300 行超** | 分割検討必須 |
+| **1000 行超 / 50 ファイル超** | 上限。内容を読まずサイズだけで差し戻してよい (emergency 認定時のみ例外) |
+
+- 300 行の分割検討必須ラインは `skills/github-pr/self-review.md` および `agents/golang-reviewer.md` (#16) と統一
+- 推奨 100 行は目標であってゲートではない。100 行を超えただけでは何も止めない
+- 上限の根拠: Google eng-practices `small-cls.md` の "1000 lines is too large" / "50 files is spread too many"
 
 ### PR 分割パターン
 
@@ -94,7 +102,7 @@ Google eng-practices `small-cls.md` 由来の規律。PR (CL) は "one thing" �
 
 ### Large CL Exception
 
-300 行超は原則禁止だが、**emergency 認定時のみ** Large CL が許容される。
+上限 (1000 行 / 50 ファイル) 超えは原則禁止だが、**emergency 認定時のみ** Large CL が許容される。
 emergency 定義 (本番障害 / リリースブロッカー / harness 破損) と NOT emergency 一覧は `references/emergency-definition.md` 参照。
 
 emergency 認定 Large CL の必須記載事項 (PR description に明記):

@@ -239,7 +239,7 @@ Pass 1 dispatch で抽出した 22 手法 + Codex Phase 2.5 で補足した 4 �
 - T3 → T4, T5 (threshold sync)
 - T7 は独立 (review skill 内完結)
 
-**推奨**: 新セッションで `/rpi docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md`
+**推奨**: 新セッションで `/rpi docs/plans/completed/2026-05-24-google-eng-practices-integration-plan.md`
 
 ---
 
@@ -248,7 +248,7 @@ Pass 1 dispatch で抽出した 22 手法 + Codex Phase 2.5 で補足した 4 �
 本セッションは /absorb で context が長いため、同一セッション内での実装は非推奨。新セッションで以下を実行:
 
 ```
-/rpi docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md
+/rpi docs/plans/completed/2026-05-24-google-eng-practices-integration-plan.md
 ```
 
 L 規模 (3 新規ファイル + 8 編集ファイル) のため plan 作成 → Codex Spec/Plan Gate → 段階的実装の流れを推奨。
@@ -299,7 +299,7 @@ Piper monorepo + One Version + OWNERS + Critique Attention Set という Google 
 
 ## Related Plan
 
-詳細 integration plan: [`docs/plans/active/2026-05-24-google-eng-practices-integration-plan.md`](../../plans/active/2026-05-24-google-eng-practices-integration-plan.md)
+詳細 integration plan: [`docs/plans/completed/2026-05-24-google-eng-practices-integration-plan.md`](../../plans/completed/2026-05-24-google-eng-practices-integration-plan.md)
 
 ---
 
