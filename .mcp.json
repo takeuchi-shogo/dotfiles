@@ -9,6 +9,7 @@
 			"args": ["code-review-graph", "serve"]
 		},
 		"x-docs": {
+			"type": "http",
 			"url": "https://docs.x.com/mcp"
 		},
 		"xapi": {
