@@ -14,9 +14,18 @@
 
 ## File Location
 
-- 原則: `docs/plans/YYYY-MM-DD-<topic>-plan.md`
-- 進行中の plan は必要に応じて `docs/plans/active/` に置く
+- 既定: `tmp/plans/<topic>.md` — 使い捨て、git 管理外 (`plansDirectory`)
+- 昇格: handoff・resume・将来参照が要るものだけ `docs/plans/YYYY-MM-DD-<topic>-plan.md` (進行中は `docs/plans/active/`)
 - design を分けるときは `...-design.md` を隣に置いてよい
+
+## Plan Retirement
+
+作業が終わったら plan を畳むか残すかを必ず決める。放置しない。
+
+- `tmp/plans/` の plan: Goal / Decision Log / Surprises をコミットメッセージの body に畳んで、ファイルを削除する (`/commit` が実行)
+- `docs/plans/` の plan: `Outcome` を埋めて `docs/plans/completed/` に移す
+
+git 履歴が plan の最終的な置き場。`/recall` が commit body から文脈を復元する。
 
 → 詳細: [resume anchor contract](.config/claude/references/resume-anchor-contract.md) (Plan / HANDOFF / RUNNING_BRIEF の wiring)
 
