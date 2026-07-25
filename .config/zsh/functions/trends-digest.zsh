@@ -14,7 +14,7 @@ _trends_digest_on_first_open() {
   [[ -f "$ledger" ]] || return 0
   mkdir -p "$cache_dir"
   if ! python3 "$HOME/dotfiles/scripts/runtime/tech-researcher/trends_select.py" \
-      "$ledger" --days 3 --top 5; then
+      "$ledger" --days 3 --top 5 --reports-dir "$cache_dir/reports"; then
     print -u2 "[trends-digest] WARN: trends_select.py failed (今日は再表示しません)"
   fi
   rm -f "$cache_dir"/digest-shown-*(N)

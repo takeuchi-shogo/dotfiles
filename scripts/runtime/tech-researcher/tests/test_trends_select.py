@@ -306,3 +306,164 @@ def test_harness_url_dedup_keeps_latest_date():
     )
     assert len(items) == 1
     assert items[0]["date"] == "2026-06-09"
+
+
+REPORT = """## AI Tech Trends 2026-06-09
+
+- [2] [example.com] 記事Aの一行要約。
+- [5] [example.com] 記事Bの一行要約。
+
+## 出典
+
+- [2] [example.com] 記事A
+  https://a/1
+- [5] [example.com] 記事B
+  https://a/2
+- [9] [example.com] 要約なし記事
+  https://a/3
+"""
+
+
+def test_load_summaries_joins_by_index():
+    m = trends_select.load_summaries([REPORT])
+    assert m == {
+        "https://a/1": "記事Aの一行要約。",
+        "https://a/2": "記事Bの一行要約。",
+    }
+
+
+def test_load_summaries_without_sources_section_is_empty():
+    assert trends_select.load_summaries(["- [1] [x] 要約のみで出典なし"]) == {}
+
+
+def test_load_summaries_later_report_wins():
+    older = REPORT
+    newer = REPORT.replace("記事Aの一行要約。", "更新された要約。")
+    m = trends_select.load_summaries([older, newer])
+    assert m["https://a/1"] == "更新された要約。"
+
+
+def test_render_term_inserts_summary_between_title_and_url():
+    items = trends_select.select(
+        [_line("2026-06-09", "https://a/1", title="記事A")], asof=ASOF, days=3
+    )
+    out = trends_select.render_term(
+        items, days=3, summaries={"https://a/1": "記事Aの一行要約。"}
+    )
+    lines = out.splitlines()
+    i = next(n for n, ln in enumerate(lines) if "記事A" in ln)
+    assert lines[i + 1].strip() == "└ 記事Aの一行要約。"
+    assert lines[i + 2].strip() == "https://a/1"
+
+
+def test_render_term_without_summaries_unchanged():
+    items = trends_select.select(
+        [_line("2026-06-09", "https://a/1")], asof=ASOF, days=3
+    )
+    assert trends_select.render_term(items, days=3) == trends_select.render_term(
+        items, days=3, summaries={}
+    )
+
+
+def test_main_reports_dir_shows_summary(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1") + "\n", encoding="utf-8")
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    (reports / "2026-06-09.md").write_text(REPORT, encoding="utf-8")
+    rc = trends_select.main(
+        [str(ledger), "--asof", "2026-06-10", "--reports-dir", str(reports)]
+    )
+    assert rc == 0
+    assert "└ 記事Aの一行要約。" in capsys.readouterr().out
+
+
+def test_main_reports_dir_missing_degrades_silently(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1") + "\n", encoding="utf-8")
+    rc = trends_select.main(
+        [str(ledger), "--asof", "2026-06-10", "--reports-dir", str(tmp_path / "nope")]
+    )
+    assert rc == 0
+    assert "https://a/1" in capsys.readouterr().out
+
+
+def test_render_term_summary_truncation_boundary():
+    items = trends_select.select(
+        [_line("2026-06-09", "https://a/1")], asof=ASOF, days=3
+    )
+    exact = "あ" * 100
+    out = trends_select.render_term(items, days=3, summaries={"https://a/1": exact})
+    assert f"└ {exact}\n" in out
+    assert "…" not in out
+    over = "い" * 101
+    out = trends_select.render_term(items, days=3, summaries={"https://a/1": over})
+    assert f"└ {'い' * 100}…" in out
+    assert "い" * 101 not in out
+
+
+def test_render_term_summary_strips_control_chars():
+    items = trends_select.select(
+        [_line("2026-06-09", "https://a/1")], asof=ASOF, days=3
+    )
+    esc, bel = chr(27), chr(7)
+    out = trends_select.render_term(
+        items, days=3, summaries={"https://a/1": f"要約{esc}[31m注入{bel}文"}
+    )
+    assert esc not in out
+    assert bel not in out
+    assert "要約[31m注入文" in out
+
+
+def test_main_multiple_reports_newest_wins(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1") + "\n", encoding="utf-8")
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    (reports / "2026-06-09.md").write_text(REPORT, encoding="utf-8")
+    (reports / "2026-06-10.md").write_text(
+        REPORT.replace("記事Aの一行要約。", "翌日の更新要約。"), encoding="utf-8"
+    )
+    rc = trends_select.main(
+        [str(ledger), "--asof", "2026-06-10", "--reports-dir", str(reports)]
+    )
+    assert rc == 0
+    assert "└ 翌日の更新要約。" in capsys.readouterr().out
+
+
+def test_main_json_format_ignores_reports_dir(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1") + "\n", encoding="utf-8")
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    (reports / "2026-06-09.md").write_text(REPORT, encoding="utf-8")
+    rc = trends_select.main(
+        [
+            str(ledger),
+            "--asof",
+            "2026-06-10",
+            "--format",
+            "json",
+            "--reports-dir",
+            str(reports),
+        ]
+    )
+    assert rc == 0
+    parsed = json.loads(capsys.readouterr().out)
+    assert parsed[0]["url"] == "https://a/1"
+    assert "記事Aの一行要約。" not in json.dumps(parsed, ensure_ascii=False)
+
+
+def test_main_report_read_error_warns_and_degrades(tmp_path, capsys):
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(_line("2026-06-09", "https://a/1") + "\n", encoding="utf-8")
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    (reports / "2026-06-09.md").write_bytes(bytes([0xFF, 0xFE, 0x00]) + b"broken")
+    rc = trends_select.main(
+        [str(ledger), "--asof", "2026-06-10", "--reports-dir", str(reports)]
+    )
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "https://a/1" in captured.out
+    assert "WARN: report read failed" in captured.err
