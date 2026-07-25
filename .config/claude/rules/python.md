@@ -111,7 +111,6 @@ class TrainConfig:
 
 ## エラーハンドリング
 
-- bare `except:` は絶対禁止
 - `except Exception:` はログ + re-raise を必ず伴う
 - 具体的な例外を捕捉する: `except (TypeError, ValueError):`
 - ファイル操作には `with` 文（context manager）を必ず使う
@@ -125,7 +124,6 @@ class TrainConfig:
 ## Import 規約
 
 - 順序: stdlib → third-party → local（`isort` 準拠）
-- `from module import *` は禁止
 - mutable デフォルト引数は禁止: `def f(items: list = [])` → `def f(items: list | None = None):`
 
 ## セキュリティ
