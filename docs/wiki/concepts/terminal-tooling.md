@@ -35,6 +35,8 @@ AI コーディングエージェントの長時間セッションに耐える�
 
 dotfiles では Ghostty + cmux + aerospace の3層構成。cmux を `workspace 4` に固定し AI coding terminal と役割明記。`/dispatch` スキルが cmux Worker を起動する際は `new-workspace → send → send-key enter → read-screen --scrollback → close-surface` のパターンを踏む。tmux はリモート SSH 専用に位置づけ直し、ローカルでの多重化は cmux に統一している。`cmux-notify.sh` が Stop/Notification hook で cmux notify + claude-hook notification を担う。信頼性ラダーと信頼ティアは `references/cli-discovery.md` に、mise 運用ルールは `.config/mise/config.toml` に実装されている。`scripts/runtime/launch-worker.sh` は cmux surface がグローバル採番であるため `list-pane-surfaces` で実 surface ref を動的解決するよう修正済み（固定 `surface:1` 前提のバグを解消）。
 
+herdr は agent multiplexer 層に位置づく。汎用マルチプレクサ（tmux/Zellij）にエージェント状態の自動認識（working/blocked/idle/done）と CLI/Socket API を足した層で、ターミナルエミュレータ（Ghostty）の中でそのまま動くため乗り換えは不要。dotfiles では nix（flake input `github:ogulcancelik/herdr`）で導入済みで、config は `dotfiles/.config/herdr/config.toml` を mkOutOfStoreSymlink で live 参照する（編集は即反映、nix:switch 不要）。cmux Worker と herdr Worker の使い分けは `references/subagent-vs-cmux-worker.md` の境界表を参照。
+
 ## 関連概念
 
 - [claude-code-architecture](claude-code-architecture.md) — Claude Code の内部アーキテクチャとエージェント連携

@@ -2088,3 +2088,11 @@
 - 備考: Codex 批評で Gap 判定 2 件 (Rich references / skill over-constrain) を Partial に降格。中核反論「80% 削減は製品層 system prompt の話で個人 harness に移植不可」を採用。Gemini は IneligibleTierError で degraded (Codex-only)
 - 副産物: `claude doctor` 実行だけで x-docs MCP サーバが skip されていた実 drift を検出
 - レポート: docs/research/2026-07-25-anthropic-context-engineering-claude5-absorb-analysis.md
+
+## [2026-07-25] ingest | 伝書鳩をやめた日 — herdr × agmsg でオーケストレーションの壁を越える
+
+- ソース: ユーザー貼り付けテキスト (参考: Boris Cherny "Steps of AI Adoption", @horatjp/Nao8/tumf の Zenn・blog 記事)
+- 判定: Gap 2 / Partial 1 / Already 4 / N/A 3 (手法 12 件)
+- Saturation Gate: PASS (warning) — multi-agent-orchestration family N=17+
+- 取り込み: T1 起動ルーティング規約 (cmux-ecosystem.md + subagent-vs-cmux-worker.md)、T2 herdr agent_panel_sort = "priority"。T3 停滞検出の herdr 拡張 / T4 nvim 連携は docs/plans/active/2026-07-25-herdr-attention-routing-plan.md
+- 非採用: agmsg (Message Bus 非採用を Codex が追認)、Steps of AI Adoption 段階モデル (mechanism を持たない framing)、worktree の tab 割当 (workspace 1:1 で確定済)

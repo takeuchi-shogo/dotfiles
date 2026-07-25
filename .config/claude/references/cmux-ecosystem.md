@@ -132,6 +132,23 @@ collect-result.sh --workspace workspace:M --worker w-...-claude --timeout 600
 - **多数決・無制限ラリーは品質を上げない** (「収束して見える誤答」を作る)。conductor
   が撤退条件つきで統合判断するのが核心 — fan-out + judge より文脈適合ルーティング + 検証。
 
+## herdr 版スクリプトとの使い分け
+
+`scripts/runtime/` には cmux 版と herdr 版の 2 系統がある。選択は worktree 隔離が要るかで決まる。
+
+| | cmux 版 (`launch-worker.sh` / `collect-result.sh`) | herdr 版 (`herdr-launch-worker.sh` / `herdr-collect-result.sh`) |
+|---|---|---|
+| worktree 隔離 | `--worktree <branch>` で `/tmp/cmux-worktrees/` に分離 | **未対応** |
+| 完了検出 | 結果ファイルのポーリング | claude は `herdr wait agent-status` で working → idle/done の遷移、codex/gemini は DONE_SIGNAL match |
+| 承認待ち | 画面を読むまで分からない | `agent_status=blocked` で即エスカレーション (exit 4) |
+| 対話介入 | `send` / `send-key` | `herdr agent send-keys` / `prompt` / `focus` |
+
+- **既定は cmux 版**。hub-and-spoke (debate / セカンドオピニオン / 比較) は worktree 隔離と長時間・並列を前提にする。
+- **herdr 版に寄せる条件**: worktree 分離が不要で、承認待ちの検出や途中の対話介入が効く作業。`agent_status` (working / blocked / idle / done) を直接読めるので、止まっている worker に気づくのが速い。
+- herdr 版で worktree が要ると分かった時点で cmux 版に切り替える。移植はしない (`herdr-launch-worker.sh:15` の ponytail コメントが現行の判断)。
+
+判定表の全体像は `references/subagent-vs-cmux-worker.md` を見ること。
+
 ## cmux-team 4層アーキテクチャ
 
 ```
