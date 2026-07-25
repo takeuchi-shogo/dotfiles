@@ -79,6 +79,7 @@
   // ===================
   "vim_mode": true,
   "vim": {
+    "show_edit_predictions_in_normal_mode": true,
     "use_multiline_find": true,
     "use_smartcase_find": true
   },
