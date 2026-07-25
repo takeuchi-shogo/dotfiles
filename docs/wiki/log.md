@@ -2079,3 +2079,12 @@
 - 取り込み: 1件 — subagent-delegation-guide.md の Agent Teams 適性フィルターに「探索対象が未確定な調査」Red 行追加 + Green 行に限定句
 - 備考: multi-agent-orchestration family N>=17、3日前の 0xRafy 記事と同一 era リブランド
 - レポート: docs/research/2026-07-25-graph-engineering-0xcodila-absorb-analysis.md
+
+## [2026-07-25] ingest | The new rules of context engineering for Claude 5 generation models (Anthropic 公式)
+
+- ソース: https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models (pasted text)
+- 判定: Saturation PASS (family 該当なし・新分野)。11手法中 Already 1 / Partial 8 / N/A 1 / Gap 1
+- 取り込み: 記事由来の構造変更は**採用 0**。実行は (T1) `.mcp.json` x-docs の `type` 欠落修正 = validation-only、(T2) mechanism 済み prompt 重複の削除 2 行 (`rules/python.md` bare except / import * → ruff E722・F403 で強制済) の 2 件のみ
+- 備考: Codex 批評で Gap 判定 2 件 (Rich references / skill over-constrain) を Partial に降格。中核反論「80% 削減は製品層 system prompt の話で個人 harness に移植不可」を採用。Gemini は IneligibleTierError で degraded (Codex-only)
+- 副産物: `claude doctor` 実行だけで x-docs MCP サーバが skip されていた実 drift を検出
+- レポート: docs/research/2026-07-25-anthropic-context-engineering-claude5-absorb-analysis.md

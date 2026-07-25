@@ -21,6 +21,7 @@ last_reviewed: 2026-04-23
 
 ### ハーネス理論
 
+- **Anthropic 公式「Claude 5 世代の context engineering 新ルール」(2026-07-25)** — 新分野 (Saturation PASS、context-engineering / 1st-party prompting policy)。主張は「Claude Code の system prompt 80% 削除で coding eval 非劣化」+ 11手法 (rules→judgement / examples→interface / progressive disclosure / auto-memory / rich references / `/doctor` rightsize 等)。**記事由来の構造変更は採用 0**。Codex 中核反論を採用: 製品層 system prompt は特定モデル・toolset・eval 分布を統制した最適化であり、全 repo に upfront で入る個人 global CLAUDE.md とは load path も寿命も違う → 削減率を移植してはいけない。Gap 判定 2件 (Rich references / skill over-constrain) は Codex 指摘で Partial 降格 — **行数 590 や Anti-Patterns 43件を過剰制約の指標にしたのが誤り** (`feedback_skill_audit_conflict_metric.md` の CONFLICT 件数指標と同型の失敗)。Codex の見落とし指摘「本体行数より常時ロードされる skill frontmatter description の総量が先」は PR #70 の skillListingBudgetFraction で対応済。実行したのは (T1) `.mcp.json` x-docs の `type` 欠落修正 = validation-only、(T2) mechanism 済み prompt 重複削除 2行 (`rules/python.md` bare except / import * は ruff E722・F403 で強制済) のみ。**T2 の実効が 2 行しかなかったこと自体が「記事の指摘は dotfiles では既にほぼ解消済み」の実測証拠**。教訓: 1st-party でもレイヤーバイアス (製品層 vs 個人 harness) を疑う / `/doctor` 系は採用 0 でも走らせる価値がある (実行だけで MCP サーバ 1 つの起動失敗を検出) → `docs/research/2026-07-25-anthropic-context-engineering-claude5-absorb-analysis.md`
 - NLAH, Meta-Harness, AutoHarness(2件), Harness Wars/Books
 - Skill Loop Wiring, Ralph Loop, AutoAgent(self-optimizing)
 - Subconscious Agent — Ideation-Debate + backlog + per-run artifacts
