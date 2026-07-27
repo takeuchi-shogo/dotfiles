@@ -1,7 +1,9 @@
 ---
 title: openclaw/agent-skills autoreview absorb — pending 4 tasks
 created: 2026-05-28
-status: pending
+status: closed
+closed: 2026-07-27
+closed-by: docs/research/2026-07-27-openclaw-autoreview-reabsorb-analysis.md (Stale-Plan Audit)
 source: docs/research/2026-05-28-openclaw-autoreview-absorb-analysis.md
 scale: M (4 tasks, mixed S+M, total ~60 min)
 priority: medium (Bundle A+B 即実装済、本 Plan は保留 4 件)
@@ -15,6 +17,17 @@ related:
 ---
 
 # autoreview SKILL.md absorb — Pending Tasks (T6-T9)
+
+> **[2026-07-27 CLOSED — Stale-Plan Audit]** 60 日 pending のまま残っていた本 Plan を、同ソースの再 absorb (`docs/research/2026-07-27-openclaw-autoreview-reabsorb-analysis.md`) の Phase 1.5 Step 7 で棚卸しした。結果:
+>
+> | Task | 判定 | 根拠 |
+> |------|------|------|
+> | T6 security suppression auditability | **retired** | dotfiles に security-audit suppression の経路自体が存在しない (構造化出力も未実装)。実装対象がないため N/A。将来 suppression を導入するなら本 Plan ではなく新規 Plan で扱う |
+> | T7 synthesis-report の Tests Run | **implemented (2026-07-27)** | `skills/review/templates/synthesis-report.md` に Tests Run セクションを追加。Scope Governor §7 の報告要件とも接続 |
+> | T8 format → test+review 並列 | **already implemented (2026-06-13)** | `skills/github-pr/SKILL.md` に `## Parallel Closeout: Format → (Tests ∥ Review)` が verbatim 引用付きで実装済。本 Plan の保留リストが陳腐化していた |
+> | T9 codex worker 30 min SLA 文言 | **retired** | heartbeat の実装がないまま SLA 文言だけ書くと誤誘導になる。実測で kill 由来の障害が出た時点で再検討する |
+>
+> あわせて、同ソースに 5/28 時点で存在しなかった新規セクション **Scope Governor** を absorb し `references/scope-governor.md` として採用した。以下の T6-T9 実装インストラクションは履歴として残すが、実行しない。
 
 `/absorb` で `openclaw/agent-skills autoreview SKILL.md` から得た強化候補 9 件のうち、Bundle A+B (S × 5) は 2026-05-28 セッションで即実装完了。本 Plan は **保留 4 件** (T6-T9) の実装インストラクションを保存する。別セッションで `/rpi` 経由または手動実行を推奨。
 

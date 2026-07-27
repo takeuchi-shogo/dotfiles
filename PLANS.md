@@ -56,6 +56,14 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
 - 検証していない仮定と高影響 unknown（答えでアーキテクチャ・データモデル・UX が変わる不確実性）
 - 不慣れな領域なら着手前に pre-plan unknowns pass を実施（`.config/claude/references/pre-mortem-checklist.md`）
 
+## Program Design（該当時のみ）
+- 主要な型とメソッドシグネチャ、データの所有者、call graph
+- 変更単位の順序と、各単位で何を検証するか
+- 次のいずれかに当たるとき書く: 複数モジュールに跨る interface / ownership の変更 / caller が複数ある public API の変更 / 状態・並行性・失敗意味論の変更
+  - caller はリポジトリ内で解決できるものを数える。リポジトリ外に公開している API は、内部 caller が 0 件でも対象に含める
+- 当たらなければ節ごと省く（小さい変更にこの層は要らない）
+- 理由: アーキテクチャが決まればモデルが実装できる、は成り立たない（`.config/claude/references/why-humans-read-code.md`）
+
 ## Validation
 - 実行する task / test / lint / review
 

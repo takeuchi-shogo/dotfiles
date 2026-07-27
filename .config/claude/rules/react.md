@@ -52,6 +52,23 @@ useEffect(() => { loadVideo(videoId); }, [videoId]);
 <VideoPlayer key={videoId} videoId={videoId} />
 ```
 
+**`useMountEffect` 内で最新の props/state が要る場合 — `useEffectEvent` (React 19.2+):**
+
+購読・タイマー・外部連携のコールバックから最新値を読みたいだけなら、依存配列を増やさず `useEffectEvent` に非リアクティブなロジックを切り出す。制約 (`eslint-plugin-react-hooks` が強制する):
+
+- effect の中からのみ呼ぶ。**render 中とイベントハンドラからは呼べない**
+- 他のコンポーネントやフックに渡さない。effect 内で外部 API のコールバックとして直接渡すのは可
+- **依存配列に入れない** (入れると lint が警告する)
+
+```typescript
+// ❌ BAD: 最新の theme が欲しいだけで再購読が走る
+useEffect(() => { const c = createConnection(); c.on("open", () => notify(theme)); }, [theme]);
+
+// ✅ GOOD: 再購読はさせず、最新値だけ読む
+const onOpen = useEffectEvent(() => notify(theme));
+useMountEffect(() => { const c = createConnection(); c.on("open", onOpen); return () => c.close(); });
+```
+
 **条件付きマウントは親で制御:**
 
 ```typescript
@@ -77,11 +94,18 @@ useEffect(() => { if (!isLoading) playVideo(); }, [isLoading]);
 - Fetch data on the server — pass serializable props to client components
 - Never import server-only code in client components
 
+### Next.js 16 以降
+
+- キャッシュは `use cache` ディレクティブで明示する (`next.config.ts` の `cacheComponents` フラグで有効化)。`unstable_cache` は置き換え対象
+- `middleware.ts` は `proxy.ts` にリネームされた。ランタイムは nodejs 固定で、edge は使えない — 認証チェック等を edge 前提で書かない
+- `cookies()` / `headers()` / `params` / `searchParams` は非同期。codemod (`npx @next/codemod@latest upgrade`) で大半は機械変換できる
+
 ## Memoization
 
-- Do NOT add `useMemo` / `useCallback` by default — measure first
-- Memoize only when: expensive computation, stable reference for deps, or preventing child re-renders
-- Use React Compiler (React 19+) when available instead of manual memoization
+- **React Compiler を既定で有効にする** — 1.0 stable (2025-10)。手動メモ化はコンパイラが外せなかった箇所だけに残す
+  - React 19 未満 (17/18) でも使える。compiler config に `target` を指定し `react-compiler-runtime` を依存に追加する
+  - lint は `eslint-plugin-react-hooks@latest` の recommended に統合済み。`eslint-plugin-react-compiler` を入れているなら削除する (コンパイラ未導入でも lint だけ先に上げてよい)
+- Compiler なしの環境でのみ: `useMemo` / `useCallback` は default で付けない。計測してから、expensive computation・deps の参照安定・子の再レンダー抑止のいずれかに該当する場合だけ
 - `React.memo()` for components that re-render with same props frequently
 
 ## Keys & Lists

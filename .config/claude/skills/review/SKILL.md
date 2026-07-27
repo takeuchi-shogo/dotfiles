@@ -570,9 +570,13 @@ Step 4 の verdict に応じて、修正→再レビューのサイクルを実�
 
 ```
 Review → verdict 判定
+  │
+  ├─ (修正着手前に Scope Governor で finding を分類。stop-and-escalate が 1 件でもあれば
+  │   verdict に関わらず NEEDS_HUMAN_REVIEW に倒し、残りの in-scope blocker も修正しない)
+  │
   ├─ PASS           → Step 6 (Findings Persistence) → タスク完了をユーザーに報告
-  ├─ NEEDS_FIX      → 指摘を修正 → Validate → 差分のみ再 Review → verdict 再判定
-  ├─ BLOCK          → 指摘を修正 → Validate → フル再 Review → verdict 再判定
+  ├─ NEEDS_FIX      → in-scope blocker のみ修正 → Validate → 差分のみ再 Review → verdict 再判定
+  ├─ BLOCK          → in-scope blocker のみ修正 → Validate → フル再 Review → verdict 再判定
   └─ NEEDS_HUMAN_REVIEW → ユーザーに判断を委ねる
 ```
 
@@ -603,6 +607,7 @@ Re-Review は「新たな問題があるか？」を問うが、Validate は「�
 
 ### サイクルルール
 
+0. **Scope Governor**: finding を修正する前と各再レビューの前に `references/scope-governor.md` を適用する。finding を in-scope blocker / follow-up / stop-and-escalate に分類し、diff が `max(2 × 初期非テスト LOC, 初期非テスト LOC + 50)` を超えたら scope 破綻として報告する。2 サイクル未収束なら全 finding を再分類し、3 回目は再分類後も in-scope blocker のものだけを対象にする
 1. **PASS**: 修正不要。Step 6 に進み、完了をユーザーに報告する
 2. **NEEDS_FIX**: Important 指摘を修正後、**Fix-Validate ゲート**を通し、**修正差分のみ**を対象に再レビューする（レビューアー構成は修正行数で再スケーリング。ただし codex-reviewer は初回起動時は再スケーリングに関わらず必ず再起動する）
 3. **BLOCK**: Critical 指摘を修正後、**Fix-Validate ゲート**を通し、**全変更**を対象にフルレビューを再実行する（codex-reviewer を必ず含める）

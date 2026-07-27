@@ -81,12 +81,12 @@ function safeGet<T>(map: Map<string, unknown>, key: string, guard: (v: unknown) 
 
 ### tsconfig 推奨設定
 
-`strict: true` は必須。加えて以下を推奨（TypeScript 5.9 のデフォルトに準拠）:
+TypeScript 6.0 で `strict` / `module: esnext` / `target: es2025` / `moduleResolution: bundler` / `esModuleInterop` がデフォルトになった。**6.0 未満のプロジェクトでは `strict: true` を明示すること** (5.x では依然 off)。6.0 以降で明示が要るのは以下:
 
 ```jsonc
+// TS 6.0 以降を前提。6.0 未満では "strict": true も足すこと
 {
   "compilerOptions": {
-    "strict": true,
     "noUncheckedIndexedAccess": true,    // インデックスアクセスに undefined を含める
     "exactOptionalPropertyTypes": true,   // optional と undefined を区別
     "verbatimModuleSyntax": true,         // import type の強制
@@ -96,6 +96,16 @@ function safeGet<T>(map: Map<string, unknown>, key: string, guard: (v: unknown) 
   }
 }
 ```
+
+6.0 の移行で踏みやすいのは `types` の空配列デフォルト・`rootDir` が tsconfig ディレクトリ基準になったこと・side-effect import の厳格化 (`noUncheckedSideEffectImports`)。`ignoreDeprecations` での抑止は 7.0 で効かないので、警告は潰して上げる。機械的な変換は `npx @andrewbranch/ts5to6` → `tsc --noEmit`。
+
+## TypeScript 7.0 (Go native) の採用判断
+
+2026-07-08 GA。`typescript` パッケージの `tsc` 実体が Go 移植版に差し替わり、型チェックが 8〜12x 速くなる (VS Code のコードベースで 125.7s → 10.6s)。`tsgo` の名前は nightly チャンネル専用になった。
+
+- **上げてよい**: 型チェックとビルドが `tsc` + bundler で完結するアプリ / ライブラリ
+- **待つ**: 7.0 は public compiler API を持たない。Vue / Svelte / Astro / MDX / Angular テンプレートなど compiler API に依存するツールチェーンは 7.1 以降を待つ
+- 6.0 で deprecation を実際に解消してあれば 7.0 はそのまま通る (抑止しただけだと通らない)
 
 ## 型推論
 
@@ -266,11 +276,11 @@ function getUser(id: UserId): User | null { ... }
 |---------|------|------|
 | runtime | Node.js LTS | bun は AI コーディング段階では非推奨（出力フォーマット安定性が劣る） |
 | パッケージマネージャ | pnpm | npm/yarn でも可だが pnpm が workspace で有利 |
-| test runner | **vitest** | bun test は LLM の **出力読み取り精度が致命的に低い**（「カバレッジ 100% です！(実際 98%)」「テスト正常です！(実際 fail 2)」の自家中毒）。Jest も可 |
+| test runner | **vitest** | bun test は coverage が experimental で threshold 強制も無く、workspace mocking / 並列 DB テストで壊れる報告がある。Jest も可 |
 | linter | **eslint** | Biome は plugin の自由度が低い。AI 想定外コードへの ad-hoc rule を書けるため eslint を選ぶ |
 | エラー型 | Discriminated Union (`Result<T,E>`) | `throw` ではなく値で返す（catch の握り潰し抑制） |
 
-**bun test を選ばない理由 (詳細)**: LLM がコンソール出力を要約する際、bun test の出力フォーマット (色コード混在・進捗表示) を誤読し、実際の失敗を「成功」と報告する事例が頻出。vitest/jest は plain text output が安定しており LLM の読み取り精度が高い。
+**bun test を選ばない理由 (2026-07 再確認)**: 生の実行速度は bun test の方が速いと報告されている (未計測、ベンチマーク記事は vitest 比 2-3x を主張) が、coverage が experimental で branch coverage / threshold 強制を持たず、CI で「カバレッジが落ちた」を機械判定できない。workspace の mocking と並列 DB テストで壊れる報告もある。元出典 (erukiti 2024-12) は「LLM が bun test の出力を誤読して fail を成功と報告する」を理由に挙げていたが、この主張は再検証できていない — 判断は上記の機能ギャップに置く。greenfield の Bun ネイティブプロジェクトなら bun test を検討してよい。
 
 ## レイヤー強制 (eslint-plugin-boundaries)
 

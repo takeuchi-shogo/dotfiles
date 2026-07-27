@@ -2,7 +2,7 @@
 name: careful
 description: >
   Use when working near production systems or performing potentially destructive operations.
-  Blocks rm -rf, DROP TABLE, force-push, kubectl delete via PreToolUse guard.
+  Prompts for confirmation on every Bash command via a session-scoped PreToolUse guard.
   Triggers: 'careful', 'prod操作', '本番', 'production', '慎重モード'.
   Do NOT use for: normal development — overhead is too high for routine work.
 origin: self
@@ -50,6 +50,8 @@ PreToolUse フックで Bash ツール呼び出しをインターセプトし、
 
 ## Gotchas
 
+- **hard block ではない**: `type: prompt` なので「はい」で通る。コマンド判別もしないため `rm -rf` 等を名指しで検出しているわけではない
+- **決定論的に止まるものと止まらないもの**: `rm -rf` / `git push --force` は settings.json の deny で実際にブロックされる。一方 **`kubectl delete` と `DROP TABLE` はどこにも deny ルールがなく、この確認プロンプトが唯一の防波堤**（SQL 文は glob で捕まえにくいため deny 追加自体が難しい）。deny に足せるものは足す、足せないものはここに書いて明示する
 - **オーバーヘッド**: 全 Bash コマンドに確認が入る。通常開発では使わない
 - **Read 系は対象外**: Read, Grep, Glob はブロックしない（読み取りは安全）
 - **セッション限定**: スキル起動セッション中のみ有効。新セッションでは再起動が必要

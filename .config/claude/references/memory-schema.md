@@ -70,9 +70,15 @@ last_reviewed: 2026-04-23
 
 | Owner | 対象 |
 |-------|------|
-| `learner/session-trace-store.py` | `traces/*.jsonl` (30日, 既存) |
-| `lifecycle/memory-prune.py` (予定) | `learnings/*.jsonl` (event のみ), `runs/*/proposals*.yaml` |
+| `lifecycle/memory-prune.py` (未実装) | `learnings/*.jsonl` (event のみ), `runs/*/proposals*.yaml` |
 | `lifecycle/memory-archive.py` (既存) | MEMORY.md (180行超過) |
+
+**現状 (2026-07-27 実測)**: event 系 JSONL に retention を実施している機構は無い。
+日数の定義だけが存在する。以前この表は `learner/session-trace-store.py` を
+`traces/*.jsonl` の 30 日 retention owner として「既存」と記載していたが、実ファイルは
+存在せず (`__pycache__/session-trace-store.cpython-314.pyc` の残骸のみ)、
+`~/.claude/agent-memory/traces/` 自体も生成されていないため削除した。
+上の「既存カテゴリ簡易マッピング」の `traces/*.jsonl` も現在は該当ファイルなし。
 
 ## 後方互換
 

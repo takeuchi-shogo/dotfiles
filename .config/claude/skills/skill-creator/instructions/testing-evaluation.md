@@ -137,6 +137,13 @@ Once all runs are done:
 
    **Judge independence and process adherence**: For final/benchmark grading, spawn an independent grader subagent — inline grading is a provisional smoke check only, since an inline grader has already seen the authoring conversation. The independent grader must not see expected outputs or the skill-authoring conversation — it grades only from run outputs against the assertions/checklist. A judge that knows what "should" happen rubber-stamps plausible artifacts. Include at least one process-adherence check per eval: did the run actually execute the workflow's steps (conducted the interview, ran the validation), not just produce a good-looking artifact? Documented failure mode: a skill's first version produced excellent artifacts while skipping its required conversation entirely — artifact-only grading would have passed it; a blind process-adherence judge failed it 0/2. For detection-type skills, planted-landmine fixtures (test codebases seeded with known traps) let you grade on whether the traps are caught.
 
+   **Rubric authoring**: Write the rubric before the run, not after reading a bad output — most of what you would say in a manual review round is feedback you could have written down up front. Two rules:
+
+   - **Start from a known-good example, not a blank page.** Hand Claude one artifact you consider good and ask it to analyze what makes it good, then turn that analysis into criteria. Confirm the extracted invariants yourself before adopting them — the goal is the invariants, not the sample's voice, so do not let a single example become a style template.
+   - **State what counts as proof; do not fix the procedure.** A rubric that prescribes a specific command fails silently when that command is unavailable, and the check you cared about never runs. Say "a `file:line` reference to the asserted behavior" or "the output of the project's test runner", not "run `go test ./...`". The grader has the full toolset and can find the route.
+
+   > 出典: Anthropic Cookbook "Verify with an outcome grader" (Managed Agents, 2026-07-27 absorb)。
+
 2. **Aggregate into benchmark** — run the aggregation script from the skill-creator directory:
 
    ```bash

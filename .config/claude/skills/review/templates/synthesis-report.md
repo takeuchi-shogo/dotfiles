@@ -33,6 +33,18 @@
 |---|------|------|---------|----------|------------|
 | 1 | {file} | {line} | {finding} | {reviewer} | {confidence} |
 
+## Tests Run
+
+> review-triggered fix があった場合は必須。fix 後に test 未実行のまま PASS にしてはならない (サイクルルール 8)
+
+| Command | Scope | Result |
+|---------|-------|--------|
+| {command} | {focused / full} | {pass_count} passed / {fail_count} failed |
+
+<!-- 出典: openclaw/agent-skills autoreview SKILL.md の final report 4 要素 (command / tests / findings / clean)。
+     findings は Critical/Important/Watch セクション、clean は Summary の Verdict が担う -->
+<!-- Scope Governor が発火した場合は finding 分類の件数も併記する: references/scope-governor.md §7 -->
+
 ## Conflicts
 
 > 同一箇所で矛盾する指摘がある場合にのみ記載

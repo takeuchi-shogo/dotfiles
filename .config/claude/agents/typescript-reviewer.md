@@ -135,11 +135,16 @@ diff を読み、独立した第2パスとして盲点を検出する。
 - hooks ルール違反 (条件/ループ内)
 - `must:` `useEffect` の濫用 — 派生状態はインライン計算、フェッチは useQuery/useSWR、
   ユーザーアクションはハンドラ、props リセットは `key` リマウント
+- `consider:` 依存配列が「最新値を読みたいだけ」で膨らんでいたら `useEffectEvent` (React 19.2+)
+- `consider:` 手動メモ化が多いなら React Compiler (1.0 stable) 未導入か確認
 - props 5 個超で分割検討
 
 ### 16. tsconfig / 型テスト / 依存配置 (TS-19, TS-20, TS-21)
 
 - `noUncheckedIndexedAccess` / `exactOptionalPropertyTypes` / `verbatimModuleSyntax` / `isolatedModules`
+  (TS 6.0 で `strict` / `module` / `target` / `moduleResolution` / `esModuleInterop` はデフォルト化済み)
+- `must:` TS 6.0 未満なら `strict: true` の明示 — 5.x はデフォルト off なので消すと後退
+- `consider:` `ignoreDeprecations` による抑止 (TS 7.0 で失効) / TS 7.0 移行時の compiler API 依存ツール
 - 共有ユーティリティ型に `expectTypeOf` (vitest) / `tsd` で型テスト
 - `@types/*` と TypeScript 本体は `devDependencies` に
 
