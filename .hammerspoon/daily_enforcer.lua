@@ -413,7 +413,7 @@ local function notify(status, reason, ignore_cooldown)
     informativeText = message .. " (" .. reason .. ")",
   }):send()
 
-  open_note(status)
+  -- ponytail: 自動で note を開かない。menubar の "Open today's note" から手動で開く
   state.last_prompt_key = prompt_key
   state.last_opened_at = now
 end
