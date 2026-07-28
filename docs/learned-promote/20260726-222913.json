@@ -1,0 +1,42 @@
+{
+  "date": "2026-07-26",
+  "branch": "auto/learned-promote-20260726-222913",
+  "max": 5,
+  "promotions": [
+    {
+      "key": "4a3a8cc2b8417083b5e2102e5330e6670977e805",
+      "decision": "rejected",
+      "scope": "redact-recursion-guard",
+      "reason": "already covered: .config/claude/scripts/lib/redactor.py",
+      "detail_excerpt": "id() visited + depth cap prevent RecursionError"
+    },
+    {
+      "key": "aa2d6ff0e5a9e71bdf50462293f56dd5d52862e0",
+      "decision": "adopted",
+      "scope": "experiment-retreat-gates",
+      "target_artifact": ".config/claude/references/experiment-discipline.md",
+      "detail_excerpt": "Pre-declared retreat conditions bound L-scale experiments"
+    },
+    {
+      "key": "599989a1c638fc2f0fa93ee2a517d08a8f94a601",
+      "decision": "rejected",
+      "scope": "regex-wordboundary",
+      "reason": "already covered: .config/claude/references/cheatsheet.md",
+      "detail_excerpt": "\\b は日本語stemで誤動作既知"
+    },
+    {
+      "key": "626b81eceb09deb128392e8e248f7790096c1395",
+      "decision": "rejected",
+      "scope": "holdout-gate",
+      "reason": "already covered: .config/claude/references/improve-policy.md",
+      "detail_excerpt": "policy-only integration risks dead rules"
+    },
+    {
+      "key": "b9c2ee6cf0a23c53ed029826c9be0b853d62f1fe",
+      "decision": "rejected",
+      "scope": "cursor-distribution",
+      "reason": "already covered: CURSOR.md",
+      "detail_excerpt": "CURSOR.md の配布 contract 破損を発見"
+    }
+  ]
+}
