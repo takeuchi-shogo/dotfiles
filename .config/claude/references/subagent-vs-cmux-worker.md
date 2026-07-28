@@ -48,9 +48,10 @@ cmux Worker は **process-level / multi-model** orchestration、Agent View / Age
 | 用途 | 機構 | 補足 |
 |------|------|------|
 | Codex / Gemini 並列、長時間、実機監視 | **cmux Worker** | terminal-observable / multi-model / process-level |
+| 承認待ちの検出、途中の対話介入 (worktree 隔離が不要な場合) | **herdr Worker** | `herdr-launch-worker.sh` / `herdr-collect-result.sh`。`agent_status` (working/blocked/idle/done) を直接読む。**`--worktree` 未対応** なので worktree が要るなら cmux Worker |
 | Claude session の background 管理 (peek/attach) | **Agent View** | `claude agents` dashboard、`claude --bg` / `claude attach`、Claude-only |
 | shared task list + peer messaging | **Agent Teams** | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (`settings.json:4` で設定済)、`TeamCreate` / `TaskCreate` / `TaskUpdate` / `TaskList` / `SendMessage` tools、Claude-only peer coordination |
 
-peer coordination が必要なら Agent Teams、Codex/Gemini・長時間・実機監視なら cmux Worker。両者は排他ではなく、用途別に併存する。
+peer coordination が必要なら Agent Teams、Codex/Gemini・長時間・実機監視なら cmux Worker、承認待ちの検出と対話介入が効くなら herdr Worker。いずれも排他ではなく、用途別に併存する。
 
 > 出典: 2026-05-25 /absorb (Agent Team 7 steps listicle) → Codex 批評で「cmux で上位互換」判定の Confirmation bias を指摘 (`docs/research/2026-05-25-claude-agent-teams-7steps-absorb-analysis.md`)。
