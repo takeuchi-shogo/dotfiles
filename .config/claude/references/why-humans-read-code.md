@@ -2,14 +2,14 @@
 name: why-humans-read-code
 description: 人間が全コードを読む工程を harness で置き換えない理由と、その方針を見直す条件
 type: reference
-last_reviewed: 2026-07-27
+last_reviewed: 2026-07-29
 ---
 
 # なぜ人間がコードを読み続けるのか
 
 dotfiles は "Humans steer, agents execute" を前提に組まれている。この文書はその **why** と、**何が変われば前提を見直すか**を書く。理由が書かれていない方針は教義になり、条件が変わっても更新されない。
 
-> 出典: Dex Horthy (HumanLayer) "Harness Engineering is not Enough: Why Software Factories Fail" (AI Engineer, 2026-07-27 absorb。字幕全文 4,045 語を一次ソースとして使用)
+> 出典: Dex Horthy (HumanLayer) "Harness Engineering is not Enough: Why Software Factories Fail" (AI Engineer, 2026-07-27 absorb。字幕全文 4,045 語を一次ソースとして使用)。固有名詞と数値は著者本人の文章版 `humanlayer/advanced-context-engineering-for-coding-agents` の `wsff.md` で 2026-07-29 に照合済み
 
 ## 理由: 報酬の構造上、モデルは保守性を学習していない
 
@@ -37,6 +37,8 @@ coding model は SWE-bench 系のベンチマークに対して強化学習さ�
 | reviewer agent の `ok=true` / PASS verdict を人間レビューの代わりにする | reviewer もモデルであり、同じ報酬構造の制約を受ける |
 | 成功率・テスト通過率だけを見て harness を改善する | 測っていない軸 (保守性) が劣化しても指標は上がる |
 
+この線を踏み外したときに何が起きるかは実測されている。Faros AI が AI コーディングツール普及後に測った変化のうち、**レビューを素通りする PR が +31.3%、PR あたりインシデントが +242.7%**。レビュー工程は形式上残っていても、通過率で運用すれば無いのと同じになる。
+
 逆に、**探索・計画・検証証跡・レビューを読みやすくする harness は講演と整合する**。それは全行レビューを可能にするための投資だからである。dotfiles の Plan / Codex Gate / review synthesis / scope-governor はこちら側に属する。
 
 ## 対処: 事前設計でレビューを軽くする
@@ -61,8 +63,8 @@ coding model は SWE-bench 系のベンチマークに対して強化学習さ�
 ベンチマーク名そのものは撤退条件ではなく**観測対象**として扱う。講演が挙げていた進行中の取り組み:
 
 - SWE Marathon (Abundant AI) — 400 時間規模のタスク
-- DeepSuite (Data Curve) — 訓練セットに含まれない大規模 OSS タスク
-- Frontier Code (Cognition) — multi-PR タスク。pre-patch コードで落ちないテストを書くとペナルティ、judge model が code quality rule 準拠を判定
+- DeepSWE (Datacurve) — 訓練セットに含まれない大規模 OSS タスク
+- Frontier Code (Cognition) — multi-PR タスク。pre-patch コードで落ちないテストを書くとペナルティ、compound reward と mutation testing を併用し、judge model が code quality rule 準拠を判定
 
 ただし講演自身が留保を付けている: **モデルが品質を judge できる範囲には限界がある**。モデルが良いコードを分かっているなら最初からそう書くはずだからである。judge 型 verifier の登場だけでは見直し条件を満たさない。
 

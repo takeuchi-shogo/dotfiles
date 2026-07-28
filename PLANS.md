@@ -63,6 +63,20 @@ success_criteria: "1行で書ける検証可能な完了条件（任意、comple
   - caller はリポジトリ内で解決できるものを数える。リポジトリ外に公開している API は、内部 caller が 0 件でも対象に含める
 - 当たらなければ節ごと省く（小さい変更にこの層は要らない）
 - 理由: アーキテクチャが決まればモデルが実装できる、は成り立たない（`.config/claude/references/why-humans-read-code.md`）
+- call graph とファイル構成は diff 記法で書く。`+` / `~` を打つ行は、書かなければコードレビュー時に暗黙に決まる判断であり、そこが最も変更コストの高い時点になる
+
+  ```text
+  entrypoint
+    runCommand
+  +   handleCreateResource
+  +     ResourceClient.create(input)
+  ```
+
+  ```text
+  src/resource
+  +  ├── resource-client.ts      # NEW
+  ~  └── resource-route.ts       # MODIFIED
+  ```
 
 ## Validation
 - 実行する task / test / lint / review
