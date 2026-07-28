@@ -1,41 +1,47 @@
 ---
 status: active
-last_reviewed: 2026-04-23
+last_reviewed: 2026-07-27
 ---
 
 # モデル別ルーティング
 
-主エージェント (メインセッションのモデル、現在: Fable 5) は判断・計画・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
+主エージェント (メインセッションのモデル、現在: Opus 5) は判断・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
 
-## モデル階層 (Tier) — source of truth
+## モデル役割 — source of truth
 
-メインが全部自前でやるのが最大のトークン浪費。タスクは既定で下位 Tier に落とし、上の Tier は「下では品質が落ちる」と判断できるときだけ使う。品質の要は協調プロトコル (Scaffolding > Model) であり、モデル格上げは最後の手段。
+メインが全部自前でやるのが最大のトークン浪費。実作業は既定で委譲し、メインは判断・統合・最終 verify に集中する。品質の要は協調プロトコル (Scaffolding > Model) であり、モデル格上げは最後の手段。
 
-| Tier | モデル | 担当 (これ以外は下の Tier へ落とす) | 起動方法 |
-|------|--------|--------------------------------------|----------|
-| 0 | **メインセッション** (現在: Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、新規アーキテクチャ判断、仕様の曖昧さ解消などの最深推論 | (本体) |
-| 1 | **Opus** (現行 4.8) | Plan 草案、設計分析、根本原因デバッグ、レビュー統合、edge case 分析 — 推論は要るが Tier 0 級ではないサブタスク | `Agent(model: "opus")` |
-| 2 | **Sonnet** | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
-| 3 | **Haiku** | WebFetch 生取得 (要約は呼び出し側責務)、ファイル内容の抽出、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
+| 役割 | モデル | 担当 | 起動方法 |
+|------|--------|------|----------|
+| **メイン** | Opus 5 | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
+| **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
+| **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
+| **実装 (別視点)** | Grok 4.5 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.5-high`) |
+| **レビュー** | Codex `gpt-5.6-sol` | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
+| **抽出・変換** | Haiku 4.5 | WebFetch 生取得 (要約は呼び出し側責務)、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
+
+**役割は階層ではない**。Fable はメインの上位でも下位でもなく「設計のときに呼ぶ」。コスト順に落とすのではなく、タスクの性質で選ぶ。
 
 運用ルール:
 
 - **実装・探索は Sonnet に渡し、独立タスクは並列実行する** — 1 メッセージに複数 Agent call、複数ファイル+verify は delegate-implementation Workflow。メインが Edit/Read を連発しない
-- **組み込み agent (Explore / Plan / general-purpose) は `model` を必ず明示する** — 未指定はメインモデル (Fable) を継承し、fan-out が最高単価で走る。目安: Explore→`sonnet`、Plan→`opus`、general-purpose→タスク性質で選択
-- agents/*.md の frontmatter は Tier 整合済み (実装・定型レビュー系=sonnet / security-reviewer=opus / CLI driver=haiku)。深い推論が要る回だけ call-time `model: "opus"` で override する (call-time 指定が frontmatter に優先)
+- **実装先の既定は Sonnet、Grok は詰まったときだけ** — Sonnet は `Agent` tool の in-process で handoff コストがほぼゼロ、Grok は `cursor-agent` の別プロセスで起動コストがある。同じ実装で Sonnet が 2 回失敗した / 別アプローチを見たい、のいずれかでだけ Grok に振る
+- **表にない推論サブタスク (根本原因デバッグ、edge case 分析、レビュー統合) はメインが持つ** — 設計でも実装でもないので委譲先がない。調査の足回りだけ Sonnet に切り出す。メインと同じ Opus を並列に使いたいときは `Agent(model: "opus")` (別コンテキストなのでメインの窓を消費しない)
+- **組み込み agent (Explore / Plan / general-purpose) は `model` を必ず明示する** — 未指定はメインモデル (Opus 5) を継承し、fan-out が最高単価で走る。目安: Explore→`sonnet`、Plan→`fable`、general-purpose→タスク性質で選択
+- agents/*.md の frontmatter は役割整合済み (実装・定型レビュー系=sonnet / security-reviewer=opus / CLI driver=haiku)。設計判断が要る回だけ call-time `model: "fable"` で override する (call-time 指定が frontmatter に優先)
 - **subagent への model 指定はメインの prompt cache を壊さない** (子は別コンテキスト)。後述「Model Switch / Cache Invalidation Boundary」はメインセッション自体の model 切替の話
 
-### Tier (縦) と Worker (横) は直交
+### 役割 (Claude 内) と Worker (外部) は直交
 
-Tier はメインセッション内の Claude モデル段階。Codex / Gemini / Cursor は異視点・1M コンテキスト・マルチモデル比較のための**横の並行軸**で、Tier では代替できない。ブラッシュアップ系の cmux Worker 優先 (CLAUDE.md) は従来通り。
+役割表のうちメイン/全体設計/実装/抽出はメインセッション内の Claude モデル。Codex / Cursor (Grok) は異視点・マルチモデル比較のための**外部プロセス**で、起動コストと引き換えに独立予算・並行実行を得る。ブラッシュアップ系の cmux Worker 優先 (CLAUDE.md) は従来通り。
 
-## 外部モデル選択 (横軸)
+## 外部モデル選択 (外部プロセス)
 
 | モデル | 得意領域 | 委譲タスク例 | 起動方法 |
 |--------|----------|-------------|----------|
-| **Codex** | 異視点の深い推論 | 設計の壁打ち、リスク分析、セカンドオピニオン、コードレビュー | cmux Worker or `/dispatch` |
+| **Codex** (`gpt-5.6-sol`) | 異視点の深い批評 | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
 | **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
-| **Cursor** | マルチモデル・Cloud Agent | モデル比較、非同期長時間タスク、Cursor インデックス活用 | `/cursor` skill |
+| **Cursor (Grok 4.5)** | 別視点の実装・マルチモデル・Cloud Agent | Sonnet が詰まった実装、モデル比較、非同期長時間タスク | `/cursor` skill |
 | **Managed Agents** | クラウド実行・スケジュール・外部連携 | 日次ブリーフ、Event-triggered PR、Slack/Teams 応答 | `/claude-api` skill + API/CLI |
 
 ## 並行実行の選択肢
@@ -46,7 +52,7 @@ Tier はメインセッション内の Claude モデル段階。Codex / Gemini /
 
 ## 委譲判定
 
-タスクを受けたら「自分 (Tier 0) でやるべきか？」をまず問う。以下に該当しなければ、Tier 表で Opus / Sonnet / Haiku (または外部モデル) を選んで委譲する:
+タスクを受けたら「自分 (メイン) でやるべきか？」をまず問う。以下に該当しなければ、役割表で委譲先を選ぶ:
 - ユーザーとの対話・意思決定の支援
 - 複数の情報を統合した判断
 - プランの策定・修正
@@ -60,6 +66,7 @@ Tier はメインセッション内の Claude モデル段階。Codex / Gemini /
 |-----------|--------|------|
 | 複数ファイル / verify 込み | `Workflow({name:'delegate-implementation'})` | 構造化委譲。各タスクは並行・直書きなので独立ファイルに分解する |
 | 単一〜中規模の実装 | `Agent(model:'sonnet')` 直接 | Workflow はオーバーキル |
+| Sonnet が 2 回詰まった実装 | Grok 4.5 (`/cursor` skill) | 同じモデルで 3 度目を試すより視点を変える。別プロセスの起動コストはここで初めて見合う |
 | 1-2 回の Grep/Read 等 | メインが自前 | handoff コストが見合わない |
 
 ### 主エージェント (現在のメインモデル) の不可譲な責務 (委譲しない)
@@ -99,7 +106,7 @@ Tier はメインセッション内の Claude モデル段階。Codex / Gemini /
 
 **使い方**: Codex Spec/Plan Gate は `-c reasoning_effort=high`、Review Gate は `-c reasoning_effort=high`、Implement は medium 以下で十分。強制ではなく任意の参考。自動配分 (stage-aware routing) は運用複雑性が増えるため採用しない。
 
-**Fable 5 の effort 規律**: Fable 5 は `low`/`medium` でも旧モデルの `xhigh` を上回ることが多い (公式 docs)。worker (Sonnet 相当の実装段) の effort を安易に上げない。`xhigh` は 30 分超・token budget millions の long-running agentic task 専用で、default は `high` (パラメータ省略時)。`high`/`xhigh` で `claude -p` を叩く時は `max_tokens` を大きく (64k+) — thinking + response text の合算ハード上限のため思考が途中で切れる。
+**Fable 5 の effort 規律** (設計を Fable に委譲するとき): Fable 5 は `low`/`medium` でも旧モデルの `xhigh` を上回ることが多い (公式 docs)。worker (Sonnet 相当の実装段) の effort を安易に上げない。`xhigh` は 30 分超・token budget millions の long-running agentic task 専用で、default は `high` (パラメータ省略時)。`high`/`xhigh` で `claude -p` を叩く時は `max_tokens` を大きく (64k+) — thinking + response text の合算ハード上限のため思考が途中で切れる。
 
 **由来**: `docs/research/2026-04-24-harness-engineering-absorb-analysis.md` (AlphaSignal Harness Engineering absorb)
 
@@ -117,8 +124,8 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 
 | イベント | 影響範囲 | 備考 |
 |---------|---------|------|
-| **Model switch** (Opus ↔ Sonnet ↔ Haiku) | 全 layer | 各 model が独自 cache を持つため、切替で 0 hit rate |
-| **`opusplan` mode** (plan=Opus / execute=Sonnet) | 全 layer | plan↔execute の都度 model switch が発生。長時間ループでは初回 miss が累積する |
+| **Model switch** (Opus ↔ Fable ↔ Sonnet ↔ Haiku) | 全 layer | 各 model が独自 cache を持つため、切替で 0 hit rate |
+| **`opusplan` mode** (plan=Opus / execute=Sonnet) | 全 layer | plan↔execute の都度 model switch が発生。長時間ループでは初回 miss が累積する。**メインが Opus 5 になった現在、plan 側は既にメインと同一モデル**なので opusplan の利得は execute の Sonnet 化のみ |
 | **MCP server 接続/切断** | system layer | tool definitions が変わる |
 | **Tool deny / allow 変更** | system layer | tool 集合変化 |
 | **Claude Code 本体 upgrade** | system layer | base system prompt 変化 |
@@ -136,12 +143,12 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 
 性質の異なる 2 つの「classifier」を混同しない:
 
-1. **Platform 側 domain safety fallback (server-side、こちらで実装するものではない)**: Fable 5 は cyber/bio/chem/distillation 領域の要求を検出すると **server 側で Opus 4.8 に透過的に自動切替**する (billing は cache hit 扱い)。security-reviewer 系タスク・脆弱性調査・暗号 primitive のレビューは Fable 指定でも実質 Opus 4.8 で走りうる。挙動が想定とズレたらこの透過 fallback を疑い、明示的に `Agent(model: "opus")` を指定して切り分ける
+1. **Platform 側 domain safety fallback (server-side、こちらで実装するものではない)**: Fable 5 は cyber/bio/chem/distillation 領域の要求を検出すると **server 側で Opus 系に透過的に自動切替**する (billing は cache hit 扱い。2026-06 時点の観測では切替先は Opus 4.8、現行の切替先は未確認)。設計委譲先が Fable になった現在、security 関連の設計判断を `Agent(model: "fable")` に投げると実質 Opus で走りうる。挙動が想定とズレたらこの透過 fallback を疑い、明示的に `Agent(model: "opus")` を指定して切り分ける
 2. **ローカル Bash permission classifier の outage (これは別物)**: `/model claude-fable-5` で Bash auto-mode classifier がセッション全体で死亡した実績 (2026-06-10)。trivial コマンドの成功を復帰の証拠にしない。復旧は `/model` で実績モデルへ。詳細: memory `feedback_model_fable_classifier_outage.md`
 3. **reasoning-echo は refusal を誘発する (skill/prompt 監査対象)**: skill・prompt・harness 指示に `show your thinking` / `explain your reasoning` / 「思考を出力せよ」等の **reasoning echo 要求を書かない** — Fable 5 の `reasoning_extraction` refusal カテゴリを誘発し fallback を増やす (公式: platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)。構造化 thinking ブロックを読む前提で設計する。現状 grep で違反 0 = **予防ルール**
 4. **refusal は HTTP 200 (stop_reason で判定する)**: safety classifier の拒否は `stop_reason: "refusal"` の SUCCESS レスポンスで返る (exit code は 0)。無人 `claude -p` ジョブが exit code だけで成否判定すると refusal を取りこぼす。ただし platform 側 fallback (上記 1) と、現行の無人ジョブ prompt が reasoning-echo/cyber/bio を含まないことから **発生確率は実質ゼロ → ハンドラ構築は YAGNI**。無人ジョブに reasoning-echo/cyber/bio 系 prompt を足す時だけ `stop_reason` チェックを入れる
 
-**Haiku grader 境界**: Tier 3 の Haiku は「非権威の cheap prefilter / 形式チェック grader」(`/goal` evaluator も Haiku) までに限定する。**permission/safety 判定・最終 verify・マージ判断には使わない** — LLM に Tool Use 権限を判定させる permission classifier は determinism boundary 違反 + prompt injection 耐性なしとして reject 済み (`docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md` #4)。最終評価の権威は Tier 0 の不可譲な責務 (上記「主エージェント (現在のメインモデル) の不可譲な責務」)。
+**Haiku grader 境界**: 抽出・変換役の Haiku は「非権威の cheap prefilter / 形式チェック grader」(`/goal` evaluator も Haiku) までに限定する。**permission/safety 判定・最終 verify・マージ判断には使わない** — LLM に Tool Use 権限を判定させる permission classifier は determinism boundary 違反 + prompt injection 耐性なしとして reject 済み (`docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md` #4)。最終評価の権威はメインの不可譲な責務 (上記「主エージェント (現在のメインモデル) の不可譲な責務」)。
 
 ## Cost-aware Fallback (2026-06-15〜 Agent SDK credit 対応)
 

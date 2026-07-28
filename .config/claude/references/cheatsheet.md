@@ -99,22 +99,23 @@ last_reviewed: 2026-04-23
 
 ## モデル選択マトリクス
 
-詳細は `references/model-routing.md` の Tier 表 (source of truth) を参照。
+詳細は `references/model-routing.md` の役割表 (source of truth) を参照。
 
 | タスク種別 | 推奨モデル | 理由 |
 |---|---|---|
-| 統合判断・最深推論・ユーザー対話 | メインセッション (Fable 5) | Tier 0 — 委譲しない領域 |
-| 推論サブタスク (Plan 草案・設計分析・根因調査) | Opus | Tier 1 — `Agent(model:'opus')` |
-| 日常的なコーディング・探索 | Sonnet | Tier 2 — `Agent(model:'sonnet')`、並列実行 |
-| 簡単な抽出・変換 | Haiku | Tier 3 — 高速・低コスト |
-| 大規模コードベース分析 | Gemini CLI | 1M コンテキスト (横軸) |
-| 設計レビュー・リスク分析 | Codex CLI | 深い推論 (reasoning effort: high/xhigh) (横軸) |
+| 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5) | 委譲しない領域 |
+| アーキテクチャ設計・Plan 草案 | Fable 5 | `Agent(model:'fable')` |
+| 日常的なコーディング・探索 | Sonnet 5 | `Agent(model:'sonnet')`、並列実行 |
+| Sonnet が 2 回詰まった実装 | Grok 4.5 | `/cursor` skill — 別視点。既定の実装先ではない |
+| 簡単な抽出・変換 | Haiku 4.5 | 高速・低コスト |
+| 大規模コードベース分析 | Gemini CLI | 1M コンテキスト (外部) |
+| レビュー・リスク分析 | Codex CLI | 深い批評 (reasoning effort: high/xhigh) (外部) |
 
 ### 現在の設定
 
 ```jsonc
 // settings.json
-"model": "claude-fable-5[1m]"  // メインモデル
+"model": "claude-opus-5[1m]"  // メインモデル
 "effortLevel": "high"      // 推論努力レベル
 "language": "japanese"      // 応答言語
 ```
@@ -122,10 +123,11 @@ last_reviewed: 2026-04-23
 ### マルチモデル委譲
 
 ```
-Claude Code (メイン: Fable 5) ── サブエージェント委譲
-    ├── Agent(model:'opus')    # 推論サブタスク
+Claude Code (メイン: Opus 5) ── サブエージェント委譲
+    ├── Agent(model:'fable')   # アーキテクチャ設計・Plan 草案
     ├── Agent(model:'sonnet')  # 実装・探索 (並列 / delegate-implementation Workflow)
-    ├── codex exec "..."       # 設計・推論・リスク分析
+    ├── cursor-agent --model cursor-grok-4.5-high  # Sonnet が詰まった実装
+    ├── codex exec "..."       # レビュー・リスク分析
     └── gemini "..."           # 1M 分析・リサーチ・マルチモーダル
 ```
 
