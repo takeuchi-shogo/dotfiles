@@ -2096,3 +2096,82 @@
 - Saturation Gate: PASS (warning) — multi-agent-orchestration family N=17+
 - 取り込み: T1 起動ルーティング規約 (cmux-ecosystem.md + subagent-vs-cmux-worker.md)、T2 herdr agent_panel_sort = "priority"。T3 停滞検出の herdr 拡張 / T4 nvim 連携は docs/plans/active/2026-07-25-herdr-attention-routing-plan.md
 - 非採用: agmsg (Message Bus 非採用を Codex が追認)、Steps of AI Adoption 段階モデル (mechanism を持たない framing)、worktree の tab 割当 (workspace 1:1 で確定済)
+
+## [2026-07-27] ingest | Lessons from building Claude Code: How we use skills (Anthropic 公式)
+
+- ソース: https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills (defuddle 経由 full markdown 18,343 bytes)
+- 判定: Saturation PASS (warning) — skill-authoring de-facto family N=7、採用率 >= 20%。15手法中 Already 11 / Partial 3 / N/A 1
+- 取り込み: 採用 4 (T1 実施済 / T2-T4 プラン化)。**記事そのものからの新規手法は薄く、最大の収穫は記事 framing が dotfiles の実装乖離を露出させたこと**
+  - T1 (実施済): `careful` / `freeze` の description が実装を過大表示 ("Blocks rm -rf, DROP TABLE..." / "outside target area") → 実態 (全 Bash / 全 Edit・Write への `type: prompt`) に合わせ、Gotchas に hard block でない旨を明記。branch `fix/careful-freeze-description-drift`
+  - T2-T4 (プラン): Gotchas 昇格 (coverage 20/105=19%) / undertriggering 計測 / category 跨ぎ診断 → `docs/plans/active/2026-07-27-skill-observability-plan.md`
+- Reject: 9-category taxonomy 導入 (既に3 taxonomy 並立で instruction DRY 違反) / verification skill への engineer-week 投資 (数百 skill 組織前提) / marketplace ガバナンス (単一ユーザー) / `${CLAUDE_PLUGIN_DATA}` 移行 (plugin uninstall で消える領域)
+- 備考: Codex 批評が 4 指摘中 3 件を実ファイルで裏取りできる形で提示 (gotchas 19% / careful-freeze 乖離 / undertriggering 見落とし)。Gemini は IneligibleTierError で degraded (Codex-only)
+- レポート: docs/research/2026-07-27-anthropic-skills-lessons-absorb-analysis.md
+
+## [2026-07-27] ingest | Claude Cookbook (Anthropic 公式, 84 レシピ)
+
+- ソース: https://platform.claude.com/cookbook/ (index + 4 レシピを defuddle 取得。X いいね rank 17 経由)
+- 判定: family 対象外 (リファレンス集)。84 レシピ中 **4 本精読 / 12 本を index description で triage / 68 本未検討**。大半が Claude API アプリ開発向けで harness と文脈がずれる
+- 取り込み: 採用 3 — 実質があったのは `managed-agents-cma-verify-with-outcome-grader` の rubric 執筆 5 ルールのみ
+  - C1+C2: `skill-creator/instructions/testing-evaluation.md` に **Rubric authoring** 小節 (known-good サンプルから基準を逆生成 / rubric は証拠条件を書き検証手段を固定しない — 手段固定は環境に無いとき検査が silently に飛ぶ)
+  - C3: `references/review-consensus-policy.md` §8 に **事前封じ** 小節 (被評価者の近道を rubric で先に塞ぐ。既存の事後検出シグナルと対比配置。dotfiles 既存 4 実装を「塞いでいる近道」の対応表として掲載)
+- 採用 0 だったもの: prompt versioning/rollback (server-side 機能、dotfiles は git+PR) / async multi-agent orchestration (5 プリミティブ全て Claude Code ネイティブに対応済) / skills-notebooks 3 本 (claude.ai の Excel-PPT-PDF skill、Claude Code 固有の 07-27 skills absorb が上位互換) / building-evals・tool-evaluation・evaluator-optimizer・orchestrator-workers・memory-cookbook・frontend-aesthetics・metaprompt (すべて Already)
+- 備考: Codex が「3 本だけで memory 1 行に閉じるのは早い」と指摘 → index description で 12 本を追加トリアージ (追加採用 0)。Gap2/Gap3 の Already 判定も Codex が Partial に修正。Gemini は IneligibleTierError で degraded
+- 副次検証: async orchestration レシピが「Opus 4.8 system card の multi-agent 結果の背後にある 2 パターン」と自称 → CLAUDE.md 既定の hub-and-spoke conductor が 1st-party と同形という裏付け (採用に数えない)
+- レポート: docs/research/2026-07-27-claude-cookbook-absorb-analysis.md
+
+## [2026-07-27] ingest | openclaw/agent-skills autoreview SKILL.md (再 absorb, 同一ソース 2 回目)
+
+- ソース: https://github.com/openclaw/agent-skills/blob/main/skills/autoreview/SKILL.md (blob を defuddle、31,834 bytes。X いいね rank 30 経由)
+- 判定: 同一ソース 2 回目 (prior: 2026-05-28、35 手法/採用 9)。**差分 absorb** として実行 — 5/28 に存在しなかった `## Scope Governor` を対象化。Pass 1 で 7 概念中 exists 0 / partial 2 / not_found 5
+- 取り込み: 採用 2
+  - S1: `references/scope-governor.md` 新設 (baseline 凍結 / finding 3 分類 in-scope blocker・follow-up・stop-and-escalate / 相対ゲート `max(2×初期非テストLOC, 初期LOC+50)` / 2 サイクル未収束→全 finding 再分類→3 回目は再分類済 in-scope blocker のみ / canonical contract 先行なら patch 停止 / 例外は emergency-definition.md を参照して二重定義を作らない)。`skills/review/SKILL.md:606` サイクルルール 0 番から 1 行参照
+  - S2 (= 旧 T7): `skills/review/templates/synthesis-report.md` に `## Tests Run` 追加。final report 4 要素の未実装分を埋めた
+- 採用 0: Oversized Bundles (helper script の chunking 実装仕様。dotfiles に chunking helper なし。転用可能な原則 2 つは pr-splitting-patterns.md でカバー済)
+- **Stale-Plan Audit**: `docs/plans/active/2026-05-28-autoreview-absorb-plan.md` が 60 日 pending → closed。T6 retired (suppression 経路が存在せず実装対象なし) / T7 implemented (今回) / **T8 は 2026-06-13 に既に実装済で保留リストが陳腐化していた** / T9 retired (heartbeat 実装なしの SLA 文言は誤誘導)
+- **Validation-only**: openclaw のレビュー既定は `gpt-5.6-sol` で terra は Sol 不可時の retry。dotfiles は「汎用=Sol (`.codex/config.toml:1`) / レビュー=terra (`:5` + 全 Review Gate agent の `-m`)」で**逆向きに分岐**。Sol はこのマシンからアクセス可能と実測確認済 → 差し替えは判断材料不足で記録のみ。二次的問題として `codex-reviewer.md:113` の Evaluator Drift 検出 (gate_model_version の 5 連続同一で警告) がモデルのハードコードにより無効化されている
+- 備考: Codex が私の見落とし 2 件 (config.toml のもう 1 つの pin / T8 実装済) を指摘。Gemini は IneligibleTierError で degraded
+- レポート: docs/research/2026-07-27-openclaw-autoreview-reabsorb-analysis.md
+
+## [2026-07-27] ingest | estieの7年分のコードレビュー履歴から「自社方言レビュアー」を作った話
+
+- ソース: https://zenn.dev/estie/articles/f0f114389662ba (zenn = trusted 外 → defuddle 経由 18,330 bytes。X いいね rank 92 経由)
+- 判定: code-review-best-practices family。中核手法 (レビュー履歴マイニング → 規約蒸留 → 6 役割並列レビュアー) は **team 前提で単一ユーザーに元データなし = N/A**。Gap 2 / Partial 2 (→ Reject) / Already 4
+- 取り込み: 採用 2 (**プラン化のみ、今回は未実装**)
+  - E1: 観測件数の算出と付与 → `scripts/learner/extract-promotion-candidates.py`。現状は `importance` (float 既定 0.5) 降順のみで観測回数フィールドがない
+  - E2: source health の事前検査 + 昇格閾値 → `skills/promote-learnings/SKILL.md`
+  - 閾値 (Codex): 180 日以内に独立観測 3 件以上かつ 2 セッション以上 = 通常昇格 / 2 件 = 60 日失効付き provisional / 1 件 = security 境界など強い因果証拠のみ例外。件数は importance に混ぜず根拠として併記
+  - source health (Codex): (a) producer の鮮度・継続性 (b) 生ログの時刻・ID へ遡れるか (c) リトライ重複でない独立性 + 結果シグナル (d) 少数サンプルの人手監査で欠損・parse error・単一 emitter 偏重
+- **実装しない判断**: 算出側 (E1) がないまま gate 文言 (E2) を入れると参照先フィールドのない gate になる。これは同日 #17 で codify した「手段を固定した rubric は環境に無いとき silently に飛ぶ」失敗そのもの。自分で入れたルールを同じセッションで破らない
+- **記事の限界指摘が dotfiles で現実化していた**: 「レビューが形骸化していたらデータを集めても意味のある規約は抽出できない」← memory の記録で improve-policy の Friction→Eval Loop の producer が停止 (errors.jsonl 16 日 / friction 25 日)。枯れたログから learned を昇格できる状態
+- Reject: MUST/blocker を実バグ+破壊的変更に限定 (dotfiles の MUST は security + GP 違反を含む設計、狭めると security escalation が弱まる。Codex 同意) / 最上位 severity に修正コード必須 (`code-reviewer.md:447` の BLOCK で実装済) / レビュー履歴マイニング本体
+- 副次検証: estie 製 vs CodeRabbit の**一致率 14%** (6 PR) → `review-consensus-policy.md` §1 Heterogeneous Signal Priority の異種 reviewer 併用を支持する外部データ点 (サンプル小と記事自身が断っている)
+- 備考: Gemini は IneligibleTierError で degraded
+- プラン: docs/plans/active/2026-07-27-learned-promotion-evidence-gate-plan.md
+- レポート: docs/research/2026-07-27-estie-dialect-reviewer-absorb-analysis.md
+
+## [2026-07-27] ingest | Harness Engineering is not Enough: Why Software Factories Fail (Dex Horthy, AI Engineer)
+
+- ソース: https://www.youtube.com/watch?v=Ib5GBkD555M (yt-dlp で英語字幕取得 → 重複行を畳んで平文化 4,045 語。X いいね rank 0 経由、iwashi86 の日本語まとめツイートから原典を特定)
+- 判定: harness-engineering family の keyword 閾値未達 (`harness` のみ) で PASS。ただし内容は **family の tactic 追加ではなく前提そのものへの反論**なので飽和とは別カテゴリで扱った
+- 主張: coding model は SWE-bench 系の binary reward (テスト通過 + 他を壊さない) で RL されるため**設計劣化にペナルティを与える経路がない**。加えて bad architecture のコスト関数は月〜年で測られ報酬を遡及伝播できない → scale でなく model training の問題で harness では解けない。根拠は 2025年7月の HumanLayer 自社 lights-off 失敗 + Fahros AI のレポート
+- 取り込み: 採用 2 (どちらも「仕組みを足す」でなく**既存方針の why を書く**側)
+  - D1: `PLANS.md` に `## Program Design（該当時のみ）` — 型/主要シグネチャ/データ所有者/call graph/変更順と各単位の検証。発動条件は規模でなく変更の性質 (複数モジュールに跨る interface・ownership 変更 / caller が複数ある public API / 状態・並行性・失敗意味論の変更)。該当しなければ節ごと省く
+  - D2: `references/why-humans-read-code.md` 新規 — 報酬構造の説明 + **見直し条件**「代表的な変更に対して設計の劣化を高い再現率で検出できる verifier が実証されたとき」。CLAUDE.md は条件付きブロックに 1 行 + リンクのみ (core_principles には入れない、IFScale 対策)
+- **Codex の切り分けが中核**: 講演は harness 投資の否定ではなく **harness を品質保証の代替物とみなす前提**への反論。dotfiles の具体的修正点として「ralph-loop/max-loop の完走・completion-gate の binary PASS・reviewer の ok=true を人間レビュー不要の根拠に昇格させない」「成功率とテスト通過率だけで harness を改善しない」を表にした。逆に探索・計画・検証証跡・レビューを読みやすくする harness は整合する側
+- Reject: vertical slices (multi-repo は N/A、境界検証は既存 Validation と重複 → 有益部分は Program Design に回収) / upfront ROI の言い回し (mechanism なし) / 「悪い PR が多すぎる」再フレーム (行動を変えない)
+- 備考: Gemini は IneligibleTierError で degraded。字幕は自動生成のため固有名詞に誤りの可能性あり (John Ousterhout が "John Austerhood" 等) — 採用判断は固有名詞に依存させていない
+- レポート: docs/research/2026-07-27-dex-harness-not-enough-absorb-analysis.md
+
+## [2026-07-27] ingest | The event driven future of AI (@TheGlobalMinima)
+
+- ソース: https://x.com/TheGlobalMinima/status/2081351146661130399 (Vault の raw/ にクリップ済み、fetch 経路不要)
+- 判定: Saturation PASS (新分野)。`harness-engineering` は "harness" 1 hit で閾値 3 未満、`multi-agent-orchestration` (N=14) との重なりは orchestrator/worker/blackboard → topic 写像の 1 節のみ。本記事の手法は**プロンプト協調層でなくトランスポート層**のため同 family に入れない判断を明示記録
+- 内訳: Gap 1 / Partial 2 / N/A 6 / Already 9 (うち 4 件は Phase 2.5 で判定訂正)
+- 取り込み: 採用 1 (S) — `run-tech-researcher.sh` の adoption-ledger 追記を (date, url) で冪等化。`jobs.yaml` の `retry: 1` で追記途中に kill されると同一記事が二重計上され、採用率 = 情報源ランキングの主指標が歪む。**実データの重複は現時点 0 件で、修正は予防であり復旧ではない**
+- 不採用 (実害と根拠は記録済み、必要時に着手可): learned-promote の orphan remote branch 回収 / retry 中の Discord 通知集約 / Rust `events.rs` への session_id 追加
+- **Validation-only 2 件 (両方修正済み)**: (1) `memory-schema.md` の Retention 実施表が実在しない `learner/session-trace-store.py` を「既存」と記載 (pyc 残骸のみ、`traces/` 自体も未生成) → 削除し「retention 機構は未実装、日数定義のみ」と実測日付つきで明記 (2) memory `feedback_tool_output_verify_mutations` が「mutation の第一防衛線は completion-gate の Claim Verification Gate」としていたが、実装 (`_find_unbacked_claimed_paths`) は**ファイルパス実在のみ**照合し commit/push/PR/merge は `git`/`gh` を叩かず素通し → 適用範囲を二分して訂正
+- Phase 2.5 の訂正 4 件: `output-offload.py` は settings.json に未配線で死んでいた (実体は Rust `post_bash.rs`) / Claim Verification Gate を「durable 後の完了記録」と同一視したのは過大評価 / failure-escalation は DLQ ではない (ただし本環境に DLQ は不要) / Rust `events.rs:163` の emit に `session_id` が無く横断 correlation は不成立
+- Review: deep tier (harness = High risk)、code-reviewer + codex-reviewer + security-reviewer + edge-case-hunter。**codex-reviewer の 2 MUST は実行で反証** (`if` 条件内の `grep -Fxq` 非マッチは `set -e` を発火させない / 末尾破損 ledger で jq は空でなく完全行の部分集合を返す)。3 名が収束した指摘 2 件 (ADOPTED_COUNT コメントの不正確さ / 破損時の silent fallback) を修正 → PASS
+- degradation: Codex は foreground 600s timeout → cmux 不在 → background 実行で成功 (150,917 tokens)。codex-reviewer 側の codex CLI は 480s timeout で Haiku 手動分析にフォールバック。Gemini は sunset で未実行 = model-family diversity は片肺
+- レポート: docs/research/2026-07-27-event-driven-future-of-ai-absorb-analysis.md

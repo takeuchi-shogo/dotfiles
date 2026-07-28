@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-07-27
 ---
 
 # TypeScript Review Checklist
@@ -79,6 +79,8 @@ Effective TypeScript (2nd Ed.) に基づく。
   - ユーザーアクション → イベントハンドラで直接処理
   - props 変更でリセット → `key` でリマウント
   - マウント時の外部同期のみ `useMountEffect(effect: () => void | (() => void))` を使用
+- `consider:` effect の依存配列が「最新値を読みたいだけ」で膨らんでいたら `useEffectEvent` (React 19.2+) を提案
+- `consider:` 手動メモ化 (`useMemo`/`useCallback`) が多い場合、React Compiler (1.0 stable) 未導入か確認
 
 ## TS-12. Exhaustive Switch — `satisfies never`
 
@@ -117,11 +119,16 @@ Effective TypeScript (2nd Ed.) に基づく。
 
 ## TS-19. tsconfig 推奨設定
 
+TS 6.0 で `strict` / `module: esnext` / `target: es2025` / `moduleResolution: bundler` / `esModuleInterop` はデフォルト。
+- `must:` プロジェクトが TS 6.0 未満なら `strict: true` が明示されているか — 5.x はデフォルト off なので、`strict` を消す変更は strict off への後退になる
+
 新規プロジェクトでは以下が有効か確認:
 - `noUncheckedIndexedAccess: true` — インデックスアクセスに `| undefined` を含める
 - `exactOptionalPropertyTypes: true` — optional と `undefined` を区別
 - `verbatimModuleSyntax: true` — `import type` の強制
 - `isolatedModules: true` — バンドラー互換性
+- `consider:` `ignoreDeprecations` で警告を抑止していたら指摘 — TS 7.0 で効かなくなる
+- `consider:` TS 7.0 (Go native) 採用時、compiler API 依存のツール (Vue/Svelte/Astro/MDX/Angular) が壊れないか
 
 ## TS-20. 型テスト
 

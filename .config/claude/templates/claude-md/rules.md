@@ -41,6 +41,7 @@
 - 長時間タスクや中断前は `/checkpoint`、必要なら `docs/plans/` を更新
 - 仕様が曖昧なまま実装しない (`/spec` or `/spike`)。高影響 unknown（答えでアーキテクチャ・データモデル・UX が変わる不確実性）は黙って仮定せず確認し、低影響の仮定は Decision Log（Plan がなければ最終報告）に明示する
 - 並列で別タスクを走らせるときは worktree で session と filesystem を分離
+- gate / loop / reviewer の PASS を「人間がコードを読まなくてよい」の根拠に昇格させない。現行 verifier は長期保守性を測れないため読解を残す。理由と見直し条件: `references/why-humans-read-code.md`
 
 </important>
 

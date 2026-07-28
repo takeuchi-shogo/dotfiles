@@ -1,8 +1,8 @@
 ---
 name: freeze
 description: >
-  Use when debugging or investigating — prevents accidental file modifications outside target area.
-  Blocks Edit/Write with a confirmation guard so you only add logs, not 'fix' unrelated code.
+  Use when debugging or investigating — prevents accidental file modifications.
+  Prompts for confirmation on every Edit/Write so you only add logs, not 'fix' unrelated code.
   Triggers: 'freeze', '編集禁止', 'デバッグモード', 'read-only mode', '修正しないで'.
   Do NOT use for: normal development or review (use /review which has its own Edit guard).
 origin: self
@@ -46,6 +46,7 @@ Read, Grep, Glob, Bash(読み取り系) はブロックしません。
 
 ## Gotchas
 
+- **hard block ではない・スコープ指定もできない**: `type: prompt` なので「はい」で通る。ディレクトリスコープがないため「対象領域の外だけ止める」使い方はできず、全 Edit/Write に確認が入る
 - **ログ追加は許可**: デバッグ用の console.log/print 追加は「はい」で通す
 - **Bash での echo リダイレクトは対象外**: `echo "debug" >> file` は Bash 経由なのでブロックされない
 - **review スキルとの併用不可**: /review も Edit/Write をガードするため、両方起動すると二重確認になる

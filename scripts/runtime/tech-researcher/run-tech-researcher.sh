@@ -251,7 +251,26 @@ if [[ "$BLOCK_PRESENT" != "1" ]]; then
 else
     [[ -z "$ADOPTED_IDS" ]] && LEDGER_NOTE="0 adopted (all rejected, block present)"
     adopted_set=" $(echo "$ADOPTED_IDS" | tr '\n' ' ') "
+    # retry 冪等化: 同日・同一 URL が既に ledger にあれば再追記しない。
+    # jobs.yaml が retry: 1 なので、この追記ループの途中で timeout/kill されると再実行で
+    # 同じ (date, url) が二重計上され、採用率 = sources-ledger の score (情報源ランキングの
+    # 主指標) が歪む。1 候補 = 1 回の追記なので破損は常に末尾行のみで、jq はそこまでの
+    # 完全な行を返す (= 書き込み完了分は skip され、kill された部分行だけが再追記される)。
+    LEDGER_SEEN=""
+    if [[ -f "$LEDGER" ]]; then
+        LEDGER_SEEN=$(jq -r --arg d "$NIGHTLY_DATE" 'select(.date == $d) | .url' \
+            "$LEDGER" 2>/dev/null) \
+            || echo "[tech-researcher] WARN: ledger 読み取り失敗、冪等チェックは読めた分のみに縮退: $LEDGER" >&2
+    fi
     while IFS=$'\t' read -r i domain url title source_id; do
+        # 追記済みは skip。ADOPTED_COUNT は「今回の候補リストに載っていて今回 adopted と
+        # 判定された件数」であり、同日の ledger 実数ではない (retry は feed を取り直し LLM も
+        # 再実行するため両者はずれうる)。ずれるのは status の metric.adopted だけで、
+        # sources.py refresh / aggregate.py は ledger を直接読むので集計は影響を受けない。
+        if [[ -n "$LEDGER_SEEN" ]] && printf '%s\n' "$LEDGER_SEEN" | grep -Fxq -- "$url"; then
+            [[ "$adopted_set" == *" $i "* ]] && ADOPTED_COUNT=$((ADOPTED_COUNT + 1))
+            continue
+        fi
         if [[ "$adopted_set" == *" $i "* ]]; then
             adopted=true; ADOPTED_COUNT=$((ADOPTED_COUNT + 1))
             scores=$(awk -F'\t' -v k="$i" '$1==k{print $2; exit}' "$ADOPTED_MAP")

@@ -350,6 +350,25 @@ Generator-Verifier ループ（completion-gate / ralph-loop / Review-Fix サイ�
 
 §3 Convergence Stall Detection が**レビューアー間の矛盾**を、§3 Confidence Inflation Alert が**表面上の合意の過剰自信**を検出するのに対し、本セクションは**Verifier 自体が時間とともに緩む**問題に対処する。
 
+### 事前封じ: 被評価者の近道を rubric で塞ぐ
+
+以下の検出シグナルはすべて**事後**である。劣化を観測してから対処するより、Verifier 基準を書く時点で「安い代替手段」を名指しで禁じる方が安い。
+
+Generator は要求を満たす最短経路を取る。その経路が本物の証拠でなく**証拠に見えるもの**で済むなら、そちらを通って Verifier は PASS を出す。基準に一行足りないだけで、死んだ一次資料が scraper ページに差し替わって通る。
+
+Verifier 基準を書くときは「この要求を、実際にやらずに満たす方法は何か」を先に自問し、出てきた経路を明示的に禁止する。dotfiles の既存実装がこの形になっている:
+
+| 既存規則 | 塞いでいる近道 |
+|---|---|
+| `/absorb` Saturation Gate の `matched_prior` 3点必須（ファイル名 + 引用句 + 同等性の理由） | 「似ているから rehash」で照合せず skip する |
+| `references/web-fetch-policy.md` の trusted 外 WebFetch 禁止 | 内部 Haiku 要約された二次テキストを原文引用として使う |
+| `agents/code-reviewer.md` の「file:line と再現可能な根拠がない指摘は Non-Finding に降格」 | 根拠なしの印象論を finding として計上する |
+| `skill-creator/instructions/testing-evaluation.md` の process-adherence check | 成果物だけ整えてワークフローの実行を飛ばす |
+
+新しい Verifier / rubric を作るときは、同じ列を 1 行以上埋める。埋められないなら、その基準は「何を証拠とみなすか」がまだ決まっていない。
+
+> 出典: Anthropic Cookbook "Verify with an outcome grader" §Anticipate the writer's shortcuts (Managed Agents, 2026-07-27 absorb)。事後検出（下記）との対比で事前封じ側を明文化した。
+
 ### 検出シグナル（いずれか 1 つ以上で対処）
 
 | # | シグナル | 検出方法 |
