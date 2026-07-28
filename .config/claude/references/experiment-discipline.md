@@ -43,6 +43,10 @@ promoted master からリフレッシュ
 | Review Gate | コード品質・セキュリティ | 全コード変更 |
 | Promotion Gate | メトリクス改善 | 反復改善ループ |
 
+### 撤退条件の事前宣言
+
+L-scale 実験では開始前に撤退条件を数値で書く。目安: recall < 0.5、latency > 500ms、setup > 4h のいずれかを超えたら reject し、追加投資しない。
+
 ### 判定フロー
 
 ```

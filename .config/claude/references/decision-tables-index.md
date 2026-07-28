@@ -12,7 +12,7 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 
 | 決定 | 表の場所 | 概要 |
 |---|---|---|
-| モデル選択 (Tier: メイン=Fable/Opus/Sonnet/Haiku + 外部: Codex/Gemini/Cursor) | [`references/model-routing.md`](model-routing.md) | Tier 表 (縦) + 外部モデル表 (横) |
+| モデル選択 (役割: メイン=Opus/設計=Fable/実装=Sonnet/抽出=Haiku + 外部: Codex/Gemini/Cursor(Grok)) | [`references/model-routing.md`](model-routing.md) | 役割表 (Claude 内) + 外部モデル表 |
 | cwd-aware skill 起動 | [`references/cwd-routing-matrix.md`](cwd-routing-matrix.md) | 作業ディレクトリごとの skill 自動発火 |
 | 委譲 vs メイン実行 | [`references/subagent-delegation-guide.md`](subagent-delegation-guide.md) | subagent へ逃がす閾値 |
 | 実装委譲 (Workflow) | [`references/model-routing.md`](model-routing.md) の実装委譲判断表 | 複数ファイル + verify 込み → `Workflow({name:'delegate-implementation'})` |
@@ -25,8 +25,8 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 
 | Drive 主体 | パターン | 表 | 典型シナリオ |
 |---|---|---|---|
-| **Top-Down (メイン主導の委譲)** | メイン (現在: Fable 5) が判断・計画・統合し、Opus/Sonnet/Haiku/Codex/Gemini に scoped task を委譲 | [`model-routing.md`](model-routing.md) + [`subagent-delegation-guide.md`](subagent-delegation-guide.md) | 探索・実装・レビューの分業、長時間タスク |
-| **Bottom-Up (Executor 主導の escalation)** | Sonnet/Haiku Executor が困難判断時のみ Opus advisor に相談 | [`advisor-strategy.md`](advisor-strategy.md) | アーキテクチャ判断・セキュリティ未確実領域の単発相談 |
+| **Top-Down (メイン主導の委譲)** | メイン (現在: Opus 5) が判断・計画・統合し、Fable/Sonnet/Haiku/Codex/Grok に scoped task を委譲 | [`model-routing.md`](model-routing.md) + [`subagent-delegation-guide.md`](subagent-delegation-guide.md) | 探索・実装・レビューの分業、長時間タスク |
+| **Bottom-Up (Executor 主導の escalation)** | Sonnet/Haiku Executor が困難判断時のみ上位 advisor (Opus/Fable) に相談 | [`advisor-strategy.md`](advisor-strategy.md) | アーキテクチャ判断・セキュリティ未確実領域の単発相談 |
 
 > 出典: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02) absorb / `docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md`
 
