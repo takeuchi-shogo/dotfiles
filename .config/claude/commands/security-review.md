@@ -127,7 +127,10 @@ description: Run OWASP Top 10 security review on recent code changes
 6. **Log spoofing 単体** — sanitize されない user input をログ出力するだけ。ただし PII / secret / password を出力する場合は本物として扱う
 7. **SSRF で path のみ** 制御可能 — host/protocol を制御できる場合のみ報告
 8. **Regex injection / ReDoS**
-9. **ドキュメントファイル (`*.md`)** 内の脆弱性 — ただし **agent が読んで実行判断に使う markdown は除外しない**。`CLAUDE.md` / `AGENTS.md` / `**/SKILL.md` / `.claude/**/*.md` / `.codex/**/*.md` / `references/**/*.md` / `commands/**/*.md` / `agents/**/*.md` は散文ではなく instruction であり、prompt injection の主戦場。公式の除外則は「docs は実行されない」という前提に立つが、この repo ではその前提が成立しない
+9. **ドキュメントファイル (`*.md`)** 内の脆弱性 — ただし **除外できるのは agent の context に戻らない純散文だけ** (`docs/research/` / `docs/adr/` / `docs/archive/` / `docs/agentic-ai-textbook/`)。それ以外の markdown は「skill / command / retrieval 経由で prompt に入りうる = instruction」として**除外しない**（列挙で許可するのではなく、除外側を列挙して反転定義する。許可リストは必ず漏れるため）。
+   - **`docs/wiki/` は除外しない**: `skill-data/memory-vec/reindex.ts:63` が `docs/wiki/concepts` を索引し retrieval で context に戻す。`compile-wiki/SKILL.md:130,135` も記事本文を読む。生成元の `docs/research/` は WebFetch 由来の外部コンテンツを含むため、research → wiki → context の間接経路が開いている
+   - 公式の除外則は「docs は実行されない」前提に立つが、この repo ではその前提が成立しない
+   - 特権の高い順に例: `.github/agent-config/*.md`（`agent-triage.yml` が `claude -p` に直接連結し、`ANTHROPIC_API_KEY` 保持 job で `gh issue edit` 権限つきで走る）→ `CLAUDE.md` / `AGENTS.md` / `PLANS.md` → `.config/claude/**/*.md`（実体パス。`~/.claude/` は symlink なので glob は `.config/claude/` で書く）→ `.codex/**` / `.agents/**` / `.cursor/**` → `templates/**`（scaffold 経由で instruction になる）→ `docs/playbooks/**` / `docs/specs/*.prompt.md`
 10. **Audit log の欠如** 単体
 11. **Race conditions / timing attacks** が理論的なもの (具体的に問題化する場合のみ)
 12. **Outdated 3rd party library** (依存管理は別 process / `npm audit` で別レイヤー)
@@ -157,7 +160,21 @@ confidence は「どれくらい確信しているか」ではなく **証拠が
 - **medium**: 上記のうち **未解決が 1 つだけ** (proof gap が 1 つ明示されている)
 - **それ以外**: finding として断定しない。`needs follow-up` として Coverage 欄に送り、severity を付けない
 
-**medium 未満を CRITICAL/HIGH として報告するのは禁止**。証拠が足りないなら severity ではなく follow-up で返す。
+**medium 未満は severity を問わず finding として断定しない**。証拠が足りないなら severity ではなく follow-up で返す。
+
+### 証拠要件が構造的に満たせない finding class（この契約で握り潰さない）
+
+以下は「証拠を集めにくいが実在する」class であり、素直に適用すると必ず 2 欄が未解決になって drop される。
+**この repo が最も気にしている 2 つがまさにこれ**なので、充足条件を読み替える:
+
+- **prompt injection / LLM 挙動の exploit**: 決定的な repro は原理的に作れない。**どの instruction がどの tool 呼び出しに繋がるかの decision path を引用できれば `Proof` を充足**とみなす。「モデルが従わないかもしれない」は**決定的な Counterevidence として認めない**（それを認めると全 injection finding が消える）
+- **supply chain / mutable reference**: 攻撃者が制御する `Source` が repo 内に存在せず file:line を書けない。**「信頼している外部参照とその可変性」を記述できれば `Source` を充足**とみなす（例: `uses: foo/bar@v4` は tag が再指定可能）
+
+### `needs follow-up` は緑で閉じるための出口ではない
+
+`needs follow-up` に落とす項目には **疑われた最大 severity を必ず併記**する。
+CRITICAL または HIGH が疑われる項目が 1 件でも残る場合、**`PASSED` を出さず `NEEDS_HUMAN_REVIEW` とする**。
+証拠収集のコストが高い箇所を follow-up に流して緑を得る経路を塞ぐため。
 
 ## Output Format
 
@@ -197,11 +214,16 @@ Coverage: complete | partial | unknown
   reviewed: 実際に読んだファイル・面 (diff mode を含む)
   skipped:  意図的に見なかった範囲とその理由 (生成物 / vendor / 対象外言語 等)
   unknown:  読めなかった・判断が付かなかった範囲 (バイナリ / 巨大ファイル / 権限不足)
-  needs follow-up: 証拠不足で finding に昇格させなかった疑わしい箇所
+  needs follow-up: 証拠不足で finding に昇格させなかった疑わしい箇所 (各項目に「疑われる最大 severity」を併記)
 ```
+
+`complete` は **宣言した scope を全て読んだ** ことを指す（repo 全体ではない）。diff レビューなら
+「diff 全体を読んだ = complete」で成立する。scope を先に宣言し、それに対して complete か否かを答える。
 
 `Security Review: PASSED` は **Coverage が complete のときだけ** 使える。partial / unknown が
 残る場合は `Security Review: PASSED (partial coverage)` とし、未走査範囲を明示する。
+`needs follow-up` に CRITICAL / HIGH が疑われる項目が残る場合は、どちらでもなく
+`Security Review: NEEDS_HUMAN_REVIEW` とする。
 
 **Severity ガイドライン**:
 - **CRITICAL**: 即時 exploit 可能 + 認証不要 RCE / 認証バイパス / 大規模データ流出
