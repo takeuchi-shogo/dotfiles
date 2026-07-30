@@ -144,6 +144,14 @@ height = "90%"
 description = "hunk (popup)"
 command = "hunk"
 
+[[keys.command]]
+key = "prefix+alt+e"
+type = "popup"
+width = "90%"
+height = "90%"
+description = "druk editor (popup)"
+command = "druk"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
