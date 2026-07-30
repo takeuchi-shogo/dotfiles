@@ -58,7 +58,7 @@ diff を読み、独立した第2パスとして盲点を検出する。
 
 - `must:` `any` / `as any` を見つけたら指摘 — `unknown` で受けて型ガードで絞り込む
 - 代替: `unknown`, `object`, `Record<string, unknown>`, `unknown[]`
-- やむを得ない場合は `// eslint-disable-next-line` + 理由コメントを要求
+- inline の `eslint-disable` / `@ts-ignore` / `@ts-expect-error` で黙らせている箇所は指摘する。例外は型テストで型エラーの発生自体を検証する `@ts-expect-error` のみで、実装コードのものは指摘対象。恒久的な例外は lint 設定ファイル側に置く（`rules/typescript.md` の「`any` 禁止」節）
 - **注意**: `any` の確実な検出は eslint `@typescript-eslint/no-explicit-any` の責務。LLM レビューは
   補助であり、lint が無効化されている / 設定されていないプロジェクトでは見逃しを前提に強めに指摘する
 
