@@ -182,12 +182,30 @@ go-licenses check ./... 2>/dev/null || true
   ファイル:行番号 — 推奨事項
 ```
 
-可能なら各 finding に次を付ける:
-- Threat model assumption
-- Broken invariant
-- Validation evidence（command / exit code / log / test）
+各 finding に次を**必須**で付ける (欄を空にしたまま finding を確定させない):
 
-問題がなければ "Security Review: PASSED" と表示。
+- **Source / Control / Sink**: 攻撃者が制御する入力 (file:line) → そこで効くはずだった検証・認可 (file:line、無いなら「なし」) → 最終的に解釈される地点 (file:line)
+- **Reachability**: 到達に必要な前提条件と、越える trust boundary
+- **Counterevidence**: この finding に対する repo 内で最も強い反証と、それが決定的でない理由。反証が見つからなかった場合もその旨を書く
+- **Proof**: 再現コマンド / exit code / log / test。無い場合は **Proof gap** として何が未検証かを明記
+
+依存パッケージの存在、文字列一致、部分的な call chain だけでは finding を確定させない。
+
+Confidence は主観の確度ではなく上記欄の充足で決める — 全て埋まり未解決の反証がなければ `high`、
+未解決が 1 つだけなら `medium`、それ以上は finding にせず `needs follow-up` に送る。
+
+出力の最後に **Coverage** を必ず付ける (finding が 0 件でも):
+
+```
+Coverage: complete | partial | unknown
+  reviewed: 実際に読んだ範囲 (diff mode を含む)
+  skipped:  意図的に見なかった範囲と理由
+  unknown:  読めなかった範囲
+  needs follow-up: 証拠不足で finding に昇格させなかった箇所
+```
+
+問題がなければ "Security Review: PASSED" と表示 (Coverage が complete のときのみ。
+partial / unknown が残る場合は "Security Review: PASSED (partial coverage)")。
 
 ## Codex Deep-Dive（オプション）
 

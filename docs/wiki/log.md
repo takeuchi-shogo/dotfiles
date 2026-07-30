@@ -2199,3 +2199,22 @@
   V2 contradiction-mapping.md:54 の /improve ダッシュボード参照は退役済の可能性 /
   V3 feedback memory の enabledMcpjsonServers 記載に無効化済の alphaxiv が残存
 - レポート: docs/research/2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md
+||||||| parent of ffefb81c (🔒 fix(security-review): finding を証拠契約化し agent-instruction markdown を除外から外す)
+## [2026-07-31] ingest | openai/codex-security (OpenAI 製セキュリティレビュー agent の OSS 実装)
+
+- ソース: https://github.com/openai/codex-security — 記事ではなく実装。npm CLI v0.1.4 + TS SDK + `_bundled_plugin/` に 13 skill / 共有 references / JSON schema / Python helper。定量エビデンスはゼロ (precision/recall なし、全て設計論)
+- Saturation Gate: agentic-security family N=2 (<3) で PASS。Step 7 Stale-Plan Audit は zero-trust report が `status: integrated` 明示済みのため skip
+- 判定: Gap 6 / Partial 6 / N/A 3 / Already 3
+- 取り込み: 採用 4 件 (すべて S、branch `absorb/codex-security`、9 files / +73 -26)
+  - P0-A: security finding の出力契約強化。`.config/claude/commands/security-review.md` の Confidence Scoring を主観 1-10 から証拠充足ベース (high = source/control/sink をファイル:行で特定 + 成立条件明記 + boundary 提示 + 未解決の反証なし / medium = 未解決 1 つ / それ以外は finding にせず needs follow-up) に置換。Output Format に Source/Control/Sink・Reachability・**Counterevidence (必須欄)**・Proof (or Proof gap) を追加。`Coverage: complete|partial|unknown` (reviewed/skipped/unknown/needs follow-up) を新設し `Security Review: PASSED` を Coverage complete のときのみに限定。orchestration Step 3/4 と報告ポリシーも整合させた。`.config/claude/agents/security-reviewer.md` の「可能なら付ける」任意欄も同じ必須契約に格上げ。新規 JSON schema も reference も作っていない (Pruning-First — 既存 2 ファイルの出力欄だけを変えた)
+  - P0-B: 同ファイルの HARD EXCLUSION #9 (`*.md` 除外) に例外追加。`CLAUDE.md` / `AGENTS.md` / `**/SKILL.md` / `.claude/**/*.md` / `.codex/**/*.md` / `references/**/*.md` / `commands/**/*.md` / `agents/**/*.md` は除外しない
+  - P1-A: `.github/workflows/*.yml` の `uses:` 6 個を commit SHA + tag コメントに固定 (checkout `11d5960a326750d5838078e36cf38b85af677262 # v4.4.0` / claude-code-action `be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183` / setup-uv `d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2`)。`renovate.json` の `enabledManagers` に `github-actions` 追加。2026-06-30 IssueOps absorb で露出しながら未着手だった #10 pinning gap を閉じた
+  - P1-B: `.config/claude/skills/dispatch/SKILL.md` に worker 状態主張の実証則 1 文
+- Phase 2.5: Codex (gpt-5.6-terra xhigh) 単独 — Gemini は sunset で degraded。判定修正 4 件 (coverage Gap→Partial: `skill-security-scan.py:244` に files_scanned / CI Gap→Partial: `renovate.json` は mise 専用で Actions 追跡外 / stable fingerprint Partial→N/A: workbench compare を採らない以上 dedup に消費者なし / SECURITY.md 扱いは枠組み自体が誤りで、外部 repo を読む・worker を起動する入口に置けば足りる)。全て実ファイルで裏取りしてから採用した
+- **本 absorb 最大の収穫は記事の手法 21 件のどれでもない**: Codex が `security-review.md:124` の `*.md` blanket exclusion を掘り当てた。dotfiles は agent が読んで実行判断に使う markdown が資産の中心で prompt injection の主戦場もそこ。公式の除外則は「docs は実行されない」前提に立つが、agent harness ではその前提が崩れる。Opus は見落とした
+- 自己レビューで自分の変更の穴を 1 つ潰した: `<sha> # <tag>` 形式は Renovate に digest ではなく minor/patch 更新として扱われ、既存の `matchUpdateTypes: [minor,patch] + automerge: true` にそのまま乗る。`ANTHROPIC_API_KEY` を渡す agent workflow の Action が無レビューで自動更新されると SHA pin の意味が消えるため、`matchManagers: [github-actions]` で automerge を明示的に無効化した
+- **CLI 試走は失敗 (findings 0 件、$10.86 消費)**: `scan . --max-cost 10`、2596 files、`gpt-5.6-sol`/`xhigh` (いずれも default)。9 分 05 秒で `Estimated cost $10.861919 exceeded the $10.00 limit` により停止。discovery worker 5 本すべて 0 行で findings も coverage も severity も 1 件も出ていない。コスト曲線は非線形で 8:46 に $4.57 → 8:54 に $7.63 → 9:05 に $10.86 と階段状に跳ねる (`--max-cost` は事後停止であり事前見積もりではないため超過分は課金済)。唯一の収穫は `threat_model.md` (115 行) で、これが独立に P0-B と同じ結論に到達した: "Documentation, examples, templates, fixtures, and vendored skill references are lower-trust inputs when they are read by an agent or copied into an executable environment, even when they are not primary runtime code."
+- 常用判断: repo 全体の standard scan は dotfiles 規模で成立しない。Codex の「個人 harness には過剰」という見送り勧告を実測が裏付けた → dotfiles への統合はしない。使うなら `--diff` / `--path` で対象を絞る前提
+- 見送り: CLI 常用 / sealed canonical artifact / workbench SQLite / SARIF / codeEvidence.role / capability-profiles.toml / stable fingerprint / compact ledger / container hardening (safeclaw を常用して untrusted code を走らせる決定をしてから実測して追加)。Socket scan・npm provenance・attestation は配布 artifact がない現状では不要
+- 検証: `task validate-configs` PASS / `task validate-symlinks` PASS / YAML・JSON パース OK / `confidence < 8` 等の旧尺度参照の残存ゼロ (grep 確認済)
+- レポート: docs/research/2026-07-31-openai-codex-security-absorb-analysis.md
