@@ -245,8 +245,8 @@ wiki を起点にした Q&A を実行し、回答を wiki に再投入するオ�
 
 | mode | Step 1-3 の挙動 | 用途 |
 |------|---------------|------|
-| `quick` | INDEX.md のみ読み + 上位 3 関連ページの要約 (frontmatter + H2) を取得 | 速度優先、ファクトチェック |
-| `standard` (default) | INDEX → 3-5 関連ページを full Read → 合成 | 通常の Q&A |
+| `quick` | Step 1-2 の候補絞り込み + 上位 3 関連ページの要約 (frontmatter + H2) のみ取得 | 速度優先、ファクトチェック |
+| `standard` (default) | Step 1-2 の候補絞り込み → 3-5 関連ページを full Read → 合成 | 通常の Q&A |
 | `deep` | standard + 各ページの sources 先 (`docs/research/*.md`) を辿る + 必要なら `/research` で補完 | 設計判断、トレードオフ分析 |
 
 #### 使用例
@@ -257,13 +257,16 @@ wiki を起点にした Q&A を実行し、回答を wiki に再投入するオ�
 
 deep モードは時間がかかるため、自動で `AskUserQuestion` で「research 補完を許可しますか？」と確認する。
 
-### Step 1: INDEX 読み込み
+### Step 1-2: 関連ページ特定
 
-`docs/wiki/INDEX.md` を Read し、全概念記事のリストを取得する。
+INDEX.md は約 60KB ある。**全文 Read は既定経路ではない**。次の 2 経路で候補を絞る。
 
-### Step 2: 関連ページ特定
+1. **INDEX.md を Grep する** (Read ではなく)。質問の語・類義語で `docs/wiki/INDEX.md` を検索し、ヒットした概念記事を候補にする。INDEX の各行は `[概念名](concepts/x.md) — 1行サマリ | sources: N | confidence` 形式なので、grep 結果だけで取捨選択できる
+2. **コンテキストに `[Knowledge Recall]` ブロックがあれば併用する**。判断・設計・リサーチ系のプロンプトでは `memory-vec-recall-hook.py` が意味検索で関連ノートのパスを自動注入する (概念記事 47 本は索引済み)。ここに出ている `docs/wiki/concepts/*.md` は Grep が拾えなかった意味的関連の候補として扱う
 
-ユーザーの質問に基づき、INDEX からキーワードマッチで関連する概念記事を 3-5 個特定する。
+両経路の**和集合**から 3-5 個を選ぶ。優先順位は (a) Grep の完全一致 → (b) Grep の部分一致 → (c) Recall ブロックのパス。5 個を超えたら sources 数の多い記事を優先し、3 個に届かなければ INDEX.md を全文 Read してフォールバックする。
+
+> **ベクトル検索を明示コマンドで呼ばない理由 (2026-07-31 計測)**: `query.ts` を直接叩く経路は採らない。理由は 3 つある。① この skill の `allowed-tools` は `Bash(node:*)` を許可していない ② 質問文をシェル文字列に補間する形になり、hook 側が守っている argv 渡しの規律を破る ③ 384 次元モデルは**日本語の自然文クエリに弱い** — 英語の概念名 (`contradiction detection` → top-1 distance 1.171) は当たるが、同義の日本語 (「矛盾検出の設計」) では正解が top-5 圏外で全件 distance 1.33 超だった。日本語主体の運用では Grep の方が確実で、意味検索は recall hook 経由の補助に留めるのが妥当。埋め込みモデルを差し替えたらこの計測はやり直すこと
 
 ### Step 3: ドリルダウン
 
