@@ -14,7 +14,7 @@
 
 ## Delegation & Review
 
-- **モデル役割の徹底 (メイン=Opus / 設計=Fable / 実装=Sonnet / レビュー=Codex)**: メインは判断・統合・最終 verify に限定。実装・探索・テストは `Agent(model:'sonnet')` に渡し並列実行、複数ファイル+verify は `Workflow({name:'delegate-implementation'})`、設計サブタスク (アーキテクチャ・Plan 草案・大規模リファクタの構造判断) は `Agent(model:'fable')`。Sonnet が 2 回詰まった実装だけ Grok 4.5 (`/cursor`) に振る。組み込み agent (Explore/Plan/general-purpose) は `model` 明示必須。役割表: `references/model-routing.md`
+- **モデル役割の徹底 (メイン=セッション最上位モデル / 設計=Fable / 実装=Sonnet / レビュー=Codex)**: メインは判断・統合・最終 verify に限定。実装・探索・テストは `Agent(model:'sonnet')` に渡し並列実行、複数ファイル+verify は `Workflow({name:'delegate-implementation'})`、設計サブタスク (アーキテクチャ・Plan 草案・大規模リファクタの構造判断) は `Agent(model:'fable')`。Sonnet が 2 回詰まった実装だけ Grok 4.5 (`/cursor`) に振る。組み込み agent (Explore/Plan/general-purpose) は `model` 明示必須。役割表: `references/model-routing.md`
 - **委譲は task + guardrails + exit criteria で渡す**: 手順を 1,2,3,4 と刻まず、達成条件・越えてはいけない境界・検証手段を書いて任せる。過剰指定は現行モデルの性能を落とす。逆に検証手段を渡し損ねると長時間タスクが自走できない
 - **決定表の総索引**: `references/decision-tables-index.md` (どの判断はどこを見れば決まるか)
 - **コード変更後のレビュー**: `/review` skill に従う
@@ -60,8 +60,7 @@
 - Harness contract: `docs/agent-harness-contract.md`
 - Harness Stability: `references/harness-stability.md` (hooks/skills/agents の削除は 30 日評価後)
 - Change Surface Matrix: `references/change-surface-matrix.md`、最低検証: `task validate-configs`, `task validate-symlinks`
-- `git commit --no-verify` / `-n` は禁止（settings.json deny で block — lefthook 自身は `--no-verify` で bypass されるため、enforcement は deny ルール側）
-- lint config (`.eslintrc*`, `biome.json`, `.prettierrc*`) は保護対象 — 設定ではなくコードを直す（`protect-linter-config` hook で強制）
+- `git commit --no-verify`/`-n` 禁止・lint config (`.eslintrc*`, `biome.json`, `.prettierrc*`) 保護は settings.json deny / `protect-linter-config` hook 側で機械的に強制済み（詳細: deny は `references/deny-rules-catalog.md`、hook は `references/governance-map.md`）
 - コード変更は Codex Review Gate (codex-reviewer + code-reviewer 並列) を受ける
 
 </important>
@@ -77,7 +76,7 @@
 <important if="you are writing a Japanese prose artifact — PR description, Issue body, memo, commit body, or doc">
 
 - 脱・AI 臭ルールに従う: `references/japanese-ai-prose.md`（「〜することができる」→「できる」、前置き・ヘッジ・機械翻訳調の受動態を抜く、行為者を主語に）
-- これは brevity ではない。自然で完全な文を保ち、AI 臭だけ抜く（極端な圧縮は `concise.md` の役割で別物）
+- これは brevity ではない。自然で完全な文を保ち、AI 臭だけ抜く（極端な圧縮は `output-styles/concise.md` の役割で別物）
 
 </important>
 

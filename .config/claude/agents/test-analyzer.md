@@ -8,6 +8,8 @@ maxTurns: 15
 omitClaudeMd: true
 ---
 
+> 正典: `/review` が呼ぶのはこのローカル版。プラグイン同梱の別実装は `pr-review-toolkit:pr-test-analyzer`（名前が異なる点に注意）で、`pr-review-toolkit:review-pr` 経由でのみ使う（両者を同一タスクに併用しない）。
+
 # Test Analyzer
 
 ## あなたの役割
