@@ -17,6 +17,32 @@ last_reviewed: 2026-04-23
 - セキュリティ上の問題が発覚した場合: 即時削除
 - 明らかに未使用 (0 invocations in 30 days): dead-weight scan で検出後に削除可
 
+## 原則: 新しい検査は report から始める
+
+新しい検査 (hook / lint rule / scanner) を初日から block にすると、規律ではなく **回避の作法** が育つ。
+抑制コメントを反射的に足す、閾値を緩める、対象から除外する。導入は次の順で昇格させる。
+
+1. **collect** — 検出のみ。block も warn もせず、件数と内容を記録する
+2. **drain** — 既存違反 (baseline) をゼロにする。「誰も読まない警告リストに 1 件足す」を許さない
+3. **gate** — baseline が空になってから block に上げる。以後の再発は hook / CI が落とす
+
+昇格させない判断も同じくらい正しい。false positive が構造的に避けられない検査
+(エントリポイントを推論しきれない dead-code scan 等) は collect のまま据え置き、
+「これは gate ではなくレビュー補助」と明記する。
+
+妥協を残すなら **期限と解消条件を書く** — 「今は warn。理由は X。X が解消したら error に上げる」。
+条件のない warn は永久に warn のまま残る。
+
+既存の先例: `skills/ast-grep-practice/references/cli.md` の「デフォルトで開始 → 段階的に厳しくする」
+（`--error` の閾値を後から上げる）。
+
+この節が扱うのは **検査を導入するときの厳しさの段階** であって、hook が予期せずクラッシュした
+ときの挙動ではない。後者は `hook-failure-policy.md` の fail-open / fail-closed が別軸で決める。
+security / policy gate は collect 段階でも `fail_closed=True` を維持する。
+
+> 出典: isamu「1日500コミットは、もう読めない」absorb (2026-07-31) — 「初日からブロックすると
+> 回避の作法が育つ」「drain してから ratchet する」。削除側の 30 日評価と対になる導入側の規律。
+
 ## Hook 実行時間モニタリング
 
 重い hook はセッション全体を遅らせる。最低限の規律:

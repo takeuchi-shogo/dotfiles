@@ -1,10 +1,10 @@
 ---
 title: ナレッジパイプライン
 topics: [memory, productivity]
-sources: [2026-04-03-karpathy-llm-knowledge-bases-analysis.md, 2026-04-05-karpathy-llm-wiki-gist-analysis.md, 2026-03-25-second-brain-thinking-partner-analysis.md, 2026-03-30-personal-ai-infrastructure-analysis.md]
-updated: 2026-07-05
-last_validated: 2026-07-05
-source_count: 18
+sources: [2026-04-03-karpathy-llm-knowledge-bases-analysis.md, 2026-04-05-karpathy-llm-wiki-gist-analysis.md, 2026-03-25-second-brain-thinking-partner-analysis.md, 2026-03-30-personal-ai-infrastructure-analysis.md, 2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md]
+updated: 2026-07-31
+last_validated: 2026-07-31
+source_count: 19
 confidence: established
 ---
 
@@ -34,10 +34,12 @@ LLM を使って個人の知識を収集・構造化・再利用するパイプ�
 - **フィードバックループは軽量記入・提案止まりが安全**: 定期ブリーフ末尾に3行程度の軽量 annotation（useful/noise/missing）を残し、週次でそれを集計してコンテキストファイルの更新差分を「提案」する設計は有効。ただし自動更新は手動負担増による更新停止や意図しないコンテキスト歪みを招くため、user 承認制に限定する
 - **自己改善ループは Analyzer と DB の lineage が核**: 学習（retrieval 品質）→分析（batch だけでは停滞するため即時蒸留が必要）→データベース（保存だけでなく parent_id・novelty_score 等の系譜追跡）の3点が自己改善サイクルの本体。サンプリング最適化（UCB1 等）の寄与は全体の1割程度に過ぎず、探索効率の大半は初期知識基盤の質で説明される。バンディット最適化はデータ整備（30件以上の outcome 蓄積等）の後に回す
 - **signal density と enforcement の分離に注意**: パイプラインは volume ではなく signal density で質が決まるという原則を codify していても、それを実行する mechanism（pruning script・hook 登録等）が実際に配線されていなければ drift（閾値超過の放置）が起きる。原則の明文化と enforcement の接続は別物として検証する
+- **索引する側と監視する側の非対称は silent staleness を生む**: インクリメンタル更新パイプラインでは「どのディレクトリを索引するか」（indexer の source roots）と「どのディレクトリの変更で再索引を発火させるか」（trigger の watch paths）が別コードに書かれがちで、片方だけに追加された root は**恒久的に stale なまま検出もされない**。実例として dotfiles では `reindex.ts` が wiki concepts を索引対象に持つ一方、Stop hook の `scan_dirs()` は memory と Vault のみを監視しており、概念記事の更新が再索引に繋がっていなかった（2026-07-31 修正）。この非対称は静的に照合できるため mechanism 化の候補になる
+- **compiled layer の「読む経路」は staleness よりも先に検証する**: wiki の価値は書き込み量ではなく読まれ方で決まるが、read 経路は「規約」と「実装」が二重化しやすい。dotfiles では query 規約が INDEX.md 全読み（約 60KB）を指示し続ける一方、実際の読み出しは意味検索 hook（path-only push, body pull）に置き換わっていた。なお 384 次元の埋め込みモデルは**日本語の自然文クエリで正解を取り逃す**（英語の概念名は top-1 だが同義の日本語は top-5 圏外）ため、ベクトル単独ではなくキーワードマッチとの hybrid が必要
 
 ## 実践的な適用
 
-dotfiles リポジトリでは Karpathy の3層を完全に実装済み: `docs/research/` = Raw Sources、`docs/wiki/` = Wiki（149レポート、26概念、12トピック）、`CLAUDE.md` + `references/` = Schema。`/absorb` → `/compile-wiki` パイプラインが Ingest を、`/compile-wiki query` が Query を、`/compile-wiki lint` が Lint をそれぞれ担当。`docs/wiki/log.md` で操作履歴を時系列追跡し、wiki の進化を可視化する。加えて `/paper-analysis` スキルが学術論文コーパスの構造分析を、`/absorb` の Saturation Gate + Codex/Gemini 並列批評（Phase 2.5）が評価指標ゲーミングや前提の誤りを検出するセカンドオピニオン層を担っている。
+dotfiles リポジトリでは Karpathy の3層を完全に実装済み: `docs/research/` = Raw Sources、`docs/wiki/` = Wiki（351レポート、47概念、13トピック）、`CLAUDE.md` + `references/` = Schema。`/absorb` → `/compile-wiki` パイプラインが Ingest を、`/compile-wiki query` が Query を、`/compile-wiki lint` が Lint をそれぞれ担当。`docs/wiki/log.md` で操作履歴を時系列追跡し、wiki の進化を可視化する。加えて `/paper-analysis` スキルが学術論文コーパスの構造分析を、`/absorb` の Saturation Gate + Codex/Gemini 並列批評（Phase 2.5）が評価指標ゲーミングや前提の誤りを検出するセカンドオピニオン層を担っている。
 
 ## 関連概念
 
@@ -65,3 +67,4 @@ dotfiles リポジトリでは Karpathy の3層を完全に実装済み: `docs/r
 - [Turn Every Note Into Something You Actually Use (@cyrilXBT)](../../research/2026-05-30-cyrilxbt-notes-into-output-absorb-analysis.md) — ノート活用術記事、キャプチャ規約と意思決定フィード採用
 - [@damidefi Delete 90% of Your Obsidian Notes](../../research/2026-05-31-damidefi-delete-90-vault-absorb-analysis.md) — Vault削除記事のsignal density原則を分析、MEMORY.mdを223→154行に圧縮
 - [生成AIトレンド自己進化型情報収集 (Zenn, tokium_dev)](../../research/2026-06-04-ai-tech-researcher-self-evolving-absorb-analysis.md) — AI技術情報収集の自己進化記事を分析、read-only MVPとdrift監視のみ採用
+- [Karpathy "LLM Wiki" Full Guide (@0xkkai)](../../research/2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md) — Karpathy系5件目で記事tactic採用0。索引/監視の非対称による silent staleness を実バグとして検出・修正、query 経路を hybrid retrieval に整合

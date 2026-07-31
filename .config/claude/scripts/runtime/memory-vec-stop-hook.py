@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Memory vector index Stop hook (Phase C).
 
-If memory/*.md or Vault article *.md is newer than
+If memory/*.md, Vault article *.md, or wiki concept *.md is newer than
 ~/.claude/skill-data/memory-vec/index.db, fire-and-forget a background reindex
 via Node. Always exits 0 within ~100ms so session termination is never blocked.
+
+scan_dirs() must stay in sync with reindex.ts's source roots: a root the
+indexer ingests but this hook does not watch goes permanently stale.
 """
 
 from __future__ import annotations
@@ -20,6 +23,7 @@ from pathlib import Path
 MEMORY_DIR = (
     Path.home() / ".claude" / "projects" / "-Users-takeuchishougo-dotfiles" / "memory"
 )
+WIKI_CONCEPTS_DIR = Path.home() / "dotfiles" / "docs" / "wiki" / "concepts"
 SKILL_DATA = Path.home() / ".claude" / "skill-data" / "memory-vec"
 INDEX_DB = SKILL_DATA / "index.db"
 REINDEX_SCRIPT = SKILL_DATA / "reindex.ts"
@@ -37,6 +41,7 @@ def scan_dirs() -> list[Path]:
         MEMORY_DIR,
         vault / "05-Literature",
         vault / "09-TechTrends",
+        WIKI_CONCEPTS_DIR,
         Path.home() / ".cache" / "research-agent" / "experience",
     ]
 

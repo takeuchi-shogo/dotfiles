@@ -2175,3 +2175,27 @@
 - Review: deep tier (harness = High risk)、code-reviewer + codex-reviewer + security-reviewer + edge-case-hunter。**codex-reviewer の 2 MUST は実行で反証** (`if` 条件内の `grep -Fxq` 非マッチは `set -e` を発火させない / 末尾破損 ledger で jq は空でなく完全行の部分集合を返す)。3 名が収束した指摘 2 件 (ADOPTED_COUNT コメントの不正確さ / 破損時の silent fallback) を修正 → PASS
 - degradation: Codex は foreground 600s timeout → cmux 不在 → background 実行で成功 (150,917 tokens)。codex-reviewer 側の codex CLI は 480s timeout で Haiku 手動分析にフォールバック。Gemini は sunset で未実行 = model-family diversity は片肺
 - レポート: docs/research/2026-07-27-event-driven-future-of-ai-absorb-analysis.md
+
+## [2026-07-31] ingest | One Post by Karpathy Made 41,000 Developers... Here's the Full Guide (@0xkkai)
+
+- ソース: 直接テキスト貼り付け (Medium/X content-farm 系、URL なし)
+- family: obsidian-second-brain 22 件目 / karpathy-llm-wiki サブ系 5 件目
+- Saturation Gate: PASS (warning) — 採用率 40%、11 手法中 7 が named prior rehash、delta=4 (novel 1 + ambiguous 3)
+- 判定: Gap 0, Partial 3 (D1 hot.md / D2 矛盾非破壊マージ / D4 権限強制), N/A 1 (D3 wiki health スコア)
+- 取り込み: 記事 tactic 採用 0。記事の lens が露出させた実バグ/drift へ翻訳して 4 件採用 —
+  T1 memory-vec-stop-hook.py の scan_dirs() に wiki concepts 追加 (reindex.ts は索引するのに trigger が監視せず恒久 stale だった、terminal-tooling.md が実害) /
+  T2 「Vault root は denied」を permission ルールから 2026-04-14 限定の観測に降格 (実 deny は HashiCorp ~/.vault-token) /
+  T4 compile-wiki query を hybrid retrieval に整合 (INDEX 全読みはフォールバックへ降格、384次元モデルの日本語弱点を計測値つきで明記) /
+  T5 contradiction-mapping.md に Markdown ページの矛盾記録形式を追記
+- 見送り: T3 kubectl delete の deny 追加 (全局 deny は正当運用も止めるため careful の prompt gate で当面カバー)
+- Phase 2.5: Codex (gpt-5.6-terra, read-only) 単独。Gemini は IneligibleTierError で恒久使用不可。
+  Codex の 4 指摘は全て実ファイルで裏取り済。ただし「vector-first に揃えろ」は日本語クエリで
+  検索品質が落ちることを計測で確認し hybrid に修正して採用
+- 自己修正: 「query エントリ 6 件」は誤り (grep hit は log 本文中の言及、実行記録は 0 件) /
+  「contradiction-mapping.md Rule 26」は Pass 1 の Sonnet が付けた架空の番号
+- Validation-only: V1 daily-health-check は「4ヶ月停止」ではなく **一度も成功していない**
+  (plist は手動 install のみで未登録、唯一のログ 2026-03-26 も --verbose 不足で失敗)。
+  それでも managed-agents-scheduling.md:12 は「毎日 21:07」稼働と記載 = drift 本体 /
+  V2 contradiction-mapping.md:54 の /improve ダッシュボード参照は退役済の可能性 /
+  V3 feedback memory の enabledMcpjsonServers 記載に無効化済の alphaxiv が残存
+- レポート: docs/research/2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md
