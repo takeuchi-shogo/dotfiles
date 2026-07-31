@@ -2,7 +2,7 @@
 name: recall
 allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git symbolic-ref:*), Bash(git rev-parse:*), Bash(grep:*)
 argument-hint: [scope] | [action(scope)]
-description: "コミット履歴 (contextual commits) から開発文脈を復元する。セッション再開時、ブランチの decision/rejected/learned/constraint を時系列で抽出。Triggers: 'recall', '前回の続き', '文脈復元', 'これまでの作業', 'どこまでやった', 'コンテキスト復元', 'context 復元', 'continue', '再開', '続きから', 'what was I working on', 'reconstruct context'. Do NOT use for: 日報確認(use /daily-report), チェックポイント保存・復元(use /checkpoint), 過去セッション transcript の全文検索(use grep on ~/.claude/projects/)."
+description: "コミット履歴 (contextual commits) から開発文脈を復元する。セッション再開時、ブランチの decision/rejected/learned/constraint を時系列で抽出。Triggers: 'recall', '前回の続き', '文脈復元', 'これまでの作業', 'どこまでやった', 'コンテキスト復元', 'context 復元', 'continue', '再開', '続きから', 'what was I working on', 'reconstruct context'. Do NOT use for: 日報確認, チェックポイント保存・復元(use /checkpoint), 過去セッション transcript の全文検索(use grep on ~/.claude/projects/)."
 origin: self
 user-invocable: true
 metadata:
