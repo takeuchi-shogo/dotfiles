@@ -2218,3 +2218,10 @@
 - 見送り: CLI 常用 / sealed canonical artifact / workbench SQLite / SARIF / codeEvidence.role / capability-profiles.toml / stable fingerprint / compact ledger / container hardening (safeclaw を常用して untrusted code を走らせる決定をしてから実測して追加)。Socket scan・npm provenance・attestation は配布 artifact がない現状では不要
 - 検証: `task validate-configs` PASS / `task validate-symlinks` PASS / YAML・JSON パース OK / `confidence < 8` 等の旧尺度参照の残存ゼロ (grep 確認済)
 - レポート: docs/research/2026-07-31-openai-codex-security-absorb-analysis.md
+
+## [2026-07-31] ingest | HANDBOOK.md: A Benchmark for Long-Context Agentic Instruction Following
+
+- ソース: arXiv:2607.25398 (https://arxiv.org/abs/2607.25398)
+- 判定: Gap 3件 (T1/T3/T14), Partial 6件 (T2/T4/T5/T7/T12/T13), Already 4件 (T3以外の強化不要分/T6/T9/T11), N/A 1件 (T10)
+- 取り込み: T3 completion-gate の未配線修正 (実装済み) / T13 determinism doc の stale 訂正 / T12 decaying retrieved source の機序モデル追記 / T14 縮小版 adversarial canary
+- 分析: docs/research/2026-07-31-handbook-md-instruction-following-absorb-analysis.md
