@@ -48,6 +48,17 @@ Codex 批評の中核指摘に従い、**文書の存在ではなく配線・時
 
 `references/decision-tables-index.md:55` がこの doc を「hook vs instruction 境界」の参照先にしているので、historical に落とす場合は参照先の張り替えも要る。
 
+**スコープ拡張 (ユーザー判断で追加)**: 単発の訂正で終わらせず、「enforcement を保証していると書いている文書」を横断で洗う。既知の 2 件:
+
+| 対象 | 記述 | 状態 |
+|------|------|------|
+| `docs/reports/determinism-boundary-analysis.md` | 表が `completion-gate.py` を「テスト実行」の保証と記載 | T3 修正前は偽。`output-offload.py` は Rust 移行後の旧名のまま |
+| `docs/wiki/concepts/quality-gates.md:39` | 「`completion-gate.py` が Ralph Loop の概念を実装し、MAX_RETRIES=2 で自動修正を繰り返す」 | T3 修正で真になった。修正前は dotfiles 内で一度も発火していない |
+
+洗い出しの手掛かり: 「保証」「enforcement」「block する」「強制」を含む記述を grep し、**その主張を裏付ける実行経路がこの repo で到達可能か**を 1 件ずつ確認する。到達不能なものは記述を落とすか、到達させるかを個別に判断する。
+
+これは論文の失敗モード④ (違反した条項を引用しながら遵守を主張する) の成果物版にあたる。
+
 ### T12. decaying retrieved source の機序モデル追記 [S]
 
 `references/iterative-degradation-awareness.md` に追記する:
