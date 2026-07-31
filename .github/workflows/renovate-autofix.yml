@@ -70,7 +70,13 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A -- ':!.github/' ':!renovate.json' ':!*.env*' ':!*.key' ':!*.pem'
+            git add -A -- ':!.github/' ':!renovate.json' ':!*.env*' ':!*.key' ':!*.pem' \
+              ':(exclude,glob).config/claude/**/*.md' ':!.config/claude/settings.json' \
+              ':(exclude,top)CLAUDE.md' ':(exclude,top)AGENTS.md' ':(exclude,top)PLANS.md' ':(exclude,top)CURSOR.md'
+            if git diff --cached --quiet; then
+              echo "all edits fell into excluded agent-instruction paths; leaving CI red for human triage"
+              exit 1
+            fi
             git commit -m "🐛 fix: adapt to dependency update (renovate autofix)"
             git push origin "HEAD:$HEAD_BRANCH"
             gh workflow run ci.yml --ref "$HEAD_BRANCH"
