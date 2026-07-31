@@ -2199,7 +2199,7 @@
   V2 contradiction-mapping.md:54 の /improve ダッシュボード参照は退役済の可能性 /
   V3 feedback memory の enabledMcpjsonServers 記載に無効化済の alphaxiv が残存
 - レポート: docs/research/2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md
-||||||| parent of ffefb81c (🔒 fix(security-review): finding を証拠契約化し agent-instruction markdown を除外から外す)
+
 ## [2026-07-31] ingest | openai/codex-security (OpenAI 製セキュリティレビュー agent の OSS 実装)
 
 - ソース: https://github.com/openai/codex-security — 記事ではなく実装。npm CLI v0.1.4 + TS SDK + `_bundled_plugin/` に 13 skill / 共有 references / JSON schema / Python helper。定量エビデンスはゼロ (precision/recall なし、全て設計論)
