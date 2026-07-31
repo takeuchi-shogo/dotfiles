@@ -13,13 +13,25 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execSync, execFileSync } = require("child_process");
 
 // ──────────────────────────────────────
 // ユーティリティ
 // ──────────────────────────────────────
 
 /** コマンドを実行して stdout を返す。失敗時は null */
+function tryRunFile(file, args, timeoutMs) {
+	try {
+		return execFileSync(file, args, {
+			encoding: "utf-8",
+			timeout: timeoutMs || 15000,
+			stdio: ["pipe", "pipe", "pipe"],
+		}).trim();
+	} catch {
+		return null;
+	}
+}
+
 function tryRun(cmd, timeoutMs) {
 	try {
 		return execSync(cmd, {
@@ -112,7 +124,7 @@ function restoreOnly() {
 		process.exit(1);
 	}
 
-	const recheck = tryRun(`node ${JSON.stringify(bundlePath)} --version`);
+	const recheck = tryRunFile(process.execPath, [bundlePath, "--version"]);
 	if (recheck && /\d+\.\d+\.\d+/.test(recheck)) {
 		console.log(`✅ 復元成功: ${recheck}`);
 		return;

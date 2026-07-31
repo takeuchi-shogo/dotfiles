@@ -123,7 +123,7 @@ M6 を「Gap (概念が存在しない)」と判定したのは誤りで、正�
 
 | # | 内容 | ファイル | 規模 |
 |---|------|---------|------|
-| T1 | Ralph Loop 上限の到達不能を修正 + 回帰テスト 10 件 | `.config/claude/scripts/policy/completion-gate.py`, `.config/claude/scripts/tests/test_completion_gate_ralph_ceiling.py` | S |
+| T1 | Ralph Loop 上限の到達不能を修正 + 回帰テスト 12 件 | `.config/claude/scripts/policy/completion-gate.py`, `.config/claude/scripts/tests/test_completion_gate_ralph_ceiling.py` | S |
 | T2 | health check の失敗を exit code / status file / 通知に出す | `scripts/runtime/daily-health-check.sh` | S |
 | T3 | 参照切れ 2 件を修正 (`dead-weight-scan.py` → 実配線の skill-tracker + 手動照合、AutoEvolve → 退役明記) | `references/harness-stability.md`, `references/managed-agents-scheduling.md` | S |
 | T4 | モデル世代交代時の ablation 節を追加 (default 極性の反転・safety 分離・セル分割・測定軸・撤退条件) | `references/dead-weight-scan-protocol.md` | M |
@@ -145,9 +145,9 @@ T4 のセル 4 に接続した (ponytail: 機構は既にあり、欠けてい�
   (Codex: 「入力データ・決定的 verifier・失敗通知・担当者がそろわない routine は、保守を自動化せずログを増やす」)
 - **80% という削減率そのもの**: 先行 absorb の判断を維持
 
-## Codex Review Gate — 3 巡 (BLOCK → BLOCK → BLOCK)
+## Codex Review Gate — 4 巡 (すべて BLOCK)
 
-Codex は 3 回とも BLOCK を返した。指摘はすべて実ファイルで裏を取ってから修正している。
+Codex は 4 回とも BLOCK を返した。計 16 件。指摘はすべて実ファイルで裏を取ってから修正している。
 **2 巡目以降の指摘の過半は、記事由来の変更ではなく 1 巡目の修正自体が生んだ欠陥だった。**
 
 ### 1 巡目 — 4 件
@@ -212,17 +212,31 @@ T5 の「反転レバーは既にある」という前提が成立していな�
 12. 回帰テスト件数の記述が 4 件と 8 件で矛盾 → 実測 10 ケースに統一
 13. 節見出しが「BLOCK → 4 件修正して PASS」と、再レビュー前に PASS を宣言していた → 実際の 3 巡に書き換え
 
-### 4 巡目 — 未完了
+### 4 巡目 — さらに 3 件 (P1×2)
 
-3 巡目の修正後に投げた再レビューは 10 分間 no-progress で終了し、判定を得ていない。
-skill の規定 (Codex 失敗時は理由を明記して進む) に従い**未取得のまま commit している**。
-代わりに手動でカウンタ相互作用を追跡し、Ralph 分岐 (`completion-gate.py:1370-1415`) が
-ralph カウンタしか触らず、retry カウンタの全変更点 (1419/1463/1491/1525) が Ralph の return より
-後ろ = `incomplete` が偽のときしか到達しないことを確認した。**4 巡目の独立レビューは残タスク。**
+初回の呼び出しは Bash ツールの timeout 上限 (600000ms) に当たって切れた。
+「Codex が 10 分 no-progress」ではなく**こちらが待ち切らなかった**だけで、
+diff を貼らずブランチを直接読ませ直したら通常どおり応答した。
+
+14. **必須ゲートの迂回 (P1)** — Ralph 上限到達時に `return` していたため、
+    未レビューの harness 変更があっても Harness Review Gate に到達しない。
+    上限は「プランの催促をやめる」であって「全ゲートを飛ばす」ではない。
+    上限判定の前に `_check_harness_review_gate()` を通し、block ならそちらを返す
+15. **stale な retry counter の持ち越し (P1)** — test/harness gate で 2 回 block した後にプランへ入ると、
+    `retries=2` が Ralph 7 回分ずっと残り、プラン完了直後の Stop で safety valve が発火して
+    test と harness gate を即スキップする。Ralph の block 時に `_reset_retries()` を呼び、
+    「プラン作業が入ったら連続テスト失敗の鎖は切れる」意味に揃えた
+16. **shell escaping ではない (P2)** — `execSync` に渡す文字列を `JSON.stringify()` で囲っていたが、
+    これは JSON エスケープであって shell エスケープではない。npm prefix に `$()` やバッククォートを
+    含むパスでコマンド展開される。`execFileSync(process.execPath, [bundlePath, "--version"])` に変更
+
+副産物として**テスト自体の欠陥も 1 件**見つかった。`_run()` が `_check_harness_review_gate()` と
+`_detect_test_command()` を stub していなかったため、実 git diff とファイルシステムを叩いており、
+worktree が dirty かどうかでアサーションが反転していた。両方 stub して決定的にした。
 
 ## 検証
 
-- `pytest .config/claude/scripts/tests/` — **318 passed** (T1 の回帰テスト 10 件を含む)
+- `pytest .config/claude/scripts/tests/` — **320 passed** (T1 の回帰テスト 12 件を含む)
 - T1 の回帰テストは修正前コードで 2 件失敗 (`KeyError: 'decision'`) を確認してから修正
 - T2 は隔離 HOME で実走行し `EXIT=1` + status file 生成を確認
 - `node --check` + `verify-patch.js --restore` を実走行 (native installer 環境で package-absent → skip 0)

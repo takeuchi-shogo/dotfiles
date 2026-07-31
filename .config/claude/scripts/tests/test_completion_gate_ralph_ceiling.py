@@ -23,8 +23,14 @@ gate = import_module("completion-gate")
 PLAN = ("2026-07-31-example", ["  - [ ] step A"], "all steps done")
 
 
-def _run(monkeypatch, capsys, *, retries=0, ralph=0, incomplete=None) -> dict:
-    """Drive main() with both counters stubbed and the plan scanner faked."""
+def _run(
+    monkeypatch, capsys, *, retries=0, ralph=0, incomplete=None, harness_block=None
+) -> dict:
+    """Drive main() with both counters stubbed and the plan scanner faked.
+
+    The downstream gates run real git and filesystem checks, so they are stubbed
+    out too — otherwise these assertions would flip with the worktree's state.
+    """
     seen: dict = {}
 
     monkeypatch.setattr(gate, "_get_retry_count", lambda: retries)
@@ -34,6 +40,17 @@ def _run(monkeypatch, capsys, *, retries=0, ralph=0, incomplete=None) -> dict:
     monkeypatch.setattr(gate, "_set_ralph_count", lambda n: seen.update(ralph_set=n))
     monkeypatch.setattr(gate, "_reset_ralph", lambda: seen.update(ralph_reset=True))
     monkeypatch.setattr(gate, "_find_incomplete_plan", lambda: incomplete)
+
+    def _harness_gate():
+        seen["harness_gate_reached"] = True
+        return harness_block
+
+    def _test_command():
+        seen["test_gate_reached"] = True
+        return None
+
+    monkeypatch.setattr(gate, "_check_harness_review_gate", _harness_gate)
+    monkeypatch.setattr(gate, "_detect_test_command", _test_command)
     monkeypatch.delenv("CLAUDE_SKIP_TEST_GATE", raising=False)
     monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
 
@@ -71,7 +88,8 @@ def test_ralph_iterations_do_not_leak_into_the_test_gate(monkeypatch, capsys):
         monkeypatch, capsys, retries=0, ralph=gate.MAX_RALPH_ITERATIONS, incomplete=None
     )
 
-    assert result.get("retry_reset") is not True
+    assert result.get("harness_gate_reached") is True
+    assert result.get("test_gate_reached") is True
     assert result.get("ralph_reset") is True
 
 
@@ -132,6 +150,34 @@ def test_plan_scan_error_falls_back_to_the_test_gate_ceiling(monkeypatch, capsys
     gate.main()
 
     assert capsys.readouterr().err
+
+
+def test_ralph_ceiling_does_not_bypass_the_harness_review_gate(monkeypatch, capsys):
+    """Exhausting the Ralph budget stops the nagging, not the mandatory gates."""
+    result = _run(
+        monkeypatch,
+        capsys,
+        ralph=gate.MAX_RALPH_ITERATIONS,
+        incomplete=PLAN,
+        harness_block={"decision": "block", "reason": "harness review required"},
+    )
+
+    assert result["payload"]["decision"] == "block"
+    assert result.get("ralph_reset") is not True
+
+
+def test_ralph_block_clears_a_stale_test_failure_count(monkeypatch, capsys):
+    """Plan work breaks the consecutive-test-failure chain.
+
+    Otherwise a retry count left at MAX_RETRIES rides through the whole Ralph
+    Loop and lets the next stop skip the test and harness gates.
+    """
+    result = _run(
+        monkeypatch, capsys, retries=gate.MAX_RETRIES, ralph=0, incomplete=PLAN
+    )
+
+    assert result["payload"]["decision"] == "block"
+    assert result.get("retry_reset") is True
 
 
 def test_counters_are_separate_files():

@@ -1372,7 +1372,12 @@ def main() -> None:
         ralph_iteration = _get_ralph_count() + 1
 
         if ralph_iteration > MAX_RALPH_ITERATIONS:
+            harness_block = _check_harness_review_gate()
+            if harness_block:
+                json.dump(harness_block, sys.stdout)
+                return
             _reset_ralph()
+            _reset_retries()
             print(
                 "[Completion Gate] [Ralph Loop] max iterations "
                 f"({MAX_RALPH_ITERATIONS}) 到達。停止を許可。",
@@ -1407,6 +1412,7 @@ def main() -> None:
         )
 
         _set_ralph_count(ralph_iteration)
+        _reset_retries()
         json.dump(
             {"decision": "block", "reason": "\n".join(ctx_parts)},
             sys.stdout,
