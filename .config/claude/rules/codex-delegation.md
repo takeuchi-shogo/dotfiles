@@ -130,6 +130,22 @@ Codex は instruction を「自然語テキストの連結」ではなく「型�
 - `AGENTS.md` の階層的規則システムは、Codex がプロジェクト固有の制約を理解する主要な入口
 - instruction が「識別可能な一等オブジェクト」であるため、何がプロンプトに入っているかの可調試性が高い
 
+### レビューでは AGENTS.md 注入を切る
+
+上の「主要な入口」は**委譲**の話であり、**レビュー**には当てはまらない。dotfiles ではレビュー対象がしばしば `AGENTS.md` / `CLAUDE.md` / `.config/claude/**` 自身なので、素の `codex exec` はレビュー対象ブランチが持つ指示を自分の判断基準として読み込む。`code-reviewer.md` の Blind-first 設計が読み込み経路で骨抜きになる。
+
+そのためレビュー系 (`codex-reviewer` / `codex-plan-reviewer` / `security-reviewer`) は `--config project_doc_max_bytes=0` を付けて起動する。委譲系には付けない。
+
+実測 (codex v0.144.6, 2026-07-31):
+
+| 起動 | 結果 |
+|---|---|
+| `--skip-git-repo-check --sandbox read-only` のみ | cwd の `AGENTS.md` の指示に**ツール呼び出しゼロで従った** = prompt に注入されている |
+| `+ --ignore-user-config --ignore-rules` | 変わらず従う。この 2 つは project doc を止めない |
+| `+ --config project_doc_max_bytes=0` | 注入が消え、必要なら `rg` で自分で探しに行く挙動に変わる |
+
+**残存リスク**: `--sandbox read-only` のままなので、Codex は自分の判断で `AGENTS.md` を読みにいける。注入されなくなるだけで、読めなくなるわけではない。完全に断つには空ディレクトリを作業根 (`-C`) にして diff を prompt に埋め込む必要があるが、それはファイル横断のコンテキストを失う取引になるため採らない。
+
 ---
 
 ## 委譲しないケース

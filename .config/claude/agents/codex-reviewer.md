@@ -43,11 +43,20 @@ Codex CLI の深い推論能力を活用してコードレビューを行うエ�
 
 1. `git diff --stat` で変更の概要を把握する
 2. 変更されたファイルを Read で確認し、コンテキストを理解する
-3. codex-review スキルの手順に従い、Codex CLI でレビューを実行する:
+3. **送信前 credential scan**: レビューは diff を外部 API に送る。`lefthook.yml` の `publicity-review` は pre-commit なので、commit 前のレビューには間に合わない。Codex を呼ぶ前に同じ scanner をレビュー対象の diff 範囲に対して流す:
+
+   ```bash
+   python3 scripts/security/publicity-scan.py HEAD          # 作業ツリー
+   python3 scripts/security/publicity-scan.py origin/master...HEAD  # ブランチ
+   ```
+
+   exit 1 なら **Codex を呼ばずに停止**し、検出内容をユーザーに報告する。`git diff` に出ない untracked ファイルは scan されないが、レビュー対象自体が `git diff` なので範囲は一致する。
+4. codex-review スキルの手順に従い、Codex CLI でレビューを実行する:
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.6-terra \
   --config model_reasoning_effort="xhigh" \
+  --config project_doc_max_bytes=0 \
   --sandbox read-only \
   "$(cat <<'PROMPT'
 Analyze the recent git diff for defects and vulnerabilities. Do NOT read commit messages or PR descriptions first — analyze the raw diff independently to avoid confirmation bias.
@@ -91,7 +100,7 @@ PROMPT
 )" 2>/dev/null
 ```
 
-4. Codex の出力をそのまま返す（追加の編集や要約は不要）
+5. Codex の出力をそのまま返す（追加の編集や要約は不要）
 
 呼び出し側は findings を次 iteration の修正 TODO へ機械的に戻す。codex-reviewer の本質は単発評価ではなく、評価→修正→再評価の閉ループを保つこと。
 
