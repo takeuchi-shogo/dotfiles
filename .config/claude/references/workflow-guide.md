@@ -525,7 +525,7 @@ S/M/L はデフォルトの深度を決めるが、個別ステージの深度�
 
 ## エージェントルーティング
 
-タスクの種別に応じて、最適なエージェントを選択する。Claude モデルの選択 (メイン=Opus / 設計=Fable / 実装=Sonnet) は `references/model-routing.md` の役割表に従い、組み込み agent (Explore/Plan/general-purpose) には `model` を明示する:
+タスクの種別に応じて、最適なエージェントを選択する。Claude モデルの選択 (メイン=セッション最上位モデル / 設計=Fable / 実装=Sonnet) は `references/model-routing.md` の役割表に従い、組み込み agent (Explore/Plan/general-purpose) には `model` を明示する:
 
 | タスク種別               | 推奨エージェント             | 用途                                                    |
 | ------------------------ | ---------------------------- | ------------------------------------------------------- |
