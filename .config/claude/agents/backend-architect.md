@@ -6,7 +6,6 @@ model: sonnet
 memory: project
 permissionMode: plan
 maxTurns: 15
-skills: senior-backend, senior-architect
 ---
 
 You are a backend system architect specializing in scalable API design and microservices.

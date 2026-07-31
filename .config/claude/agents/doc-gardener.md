@@ -36,7 +36,7 @@ You operate in two modes:
 
 ## Workflow
 
-1. Run `python3 ~/.claude/scripts/doc-garden-check.py` to get initial warnings
+1. Run `python3 ~/.claude/scripts/lifecycle/doc-garden-check.py` to get initial warnings
 2. For each warning, Read the document and assess actual staleness
 3. Check the related code to understand what changed
 4. Propose specific fixes (EXPLORE) or apply them (IMPLEMENT)
