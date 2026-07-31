@@ -106,7 +106,7 @@ ci = bootstrap_ci(human_labels, eval_labels, p_obs=0.80)
 
 ## 実用ガイダンス
 
-- LLM ジャッジのモデルバージョンを固定する（`gpt-4o-2024-05-13` 等、`gpt-4o` ではない）
+- LLM ジャッジのモデルバージョンを固定する（`claude-haiku-4-5-20251001` 等、`claude-haiku-4-5` ではない）
 - ジャッジプロンプト変更、モデル切替、CI 拡大時に再校正
 - ~100 ラベル例（50 Pass, 50 Fail）を推奨。60 未満は CI が広い
 - TPR 改善は TNR 改善より CI を狭める効果が大きい

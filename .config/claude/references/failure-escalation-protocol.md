@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-08-01
+---
+
 # Failure Escalation Protocol — Issue + Worktree
 
 セッション中に harness/tool 失敗・期待外挙動に遭遇した時、ワークアラウンドで進めずに **GitHub Issue + 別 worktree** に escalate するための判定プロトコル。

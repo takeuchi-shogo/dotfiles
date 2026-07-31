@@ -70,7 +70,7 @@ spec:
 
 vendor_overrides:
   anthropic:
-    model: "claude-sonnet-4-6"
+    model: "claude-sonnet-5"
     tools: ["bash_20250124", "text_editor_20250124"]
   openai:
     model: "gpt-5.5"

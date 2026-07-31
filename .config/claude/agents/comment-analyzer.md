@@ -1,6 +1,6 @@
 ---
 name: comment-analyzer
-description: コメント・ドキュメントの正確性・完全性・長期保守性を分析するレビューエージェント。大量のドキュメント追加、PR前のコメント検証、コメント腐敗の検出に使用。
+description: コメント・ドキュメントの正確性・完全性・長期保守性を分析するレビューエージェント。大量のドキュメント追加、PR前のコメント検証、コメント腐敗の検出に使用。Use PROACTIVELY when: コメントブロックが10行以上追加された / PR前のコメント検証をしたい / コメント腐敗（コードと乖離した記述）が疑われる。/review から自動起動。Do NOT use for: 汎用コードレビュー (use code-reviewer)、型設計 (use type-design-analyzer)。
 tools: Read, Bash, Glob, Grep
 disallowedTools: Edit, Write, NotebookEdit
 model: sonnet

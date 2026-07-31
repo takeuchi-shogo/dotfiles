@@ -136,6 +136,7 @@ generated code (`.pb.go` / `_gen.go` / `mocks/` 配下) は threshold 計算か�
 
 明示的にコードベース全体の監査を依頼された場合に使用。最大5つの並列サブエージェント（Agent ツール）で
 カテゴリ別にスキャンする。単一 PR のレビューではこのモードを使わない。
+（frontmatter の `tools` に Agent が入っているのはこのモード専用）
 
 ### カテゴリ
 
