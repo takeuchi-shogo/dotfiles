@@ -9,13 +9,21 @@ last_reviewed: 2026-04-23
 
 ハーネスの構成要素（hooks, skills, agents, references）を削除・置換する前に:
 1. 最低 30 日の実運用データを収集する
-2. dead-weight-scan.py で使用頻度を計測する
+2. 使用頻度を計測する。**自動計測があるのは skill だけ** — `scripts/policy/skill-tracker.py` (settings.json の `Skill` matcher に登録済) が呼び出しを記録する。hook / agent / reference には自動計測器がなく、`decommission-log.md:22` の二重確認 (実行ログ + 全期間 transcript の手動照合) に頼る
 3. 代替案が同等以上の効果を発揮することを確認する
+
+手順は `references/dead-weight-scan-protocol.md` に従う。
+
+learner 側の 2 本を計測の根拠にしないこと:
+
+- `scripts/learner/staleness-detector.py` — hook 未登録。`memory-eviction.py` からの import と `/improve` 実行時の advisory (`improve-policy.md:489`) が唯一の consumer で、常時収集はしていない
+- `scripts/learner/skill-usage-tracker.py` — consumer ゼロの休眠スクリプト。`.config/claude/README.md:190,237` と `references/diagrams/architecture-overview.md:45` は Stop/SessionEnd で動くと書いているが、settings.json に登録がなく実行されていない (要修正の drift)
 
 ## 例外
 
 - セキュリティ上の問題が発覚した場合: 即時削除
-- 明らかに未使用 (0 invocations in 30 days): dead-weight scan で検出後に削除可
+- 明らかに未使用 (skill は skill-tracker のログ、それ以外は transcript 照合で 0 invocations in 30 days)
+- **モデル世代交代時の振る舞い指示**: 30 日ルールの対象外。`references/dead-weight-scan-protocol.md` の「モデル世代交代時の ablation」に従う
 
 ## 原則: 新しい検査は report から始める
 
@@ -48,7 +56,7 @@ security / policy gate は collect 段階でも `fail_closed=True` を維持す�
 重い hook はセッション全体を遅らせる。最低限の規律:
 
 - `settings.json` の hook 設定で `timeout` を必ず指定する。指定なしのデフォルトは 60s 程度 (単位: 公式仕様は未公開、settings.json 実測値と Claude Code 既定動作から推定) だが、PreToolUse / PostToolUse のような頻発 hook は 5-10s が現実的上限
-- 実行時間 > 5s の hook は再設計候補。集計手段は ad-hoc (個別 hook に `time` ラッパー / observability ログから p50/p95 抽出 / `dead-weight-scan.py` の延長で測定) — 専用 stats スクリプトは未実装
+- 実行時間 > 5s の hook は再設計候補。集計手段は ad-hoc (個別 hook に `time` ラッパー / observability ログから p50/p95 抽出) — 専用 stats スクリプトは未実装
 - 例外なく守らせたい規則 (golden-check, protect-linter-config 等) は短時間化を最優先。長い処理は非同期 (background) または PostToolUse → 別プロセスにオフロード
 
 > 出典: Boris Tip 10 absorb (2026-04-30) — 「hook が重いとセッション全体が遅くなる、実行時間の上限を設けておけ」

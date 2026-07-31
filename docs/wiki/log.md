@@ -2218,3 +2218,24 @@
 - 見送り: CLI 常用 / sealed canonical artifact / workbench SQLite / SARIF / codeEvidence.role / capability-profiles.toml / stable fingerprint / compact ledger / container hardening (safeclaw を常用して untrusted code を走らせる決定をしてから実測して追加)。Socket scan・npm provenance・attestation は配布 artifact がない現状では不要
 - 検証: `task validate-configs` PASS / `task validate-symlinks` PASS / YAML・JSON パース OK / `confidence < 8` 等の旧尺度参照の残存ゼロ (grep 確認済)
 - レポート: docs/research/2026-07-31-openai-codex-security-absorb-analysis.md
+
+## [2026-07-31] ingest | Boris Cherny @ YC Startup School 2026 — "We Cut 80% of Claude Code's Prompt"
+
+- ソース: https://youtu.be/qyPCVqFUyDo (Y Combinator, 2026-07-27) / 紹介ポスト https://x.com/oikon48/status/2083106854398267455。話者: Boris Cherny (Claude Code 作者, Anthropic)。取得経路: yt-dlp --write-auto-sub で字幕取得 → プレーンテキスト化 (36,592 字)
+- family: claude-code-tips / harness-engineering
+- Saturation Gate: PASS (warning) — N>=3、delta=10/11 (rehash は M7 dynamic workflows のみ、`2026-06-03-dynamic-workflows-absorb-analysis.md` と同一記事)
+- 判定内訳: Gap 1 / Partial 3 / Already 3 / N/A 2 / Reject 2 (全 11 手法、Phase 2.5 で Codex が M1/M2/M5/M6/M8 の判定を修正)
+- 取り込み: 採用 6 件
+  - T1: `completion-gate.py` の Ralph Loop 上限到達不能を修正 (safety valve が Ralph 分岐より先に return し `MAX_RALPH_ITERATIONS=10` が dead config で実効上限 2 だった) + 回帰テスト 10 件新規 (`test_completion_gate_ralph_ceiling.py`)
+  - T2: `daily-health-check.sh` の失敗を exit code・status file・通知に出す (非ゼロ終了でも exit 0 で launchd から常に成功に見えていた)
+  - T3: 参照切れ 2 件修正 (`dead-weight-scan.py`→実配線の skill-tracker + 手動照合、AutoEvolve 退役明記) — `harness-stability.md` / `managed-agents-scheduling.md`
+  - T4: `dead-weight-scan-protocol.md` にモデル世代交代時の ablation 節を追加 (default 極性反転・safety 分離・セル分割・測定軸・撤退条件)
+  - T5: `system-prompt-patcher/README.md` に patcher が無測定であることを明記し ablation セルへ接続 (`task restore-claude`/`task patch-claude` を反転レバーとして再利用)
+  - T6: 委譲は task + guardrails + exit criteria で渡す規律を `templates/claude-md/rules.md` → CLAUDE.md に追加
+- Codex が見つけた実バグ 3 件 (すべて実ファイルで確認済み): completion-gate の Ralph Loop 上限が dead config で実効 2 (T1) / daily-health-check が失敗しても exit 0 (T2) / system-prompt-patcher が unhobbling (公式 system prompt 4 パッチ削除) を無測定で `Taskfile.yml:70` から `task setup` の標準経路に入れていた (M6 の「Gap (概念不在)」判定は誤りで正しくは「評価なしで既に実施中」)
+- 先行 absorb との関係: `2026-07-25-anthropic-context-engineering-claude5-absorb-analysis.md` の「削減率を移植するな」は正しいが、ablation 手順まで棄却したのは過剰一般化 (Codex の中核反論)。翻訳: 削減率は移植しない / hard safety・permission・不可逆操作は ablate しない / 物理削除せず override で可逆に無効化 / 新モデル・固定 task set で baseline 比較 / 2 回再現した機構だけ戻す。振る舞い prompt = default unproven、機械的安全制約 = default keep に分離
+- 不採用: M9 injection 3層防御の前提反転 (Reject、`prompt-injection-detector.py` は被害半径抑制層として維持) / `CLAUDE_CODE_SIMPLE=1` の恒久運用化 (隔離実験専用) / M8 abstraction police 日次 routine (T2 で health check 成功・失敗判定が直るまで新規 routine を増やさない) / 80% という削減率そのもの
+- Phase 2.5: Codex (gpt-5.6-terra) 単独。Gemini は sunset (IneligibleTierError) で degraded
+- 検証: `pytest .config/claude/scripts/tests/` — 318 passed。T1 の回帰テストは修正前コードで 2 件失敗 (`KeyError: 'decision'`) を確認してから修正 → 8 passed。T2 は隔離 HOME で実走行し `EXIT=1` + status file 生成を確認
+- 教訓: 1st-party の「削除しろ」は削減率でなく手順を読む (棄却する層を分けて記録する) / absorb は本体の採用より副産物のバグ検出で元が取れることがある (今回の最大の成果は dead config 1 件・silent failure 1 件・無測定の標準経路 1 件の発見) / 「Gap (存在しない)」判定は「既にやっているが測っていない」を見落とす (概念名の不在を実装の不在と読み違えない)
+- レポート: docs/research/2026-07-31-boris-cherny-yc-ablation-absorb-analysis.md

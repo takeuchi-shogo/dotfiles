@@ -15,6 +15,7 @@
 ## Delegation & Review
 
 - **モデル役割の徹底 (メイン=Opus / 設計=Fable / 実装=Sonnet / レビュー=Codex)**: メインは判断・統合・最終 verify に限定。実装・探索・テストは `Agent(model:'sonnet')` に渡し並列実行、複数ファイル+verify は `Workflow({name:'delegate-implementation'})`、設計サブタスク (アーキテクチャ・Plan 草案・大規模リファクタの構造判断) は `Agent(model:'fable')`。Sonnet が 2 回詰まった実装だけ Grok 4.5 (`/cursor`) に振る。組み込み agent (Explore/Plan/general-purpose) は `model` 明示必須。役割表: `references/model-routing.md`
+- **委譲は task + guardrails + exit criteria で渡す**: 手順を 1,2,3,4 と刻まず、達成条件・越えてはいけない境界・検証手段を書いて任せる。過剰指定は現行モデルの性能を落とす。逆に検証手段を渡し損ねると長時間タスクが自走できない
 - **決定表の総索引**: `references/decision-tables-index.md` (どの判断はどこを見れば決まるか)
 - **コード変更後のレビュー**: `/review` skill に従う
 - **ブラッシュアップ系 (improve/debate/absorb) は cmux Worker で hub-and-spoke (デフォルト)**: 設計判断・セカンドオピニオン・比較は **複数モデルを spoke に並列起動 → メイン=conductor が統合** する (Sakana Fugu の conductor パターンを手作り再現)。subagent/Workflow に逃げない。骨子: `launch-worker.sh --model {codex,claude} --task ...` ×N → `collect-result.sh` で回収 → conductor が統合 (撤退条件つき結論)。詳細手順・運用 tip は `references/cmux-ecosystem.md`。単一視点で足る軽い委譲のみ単発 codex。CI/SSH 単独 (cmux 不在) は `codex exec --sandbox read-only` に fallback。`Skill(codex:rescue)`/`Agent(codex:codex-rescue)` は失敗事例あり (memory `feedback_codex_casual_use.md`)
