@@ -128,7 +128,7 @@ Once all runs are done:
          "retry": [{"tool": "Grep", "count": 3, "reason": "..."}],
          "failure_reason": {"category": "prompt_unclear|model_limitation|env_issue|none", "detail": "..."}
        },
-       "evaluator_model_version": "claude-opus-4-7"
+       "evaluator_model_version": "claude-opus-5"
      }
    }
    ```

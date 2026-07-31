@@ -20,7 +20,7 @@ Managed Agents API では Agent を以下の統合形式で定義:
 ```yaml
 # 概念的な形式（API は JSON だが YAML で管理し CLI でデプロイ）
 name: "reviewer"
-model: "claude-sonnet-4-6"
+model: "claude-sonnet-5"
 system_prompt: |
   You are a code reviewer...
 tools:

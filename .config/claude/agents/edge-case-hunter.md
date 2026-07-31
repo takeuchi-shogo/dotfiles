@@ -1,6 +1,6 @@
 ---
 name: edge-case-hunter
-description: 境界値・異常系・nil パス・空コレクション・ゼロ値など「正常系では通らないパス」の検出に特化したレビューエージェント。エッジケースの見逃しを防ぐ。
+description: 境界値・異常系・nil パス・空コレクション・ゼロ値など「正常系では通らないパス」の検出に特化したレビューエージェント。エッジケースの見逃しを防ぐ。Use PROACTIVELY when: 50行以上の変更 / 新機能実装後 / バグ修正後の境界値・異常系の考慮確認。/review から自動起動。Do NOT use for: テストカバレッジ自体の充足度 (use test-analyzer)、汎用コードレビュー (use code-reviewer)。
 tools: Read, Bash, Glob, Grep
 disallowedTools: Edit, Write, NotebookEdit
 model: sonnet

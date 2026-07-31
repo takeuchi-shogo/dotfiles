@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-08-01
+---
+
 # design-stance.md
 
 User-facing surface を作る/磨くときの**基礎姿勢**。Vercel Design Engineer と Apple Human Interface Guidelines (current, 8 principles) の原典を並列転載する。

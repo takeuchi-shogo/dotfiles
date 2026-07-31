@@ -13,6 +13,8 @@ metadata:
   pattern: pipeline
 ---
 
+> status: deprecated (Scite MCP 無効化済み、再有効化時は本文の Scite 前提を要更新)
+
 # Paper Analysis — 複数論文の構造的分析
 
 複数の学術論文を入力し、9ステップの分析パイプラインで構造化レポートを生成する。
