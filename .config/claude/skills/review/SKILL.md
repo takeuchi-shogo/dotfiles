@@ -398,7 +398,7 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 3. **対立検出**: 同じ箇所で矛盾する指摘がある場合、両方残して `[CONFLICT]` タグを付与
 4. **重要度順**: Critical → Important → Watch の順に整理
 5. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「要注意」を付与
-6. **判定**: Critical が1件以上 → BLOCK。Important が3件以上 → NEEDS_FIX。それ以外 → PASS。Watch は判定に影響しない
+6. **判定**: Critical が1件以上 → BLOCK。Important が3件以上 → NEEDS_FIX。それ以外 → PASS。Watch は判定に影響しない。ただし **レビューアーが `NEEDS_HUMAN_REVIEW` を宣言した場合、finding 件数に関わらず verdict を `NEEDS_HUMAN_REVIEW` に倒す** — severity を付けずに保留した項目 (security-reviewer の `needs follow-up` 等) は件数計算に乗らないため、宣言を拾わないと緑で閉じてしまう
 7. **信頼度フィルタ**: confidence < 60 の指摘を除外
 8. **既存コード除外**: diff の追加行以外への指摘を除外
 9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外

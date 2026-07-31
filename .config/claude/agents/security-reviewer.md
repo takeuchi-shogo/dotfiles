@@ -182,12 +182,22 @@ go-licenses check ./... 2>/dev/null || true
   ファイル:行番号 — 推奨事項
 ```
 
-可能なら各 finding に次を付ける:
-- Threat model assumption
-- Broken invariant
-- Validation evidence（command / exit code / log / test）
+各 finding に **Source / Control / Sink**・**Reachability**・**Counterevidence**・**Proof (or Proof gap)** を
+必須で付け、出力の最後に **Coverage** を必ず付ける (finding が 0 件でも)。
+欄を空にしたまま finding を確定させない。依存パッケージの存在、文字列一致、部分的な call chain だけでは確定させない。
 
-問題がなければ "Security Review: PASSED" と表示。
+Confidence は主観の確度ではなく上記欄の充足で決める。
+`Security Review: PASSED` は Coverage が complete のときだけ使う。
+**severity を確定させずに保留した項目 (`needs follow-up`) に CRITICAL / HIGH が疑われるものが残る場合は、
+`Security Review: NEEDS_HUMAN_REVIEW` を明示的に宣言する** — 保留項目は `/review` 統合側の
+severity 件数計算に乗らないため、宣言しないと緑で閉じる (`skills/review/SKILL.md` 統合ルール 6)。
+
+各欄の定義・confidence の判定基準・`complete` の意味・証拠要件を構造的に満たせない finding class
+(prompt injection / supply chain) の読み替え・`needs follow-up` の扱いは
+**`commands/security-review.md` の "Confidence Scoring" / "Output Format" / "Coverage" が正典**。
+二重管理を避けるため、ここでは再掲しない。
+**この契約の詳細が context に無ければ `.config/claude/commands/security-review.md` を Read してから開始する**
+(単独起動時に圧縮版だけで判定しないため)。
 
 ## Codex Deep-Dive（オプション）
 

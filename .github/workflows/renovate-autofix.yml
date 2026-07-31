@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
@@ -47,7 +47,7 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
         if: steps.guard.outputs.skip != 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -70,7 +70,13 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A -- ':!.github/' ':!renovate.json' ':!*.env*' ':!*.key' ':!*.pem'
+            git add -A -- ':!.github/' ':!renovate.json' ':!*.env*' ':!*.key' ':!*.pem' \
+              ':(exclude,glob).config/claude/**/*.md' ':!.config/claude/settings.json' \
+              ':(exclude,top)CLAUDE.md' ':(exclude,top)AGENTS.md' ':(exclude,top)PLANS.md' ':(exclude,top)CURSOR.md'
+            if git diff --cached --quiet; then
+              echo "all edits fell into excluded agent-instruction paths; leaving CI red for human triage"
+              exit 1
+            fi
             git commit -m "🐛 fix: adapt to dependency update (renovate autofix)"
             git push origin "HEAD:$HEAD_BRANCH"
             gh workflow run ci.yml --ref "$HEAD_BRANCH"

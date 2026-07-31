@@ -114,6 +114,8 @@ scripts/runtime/launch-worker.sh --model gemini --task "タスク内容"
 
 出力される `workspace_id` と `worker_id` を記録する。
 
+**Worker 状態の主張は実証に限る**: 成功した stdout から `workspace_id` と `worker_id` が得られるまで worker を「起動した / 実行中」と言わない。`collect-result.sh` が成功して結果を回収するまで「完了した」と言わない。id なしの待機・推測での結果再構成は禁止。
+
 **Step 2: 結果を回収する**
 
 Bash tool で `collect-result.sh` を実行:
