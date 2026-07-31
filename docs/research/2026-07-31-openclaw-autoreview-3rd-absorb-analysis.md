@@ -14,12 +14,12 @@ prior-absorb:
   - docs/research/2026-05-28-openclaw-autoreview-absorb-analysis.md
   - docs/research/2026-07-27-openclaw-autoreview-reabsorb-analysis.md
 saturation: "同一ソース 3 回目。ソース差分ゼロ (07-23 が最終更新、07-27 の再 absorb と同一内容)。delta=9 は前回パスの取りこぼし"
-adopted: 5
+adopted: 6
 validation-only: 2
 degraded: "Phase 2.5 は Codex が 700s 無出力で失敗。Gemini は sunset。代わりに codex CLI の実測で代替した"
 ---
 
-# openclaw autoreview — 3 回目 (採用 5 / validation 2)
+# openclaw autoreview — 3 回目 (採用 6 / validation 2)
 
 ## 結論
 
@@ -96,7 +96,7 @@ light-phase2 の規約により、rehash として除外した分も残す。
 
 `--sandbox read-only` のままなので、Codex は自分の判断で `AGENTS.md` を読みにいける。**注入されなくなるだけで、読めなくなるわけではない**。完全に断つには openclaw と同じく空ディレクトリを作業根にして diff を prompt に埋め込む必要があるが、それはファイル横断のコンテキストを失う取引になるため採らなかった。
 
-## 採用 5 件
+## 採用 6 件
 
 | ID | 内容 | 変更 |
 |---|---|---|
@@ -105,6 +105,7 @@ light-phase2 の規約により、rehash として除外した分も残す。
 | A3 | agent-instruction markdown を docs 扱いから外す | `scripts/policy/review-tier.py` に `_is_agent_instruction_md()` 追加。`CLAUDE.md`/`AGENTS.md`/`PLANS.md`/`SKILL.md`/`*.prompt.md` と `.config/claude/` `.claude/` `.codex/` `.agents/` `.cursor/` `.github/agent-config/` `templates/` `docs/playbooks/` `docs/wiki/` 配下を除外。テスト 12 件追加 |
 | A4 | 外部送信前の credential scan | `scripts/security/publicity-scan.py` の diff 範囲を引数化 (既定は `--cached` のまま)。`codex-reviewer.md` Workflow に step 3 として配線し、exit 1 なら Codex を呼ばずに停止 |
 | A5 | bug class スイープ + 安全チェック削除トリガー | `references/scope-governor.md` §2 に「バグクラスは分類の前に洗う」、`commands/security-review.md` 冒頭に「既存の安全チェックを削除・弱体化する変更は攻撃経路を示せなくても報告する」 |
+| A6 | 壊れていた `-p security` を明示フラグに置換 | 下記「A6」参照。7 箇所 |
 
 A3 の除外リストは `commands/security-review.md` の HARD EXCLUSIONS #9 が持つ反転定義と同じもので、両者に相互参照を張った。片方を増やしたら両方直す。
 
@@ -112,9 +113,26 @@ A3 の除外リストは `commands/security-review.md` の HARD EXCLUSIONS #9 �
 
 今日 (2026-07-31) の codex-security absorb で `security-review.md` の `*.md` 除外に「agent-instruction markdown は instruction なので除外しない」例外を入れた。しかし同じ前提の誤りが `review-tier.py` にも残っていて、そちらは手つかずだった。`risk_class=Low` かつ 10 行以下なら `CLAUDE.md` や `agents/*.md` の変更が light tier に落ち、reviewer と Codex Gate を丸ごと省略できた。同じ日に、同じ前提で、片方のゲートだけ直っていた。
 
+## A6: `-p security` が壊れていた (validation から採用に昇格)
+
+`[notifications]` の正体を追う過程で見つけた。`-p security` は codex v0.144.6 で **起動時にエラーになる**:
+
+```
+Error loading config.toml: --profile `security` cannot be used while
+~/.codex/config.toml contains legacy `profile = "security"` or
+[profiles.security] config; move those settings into
+~/.codex/security.config.toml and remove the legacy profile selector/table.
+```
+
+profile は `$CODEX_HOME/<name>.config.toml` の別ファイル方式に移行し、`[profiles.*]` テーブルとの併用が拒否されるようになった。影響は 7 箇所 (`agents/security-reviewer.md:207` / `rules/codex-delegation.md` ×5 / `.codex/AGENTS.md:105`) で、**security-reviewer の Codex 深掘り経路は全滅していた**。A1 でこの行にフラグを足したが、その手前で落ちるので効かない。
+
+`--sandbox read-only --config model_reasoning_effort="xhigh"` の明示に置換した。別ファイルへの移行は採らない: 置き場所が `~/.codex/` (dotfiles 非管理の実体ファイル) になり dotfiles から再現できないため。置換形が通ることは実測確認済み。
+
+`.codex/config.toml` の `[profiles.*]` テーブル自体は残した (既存の dead config の削除は別判断)。なお公式 config reference は **project-local な `.codex/config.toml` の `notify` / `profile` / `profiles` / `model_providers` / `otel` を Codex が無視する**と明記しており、リポジトリ内のこのテーブルはどのみち設定源にならない。
+
 ## Validation-only Follow-up (採用に数えない)
 
-1. **`[notifications]` は codex v0.144.6 で未知フィールド**。`codex exec --strict-config` が `/Users/takeuchishougo/.codex/config.toml:169:2: unknown configuration field 'notifications'` を返す。macOS 通知の設定が効いていない。dotfiles 側 `.codex/config.toml:136` にも同じブロックがある。正しいキー名は未調査。
+1. **`[notifications]` はバージョン差分ではなく、最初から無効だった**。公式 config reference が載せるのは `notify` (`array<string>`, "Command invoked for notifications; receives a JSON payload from Codex") のみで、`notifications` テーブルは一覧に存在しない。`--strict-config` の実測でも `notify=[...]` と `tui.notifications=true` は通り、`notifications.command` だけが `unknown configuration field` になる。追加は 2026-02-09 の `34bbc734` (Codex 導入時の最初の commit) で、行内コメントが「Claude Code hooks と統一」と書いている = Claude Code の hook 設定の形を類推で持ち込んだもの。約 6 ヶ月間 macOS 通知は動いていなかった。修正は未実施 (`notify` が `:16` に別用途で既存のため衝突の判断が要る)。v0.144.6 しか手元にないため、2026-02 当時の Codex が受理していた可能性は実験では排除できていない。
 2. **`~/.codex/config.toml` は symlink ではなく実体**。dotfiles 側 (`notifications` が `:136`) と live (`:169`) で内容がずれている。`settings.json` の live drift (`project_claude_settings_live_drift`) と同じ構造の問題が `.codex` にもある。dotfiles を編集しても live の Codex には反映されない。
 
 ## 実施済 / 未実施

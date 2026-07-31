@@ -11,7 +11,7 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 1. **対話ラリー / セカンドオピニオン / ブラッシュアップ系**: cmux Worker — `scripts/runtime/launch-worker.sh --model codex --task "..."`
 2. **単発投げ・読み取り専用**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..." 2>/dev/null`
 3. **Spec/Plan 批評・コードレビュー**: 専用 subagent (`codex-plan-reviewer` / `codex-reviewer`) — これらは codex CLI を内部で直接 spawn する設計で codex:rescue 経路と異なる
-4. **セキュリティ深掘り**: `codex exec --skip-git-repo-check -m gpt-5.6-terra -p security "..."`
+4. **セキュリティ深掘り**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..."`
 
 > **cmux 不在環境 (CI / SSH 単独) の fallback**: `launch-worker.sh` は cmux が無いと exit 1 する。CI/SSH 環境では正規パス 1 を使わず、正規パス 2 (`codex exec` 直接呼び出し) に切り替える。具体例:
 > ```bash
@@ -27,7 +27,7 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 ## 委譲すべきケース
 
 - **Spec/Plan Gate（批評）**: Spec/Plan 作成後、実装前に Codex で批評する → `codex-plan-reviewer` エージェント。Spec の抜け漏れ・Plan の妥当性・潜在リスクを統合的にレビュー。M規模以上で必須
-- **セキュリティ深掘り調査**: 潜在的脆弱性の根本原因分析、攻撃ベクトル評価、セキュリティアーキテクチャレビュー → `codex exec -p security`（xhigh reasoning + read-only）。`security-reviewer` エージェントの表面チェックを Codex の深い推論で補完する
+- **セキュリティ深掘り調査**: 潜在的脆弱性の根本原因分析、攻撃ベクトル評価、セキュリティアーキテクチャレビュー → `codex exec --sandbox read-only --config model_reasoning_effort="xhigh"`。`security-reviewer` エージェントの表面チェックを Codex の深い推論で補完する
 - **設計判断**: アーキテクチャ選定、モジュール構造、API設計、技術選定
 - **トレードオフ分析**: 「AとBどちらが良いか」という比較・評価
 - **複雑なデバッグ**: 通常の debugger エージェントで原因特定が困難な場合 → cmux Worker で Codex に深掘り依頼 (上記正規パス 1)
@@ -38,12 +38,12 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 ## 委譲方法
 
 - **Spec/Plan 批評**: `codex-plan-reviewer` エージェント（read-only、CREATE 後 → Implement 前で起動）
-- **セキュリティ分析**: `codex exec --skip-git-repo-check -m gpt-5.6-terra -p security "..."` — profiles.security で xhigh + read-only が自動適用
+- **セキュリティ分析**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..."`
 - **分析・レビュー (対話ラリー)**: cmux Worker — `scripts/runtime/launch-worker.sh --model codex --task "..."`
 - **コードレビュー**: `codex-reviewer` エージェント（read-only、他レビューアーと並列起動）
 - **手動レビュー**: `/codex:review` または `/codex:adversarial-review` スキル（公式プラグイン）
 - **直接呼び出し**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only "..." 2>/dev/null`
-- **レビュー/セキュリティは必ず xhigh**: セキュリティ分析には `-p security` を使用（profiles.security で xhigh + read-only が自動適用）。通常レビューは `--config model_reasoning_effort="xhigh"` を指定
+- **レビュー/セキュリティは必ず xhigh**: `--config model_reasoning_effort="xhigh"` を明示する。`-p <profile>` は使わない（後述）
 
 ## Codex 深掘り分析の使い分け
 
@@ -51,7 +51,7 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 |---|---|---|---|
 | Spec/Plan 作成後（M/L 規模） | `codex-plan-reviewer` | xhigh | Spec 批評 + Plan 批評 + リスク分析の統合レビュー |
 | コード完成後（S 規模以上） | `codex-reviewer` | xhigh | 7項目検査（6項目 + Plan 整合性）|
-| セキュリティ調査 | `codex exec -p security` | xhigh | 脆弱性の深掘り分析・攻撃ベクトル評価 |
+| セキュリティ調査 | `codex exec --sandbox read-only --config model_reasoning_effort="xhigh"` | xhigh | 脆弱性の深掘り分析・攻撃ベクトル評価 |
 | エラー発生時 | cmux Worker (`launch-worker.sh --model codex`) | high | 根本原因の深い分析。1-hop で観察可能 |
 
 ## 編集指示のベストプラクティス
@@ -145,6 +145,21 @@ Codex は instruction を「自然語テキストの連結」ではなく「型�
 | `+ --config project_doc_max_bytes=0` | 注入が消え、必要なら `rg` で自分で探しに行く挙動に変わる |
 
 **残存リスク**: `--sandbox read-only` のままなので、Codex は自分の判断で `AGENTS.md` を読みにいける。注入されなくなるだけで、読めなくなるわけではない。完全に断つには空ディレクトリを作業根 (`-C`) にして diff を prompt に埋め込む必要があるが、それはファイル横断のコンテキストを失う取引になるため採らない。
+
+### `-p <profile>` は使わない
+
+codex v0.144.6 では `[profiles.*]` テーブルと `--profile` の併用が**エラーになる**。profile は `$CODEX_HOME/<name>.config.toml` の別ファイル方式に移行した。
+
+```
+Error loading config.toml: --profile `security` cannot be used while
+~/.codex/config.toml contains legacy `profile = "security"` or
+[profiles.security] config; move those settings into
+~/.codex/security.config.toml and remove the legacy profile selector/table.
+```
+
+そのため `-p security` は使わず、`--sandbox read-only --config model_reasoning_effort="xhigh"` を毎回明示する。別ファイルへ移す選択肢は採らない: 置き場所が `$CODEX_HOME` (= `~/.codex/`、dotfiles が管理していない実体ファイル) になり、dotfiles 側から再現できないため。
+
+さらに公式 config reference は、**project-local な `.codex/config.toml` に置いた `notify` / `profile` / `profiles` / `model_providers` / `otel` を Codex が無視する**と明記している。リポジトリ内の `.codex/config.toml` にある `[profiles.*]` は、その意味でも起動時の設定源にならない。
 
 ---
 

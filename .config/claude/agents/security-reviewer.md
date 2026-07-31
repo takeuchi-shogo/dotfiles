@@ -204,7 +204,9 @@ severity 件数計算に乗らないため、宣言しないと緑で閉じる (
 表面チェックで潜在的な問題を検出した場合、Codex CLI の深い推論で補完する:
 
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.6-terra -p security \
+codex exec --skip-git-repo-check -m gpt-5.6-terra \
+  --sandbox read-only \
+  --config model_reasoning_effort="xhigh" \
   --config project_doc_max_bytes=0 "$(cat <<'PROMPT'
 Perform a deep security analysis of the recent git changes.
 First run: git diff HEAD~1 HEAD to understand the scope of changes.
