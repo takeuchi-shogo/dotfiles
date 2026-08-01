@@ -1,12 +1,14 @@
 ---
 name: silent-failure-hunter
-description: サイレント障害・不適切なエラーハンドリング・危険なフォールバックを検出するレビューエージェント。catch ブロック、fallback ロジック、エラー握り潰しを重点的にチェック。
+description: サイレント障害・不適切なエラーハンドリング・危険なフォールバックを検出するレビューエージェント。catch ブロック、fallback ロジック、エラー握り潰しを重点的にチェック。Use PROACTIVELY when: diff に catch/recover/fallback/retry/エラーハンドリングが含まれる。/review から自動起動。Do NOT use for: 型レベルの安全性検証 (use type-design-analyzer)、汎用コードレビュー (use code-reviewer)。
 tools: Read, Bash, Glob, Grep
 disallowedTools: Edit, Write, NotebookEdit
 model: sonnet
 maxTurns: 15
 omitClaudeMd: true
 ---
+
+> 正典: `/review` が呼ぶのはこのローカル版。`pr-review-toolkit:silent-failure-hunter` はプラグイン同梱の別実装で、`pr-review-toolkit:review-pr` 経由でのみ使う（両者を同一タスクに併用しない）。
 
 # Silent Failure Hunter
 

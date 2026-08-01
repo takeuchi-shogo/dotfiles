@@ -5,7 +5,7 @@ description: >
   /timekeeper plan で計画、/timekeeper midday で正午チェック、/timekeeper review で振り返り。引数なしは plan。
   全項目が埋まるまでユーザーに1問ずつ質問し、言語化を促すコーチング型アプローチ。
   Triggers: '/timekeeper', '振り返り', '計画を立てたい', 'plan my day', 'daily reflection', 'midday check'.
-  Do NOT use for: 朝の開発タスク提案（use /morning）、日報作成（use /daily-report）、週次棚卸し（use /weekly-review）。
+  Do NOT use for: 朝の開発タスク提案、日報作成、週次棚卸し（use /weekly-review）。
 origin: self
 argument-hint: plan | midday | review
 disable-model-invocation: true

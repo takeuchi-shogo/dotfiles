@@ -21,7 +21,7 @@ Python スクリプトを同経路で動かす場合、`python3` が macOS syste
 
 ```
 # CLI でスケジュール作成（概念）
-claude agents create --name "daily-health" --model claude-sonnet-4-6 --system-prompt "..."
+claude agents create --name "daily-health" --model claude-sonnet-5 --system-prompt "..."
 claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 ```
 
@@ -171,7 +171,7 @@ Daily Health Check を local launchd plist から **cloud Routines** に試験�
 # Routines 作成（2 時間間隔、Daily Health Check 相当）
 claude agents create \
   --name "daily-health-routines-pilot" \
-  --model claude-sonnet-4-6 \
+  --model claude-sonnet-5 \
   --system-prompt "$(cat scripts/runtime/daily-health-check-prompt.md)"
 
 AGENT_ID="<上記出力の id>"

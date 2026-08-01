@@ -82,6 +82,7 @@ in
     ".claude/skills"               = outLink ".config/claude/skills";
     ".claude/workflows"            = outLink ".config/claude/workflows";
     ".claude/references"           = outLink ".config/claude/references";
+    ".claude/output-styles"        = outLink ".config/claude/output-styles";
 
     # block 2b: memory-vec indexer source (個別ファイル symlink)。
     # skill-data/memory-vec/ は node_modules/index.db (ローカル生成物, gitignore) が

@@ -6,7 +6,6 @@ model: haiku
 memory: project
 maxTurns: 20
 effort: high
-skills: codex-review
 ---
 
 ## COMPLETION CONTRACT
@@ -51,7 +50,7 @@ Codex CLI の深い推論能力を活用してコードレビューを行うエ�
    ```
 
    exit 1 なら **Codex を呼ばずに停止**し、検出内容をユーザーに報告する。`git diff` に出ない untracked ファイルは scan されないが、レビュー対象自体が `git diff` なので範囲は一致する。
-4. codex-review スキルの手順に従い、Codex CLI でレビューを実行する:
+4. 以下の手順で Codex CLI でレビューを実行する:
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.6-terra \

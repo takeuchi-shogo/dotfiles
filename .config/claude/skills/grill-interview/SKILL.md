@@ -46,7 +46,7 @@ metadata:
 
 ### Step 3: 逐次質問
 
-`AskUserQuestion` で **1問ずつ** 質問する。Auto Mode 中は質問が短絡されインタビューが skip されるため、起動前に Auto Mode を OFF にする (mattpocock 2026-04-26 / Opus 4.7 で観測)。
+`AskUserQuestion` で **1問ずつ** 質問する。Auto Mode 中は質問が短絡されインタビューが skip されるため、起動前に Auto Mode を OFF にする (mattpocock 2026-04-26 観測)。
 
 以下のルールに従う:
 

@@ -39,7 +39,9 @@ metadata:
 
 ## Step 2: Dispatch — 並列投入
 
-Agent ツールで以下を **1メッセージに並列起動**:
+**実行手段**: cmux 環境ではデフォルトで `references/cmux-ecosystem.md` の hub-and-spoke パターン（`launch-worker.sh --model {codex,claude} --task ...` を並列起動 → `collect-result.sh` で回収）を使う。cmux 不在時は以下の直接実行にフォールバック。
+
+Agent ツールで以下を **1メッセージに並列起動**（cmux 不在時のフォールバック）:
 
 ### Codex（深い推論・リスク検出）
 

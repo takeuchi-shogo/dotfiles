@@ -5,7 +5,7 @@ last_reviewed: 2026-07-27
 
 # モデル別ルーティング
 
-主エージェント (メインセッションのモデル、現在: Opus 5) は判断・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
+主エージェント (メインセッションで選択された最上位 tier、現行: Opus 5 / Fable 5) は判断・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
 
 ## モデル役割 — source of truth
 
@@ -13,7 +13,7 @@ last_reviewed: 2026-07-27
 
 | 役割 | モデル | 担当 | 起動方法 |
 |------|--------|------|----------|
-| **メイン** | Opus 5 | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
+| **メイン** | セッション最上位 tier (現行: Opus 5 / Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
 | **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
 | **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
 | **実装 (別視点)** | Grok 4.5 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.5-high`) |
@@ -125,7 +125,7 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 | イベント | 影響範囲 | 備考 |
 |---------|---------|------|
 | **Model switch** (Opus ↔ Fable ↔ Sonnet ↔ Haiku) | 全 layer | 各 model が独自 cache を持つため、切替で 0 hit rate |
-| **`opusplan` mode** (plan=Opus / execute=Sonnet) | 全 layer | plan↔execute の都度 model switch が発生。長時間ループでは初回 miss が累積する。**メインが Opus 5 になった現在、plan 側は既にメインと同一モデル**なので opusplan の利得は execute の Sonnet 化のみ |
+| **`opusplan` mode** (plan=Opus / execute=Sonnet) | 全 layer | plan↔execute の都度 model switch が発生。長時間ループでは初回 miss が累積する。**メインが Opus 系 tier のとき、plan 側はメインと同一モデル**なので opusplan の利得は execute の Sonnet 化のみ |
 | **MCP server 接続/切断** | system layer | tool definitions が変わる |
 | **Tool deny / allow 変更** | system layer | tool 集合変化 |
 | **Claude Code 本体 upgrade** | system layer | base system prompt 変化 |
