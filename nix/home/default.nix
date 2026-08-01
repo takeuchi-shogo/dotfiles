@@ -7,6 +7,7 @@ let
   # nixpkgs 未収載の自前パッケージ。Go 1.26 必須 (buildGo126Module)。
   ghqr = pkgs.callPackage ../pkgs/ghqr.nix {};
   crit = pkgs.callPackage ../pkgs/crit.nix {};
+  terminal-browser = pkgs.callPackage ../pkgs/terminal-browser.nix {};
 in
 {
   home.username = userName;
@@ -47,6 +48,8 @@ in
     ghqr
     # 自前 derivation: AI エージェント出力のレビュー CLI (tomasz-tomczyk/crit)
     crit
+    # 自前 derivation: ターミナル内ブラウザ + agent-browser 互換 CLI (zenbu-labs)
+    terminal-browser
     # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
     herdr
   ];
@@ -66,6 +69,9 @@ in
     # Superset/Orca が hook を runtime 注入する実体ファイルで、symlink 化すると
     # 注入や /model 変更が消える (memory: project_claude_settings_live_drift)。
     # 新PC bootstrap は dotfiles/.config/claude/settings.json を手動 cp する。
+    # terminal-browser 同梱の agent skill (installer が ~/.agents/skills に置くのと同じ配線を nix で再現)
+    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/skill"; };
+
     ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
     ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";
     ".claude/statusline.sh"        = outLink ".config/claude/statusline.sh";
