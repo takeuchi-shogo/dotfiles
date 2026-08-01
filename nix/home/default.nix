@@ -41,6 +41,7 @@ in
     # 避けるため Nix home.packages に入れない (Intel brew /usr/local/bin/uv 事故の解消)。
     nb
     ripgrep
+    superfile           # TUI ファイルマネージャ (yorukot/superfile, コマンドは spf)
     tree-sitter
     yazi
     zoxide
