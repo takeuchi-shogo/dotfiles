@@ -6,7 +6,8 @@ Blocks dangerous MCP operations (e.g., destructive GitHub actions).
 
 Skill-level MCP scoping: when CLAUDE_SKILL is set and the skill
 declares `mcp-tools:` in its SKILL.md, warns on out-of-scope servers.
-For general tool scoping (non-MCP), see tool-scope-enforcer.py.
+General (non-MCP) tool scoping has no enforcer: tool-scope-enforcer.py was
+deleted 2026-06-21 without ever being registered.
 
 TODO(2026-05-06): WebFetch 経由 fetch も injection 観点で audit 対象に
 含める検討 (現在は MCP のみ)。詳細:

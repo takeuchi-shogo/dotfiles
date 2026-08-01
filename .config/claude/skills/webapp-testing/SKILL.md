@@ -4,6 +4,9 @@ description: >
   Toolkit for interacting with and testing local web applications using agent-browser CLI.
   Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
   Triggers: 'ブラウザテスト', 'UIテスト', 'webapp test', 'browser test', 'スクリーンショット確認', 'UI動作確認'.
+  Use PROACTIVELY at the Verify stage of any change that affects rendered UI or browser-side behavior
+  (component/page/CSS/client-side JS): open it in a real browser and confirm, instead of claiming done
+  from tests or a diff alone.
   Do NOT use for: ユニットテスト（use test-engineer agent）、API テスト（use Bash with curl/Hurl）。
 origin: self
 license: Complete terms in LICENSE.txt
@@ -15,7 +18,12 @@ metadata:
 
 Use **agent-browser** CLI for all browser automation. It provides an accessibility-tree-based workflow optimized for AI agents.
 
-**Prerequisites**: `agent-browser` installed globally (`npm install -g agent-browser && agent-browser install`)
+**Prerequisites**: `agent-browser` installed globally. このマシンの実体は `/opt/homebrew/lib/node_modules/agent-browser`
+なので、更新は `npm install -g --prefix /opt/homebrew agent-browser@latest`。素の `npm install -g` は mise の node prefix に
+入って PATH 上で二重化する（古い方が launchd 等の非 mise シェルに残る）。
+
+**バージョン同梱スキル**: `agent-browser skills list` / `skills get core` で CLI 本体と version-matched な使い方が読める。
+同じサイトを繰り返し叩くと分かった時点で `skills get derive-client`（ブラウザ通信を HTTP クライアントに落とす）へ移行する。
 
 ## Decision Tree: Choosing Your Approach
 

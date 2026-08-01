@@ -48,11 +48,25 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 | エラー → 修正マップ | [`references/error-fix-guides.md`](error-fix-guides.md) | 既知 error pattern |
 | 出力フォーマット (markdown / HTML / Mermaid / playground / excalidraw) | [`references/output-format-decision-table.md`](output-format-decision-table.md) | 「どのフォーマットで作るべきか」 |
 
+## 障害診断 系（どの層が障害を所有するか）
+
+修正に着手する前に「症状 → 直す層」を確定する。統一表は持たず、既存の診断資産へ routing する:
+
+| 症状 | 直す層 | 表の場所 |
+|---|---|---|
+| agent が operate できない (tool 不達 / hook 不発火 / 権限不足 / symlink 切れ) | harness (環境) | [`references/failure-taxonomy.md`](failure-taxonomy.md) の HFM-001〜004 + `skills/hook-debugger/SKILL.md` の Symptom→Action 表 |
+| ほぼ動くが不安定 (成功が不安定 / retry 暴走 / 完了の証拠なし) | loop (検証・stop 条件) | [`references/failure-taxonomy.md`](failure-taxonomy.md) の Circuit Breaker パターン + [`references/workflow-guide.md`](workflow-guide.md) の失敗時ループ |
+| ノード選択・分岐・handoff の構造問題 | graph (orchestration) | [`references/failure-taxonomy.md`](failure-taxonomy.md) の「Graph vs Prompt 修正診断」 |
+| 修復をどの**設定ファイル層**に書くか (上のランタイム層とは別軸) | references/rules/agents/skills/scripts/settings | [`references/repair-routing.md`](repair-routing.md) |
+
+> 出典: "Harness vs Loop vs Graph Engineering" (2026-08-02 absorb) の層別障害診断ルールを既存資産への routing に翻訳 / `docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md`
+
 ## Mechanism 系（instruction vs mechanism）
 
 | 決定 | 表の場所 | 概要 |
 |---|---|---|
-| hook vs instruction 境界 | [`docs/reports/determinism-boundary-analysis.md`](../../../docs/reports/determinism-boundary-analysis.md) | 決定論でやる vs プロンプトでやる |
+| hook vs instruction 境界 (概念) | [`docs/reports/determinism-boundary-analysis.md`](../../../docs/reports/determinism-boundary-analysis.md) | 決定論でやる vs プロンプトでやる。**`status: historical` — 2026-03-12 のスナップショットで artifact 名は古い。概念整理のみ参照する** |
+| hook 配線の現状 (実体) | `~/.claude/settings.json` の `hooks` + `tools/claude-hooks/src/` | どの hook がどのイベントで実際に走るか。手書きのミラーは drift するため置かない |
 | Skills vs Hooks vs Subagents | [`references/skill-invocation-patterns.md`](skill-invocation-patterns.md) | 使い分け原則 |
 | linter config protection | ADR-0004 (`docs/adr/0004-linter-config-protection.md`) | .eslintrc/.biome 等は保護対象 |
 | Routine prompt 6 要素 | [`references/routine-prompt-rubric.md`](routine-prompt-rubric.md) | role/task/process/output/error/constraints + Pre-flight Checklist |

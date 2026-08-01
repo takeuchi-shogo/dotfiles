@@ -86,6 +86,35 @@ T3 → T13 → T12 → (設計後) T14
 
 T13 は T3 の結果に依存する。T12 は独立なのでいつでもよい。
 
+## 進捗 (2026-08-02)
+
+| タスク | 状態 |
+|-------|------|
+| T3 | 完了 (PR #195) |
+| T13 | 完了 — 横断監査で 8 件訂正。詳細は下記 |
+| T12 | 完了 — `iterative-degradation-awareness.md` に「第 2 の劣化軸: 指示遵守の距離減衰」を追加 |
+| T14 | **Abandon** (PR #201)。単発 canary では論文の機序 (距離減衰) を構造的に測れない |
+
+### T13 監査の結果
+
+`docs/` / `references/` / `skills/` / `agents/` を横断し、enforcement を主張する記述を実ファイルと照合した。訂正 8 件:
+
+| 対象 | 実態 |
+|------|------|
+| `determinism-boundary-analysis.md` | 表 9 行のうち **7 行が settings.json 未登録**。`status: historical` に落とし、現行は settings.json と `tools/claude-hooks/src/` を直接見るよう明記 |
+| `decision-tables-index.md` | 上記を「概念のみ参照」と注記し、配線の実体を指す行を追加 |
+| `tool-scoping-guide.md` (2 箇所) | `tool-scope-enforcer.py` は未登録のまま 2026-06-21 削除済。「未実装」に訂正 |
+| `governance-map.md` | 同上。カバレッジ「完全」→「部分的」 |
+| `diagrams/security-layers.md` | 削除済スクリプトのノードを除去、`golden-check.py` → `claude-hooks post-edit` |
+| `hook-failure-policy.md` | `gaming-detector` の "(indirect)" 呼び出し元は存在しない |
+| `quality-gates.md` | 同上 |
+
+**却下 1 件**: sweep が挙げた `observability-signals.md` の「Change Surface violation は PreToolUse で block」は**該当行が実在せず**、誤帰属だった。
+
+### 積み残し (dead code — 削除は別判断)
+
+`golden-check.py` と `gaming-detector.py` はファイルが残るが呼び出し元がない。`references/harness-stability.md` の 30 日評価ルールに従うため、本タスクでは削除せず記録のみ。
+
 ## Validation-only Follow-up
 
 採用件数には数えないが、記事の framing が露出させた drift:
