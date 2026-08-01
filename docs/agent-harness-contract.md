@@ -131,7 +131,8 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
 | `golden-check.py` | 5分クールダウン/file:rule | 同一ファイル+ルールの重複警告を抑制 |
 | `checkpoint_manager.py` | 15編集 / 60%コンテキスト / 30分 | いずれかで自動チェックポイント（5分クールダウン） |
 | `suggest-compact.js` | 同一ファイル3回/10分 | 編集ループ検出。30/50編集でコンパクション提案 |
-| `completion-gate.py` | MAX_RETRIES=2 | Ralph Loop + テスト失敗を2回まで差し戻し |
+| `completion-gate.py` | MAX_RETRIES=2 | テスト失敗を2回まで差し戻し |
+| `completion-gate.py` | MAX_RALPH_ITERATIONS=7 | 未完了プランがある間は別カウンタで7回まで差し戻し。Stop hook は8回連続 block でランタイムに上書きされるため8未満に置く |
 | `completion-gate.py` | 10編集以上 | Review Gate: `/review` 実行を提案（アドバイザリー） |
 | `pre-commit-check.js` | パターンマッチ | `sk-`, `ghp_`, `AKIA` 等のシークレットをブロック |
 | `protect-linter-config.py` | ファイル名一致 | `.eslintrc*`, `biome.json` 等の変更をブロック |
