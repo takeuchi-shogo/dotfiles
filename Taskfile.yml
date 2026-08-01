@@ -154,6 +154,12 @@ tasks:
     generates:
       - target/release/claude-hooks
 
+  test:
+    desc: Run the harness Python test suites (mirrors .github/workflows/ci.yml)
+    cmds:
+      - uvx pytest scripts/tests/ -q
+      - uvx pytest .config/claude/scripts/tests/ -q
+
   validate:
     desc: Run all dotfiles validation checks
     cmds:

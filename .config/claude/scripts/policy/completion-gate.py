@@ -21,6 +21,7 @@ import os
 import pathlib
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -126,9 +127,34 @@ def _reset_ralph() -> None:
     pathlib.Path(RALPH_COUNTER_FILE).unlink(missing_ok=True)
 
 
+def _has_taskfile_test_target(cwd: str) -> bool:
+    """True if a Taskfile in cwd declares a top-level `test:` target."""
+    for name in ("Taskfile.yml", "Taskfile.yaml"):
+        path = os.path.join(cwd, name)
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path) as f:
+                if any(re.match(r"^ {2}test:\s*$", line) for line in f):
+                    return True
+        except OSError as exc:
+            print(
+                f"[completion-gate] {name} read failed: {exc}",
+                file=sys.stderr,
+            )
+    return False
+
+
 def _detect_test_command() -> str | None:
-    """Detect the appropriate test command for the current project."""
+    """Detect the appropriate test command for the current project.
+
+    An explicit Taskfile `test:` target outranks the inferred per-ecosystem
+    commands below: it is the project's own declared entry point.
+    """
     cwd = os.getcwd()
+
+    if shutil.which("task") and _has_taskfile_test_target(cwd):
+        return "task test"
 
     # Node.js — check for test script in package.json
     pkg_json = os.path.join(cwd, "package.json")

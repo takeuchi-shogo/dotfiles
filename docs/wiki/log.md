@@ -2199,7 +2199,7 @@
   V2 contradiction-mapping.md:54 の /improve ダッシュボード参照は退役済の可能性 /
   V3 feedback memory の enabledMcpjsonServers 記載に無効化済の alphaxiv が残存
 - レポート: docs/research/2026-07-31-karpathy-llm-wiki-full-guide-absorb-analysis.md
-||||||| parent of ffefb81c (🔒 fix(security-review): finding を証拠契約化し agent-instruction markdown を除外から外す)
+
 ## [2026-07-31] ingest | openai/codex-security (OpenAI 製セキュリティレビュー agent の OSS 実装)
 
 - ソース: https://github.com/openai/codex-security — 記事ではなく実装。npm CLI v0.1.4 + TS SDK + `_bundled_plugin/` に 13 skill / 共有 references / JSON schema / Python helper。定量エビデンスはゼロ (precision/recall なし、全て設計論)
@@ -2239,3 +2239,10 @@
 - 検証: `pytest .config/claude/scripts/tests/` — 320 passed。T1 の回帰テストは修正前コードで 2 件失敗 (`KeyError: 'decision'`) を確認してから修正 → 8 passed。T2 は隔離 HOME で実走行し `EXIT=1` + status file 生成を確認
 - 教訓: 1st-party の「削除しろ」は削減率でなく手順を読む (棄却する層を分けて記録する) / absorb は本体の採用より副産物のバグ検出で元が取れることがある (今回の最大の成果は dead config 1 件・silent failure 1 件・無測定の標準経路 1 件の発見) / 「Gap (存在しない)」判定は「既にやっているが測っていない」を見落とす (概念名の不在を実装の不在と読み違えない)
 - レポート: docs/research/2026-07-31-boris-cherny-yc-ablation-absorb-analysis.md
+
+## [2026-07-31] ingest | HANDBOOK.md: A Benchmark for Long-Context Agentic Instruction Following
+
+- ソース: arXiv:2607.25398 (https://arxiv.org/abs/2607.25398)
+- 判定: Gap 3件 (T1/T3/T14), Partial 6件 (T2/T4/T5/T7/T12/T13), Already 4件 (T3以外の強化不要分/T6/T9/T11), N/A 1件 (T10)
+- 取り込み: T3 completion-gate の未配線修正 (実装済み) / T13 determinism doc の stale 訂正 / T12 decaying retrieved source の機序モデル追記 / T14 縮小版 adversarial canary
+- 分析: docs/research/2026-07-31-handbook-md-instruction-following-absorb-analysis.md
