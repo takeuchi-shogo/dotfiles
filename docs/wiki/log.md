@@ -2225,3 +2225,12 @@
 - 判定: Gap 3件 (T1/T3/T14), Partial 6件 (T2/T4/T5/T7/T12/T13), Already 4件 (T3以外の強化不要分/T6/T9/T11), N/A 1件 (T10)
 - 取り込み: T3 completion-gate の未配線修正 (実装済み) / T13 determinism doc の stale 訂正 / T12 decaying retrieved source の機序モデル追記 / T14 縮小版 adversarial canary
 - 分析: docs/research/2026-07-31-handbook-md-instruction-following-absorb-analysis.md
+
+## [2026-08-02] ingest (light Phase 2) | Agent Harness Engineering vs Loop Engineering vs Graph Engineering
+
+- ソース: @LunarResearcher (ユーザー貼り付け全文、CTA 付き listicle)
+- 理由: harness/loop/graph era 系統 3 本目、SATURATED-borderline (delta=1) → user 選択 light-phase2
+- 判定: 9 手法中 rehash 8 (named prior 照合済、台帳は分析レポート参照) / ambiguous 1 (#6 層別障害診断ルール) → Partial
+- 取り込み: 採用 1 件 (T1, S) — `decision-tables-index.md` に「障害診断 系」セクション (症状→harness/loop/graph 層の routing、既存資産リンクのみ) + 未リンクだった `repair-routing.md` を別軸注記つきで索引化
+- 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
+- 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
