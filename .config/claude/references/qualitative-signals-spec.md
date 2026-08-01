@@ -35,7 +35,7 @@ last_reviewed: 2026-04-23
   "skill_name": "example-skill",
   "eval_id": 0,
   "iteration": 1,
-  "evaluator_model_version": "claude-opus-4-7",
+  "evaluator_model_version": "claude-opus-5",
   "signals": {
     "ambiguity": [
       {

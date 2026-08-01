@@ -1,6 +1,6 @@
 ---
 name: test-analyzer
-description: テストカバレッジの質と網羅性を分析するレビューエージェント。新機能のテスト漏れ、エッジケースの欠落、テスト設計の問題を検出。
+description: テストカバレッジの質と網羅性を分析するレビューエージェント。新機能のテスト漏れ、エッジケースの欠落、テスト設計の問題を検出。Use PROACTIVELY when: 新機能実装後 / バグ修正のテスト追加時 / PR にテストファイルの変更が含まれるとき。/review から自動起動。Do NOT use for: 実装コード自体のエッジケース検出 (use edge-case-hunter)、汎用コードレビュー (use code-reviewer)。
 tools: Read, Bash, Glob, Grep
 disallowedTools: Edit, Write, NotebookEdit
 model: sonnet

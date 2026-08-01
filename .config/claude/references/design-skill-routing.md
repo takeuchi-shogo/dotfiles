@@ -1,3 +1,8 @@
+---
+status: reference
+last_reviewed: 2026-08-01
+---
+
 # Design / Frontend Skill Routing
 
 design / UI / frontend 関連 skill の使い分けマトリクス。

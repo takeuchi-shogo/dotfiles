@@ -6,7 +6,7 @@ description: >
   週次または開発サージ後に実行。
   Triggers: 'アーキテクチャ改善', 'モジュール改善', 'codebase architecture',
   'deep module', '削除テスト', 'deepening', 'コード構造改善', 'module depth'.
-  Do NOT use for: 機能実装（use /rpi）、リファクタリング実行（use /refactor-session）、
+  Do NOT use for: 機能実装（use /rpi）、リファクタリング実行、
   コード品質監査（use /audit）。
 origin: self
 allowed-tools: Read, Glob, Grep, Bash, Agent, AskUserQuestion

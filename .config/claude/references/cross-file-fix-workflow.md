@@ -1,7 +1,9 @@
 ---
-status: reference
-last_reviewed: 2026-04-23
+status: deprecated
+last_reviewed: 2026-08-01
 ---
+
+> deprecated: 前提の cross-file-reviewer「FIX モード」は廃止済み (2026-08-01 に本体から記述削除)。参照元ゼロ。復活させる場合は本文の FIX モード前提を要更新。
 
 # Cross-File Fix Workflow
 
