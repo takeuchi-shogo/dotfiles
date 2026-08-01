@@ -1,13 +1,13 @@
 ---
 name: github-pr
-description: "GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。未解決コメント検出 → 修正 → 再レビューの cycle を回す。Triggers: 'PR セルフレビュー', 'PR確認', 'PR チェック', 'コメント対応', 'コメント返す', 'マージしていい', 'マージ判断', 'PR review', 'merge check', 'unresolved コメント', 'レビューに返信'. Do NOT use for: PR作成（use /pull-request or /create-pr-wait）、コードレビュー（use /review）、CI修正（use /create-pr-wait）。"
+description: "GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。未解決コメント検出 → 修正 → 再レビューの cycle を回す。Triggers: 'PR セルフレビュー', 'PR確認', 'PR チェック', 'コメント対応', 'コメント返す', 'マージしていい', 'マージ判断', 'PR review', 'merge check', 'unresolved コメント', 'レビューに返信'. Do NOT use for: PR作成（use /pull-request）、コードレビュー（use /review）、CI修正（`gh pr checks --watch` で監視し手動修正）。"
 origin: self
 user-invocable: true
 allowed-tools: Bash(*gh-unresolved-threads*), Bash(gh pr *), Bash(gh api graphql *)
 metadata:
   pattern: pipeline
   chain:
-    upstream: ["/pull-request (PR作成)", "/create-pr-wait (CI待機)"]
+    upstream: ["/pull-request (PR作成)"]
     downstream: ["/commit (修正コミット)"]
 ---
 
@@ -17,7 +17,7 @@ PR品質を繰り返しチェックし、マージ判断を行う。
 
 ## 開発フローとスキルの役割
 
-1. 実装・push・PR作成（`/pull-request` or `/create-pr-wait`）
+1. 実装・push・PR作成（`/pull-request`）
 2. **セルフレビュー** → ready にしてレビュー依頼
 3. レビュワーからコメント → **レビューコメント対応**
 4. **セルフレビュー**（都度実行）
@@ -128,7 +128,6 @@ follow-up CL の **作成自体は義務**、**期限 (3 営業日以内推奨)*
 ## 関連スキル
 
 - `/pull-request` — PR作成
-- `/create-pr-wait` — PR作成 + CI監視
 - `/review` — コード変更のレビュー（コミット前）
 - `github-pr`（本スキル）— PR提出後のライフサイクル管理
 

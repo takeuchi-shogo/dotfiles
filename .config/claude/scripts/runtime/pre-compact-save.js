@@ -189,9 +189,7 @@ if (compactionCounter.count >= 4) {
 	guidance.push(
 		`### ⚠ Session Health Warning: ${compactionCounter.count} 回目の圧縮です`,
 	);
-	guidance.push(
-		"- Opus 4.6 compaction 品質は 84% だが、4回以上の圧縮はコンテキスト品質の劣化リスクが高い",
-	);
+	guidance.push("- 4回以上の圧縮はコンテキスト品質の劣化リスクが高い");
 	guidance.push(
 		"- /checkpoint で状態を保存し、新しいセッションへの移行を強く推奨",
 	);

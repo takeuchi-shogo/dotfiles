@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import re
 import shlex
 import shutil
@@ -34,6 +35,7 @@ MAX_RETRIES = 2
 COMPLETION_MODE = os.environ.get("COMPLETION_MODE", "strict")
 COUNTER_DIR = os.path.join(tempfile.gettempdir(), "claude-completion-gate")
 COUNTER_FILE = os.path.join(COUNTER_DIR, "retries")
+RALPH_COUNTER_FILE = os.path.join(COUNTER_DIR, "ralph-iterations")
 
 # Ralph Loop — active plan detection
 # Ref: "Long-Running Claude" — Ralph Loop with success criteria + max iterations
@@ -46,7 +48,7 @@ PLAN_DIRS = [
 # Set COMPLETION_PROMISE to a string the agent must output to signal true completion
 COMPLETION_PROMISE = os.environ.get("COMPLETION_PROMISE", "")
 # Max iterations before Ralph Loop allows stop (prevents infinite loops)
-MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "10"))
+MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "7"))
 
 # Harness Review Gate — mandatory review for harness file changes
 # Path markers that identify harness files (matched against git diff output)
@@ -105,6 +107,24 @@ def _reset_retries() -> None:
         os.remove(COUNTER_FILE)
     except FileNotFoundError:
         pass
+
+
+def _get_ralph_count() -> int:
+    try:
+        with open(RALPH_COUNTER_FILE) as f:
+            return int(f.read().strip())
+    except (FileNotFoundError, ValueError):
+        return 0
+
+
+def _set_ralph_count(n: int) -> None:
+    os.makedirs(COUNTER_DIR, exist_ok=True)
+    with open(RALPH_COUNTER_FILE, "w") as f:
+        f.write(str(n))
+
+
+def _reset_ralph() -> None:
+    pathlib.Path(RALPH_COUNTER_FILE).unlink(missing_ok=True)
 
 
 def _has_taskfile_test_target(cwd: str) -> bool:
@@ -1345,8 +1365,16 @@ def main() -> None:
 
     retries = _get_retry_count()
 
+    try:
+        incomplete = _find_incomplete_plan()
+    except (OSError, UnicodeError):
+        incomplete = None
+
+    if not incomplete:
+        _reset_ralph()
+
     # Safety valve: if we've hit max retries, allow stop (or handback)
-    if retries >= MAX_RETRIES:
+    if retries >= MAX_RETRIES and not incomplete:
         _reset_retries()
         if COMPLETION_MODE == "graduated":
             report = _generate_handback_report()
@@ -1365,24 +1393,24 @@ def main() -> None:
         return
 
     # --- Ralph Loop: check for incomplete active plans ---
-    incomplete = _find_incomplete_plan()
     if incomplete:
         plan_name, pending, success_criteria = incomplete
+        ralph_iteration = _get_ralph_count() + 1
 
-        # Ralph Loop iteration limit — prevent infinite loops
-        ralph_iteration = retries + 1
         if ralph_iteration > MAX_RALPH_ITERATIONS:
+            harness_block = _check_harness_review_gate()
+            if harness_block:
+                json.dump(harness_block, sys.stdout)
+                return
+            _reset_ralph()
             _reset_retries()
-            json.dump(
-                {
-                    "decision": "allow",
-                    "reason": (
-                        f"[Ralph Loop] max iterations "
-                        f"({MAX_RALPH_ITERATIONS}) 到達。停止を許可。"
-                    ),
-                },
-                sys.stdout,
+            print(
+                "[Completion Gate] [Ralph Loop] max iterations "
+                f"({MAX_RALPH_ITERATIONS}) 到達。停止を許可。",
+                file=sys.stderr,
             )
+            if COMPLETION_MODE == "graduated":
+                json.dump({"systemMessage": _generate_handback_report()}, sys.stdout)
             return
 
         shown = pending[:5]
@@ -1409,7 +1437,8 @@ def main() -> None:
             ]
         )
 
-        _set_retry_count(retries + 1)
+        _set_ralph_count(ralph_iteration)
+        _reset_retries()
         json.dump(
             {"decision": "block", "reason": "\n".join(ctx_parts)},
             sys.stdout,

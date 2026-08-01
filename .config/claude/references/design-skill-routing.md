@@ -37,7 +37,7 @@ routing degradation を防ぐため、Triggers と Do NOT use for を grid 化�
 | Skill | install name | Trigger 領域 | Do NOT use for | 推奨 agent |
 |------|-------------|------------|---------------|----------|
 | `taste-skill` (v2) | `design-taste-frontend` | Landing / Portfolio / Marketing anti-slop (vibe 不明時の default) | Dashboard, data tables, multi-step product UI, design system 体系設計 (use ui-ux-pro-max), existing UI overhaul (use redesign-skill) | Claude Code / Codex |
-| `redesign-skill` | `redesign-existing-projects` | Full UI overhaul (audit + restructure) | New greenfield, targeted polish (use impeccable) | Claude Code / Codex |
+| `redesign-skill` | `redesign-skill` | Full UI overhaul (audit + restructure) | New greenfield, targeted polish (use impeccable) | Claude Code / Codex |
 | `brandkit` | `brandkit` | Logo / identity / brand board 画像生成 | Code 生成、UI 実装 | ChatGPT Images / Codex image / MCP |
 | `design-md-init` | (dotfiles 直置き) | プロジェクト root に DESIGN.md 配置 (grill-me 47 branch + awesome-design-md exemplar) | 既存 DESIGN.md の改修、greenfield UI 実装そのもの | Claude Code |
 | `output-skill` | `full-output-enforcement` | Truncation 防止、placeholder 禁止 enforce | 普通の短いタスク | All agents |

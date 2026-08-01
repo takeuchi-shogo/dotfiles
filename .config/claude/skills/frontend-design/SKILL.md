@@ -3,7 +3,7 @@ name: frontend-design
 description: >
   Build or refine frontend interfaces with distinctive design (polish/distill/critique/energize/calm)、generic AI 美学を避ける。
   Triggers: 'UI作って', 'ページ作成', 'コンポーネント', 'デザイン改善', 'UI磨いて', 'polish', 'distill', 'UIがダサい', 'AI臭い'.
-  Do NOT use for: UIレビュー (use /web-design-guidelines)、パフォーマンス (use /react-best-practices)、デザインシステム/a11y/キーボード (use /ui-ux-pro-max)。
+  Do NOT use for: パフォーマンス (use /react-best-practices)、デザインシステム/a11y/キーボード (use /ui-ux-pro-max)。
 origin: self
 license: Complete terms in LICENSE.txt
 metadata:

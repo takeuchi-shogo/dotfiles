@@ -70,7 +70,7 @@ $ARGUMENTS
 
 | 仕組み | 役割 | Ralph Loop との違い |
 |--------|------|-------------------|
-| `completion-gate.py` | Stop 時のテスト実行ゲート | 1回きり。ループは MAX_RETRIES=2 |
+| `completion-gate.py` | Stop 時のテスト実行ゲート | テスト差し戻しは MAX_RETRIES=2。未完了プランがある間は別カウンタで MAX_RALPH_ITERATIONS=7 |
 | `ralph-loop` プラグイン | コマンド → Agent の反復ループ | 100回までループ可能。レビューア Agent 統合 |
 | `/loop` スキル | 定期的なプロンプト反復実行 | 時間間隔ベース。品質基準での脱出ではない |
 
