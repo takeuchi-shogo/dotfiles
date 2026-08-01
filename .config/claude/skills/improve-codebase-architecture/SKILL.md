@@ -114,7 +114,7 @@ disable-model-invocation: true
 
 副作用 (inline):
 
-- ドメイン用語が `docs/glossary.md` になければ ubiquitous-language skill 経由で追記提案
+- ドメイン用語がプロジェクトの glossary/用語集ファイル（例: `docs/glossary.md`）になければ直接追記を提案
 - ユーザーが load-bearing な理由で却下したら **ADR 候補を示し `/decision` skill 起動を提案** (このスキル自身は ADR.md を Write しない)
 - 代替インターフェースを探りたいなら [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md) へ (**デフォルト 1 案、ユーザーが複数案要求した時のみ 3-4 並列**)
 

@@ -6,7 +6,6 @@ model: haiku
 memory: project
 maxTurns: 20
 effort: high
-skills: codex-review
 ---
 
 ## COMPLETION CONTRACT
@@ -43,7 +42,7 @@ Codex CLI の深い推論能力を活用してコードレビューを行うエ�
 
 1. `git diff --stat` で変更の概要を把握する
 2. 変更されたファイルを Read で確認し、コンテキストを理解する
-3. codex-review スキルの手順に従い、Codex CLI でレビューを実行する:
+3. 以下の手順で Codex CLI でレビューを実行する:
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.6-terra \

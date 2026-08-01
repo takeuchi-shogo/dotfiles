@@ -12,7 +12,7 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 
 | 決定 | 表の場所 | 概要 |
 |---|---|---|
-| モデル選択 (役割: メイン=Opus/設計=Fable/実装=Sonnet/抽出=Haiku + 外部: Codex/Gemini/Cursor(Grok)) | [`references/model-routing.md`](model-routing.md) | 役割表 (Claude 内) + 外部モデル表 |
+| モデル選択 (役割: メイン=セッション最上位モデル/設計=Fable/実装=Sonnet/抽出=Haiku + 外部: Codex/Gemini/Cursor(Grok)) | [`references/model-routing.md`](model-routing.md) | 役割表 (Claude 内) + 外部モデル表 |
 | cwd-aware skill 起動 | [`references/cwd-routing-matrix.md`](cwd-routing-matrix.md) | 作業ディレクトリごとの skill 自動発火 |
 | 委譲 vs メイン実行 | [`references/subagent-delegation-guide.md`](subagent-delegation-guide.md) | subagent へ逃がす閾値 |
 | 実装委譲 (Workflow) | [`references/model-routing.md`](model-routing.md) の実装委譲判断表 | 複数ファイル + verify 込み → `Workflow({name:'delegate-implementation'})` |

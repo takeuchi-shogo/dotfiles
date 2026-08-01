@@ -29,10 +29,10 @@ Skills whose domains overlap heavily with the base model's knowledge. These are 
 
 - `react-best-practices`
 - `security-scan`
-- `graphql-expert`
+- `buf-protobuf`
 - `ast-grep-practice`
-- `vercel-composition-patterns`
-- `web-design-guidelines`
+- `frontend-design`
+- `ui-ux-pro-max`
 
 ### Batch 2 — Competing Pairs (trigger conflicts)
 
