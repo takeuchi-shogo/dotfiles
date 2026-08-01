@@ -58,8 +58,30 @@ metadata:
 | 4: Plan | Opus → Sonnet | プラン策定 → レポート書き出し委譲 |
 | 5+: Wiki/Obsidian/Log | Sonnet BG | 書き込み作業を並列委譲 |
 
-large-context absorb で Codex CLI が 14 分程度 no-progress になった場合は、Codex 側を失敗として記録し、Gemini-only の Phase 3 fallback に進んでよい。fallback 理由と未取得の Codex 批評は分析レポートに明記する。
-ただし最終 assistant message が無くても、worker 画面/stdout/検索ログに実ファイル発見や照合結果が残っていれば、Phase 2 判定の補正材料として採用する。Codex 側は未完了扱いのまま、どの footprint を使ったかをレポートに明記する。
+### Codex 呼び出しが返らないときの切り分け (経路ごとに違う)
+
+**「Codex が応答しなかった」と書く前に、どの経路で何秒待ったかを確定させる。**
+
+| 経路 | 上限 | 打ち切りの意味 |
+|------|------|--------------|
+| Bash tool から `codex exec` | **`timeout` は 600000ms が上限**。超える値は黙って切り捨て | ~10 分での kill は **自分の設定が原因**。Codex 側の失敗ではない |
+| cmux Worker (`launch-worker.sh`) | Bash の上限に縛られない | 長時間の no-progress を観測できるのはこちら |
+
+- Bash 経由で切れた場合、Codex を失敗として記録する前に **プロンプトを短くして再試行**する。
+  巨大な diff を貼らず、commit 済みならブランチを読ませる (`git diff master..HEAD` を自分で読ませる) と大幅に速くなる
+- cmux Worker で 14 分程度 no-progress になった場合は、Codex 側を失敗として記録し、Gemini-only の Phase 3 fallback に進んでよい。fallback 理由と未取得の Codex 批評は分析レポートに明記する
+- 最終 assistant message が無くても、worker 画面/stdout/検索ログに実ファイル発見や照合結果が残っていれば、Phase 2 判定の補正材料として採用する。Codex 側は未完了扱いのまま、どの footprint を使ったかをレポートに明記する
+
+### Gate 結果の記録 (verbatim 必須)
+
+Phase 2.5 の Codex 批評は `/review` skill の外で走るため、verdict を記録する規律がここにしかない。
+
+- **判定は reviewer の出力行をそのまま貼る。** 「BLOCK → 修正して PASS」のような自己要約に置き換えない
+- **受け取っていない判定を成果物に書かない。** 修正しただけの段階で PASS と書くのは捏造にあたる。
+  再レビューが未実施なら「未取得」と書く
+- 呼び出しが失敗したときは、**ツール出力が実際に言っている文字列**を根拠に原因を書く。
+  出力が `Command timed out` としか言っていないなら「相手が no-progress だった」とは書けない
+  (2026-08-01 に実際にやった: memory `feedback_no_self_favorable_unverified_claims.md`)
 
 ## Phase 1: Extract（要点抽出） [Haiku / Gemini に委譲]
 
@@ -568,6 +590,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 | **Opus が Extract や探索を自分でやる** | **定型作業は Haiku/Sonnet に委譲する。Opus は判断・統合・ユーザー対話に集中** |
 | **subagent (Sonnet BG / general-purpose) から `Skill` tool で obsidian skill を呼び出す** | **実測で 600s no progress stall (2026-04-19)。skill ネスト呼び出しは Opus main session で実行する。Phase 5.6 Obsidian Bridge は Opus 直接実行が原則** |
 | **trusted 外ドメイン (Zenn/Qiita/note/Wikipedia 等) で WebFetch を直接使う** | **Claude Code v2.1.126 の WebFetch は内部 Haiku 要約 + 100k chars truncation がある (`docs/research/2026-05-06-webfetch-haiku-summary-absorb-analysis.md`)。引用 faithfulness が壊れるため `obsidian:defuddle` / Jina Reader / Gemini grounding に切替。詳細: `references/web-fetch-policy.md`** |
+| **ツール失敗の原因を、出力が言っていない因果で断定する** | **`Command timed out` を「Codex が no-progress」と書き換えるなど、自分のミスを相手側の障害として記録する事故が実際に起きた (2026-08-01、分析レポートと PR 本文に残した)。Bash の `timeout` は 600000ms が上限で超過分は無言で切り捨てられる。原因を書く前にツール出力の該当行を verbatim で読み返す。断定できないなら「未確認」と書く** |
 | **Phase 1.5 (Saturation Gate) をスキップする** | **同分野 absorb 3 件目以降の永続ループを防ぐ唯一の mechanism。Phase 1 完了後に必ず実行する。判定基準: `references/topic-family-saturation.md`** |
 | **「似ているから」と類似度だけで rehash 判定し delta=0 で skip する** | **skip は「事実 (per-method 照合済み)」なら許容するが「似ている」という主観では不可。rehash には `matched_prior` (prior レポートのファイル名 + 手法名) の名指しを必須にし、名指しできない手法は novel に倒す。skip ログに照合台帳を残し「楽な skip」を後から検証可能にする (Step 3.5 / Step 6)** |
 | **Pass 1 で Sonnet が返した「強化余地メモ」を Pass 2 で検証せず採用候補に昇格させる** | **Sonnet は generic feature noun (例: "Extended Thinking", "Bulk Processing", "Session History") から実装機会を想像で膨らませる傾向がある (Gap fabrication)。Pass 2 で必ず「記事原文に specific 提案があるか」を引用照合し、Sonnet imagination は除外する。Pass 1 出力の「強化余地メモ」は Pass 2 で照合される候補リストであり、line 54 の Pass 2「強化判断」(Opus 委譲不可) で確定する。詳細: `memory/feedback_absorb_sonnet_imagination.md`** |

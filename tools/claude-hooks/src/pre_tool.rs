@@ -15,7 +15,34 @@ pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
             "一括追加は禁止です。ファイルを個別に確認し、必要なものだけ追加してください",
         );
     }
+    if let Some(msg) = check_timeout_clamp(data) {
+        crate::io::context("PreToolUse", &msg);
+    }
     Ok(())
+}
+
+/// Bash tool の timeout 上限。これを超える指定は黙って切り捨てられる。
+const BASH_TIMEOUT_MAX_MS: u64 = 600_000;
+
+/// 上限超えの timeout を警告する。
+///
+/// 切り捨ては無言なので、~10 分での kill を「呼び出し先が応答しなかった」と
+/// 誤って記録する事故が起きる (2026-08-01 に実際に発生し、Codex の障害として
+/// 分析レポートと PR 本文に書いてしまった)。
+fn check_timeout_clamp(data: &serde_json::Value) -> Option<String> {
+    let requested = data["tool_input"]["timeout"].as_u64()?;
+    if requested <= BASH_TIMEOUT_MAX_MS {
+        return None;
+    }
+    Some(format!(
+        "[timeout clamp] 指定 {}ms は上限 {}ms に切り捨てられます。\
+         約 {} 分で打ち切られた場合、原因は呼び出し先ではなくこの設定です。\
+         「応答なし」「ハング」と記録する前に、まず切り捨てを疑ってください。\
+         本当に長時間動かすなら run_in_background を使ってください。",
+        requested,
+        BASH_TIMEOUT_MAX_MS,
+        BASH_TIMEOUT_MAX_MS / 60_000
+    ))
 }
 
 // ── pre-edit: protect-linter-config + search-first-gate ─────────────
@@ -479,4 +506,41 @@ pub fn pre_commit(raw: &str, data: &serde_json::Value) -> Result<(), String> {
 
     crate::io::passthrough(raw);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn input(timeout: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "tool_input": { "command": "sleep 1", "timeout": timeout } })
+    }
+
+    #[test]
+    fn timeout_over_the_cap_warns() {
+        let msg = check_timeout_clamp(&input(serde_json::json!(960_000))).unwrap();
+        assert!(msg.contains("960000"));
+        assert!(msg.contains("600000"));
+    }
+
+    #[test]
+    fn timeout_at_the_cap_is_silent() {
+        assert!(check_timeout_clamp(&input(serde_json::json!(600_000))).is_none());
+    }
+
+    #[test]
+    fn timeout_under_the_cap_is_silent() {
+        assert!(check_timeout_clamp(&input(serde_json::json!(120_000))).is_none());
+    }
+
+    #[test]
+    fn missing_timeout_is_silent() {
+        let data = serde_json::json!({ "tool_input": { "command": "sleep 1" } });
+        assert!(check_timeout_clamp(&data).is_none());
+    }
+
+    #[test]
+    fn non_numeric_timeout_is_silent() {
+        assert!(check_timeout_clamp(&input(serde_json::json!("960000"))).is_none());
+    }
 }
