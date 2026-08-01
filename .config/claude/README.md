@@ -204,7 +204,6 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 | `skill-security-scan.py` | スキルセキュリティスキャン |
 | `skill-tracker.py` | スキル利用追跡 |
 | `stagnation-detector.py` | 停滞検知 |
-| `tool-scope-enforcer.py` | ツールスコープ制限 |
 
 ### runtime/ スクリプト一覧 (42個 — 代表例)
 

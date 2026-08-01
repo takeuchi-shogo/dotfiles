@@ -1,7 +1,23 @@
+---
+status: historical
+date: 2026-03-12
+last_validated: 2026-08-02
+---
+
 # The Determinism Boundary × dotfiles リポジトリ 深層分析
 
 **日付**: 2026-03-12
 **契機**: Cornelius "Agentic Systems: The Determinism Boundary" 記事の調査
+
+> [!warning] この文書は 2026-03-12 時点のスナップショットで、現行 enforcement の証拠には使えない
+>
+> 2026-08-02 の監査で、下記「決定論的に保証されているもの」の表 9 行のうち **7 行が `settings.json` に登録されていない**ことを確認した。Python hook は `tools/claude-hooks/` (Rust) に統合され、`protect-linter-config.py` は削除済み (2026-06-10)、`golden-check.py` はファイルこそ残るが呼び出し元がない。現役は `completion-gate.py` (Stop) と `session-learner.py` (Stop) の 2 つだけ。
+>
+> さらに `completion-gate.py` の「テスト実行」保証は、2026-08-02 まで **dotfiles 自身では成立していなかった** (`_detect_test_command()` がこのリポジトリの test を検出できず advisory 分岐に落ちていた)。
+>
+> **現行の hook 配線を知りたい場合は `~/.claude/settings.json` と `tools/claude-hooks/src/` を直接読むこと。** 本文書の価値は決定論スペクトラムと硬化軌道 (Documentation → Skill → Hook) という概念整理にあり、個々の artifact 名にはない。
+>
+> 表を現行に書き換え直さないのは意図的だ。手書きの表が `settings.json` をミラーする構造そのものが drift の原因で、書き直しても同じ経路で再び古くなる。
 
 ---
 

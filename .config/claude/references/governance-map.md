@@ -14,7 +14,7 @@ last_reviewed: 2026-04-23
 |---------|------------|-------------------|-----------|
 | **危険シェルコマンド** (rm -rf, mkfs, dd) | Critical | CC 本体 bashSecurity (22種) + `docker-safety.py` | 完全 |
 | **シークレット検出** (API key, token, password) | Critical | `prompt-injection-detector.py` (部分), Lefthook pre-commit | 部分的 — output 側の検出なし |
-| **パス走査・改ざん** (../, symlink attack) | High | `claude-hooks` pre-edit (protect-linter-config), `tool-scope-enforcer.py` | 完全 |
+| **パス走査・改ざん** (../, symlink attack) | High | `claude-hooks` pre-edit (protect-linter-config 機能) | 部分的 — `tool-scope-enforcer.py` は未登録のまま 2026-06-21 に削除済 (2026-08-02 訂正) |
 | **ネットワーク流出** (curl\|bash, reverse shell) | Critical | CC 本体 bashSecurity | 完全 |
 | **権限昇格** (sudo, chmod 777) | High | CC 本体 bashSecurity | 完全 |
 | **設定改ざん** (.eslintrc, CI config) | Medium | `claude-hooks` pre-edit (protect-linter-config) | 完全 |
