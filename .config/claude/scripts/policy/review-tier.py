@@ -77,6 +77,22 @@ _DEPENDENCY_BASENAMES = frozenset(
     }
 )
 
+_INSTRUCTION_MD_BASENAMES = frozenset(
+    {"CLAUDE.md", "AGENTS.md", "PLANS.md", "SKILL.md"}
+)
+
+_INSTRUCTION_MD_DIRS = (
+    ".config/claude/",
+    ".claude/",
+    ".codex/",
+    ".agents/",
+    ".cursor/",
+    ".github/agent-config/",
+    "templates/",
+    "docs/playbooks/",
+    "docs/wiki/",
+)
+
 # ---------------------------------------------------------------------------
 # Core classification helpers
 # ---------------------------------------------------------------------------
@@ -93,9 +109,21 @@ def _is_dependency_file(path: str) -> bool:
     return False
 
 
+def _is_agent_instruction_md(path: str) -> bool:
+    """Return True if *path* is Markdown an agent reads as instructions."""
+    norm = "/" + path.replace("\\", "/").lstrip("/")
+    if os.path.basename(norm) in _INSTRUCTION_MD_BASENAMES:
+        return True
+    if norm.endswith(".prompt.md"):
+        return True
+    return any("/" + d in norm for d in _INSTRUCTION_MD_DIRS)
+
+
 def _is_docs_only(path: str) -> bool:
-    """Return True if *path* is documentation (Markdown extension)."""
-    return path.endswith(".md")
+    """Return True if *path* is prose documentation, not agent instructions."""
+    if not path.endswith(".md"):
+        return False
+    return not _is_agent_instruction_md(path)
 
 
 def _is_test_only(path: str) -> bool:

@@ -10,6 +10,8 @@ description: Run OWASP Top 10 security review on recent code changes
 シニアセキュリティエンジニアとして、**実証可能で actionable な脆弱性のみ**を報告する。
 理論的な懸念や style 問題は出さない。FP > TP は failure mode。
 
+ただし**既存の安全チェックを削除・弱体化する変更は、新しい攻撃経路を示せなくても報告する**（認証・認可・入力検証・sanitize・署名検証・境界チェックの除去や条件の緩和）。除去された防御は「理論的な懸念」ではなく、それ自体が actionable な finding にあたる。この場合の Proof は攻撃の再現ではなく、**削除前後の diff とその防御が守っていた境界**を示すことで足りる。
+
 ## Current Repository State
 
 - Git status: !`git status --porcelain`
@@ -130,6 +132,7 @@ description: Run OWASP Top 10 security review on recent code changes
 9. **ドキュメントファイル (`*.md`)** 内の脆弱性 — ただし **除外できるのは agent の context に戻らない純散文だけ** (`docs/research/` / `docs/adr/` / `docs/archive/` / `docs/agentic-ai-textbook/`)。それ以外の markdown は「skill / command / retrieval 経由で prompt に入りうる = instruction」として**除外しない**（列挙で許可するのではなく、除外側を列挙して反転定義する。許可リストは必ず漏れるため）。
    - **`docs/wiki/` は除外しない**: `skill-data/memory-vec/reindex.ts:63` が `docs/wiki/concepts` を索引し retrieval で context に戻す。`compile-wiki/SKILL.md:130,135` も記事本文を読む。生成元の `docs/research/` は WebFetch 由来の外部コンテンツを含むため、research → wiki → context の間接経路が開いている
    - 公式の除外則は「docs は実行されない」前提に立つが、この repo ではその前提が成立しない
+   - **同じ反転定義を `.config/claude/scripts/policy/review-tier.py` の `_INSTRUCTION_MD_BASENAMES` / `_INSTRUCTION_MD_DIRS` が持つ**（レビュー tier を light に落とさないための判定）。片方の列挙を増やしたら両方直す
    - 特権の高い順に例: `.github/agent-config/*.md`（`agent-triage.yml` が `claude -p` に直接連結し、`ANTHROPIC_API_KEY` 保持 job で `gh issue edit` 権限つきで走る）→ `CLAUDE.md` / `AGENTS.md` / `PLANS.md` → `.config/claude/**/*.md`（実体パス。`~/.claude/` は symlink なので glob は `.config/claude/` で書く）→ `.codex/**` / `.agents/**` / `.cursor/**` → `templates/**`（scaffold 経由で instruction になる）→ `docs/playbooks/**` / `docs/specs/*.prompt.md`
 10. **Audit log の欠如** 単体
 11. **Race conditions / timing attacks** が理論的なもの (具体的に問題化する場合のみ)

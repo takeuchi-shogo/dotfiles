@@ -39,6 +39,7 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.6-terra \
   --config model_reasoning_effort="xhigh" \
+  --config project_doc_max_bytes=0 \
   --sandbox read-only \
   "$(cat <<'PROMPT'
 You are a critical reviewer analyzing a spec and/or implementation plan BEFORE code is written.

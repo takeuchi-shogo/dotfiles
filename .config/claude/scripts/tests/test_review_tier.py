@@ -143,6 +143,56 @@ class TestClassifyLightGuardsMissed:
         assert tier == "standard"
 
 
+class TestAgentInstructionMarkdownIsNotDocs:
+    @staticmethod
+    def _tier(path: str) -> str:
+        tier, _, _ = classify({"insertions": 3, "deletions": 0}, [path], "Low")
+        return tier
+
+    def test_claude_md_is_standard(self):
+        assert self._tier("CLAUDE.md") == "standard"
+
+    def test_nested_claude_md_is_standard(self):
+        assert self._tier("packages/api/CLAUDE.md") == "standard"
+
+    def test_agents_md_is_standard(self):
+        assert self._tier("AGENTS.md") == "standard"
+
+    def test_skill_md_is_standard(self):
+        assert self._tier(".config/claude/skills/review/SKILL.md") == "standard"
+
+    def test_agent_definition_is_standard(self):
+        assert self._tier(".config/claude/agents/code-reviewer.md") == "standard"
+
+    def test_absolute_path_is_standard(self):
+        path = "/Users/x/dotfiles/.config/claude/references/scope-governor.md"
+        assert self._tier(path) == "standard"
+
+    def test_prompt_spec_is_standard(self):
+        assert self._tier("docs/specs/foo.prompt.md") == "standard"
+
+    def test_wiki_is_standard(self):
+        assert self._tier("docs/wiki/concepts/harness.md") == "standard"
+
+    def test_template_markdown_is_standard(self):
+        assert self._tier("templates/team-project/base/README.md") == "standard"
+
+    def test_plain_prose_still_light(self):
+        assert self._tier("docs/research/2026-01-01-notes.md") == "light"
+
+    def test_readme_still_light(self):
+        assert self._tier("README.md") == "light"
+
+    def test_mixed_prose_and_instruction_is_standard(self):
+        tier, _, signals = classify(
+            {"insertions": 4, "deletions": 0},
+            ["README.md", "AGENTS.md"],
+            "Low",
+        )
+        assert tier == "standard"
+        assert signals["all_docs_or_tests"] is False
+
+
 # ---------------------------------------------------------------------------
 # classify() — deep path
 # ---------------------------------------------------------------------------

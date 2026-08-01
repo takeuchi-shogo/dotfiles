@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Publicity review: block high-severity credential leaks in staged commits.
 
-Public-repo leak gate for a personal dotfiles repo. Scans the git staged ADDED
-lines (new content only) for credential patterns, reusing ``PATTERNS`` from
-``scan-jsonl-secrets.py`` (DRY). Blocks the commit (exit 1) if any high- or
-medium-severity secret is found in to-be-committed content.
+Public-repo leak gate for a personal dotfiles repo. Scans ADDED lines (new
+content only) for credential patterns, reusing ``PATTERNS`` from
+``scan-jsonl-secrets.py`` (DRY). Exits 1 if any high- or medium-severity secret
+is found. Arguments are passed to ``git diff``; with none it scans ``--cached``.
 
 Scope note: this repo intentionally embeds absolute paths (``/Users/...``) and
 the owner's username throughout (MEMORY.md, CLAUDE.md, references). Those are NOT
@@ -55,11 +55,11 @@ def load_patterns() -> list:
     return list(mod.PATTERNS)
 
 
-def staged_added_lines() -> list[tuple[str, str]]:
-    """Return [(path, added_line), ...] from the staged diff (added/modified)."""
+def added_lines(diff_args: list[str]) -> list[tuple[str, str]]:
+    """Return [(path, added_line), ...] from `git diff <diff_args>` (added/modified)."""
     try:
         out = subprocess.run(
-            ["git", "diff", "--cached", "--diff-filter=AM", "-U0"],
+            ["git", "diff", *diff_args, "--diff-filter=AM", "-U0"],
             capture_output=True,
             text=True,
             check=True,
@@ -77,7 +77,8 @@ def staged_added_lines() -> list[tuple[str, str]]:
     return results
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    diff_args = list(sys.argv[1:] if argv is None else argv) or ["--cached"]
     patterns = load_patterns()
     # Block high + medium: medium covers real credentials too (sk-*, Bearer,
     # api_key=...), not just documentation examples — warning-only would let a
@@ -89,7 +90,7 @@ def main() -> int:
 
     blocking: list[tuple[str, str]] = []
     warnings: list[tuple[str, str]] = []
-    for path, line in staged_added_lines():
+    for path, line in added_lines(diff_args):
         for pat in blockers:
             if pat.regex.search(line):
                 blocking.append((path, pat.name))
