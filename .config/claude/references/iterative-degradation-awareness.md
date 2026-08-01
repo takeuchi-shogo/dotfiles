@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-08-02
 ---
 
 # Iterative Degradation Awareness
@@ -28,6 +28,59 @@ Quality
 - CLAUDE.md の原則は「最初の1回」には効くが、5回目の変更には不十分
 - **プロンプトだけでは劣化を止められない** — ツーリングレベルの介入が必要
 - 初期品質を上げる努力は無駄ではない（intercept が高ければ劣化が許容範囲を超えるまでの猶予が長い）
+
+## 第 2 の劣化軸: 指示遵守の距離減衰
+
+SlopCodeBench が測るのは **コード品質** の反復劣化だが、劣化する対象はもう 1 つある。
+**standing policy 文書の拘束力そのもの**だ。
+
+HANDBOOK.md (arXiv:2607.25398, Surge AI 2026-07) は、system prompt / policy file / skills 文書を
+context に置いて以降の全行動を統制させるパターンを直接測定し、機序をこう述べる:
+
+> It functions as one more retrieved source whose influence decays with distance:
+> across turns, across tool calls
+
+policy 文書は「候補行動をふるいにかける永続的な権威」として機能しない。
+**距離 (ターン数・ツール呼び出し数) とともに影響力が減衰する検索ソースの 1 つ**として振る舞う。
+
+### 定量的裏付け
+
+20-124 頁 (中央値 37 頁 / 14.9K トークン) の専門家執筆 SOP を軸にした 65 タスク・824 判定基準で、
+厳格採点 (全基準充足のみ合格) の結果:
+
+- 最良構成 **36.2%**、大半のフロンティア構成は 25% 未満 (30 モデル構成 / 20 モデル / 11 プロバイダ)
+- 完了試行は平均約 17 ステップ・30 ツール呼び出し
+- 1 基準の失敗を許容する pass@1(N-1) にすると多くのモデルでスコアが約 2 倍 = 失敗の大半は単一基準の取りこぼし
+
+### slope/intercept との関係
+
+この軸でも同じ結論が独立に再現される。**推論エフォートを上げても直らない**:
+
+| モデル | エフォート増の効果 |
+|--------|------------------|
+| Opus 4.8 | +3.0pt |
+| Sonnet 4.6 | +2.7pt |
+| Fable 5 | +2.0pt |
+| GPT-5.5 | 変化なし |
+| GLM 5.2 | **-2.7pt (悪化)** |
+
+トークンを費やすことも遵守を買わない (GPT-5.5 は約 13K トークンで 21.5%、
+Opus 4.8 max は約 60K トークン・約 3 倍のコストで同水準)。
+
+つまり「プロンプトは intercept を改善するが slope は変わらない」は、コード品質だけでなく
+**指示遵守にも当てはまる**。追加の熟考は「見落とした推論」にしか効かず「見落とした読解」には効かない。
+
+論文自身の提言も同じ方向を向く — policy をモデル外の決定論的 tool-call guard にコンパイルすること。
+これは `CLAUDE.md` の「Static-checkable rules は mechanism に寄せる」と一致する。
+
+### 含意
+
+- CLAUDE.md を丁寧に書くことは intercept にしか効かない。長い作業ほど効き目が落ちる
+- 長さを増やして拘束力を上げようとするのは逆効果になりうる (14.9K トークンの SOP で 36.2%)
+- 守らせたいルールが static-checkable なら hook / deny rule に落とす。落とせないものは
+  「距離が伸びたら効かない」前提で設計する
+
+出典: `docs/research/2026-07-31-handbook-md-instruction-following-absorb-analysis.md`
 
 ## 主要な劣化パターン
 

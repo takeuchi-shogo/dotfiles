@@ -32,7 +32,7 @@ last_reviewed: 2026-05-30
 | mcp-audit | **True** | security-gate | PreToolUse |
 | prompt-injection-detector | **True** | security-gate | PreToolUse |
 | derivation-honesty-hook | **True** | policy-gate | PostToolUse |
-| gaming-detector | **True** | policy-gate | PostToolUse (indirect) |
+| gaming-detector | **True** | policy-gate | **呼び出し元なし (2026-08-02 監査)** — settings.json 未登録、lefthook / Taskfile / CI / Rust いずれからも呼ばれない |
 | rationalization-scanner | **True** | policy-gate | PostToolUse |
 | approval-fatigue-guard | False | policy-advisory | PostToolUse |
 | diff-coverage-gate | False | policy-advisory | Stop |
@@ -43,7 +43,6 @@ last_reviewed: 2026-05-30
 | plan-implement-bridge | False | policy-advisory | (indirect) |
 | spec-quality-check | False | policy-advisory | PostToolUse |
 | tdd-guard | False | policy-advisory | (indirect) |
-| tool-scope-enforcer | False | policy-advisory | (indirect) |
 | type-safety-delta | False | policy-advisory | PostToolUse |
 | user-input-guard | False | policy-advisory | UserPromptSubmit |
 | agent-invocation-logger | 省略(=False) | observability | PostToolUse |

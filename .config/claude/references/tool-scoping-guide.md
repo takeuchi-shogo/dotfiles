@@ -36,8 +36,8 @@ Stripe は 500 以上のツールプールから、タスクタイプごとに 5
 
 - **方針**: warn のみ（block しない）
 - **理由**: ユーザーが判断できるため、block は UX を悪化させる
-- **実装**: `tool-scope-enforcer.py` (PreToolUse hook) が stderr に警告を出力
-- **exit code**: 常に 0（パススルー）
+- **実装**: **未実装**。`tool-scope-enforcer.py` が担う想定だったが、settings.json に未登録のまま 2026-06-21 に削除された (`docs/decommission-log.md`)。現在この方針を強制する artifact はない
+- **exit code**: 該当なし
 
 ### Unattended（`claude -p` / ヘッドレス）
 
@@ -102,7 +102,6 @@ mcp-tools: context7, brave-search
 
 ## 関連ファイル
 
-- `scripts/policy/tool-scope-enforcer.py` — PreToolUse hook (advisory)
-- `scripts/policy/mcp-audit.py` — MCP ツール監査 + スキルスコープチェック
+- `scripts/policy/mcp-audit.py` — MCP ツール監査 + スキルスコープチェック (現行の scope 強制はここだけ)
 - `skills/autonomous/run-session.sh` — `--allowedTools` によるハード制限
 - `references/blueprint-pattern.md` — Blueprint 設計パターン

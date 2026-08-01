@@ -24,13 +24,11 @@ flowchart TD
     PLC -->|"Not lint config"| SFG["claude-hooks pre-edit<br/>Search Before Implement"]
     PLC -->|"Lint config edit"| BLOCK3["BLOCKED<br/>Fix code, not config"]
 
-    SFG --> GC["golden-check.py<br/>Golden Principles Check"]
+    SFG --> GC["claude-hooks post-edit<br/>Golden Principles Check"]
 
     GC --> FPG["file-proliferation-guard.py<br/>File Creation Limit"]
 
-    FPG --> TSE["tool-scope-enforcer.py<br/>Tool Scope Enforcement"]
-
-    TSE --> DS["docker-safety.py<br/>Docker Safety Check"]
+    FPG --> DS["docker-safety.py<br/>Docker Safety Check"]
 
     DS --> EXEC{{"Execution"}}
 
