@@ -11,7 +11,8 @@ last_reviewed: 2026-05-14
 |--------|------|-------------|---------|
 | Daily Health Check | launchd plist | 毎日 21:07 | `scripts/runtime/com.claude.daily-health-check.plist` |
 | Patrol Agent | launchd plist | 5分ごと | `scripts/runtime/com.claude.patrol-agent.plist` |
-| AutoEvolve | cron | 毎日 03:00 | `scripts/runtime/autoevolve-runner.sh` |
+
+AutoEvolve (cron 毎日 03:00 / `scripts/runtime/autoevolve-runner.sh`) は 2026-06-21 に退役した (`docs/decommission-log.md`)。cron 登録がなく元から不動だった。
 
 launchd plist から `bash -lc <script-path>` 形式で起動するスクリプトは、事前に `+x` を確認する。shell がパスを直接 exec するため、実行権限がないと `exit 126 Permission denied` で失敗する。
 Python スクリプトを同経路で動かす場合、`python3` が macOS system Python 3.9 に解決されることがある。nightly / launchd 対象の Python は `from __future__ import annotations` を先頭に置き、PEP 604 形式の注釈 (`X | None`) が実行時評価で `TypeError` にならないようにする。
@@ -29,7 +30,6 @@ claude triggers create --agent-id $AGENT_ID --schedule "0 21 * * *"
 | タスク | 移行推奨度 | 理由 |
 |--------|-----------|------|
 | Daily Health Check | **高** | クラウド実行で Mac スリープ時も確実に実行。コスト低い（短時間） |
-| AutoEvolve | **中** | 長時間実行の可能性あり → コスト管理が必要。ただし信頼性向上 |
 | Patrol Agent | **低** | 5分間隔はコールドスタート（3-8秒）の影響が大きい。ローカル維持が合理的 |
 
 ## Phase 0: 2026-06-15 Agent SDK credit billing 認識

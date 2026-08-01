@@ -39,6 +39,15 @@ node tools/system-prompt-patcher/verify-patch.js
 # cp <bundle>.bak <bundle>
 ```
 
+## 効果測定 (未実施)
+
+現行の 5 パッチは `task setup` → `patch-claude` の標準経路で適用されるが、**適用の効果を測ったことがない**。
+削っているのは Claude Code 公式のシステムプロンプトであり、削りすぎればモデルの既定の作法が失われる。
+
+モデル世代が変わったら、この 5 パッチを 1 つの ablation セルとして評価する。
+手順は `.config/claude/references/dead-weight-scan-protocol.md` の「モデル世代交代時の ablation」に従う。
+反転レバーは `task restore-claude` (vanilla に戻す) と `task patch-claude` (再適用) で、どちらも可逆。
+
 ## パッチ作成方法
 
 1. `patches/` の下にバージョンバケットのディレクトリを作成（例: `patches/2.2.x/`）
