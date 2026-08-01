@@ -58,7 +58,7 @@ You are going to read this article and try to reproduce the same thing in your l
 
 ## Evaluation axes (10 reproducibility axes)
 Score each axis 0–2. Refer to the rubric in the `tech-article-reproducibility` skill:
-/Users/mz/.claude/skills/tech-article-reproducibility/SKILL.md
+~/.claude/skills/tech-article-reproducibility/SKILL.md
 
 1. Environment prerequisites stated
 2. Code completeness

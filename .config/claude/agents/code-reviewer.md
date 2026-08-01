@@ -7,6 +7,8 @@ memory: project
 maxTurns: 20
 ---
 
+> 正典: `/review` が呼ぶのはこのローカル版。`pr-review-toolkit:code-reviewer` はプラグイン同梱の別実装で、`pr-review-toolkit:review-pr` 経由でのみ使う（両者を同一タスクに併用しない）。
+
 ## COMPLETION CONTRACT
 
 **あなたの出力は以下の4項目が全て含まれていなければ不完全である。途中終了は許されない。**

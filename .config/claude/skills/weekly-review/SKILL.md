@@ -3,7 +3,7 @@ name: weekly-review
 description: >
   GTD式の週次レビュー。GitHub Issue + Obsidian 00-Inbox/ + vault-maintenance report の棚卸し、滞留タスク検出、優先度見直しを対話形式で実施。週末や週明けに使用。
   Triggers: '週次レビュー', 'weekly-review', '棚卸し', '今週の振り返り', 'weekly review'.
-  Do NOT use for: 朝の計画（use /morning）、日報（use /daily-report）、夕方の振り返り（use /timekeeper review）。
+  Do NOT use for: 日報（use /daily-report）、夕方の振り返り（use /timekeeper review）。
 origin: self
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Bash(ls *), Bash(cat *), Read, Grep, Glob
@@ -24,7 +24,7 @@ GTD 式の週次レビューを対話形式で実施する。
 !`cat .claude/dev-ops.local.json 2>/dev/null || echo "NOT_CONFIGURED"`
 
 上記が `NOT_CONFIGURED` の場合:
-「開発オペレーション設定がまだありません。`/dev-ops-setup` を実行してセットアップしてください。」と案内して終了。
+「開発オペレーション設定がまだありません。`.claude/dev-ops.local.json` を作成してから実行してください。」と案内して終了。
 
 ## 情報収集（並列実行）
 
@@ -340,7 +340,7 @@ Q3: 来週、どれか1つだけ継続強化するとしたら何？
 - 優先度変更: #25 P3→P2
 - 来週の重点: 3タスク設定
 
-### 来週の /morning で反映されます
+### 来週の朝ブリーフィングで反映されます
 ```
 
 ## レビューの原則

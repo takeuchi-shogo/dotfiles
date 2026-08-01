@@ -1,5 +1,5 @@
 ---
-name: redesign-existing-projects
+name: redesign-skill
 description: Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS. Full UI overhaul only. Do NOT use for greenfield / new sites (use design-taste-frontend instead) or targeted polish (use impeccable instead). Routing: references/design-skill-routing.md.
 ---
 

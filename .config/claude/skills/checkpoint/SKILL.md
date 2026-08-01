@@ -24,7 +24,7 @@ metadata:
 
 ```bash
 python3 -c "
-import sys; sys.path.insert(0, '$HOME/.claude/scripts')
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/runtime')
 from checkpoint_manager import save_checkpoint, _read_counter
 counter = _read_counter()
 path = save_checkpoint(trigger='manual', edit_count=counter.get('count', 0))
