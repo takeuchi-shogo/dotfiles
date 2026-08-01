@@ -52,7 +52,8 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 
 | 決定 | 表の場所 | 概要 |
 |---|---|---|
-| hook vs instruction 境界 | [`docs/reports/determinism-boundary-analysis.md`](../../../docs/reports/determinism-boundary-analysis.md) | 決定論でやる vs プロンプトでやる |
+| hook vs instruction 境界 (概念) | [`docs/reports/determinism-boundary-analysis.md`](../../../docs/reports/determinism-boundary-analysis.md) | 決定論でやる vs プロンプトでやる。**`status: historical` — 2026-03-12 のスナップショットで artifact 名は古い。概念整理のみ参照する** |
+| hook 配線の現状 (実体) | `~/.claude/settings.json` の `hooks` + `tools/claude-hooks/src/` | どの hook がどのイベントで実際に走るか。手書きのミラーは drift するため置かない |
 | Skills vs Hooks vs Subagents | [`references/skill-invocation-patterns.md`](skill-invocation-patterns.md) | 使い分け原則 |
 | linter config protection | ADR-0004 (`docs/adr/0004-linter-config-protection.md`) | .eslintrc/.biome 等は保護対象 |
 | Routine prompt 6 要素 | [`references/routine-prompt-rubric.md`](routine-prompt-rubric.md) | role/task/process/output/error/constraints + Pre-flight Checklist |
