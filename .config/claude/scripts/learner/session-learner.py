@@ -165,88 +165,6 @@ def _update_playbook(summary: dict, logger: logging.Logger) -> None:
     logger.info("session-learner: updated playbook for %s", project)
 
 
-def _extract_negative_patterns(summary: dict, logger: logging.Logger) -> None:
-    """失敗パターンを negative-knowledge.md に追記する。
-
-    AlphaLab Persistent Playbook。
-    """
-    try:
-        # outcome が failure/recovery 以外ならスキップ
-        if summary.get("outcome") not in ("failure", "recovery"):
-            return
-
-        # corrections にリバート系キーワードがあるか確認
-        import re
-
-        revert_re = re.compile(
-            r"revert|rollback|undo|reset|restore|やめ|戻", re.IGNORECASE
-        )
-        has_revert = False
-        revert_reason = ""
-        for corr in summary.get("_corrections", []):
-            data = corr.get("data", corr)
-            msg = str(data.get("message", "")) + str(data.get("fix", ""))
-            if revert_re.search(msg):
-                has_revert = True
-                revert_reason = msg[:120]
-                break
-
-        if not has_revert and summary.get("outcome") != "failure":
-            return
-
-        from datetime import datetime, timezone
-
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        project = summary.get("project", "unknown")
-
-        # エラーからアンチパターンを抽出
-        entries = []
-        for error in summary.get("_errors", [])[:3]:
-            data = error.get("data", error)
-            anti_pattern = str(data.get("message", data.get("error", "")))[:100]
-            fm = data.get("failure_mode", "")
-            if fm:
-                anti_pattern = f"[{fm}] {anti_pattern}"
-            reason = revert_reason or str(data.get("fix", ""))[:80]
-            outcome = summary.get("outcome", "unknown")
-            if anti_pattern.strip():
-                entries.append(
-                    f"| {ts} | {project} | {anti_pattern} | {reason} | {outcome} |"
-                )
-
-        if not entries:
-            return
-
-        # negative-knowledge.md に追記
-        neg_path = (
-            Path(__file__).resolve().parent.parent.parent
-            / "references"
-            / "negative-knowledge.md"
-        )
-        if not neg_path.exists():
-            return
-
-        content = neg_path.read_text(encoding="utf-8")
-        lines = content.splitlines()
-
-        # テーブル行を追記
-        for entry in entries:
-            lines.append(entry)
-
-        # ローテート: ヘッダ7行 + データ200行まで
-        header = lines[:7]
-        data_lines = lines[7:]
-        if len(data_lines) > 200:
-            data_lines = data_lines[-200:]
-        lines = header + data_lines
-
-        neg_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        logger.info("session-learner: extracted %d negative patterns", len(entries))
-
-    except OSError as e:
-        logger.warning("session-learner: failed to write negative-knowledge: %s", e)
-
-
 def _record_improve_adoption(summary: dict, logger: logging.Logger) -> None:
     """ "/improve 実行時の提案採用率を記録する（AlphaLab Convergence Detection）。"""
     try:
@@ -746,9 +664,6 @@ def process_session(cwd: str | None = None) -> None:
 
     # Project Playbook: プロジェクト固有の知見を蓄積
     _update_playbook(summary, logger)
-
-    # Negative Knowledge: 失敗パターンを永続ストアに追記 (AlphaLab)
-    _extract_negative_patterns(summary, logger)
 
     # Repeated topic detection (Codified Context G4)
     _detect_repeated_topics(summary, logger)

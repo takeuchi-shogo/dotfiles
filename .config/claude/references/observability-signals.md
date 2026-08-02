@@ -18,7 +18,7 @@ last_reviewed: 2026-04-23
 | GP 違反 | `session_events.py` `emit_event("quality", ...)` | `learnings/quality.jsonl` | `code-reviewer` | 接続済 |
 | friction イベント | `session_events.py` `emit_event("pattern", ...)` | `learnings/patterns.jsonl` | `pre-mortem-checklist` トリガ (B1) | 接続予定 |
 | スキル実行 | `session_events.py` `emit_event("skill", ...)` | `learnings/skill-executions.jsonl` | `/improve` Garden phase | 接続予定 |
-| エラーレートスパイク | `scripts/runtime/error-rate-monitor.py` | stderr 警告 + negative-knowledge.md | `negative-knowledge.md` updater | 接続済 |
+| エラーレートスパイク | `scripts/runtime/error-rate-monitor.py` | stderr 警告 | セッション中の人間 (再プラン判断) | 接続済 |
 | サブエージェント完了 | `scripts/runtime/subagent-monitor.py` | `logs/subagent-metrics.jsonl` | `unassigned` (Gap 4) | 記録のみ |
 | Agent routing 判定 | `claude-hooks` (Rust, `user-prompt`) | additionalContext + `current-session.jsonl` (agent_routing) | `session-learner` (current-session 集計) | 接続済(ログあり, Gap 5 解消 2026-06-09) |
 | セッション集計 | `scripts/learner/session-learner.py` | `metrics/session-metrics.jsonl` | `autoevolve-core` | 記録のみ |
@@ -33,9 +33,9 @@ last_reviewed: 2026-04-23
 
 | 信号 | 閾値条件 | アクション | escalation (action 失敗時) | 実装状態 |
 |------|---------|-----------|---------------------------|---------|
-| エラーレートスパイク | 同 FM が 5分ウィンドウで 3回以上 | stderr `[ERROR_RATE_SPIKE]` 警告 + negative-knowledge.md 追記 | session 停止 → 手動 triage | 実装済 |
+| エラーレートスパイク | 同 FM が 5分ウィンドウで 3回以上 | stderr `[ERROR_RATE_SPIKE]` 警告 | session 停止 → 手動 triage | 実装済 |
 | Agent routing | UserPromptSubmit のキーワードマッチ | additionalContext でモデル推奨を注入 | 推奨採用率を `/improve` で監視 | 実装済 |
-| 失敗セッション | outcome = failure/recovery | negative-knowledge.md 追記 + Playbook 更新 | 同パターン 3 回再発 → pre-mortem-checklist トリガ | 実装済 |
+| 失敗セッション | outcome = failure/recovery | Playbook 更新 | 同パターン 3 回再発 → pre-mortem-checklist トリガ | 実装済 |
 | Change Surface 検出 | Edit/Write のファイルパスがパターンにマッチ | アドバイスメッセージ出力（advisory） | violation 検出時は PreToolUse hook で block | 実装済 |
 
 ### 未接続（推奨アクション）
