@@ -30,6 +30,7 @@ class TestSessionLearnerScoring(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "Permission denied", "command": "npm test"})
         learner.process_session(cwd=self.tmpdir)
@@ -50,6 +51,7 @@ class TestSessionLearnerScoring(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "OOM killed", "command": "build"})
         emit_event("quality", {"rule": "GP-001", "file": "x.ts", "detail": "violation"})
@@ -69,6 +71,7 @@ class TestSessionLearnerScoring(unittest.TestCase):
         from session_events import emit_event, emit_skill_event, emit_skill_step
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_skill_event("invocation", {"skill_name": "test-skill"})
         emit_skill_step("test-skill", step=1, outcome="success")
@@ -113,6 +116,7 @@ class TestCriticalFailureStep(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "Permission denied", "command": "npm install"})
         emit_event("error", {"message": "build failed", "command": "npm run build"})
@@ -132,6 +136,7 @@ class TestCriticalFailureStep(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "Permission denied", "command": "npm install"})
         emit_event("correction", {"message": "fixed permissions", "fix": "chmod"})
@@ -144,6 +149,7 @@ class TestCriticalFailureStep(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "warning: unused variable", "command": "lint"})
         learner.process_session(cwd=self.tmpdir)
@@ -155,6 +161,7 @@ class TestCriticalFailureStep(unittest.TestCase):
         from session_events import emit_event
 
         learner = import_module("session-learner")
+        learner.NEGATIVE_KNOWLEDGE_PATH = Path(self.tmpdir) / "negative-knowledge.md"
 
         emit_event("error", {"message": "OOM killed", "command": "build"})
         learner.process_session(cwd=self.tmpdir)
