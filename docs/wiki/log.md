@@ -2255,3 +2255,12 @@
 - 取り込み: 採用 1 件 (T1, S) — `decision-tables-index.md` に「障害診断 系」セクション (症状→harness/loop/graph 層の routing、既存資産リンクのみ) + 未リンクだった `repair-routing.md` を別軸注記つきで索引化
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
+
+## [2026-08-02] ingest | Supervised fire-and-forget in Go
+
+- ソース: https://rednafi.com/go/supervised-fire-and-forget/ (Redowan Delowar, 2026-07-25)
+- 判定: Gap 3件 (panic 隔離 / WithoutCancel 例外規則 / closed channel send の競合排他), Partial 4件 (bounded pool / detach 後の自前 timeout / shutdown 順序 / エラーの可視化), Already 1件 (WaitGroup.Go), N/A 1件 (Asynq)
+- 取り込み: 4 件 — review-checklists/go.md GO-4 に「管理外の background task」小見出し + GO-7 に detached context 規則 / rules/go.md に裸の go func 禁止と shutdown 順序 / golang-safety SKILL.md の dead cross-reference 3 箇所を張り替え
+- 副次: golang-safety が指す `samber/cc-skills-golang@golang-concurrency` が未 install の dead reference だったことを発見 (skills-lock.json にも無い手動 vendor)
+- Phase 2.5: Codex 単独 (Gemini は IneligibleTierError で未取得)。Codex の助言で pool 実装コードと Asynq 推奨は不採用、「契約」だけ追加
+- 分析: docs/research/2026-08-02-supervised-fire-and-forget-go-absorb-analysis.md

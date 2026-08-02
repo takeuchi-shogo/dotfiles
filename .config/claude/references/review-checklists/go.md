@@ -41,6 +41,13 @@ Go Code Review Comments・Effective Go に基づく。
 - `errgroup` でライフサイクル管理
 - 同期関数を非同期関数より優先しているか
 
+### 管理外の background task (fire-and-forget)
+
+- `must:` ハンドラから撒く `go func()` に所有者と同時実行上限があるか — 上限がないとリクエストごとに goroutine が増え続ける
+- `must:` 撒いた goroutine に `recover()` があるか — 拾わない panic はプロセス全体を落とす
+- キュー満杯時の方針が block / reject + metric / drop のどれか明示されているか（block はハンドラを詰まらせる backpressure の選択であって、既定の正解ではない）
+- shutdown で admission を閉じる操作と送信が競合しないか — closed channel への send は panic する
+
 ## GO-5. Interface 最小化
 
 - 使用者側で定義し、1-2メソッドの小さい interface を好む
@@ -59,6 +66,9 @@ Go Code Review Comments・Effective Go に基づく。
 - `must:` `context.Background()` を深い層で直接使っていないか
 - `must:` context をストラクトに保存していないか
 - キャンセル可能な context は `defer cancel()` しているか
+- detach してよいのは所有権境界（ハンドラ / composition root）だけ。深い層で勝手に伝播を切らない
+- `context.WithoutCancel` は値を残す代わりに親の deadline も捨てる — detach したら `WithTimeout` + `defer cancel()` を自前で張る
+- closure には必要な値だけコピーする — `*http.Request` を掴むとリクエストの寿命とメモリが延びる
 
 ## GO-8. defer 安全性
 
