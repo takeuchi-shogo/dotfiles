@@ -8,7 +8,7 @@ last_reviewed: 2026-04-23
 **目的**: cwd（カレントワーキングディレクトリ）の種類に応じて、どの rules/skills/agents を読む or 読まないかを明示する。記事「Obsidian × Claude Code」(akira_papa_AI, 2026-03) の「パススコープ限定ルール」概念を dotfiles 環境に適合させた運用ガイド。
 
 **前提**:
-- 既存の `rules/*.md` は `paths:` frontmatter でファイルパターン条件ロードを既に実現
+- `rules/*.md` は自動ロードされない（下記「rules/*.md との関係」）。ファイルパターン条件ロードは未実装
 - このドキュメントは **cwd レベル** の上位 routing を定義（ファイルパターンより粒度が粗い）
 - 違反は hook で detect、block はしない（Soft guidance）
 
@@ -33,14 +33,18 @@ cwd を取得
 └── それ以外 → unknown cwd
 ```
 
-## 既存 paths: frontmatter との関係
+## rules/*.md との関係
 
-この matrix は「cwd レベル」、paths: frontmatter は「ファイルレベル」の 2 層で動く:
+この matrix は「cwd レベル」で、その cwd でそもそも関連しうる rules/skills 群を絞る。
 
-1. **cwd matrix（上位）**: その cwd でそもそも関連しうる rules/skills 群を絞る
-2. **paths: frontmatter（下位）**: 編集対象のファイルパターンで rules/*.md を実際にロード
+`rules/*.md` は**自動ロードされない**。かつて `paths:` frontmatter（`**/*.go` 等）を持ち「編集対象のファイルパターンでロードされる」と書いていたが、それを消費する実装は hook にも script にも存在せず、`~/.claude/rules/` 自体が存在しない。2026-08-02 に 8 ファイルから frontmatter を削除した。
 
-例: Obsidian Vault root にいる場合、`rules/go.md` は cwd matrix で除外。dotfiles root にいて `*.go` を編集する場合のみ `rules/go.md` が paths: でロードされる。
+実際の到達経路は名指しの参照だけ:
+
+- `references/go-idioms-checklist.md` が「`rules/go.md` の基本ルールを前提とし」と冒頭で指す
+- レビュー時は `references/review-checklists/{lang}.md` が `code-reviewer` のプロンプトに注入される（こちらは実配線）
+
+ファイルパターンで rules を自動提示したくなったら、`tools/claude-hooks` の file-pattern-router に拡張子 → rules のルーティングを足すのが実装場所になる。
 
 ## 運用ポリシー
 
@@ -70,7 +74,7 @@ cd "~/Documents/Obsidian Vault" && ls .obsidian/  # → Obsidian Vault 判定
 
 ## 参照
 
-- `rules/*.md` の `paths:` frontmatter（ファイルパターン条件ロード）
+- `references/review-checklists/{lang}.md`（`code-reviewer` に注入される言語別チェックリスト）
 - `references/context-profiles.md`（default/planning/debugging/incident のプロファイル切替）
 - `references/model-routing.md`（モデル別ルーティング）
 - `docs/adr/0002-progressive-disclosure-design.md`（3 層構造）

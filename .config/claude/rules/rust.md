@@ -1,9 +1,3 @@
----
-paths:
-  - "**/*.rs"
-  - "**/Cargo.toml"
----
-
 # Rust Rules
 
 Effective Rust・Rust API Guidelines に基づく。

@@ -1,9 +1,3 @@
----
-paths:
-  - "**/*.go"
-  - "**/go.mod"
----
-
 # Go Rules
 
 Go Code Review Comments・Effective Go・Learn Go with Tests に基づく。
@@ -130,7 +124,7 @@ import (
 ## context.Context
 
 - 第1引数として渡す: `func Foo(ctx context.Context, ...)`
-- コールチェーン全体で伝播する — 途中で `context.Background()` を使わない
+- コールチェーン全体で伝播する — 途中で `context.Background()` を使わない（例外は background task へ detach する所有権境界のみ。値が要るなら `context.WithoutCancel` + 自前の `WithTimeout`）
 - 外部呼び出しにはタイムアウトを設定: `ctx, cancel := context.WithTimeout(ctx, 5*time.Second)`
 - キャンセル可能なコンテキスト作成後は `defer cancel()` する
 - struct のフィールドに context を保存しない（引数として渡す）
@@ -142,6 +136,8 @@ import (
 - 通信にはチャネル、状態保護にはミューテックスを使う
 - `mu.Lock()` の直後に `defer mu.Unlock()` する
 - 同期関数を非同期関数より優先する — 呼び出し側が必要なら goroutine で呼べばよい
+- 裸の `go func()` を撒かない — 所有者と同時実行上限を持つ経路に通す
+- shutdown は `server.Shutdown()` → background pool の drain の順。drain には時間上限を置く（context を無視するタスクは止められない）
 
 ## 関数設計
 
