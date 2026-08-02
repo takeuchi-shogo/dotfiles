@@ -41,6 +41,28 @@ AI が生成する**日本語の文章成果物**（PR 概要・Issue 本文・m
 - **レビュー・検証結果の報告**: 「何を検証し、何が通り、何が落ちたか」は痩せさせない
 - **セキュリティ警告・破壊的操作の確認**: 完全文で明示
 
+## リンクの示し方
+
+「次に人間が開く場所」は、相手が読んだ場所からクリック 1 回で辿れる形にする。相対パスや
+「管理画面の設定から」のような言い換えは、読み手に検索をさせるので使わない。
+
+適用するのは 3 場面に限る。常時フル URL 化ではない。
+
+- **外部状態を変えた後**: 作成した PR / Issue、走らせた CI、デプロイ先
+- **handoff / checkpoint**: 次のセッションが再開点として開くもの
+- **障害報告**: 落ちた run、該当ログ、原因コード
+
+| 対象 | 示し方 |
+|------|--------|
+| このリポジトリのコード | `path/to/file.py:42` (相対パス + 行番号。ローカルで開ける) |
+| 外部に共有するコード | commit を固定した GitHub permalink (`blob/<sha>/...#L42`)。ブランチ名固定は行がずれる |
+| PR / Issue | フル URL (`https://github.com/<owner>/<repo>/pull/N`) |
+| CI | run URL。ワークフロー名だけでは辿れない |
+| ダッシュボード・管理画面 | 該当ルートまで含めたフル URL |
+
+**secrets 設定画面の URL は書かない。** 「どこに何の credential があるか」を報告に残すのは
+情報露出にあたる。必要なら「Cloudflare の環境変数設定」のように場所の名前だけを書く。
+
 ## 出典
 
 - stop-slop (github.com/hardikpandya/stop-slop) の発想を日本語成果物に翻案。stop-slop 自体は英語専用（em-dash / Wh- starter / business jargon）で日本語には不適。分析: `docs/research/2026-06-17-stop-slop-prose-anti-slop-absorb-analysis.md`
