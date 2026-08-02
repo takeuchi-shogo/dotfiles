@@ -41,7 +41,7 @@ def _run(
     monkeypatch.setattr(gate, "_reset_ralph", lambda: seen.update(ralph_reset=True))
     monkeypatch.setattr(gate, "_find_incomplete_plan", lambda: incomplete)
 
-    def _harness_gate():
+    def _harness_gate(session_id: str = ""):
         seen["harness_gate_reached"] = True
         return harness_block
 
