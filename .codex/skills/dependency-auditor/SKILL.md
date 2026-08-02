@@ -140,4 +140,6 @@ pip-audit --format json
 
 ## Related (Codex)
 
-- コード品質レビュー・セキュリティ深掘り → built-in subagent へ並列委譲
+- コード品質レビュー → built-in subagent へ並列委譲
+- セキュリティ深掘り → `codex exec --sandbox read-only --config model_reasoning_effort="xhigh"`
+  (`.codex/AGENTS.md:105`)。subagent は親の sandbox と effort を継承するため、この経路の代わりにならない

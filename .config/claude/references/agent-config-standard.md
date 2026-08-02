@@ -36,23 +36,25 @@ max_tokens: 16384
 
 ## 対応表
 
-| Managed Agents フィールド | Codex TOML | Claude Code agents/*.md | 統合方針 |
-|--------------------------|------------|------------------------|----------|
-| name | name | YAML frontmatter name | そのまま |
-| model | model | （暗黙: 親セッション継承） | 明示化推奨 |
-| system_prompt | developer_instructions | Markdown 本文 | フォーマット変換 |
-| tools | sandbox_mode で暗黙制御 | （制限なし） | スコープ明示化 |
-| skills | — | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
-| mcp_servers | — | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
-| max_tokens | — | — | 将来対応 |
+Codex にはファイルベースの agent 定義形式が無い (`spawn_agent` は `task_name` / `message` /
+`fork_turns` のみ)。対応表は Managed Agents と Claude Code の 2 者で取る。
+
+| Managed Agents フィールド | Claude Code agents/*.md | 統合方針 |
+|--------------------------|------------------------|----------|
+| name | YAML frontmatter name | そのまま |
+| model | （暗黙: 親セッション継承） | 明示化推奨 |
+| system_prompt | Markdown 本文 | フォーマット変換 |
+| tools | （制限なし） | スコープ明示化 |
+| skills | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
+| mcp_servers | — | Managed Agents native 対応済 (2026-06、shared/private wiring 可)。ローカル agents/*.md 側は未標準化 |
+| max_tokens | — | 将来対応 |
 
 ## 統合ビジョン
 
 ### 短期（現在のセットアップ内）
 
 1. **agents/*.md に YAML frontmatter を標準化**: name, model, tools_scope を必須フィールドに
-2. **Codex TOML との命名規約統一**: kebab-case で統一
-3. **Blueprints との連携**: agents/*.md から Blueprint ノードを参照可能に
+2. **Blueprints との連携**: agents/*.md から Blueprint ノードを参照可能に
 
 ### 中期（Managed Agents 導入時）
 

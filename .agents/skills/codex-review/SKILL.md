@@ -52,9 +52,11 @@ Prefer built-in subagents (via `spawn_agent`) when available, and instruct each 
 
 Use the smallest reviewer set that covers the risk. Do not launch extra reviewers after a clean pass just to get nicer wording or a second opinion.
 
-`spawn_agent` has no sandbox parameter — subagents inherit the parent's sandbox, which defaults to `workspace-write`. Prompt wording does not enforce read-only. When the gate requires read-only review, start the parent under `--sandbox read-only` instead of relying on the reviewer prompt.
+`spawn_agent` has no sandbox parameter — subagents inherit the parent's sandbox, which defaults to `workspace-write`. Telling a reviewer to stay read-only is a prompt instruction, not an enforced boundary. Do not make the parent read-only to compensate: the Fix Loop below needs that same parent to edit files.
 
-If subagent delegation is unavailable, record that attempt and use a read-only CLI fallback such as `codex review --uncommitted` or an equivalent `codex exec --sandbox read-only` review. The fallback must still produce enough structured findings to decide the gate.
+When the gate needs an enforced read-only reviewer, run the review pass as a separate process instead: `codex review --uncommitted`, or `codex exec --sandbox read-only`. Keep the fix loop in the writable parent.
+
+Use the same separate read-only process, at `--config model_reasoning_effort="xhigh"`, for security deep-dives — see `.codex/AGENTS.md` and `.config/claude/rules/codex-delegation.md`.
 
 ## Reviewer Prompt Contract
 
