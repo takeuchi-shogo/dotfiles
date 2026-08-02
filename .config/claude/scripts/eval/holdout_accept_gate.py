@@ -233,6 +233,8 @@ def evaluate_gate(
         "holdout_pass_rate": candidate_holdout_pr,
     }
 
+    sample_sizes = {"train": len(baseline_train), "holdout": len(baseline_holdout)}
+
     def _verdict(verdict: str, reason: str) -> dict:
         return {
             "verdict": verdict,
@@ -242,6 +244,7 @@ def evaluate_gate(
             "deltas": deltas,
             "baseline": baseline_summary,
             "candidate": candidate_summary,
+            "sample_sizes": sample_sizes,
         }
 
     if train_delta > 0 and holdout_delta <= 0:
