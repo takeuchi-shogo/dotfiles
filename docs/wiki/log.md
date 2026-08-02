@@ -2256,6 +2256,25 @@
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
 
+## [2026-08-02] ingest | Supervised fire-and-forget in Go
+
+- ソース: https://rednafi.com/go/supervised-fire-and-forget/ (Redowan Delowar, 2026-07-25)
+- 判定: Gap 3件 (panic 隔離 / WithoutCancel 例外規則 / closed channel send の競合排他), Partial 4件 (bounded pool / detach 後の自前 timeout / shutdown 順序 / エラーの可視化), Already 1件 (WaitGroup.Go), N/A 1件 (Asynq)
+- 取り込み: 4 件 — review-checklists/go.md GO-4 に「管理外の background task」小見出し + GO-7 に detached context 規則 / rules/go.md に裸の go func 禁止と shutdown 順序 / golang-safety SKILL.md の dead cross-reference 3 箇所を張り替え
+- 副次: golang-safety が指す `samber/cc-skills-golang@golang-concurrency` が未 install の dead reference だったことを発見 (skills-lock.json にも無い手動 vendor)
+- Phase 2.5: Codex 単独 (Gemini は IneligibleTierError で未取得)。Codex の助言で pool 実装コードと Asynq 推奨は不採用、「契約」だけ追加
+- 分析: docs/research/2026-08-02-supervised-fire-and-forget-go-absorb-analysis.md
+
+## [2026-08-02] ingest (light Phase 2) | Codex を Sol オーケストレータ + Luna Max worker に組む
+
+- ソース: X @Tz_2022 / @antonioleivag (Obsidian Vault raw clipping 2 本)
+- 理由: multi-agent-orchestration family N≈16、SATURATED-but-novel (delta=3) → user 選択 light-phase2
+- 判定: 8 手法中 rehash 5 (named prior 照合済) / ambiguous 2 / novel 1 → 採用 1 件
+- 取り込み: #4 のみ (S) — `change-surface-matrix.md` に config 変更の 3 点確認 (diff / 形式互換 / 有効性)
+- 実測: codex-cli 0.144.6 の `spawn_agent` は `task_name`/`message`/`fork_turns` のみ。`agent_type` が無く記事の手順は成立しない
+- 副次 (実バグ 6 件): 死んだ custom agent 艦隊 12 個を削除 / 9+ 箇所の誤記述を訂正 / live config drift 収束 / hooks 二重定義 warning 解消
+- 分析: docs/research/2026-08-02-codex-orchestrator-worker-subagent-absorb-analysis.md
+
 ## [2026-08-02] ingest | Do Context Files Help Coding Agents? A Two-Agent Ablation Study on Real Repositories
 
 - ソース: arXiv:2607.27250 (Prakhar Khatri) — alphaxiv.org 経由で全文取得

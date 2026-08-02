@@ -12,7 +12,7 @@ Use this playbook to evaluate OpenAI Symphony in this dotfiles repo without maki
 
 Already covered:
 - Worktree isolation and per-task filesystem separation are documented in `docs/playbooks/worktree-based-tasking.md`.
-- Codex custom subagents are configured through `.codex/agents/` and capped by `.codex/config.toml`.
+- Codex's built-in `spawn_agent` subagents are capped by `[agents] max_threads` / `max_depth` in `.codex/config.toml`; there is no named custom subagent configuration in the current CLI.
 - Long-running state, checkpoints, and validation contracts are documented in `docs/agent-harness-contract.md`.
 
 Gap Symphony adds:

@@ -11,7 +11,7 @@ platforms: [agents, codex]
 ## Workflow
 
 1. 変更対象に最も近い validation を選ぶ。
-2. review-ready report や複数領域変更では、必要なら `pr_explorer`、`reviewer`、`docs_researcher` の subagent review を先に走らせる。
+2. review-ready report や複数領域変更では、必要なら built-in subagent への review 委譲を先に走らせる。
 3. build / test / lint / typecheck / diff のうち必要なものだけ実行する。
 4. exit code と要点を確認する。
 5. 失敗があれば修正し、同じコマンドを再実行する。
@@ -31,7 +31,7 @@ platforms: [agents, codex]
 - README / doc 変更: `task validate-readmes`
 - symlink / `.codex` / `.claude` 変更: `task validate-symlinks`
 - 複数領域変更: `task validate`
-- validation 選定に迷う場合: `validation_explorer` を使うか、`Taskfile.yml` と `.bin/validate_*.sh` を直接読む
+- validation 選定に迷う場合: built-in subagent に探索を委譲するか、`Taskfile.yml` と `.bin/validate_*.sh` を直接読む
 
 ## Anti-Patterns
 

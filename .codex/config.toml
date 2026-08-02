@@ -54,19 +54,12 @@ undo = true                  # per-turn git ghost snapshots を有効化
 apply_patch_freeform = true  # freeform パッチ適用（experimental）
 js_repl = false
 
-# === Hooks pilot ===
+# === Hooks ===
 # 公式: https://developers.openai.com/codex/hooks
-# 既知バグ #19199: v0.124.0 でクラッシュ報告あり → 二層構造で厳密に守る
-# rollback: 起動失敗時は codex_hooks = false に変更
-[[hooks.PostToolUse]]
-matcher = "apply_patch"
-
-[[hooks.PostToolUse.hooks]]
-type = "command"
-command = "echo '[codex hook pilot] apply_patch completed; consider running lint/test'"
-timeout = 5
-statusMessage = "Pilot hook firing"
-
+# 実体は ~/.codex/hooks.json (cmux が注入) の 1 本に寄せる。
+# ここに [[hooks.*]] を書くと 2 箇所読み込みになり
+# "loading hooks from both ... prefer a single representation" の warning が出る。
+# 以下の [hooks.state] は Codex が自動生成する trust hash なので手で編集しない。
 [hooks.state]
 
 [hooks.state."/Users/shogo_takeuchi/.codex/config.toml:post_tool_use:0:0"]
