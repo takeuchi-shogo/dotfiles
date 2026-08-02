@@ -141,7 +141,7 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
 
 ## Codex-Specific Harness
 
-- 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.codex/agents/`, `.agents/skills/`
+- 実装場所: `.codex/config.toml`, `.codex/AGENTS.md`, `.agents/skills/`
 - 主な primitives:
   - profiles / sandbox / approval policy
   - exec policy rules (`.codex/rules/*.rules`)

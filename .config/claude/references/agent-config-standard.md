@@ -9,7 +9,6 @@ last_reviewed: 2026-04-23
 
 | 基盤 | 形式 | パス | 含まれる情報 |
 |------|------|------|-------------|
-| Codex | TOML | `.codex/agents/*.toml` | name, model, sandbox_mode, approval_policy, instructions |
 | Claude Code | Markdown | `.config/claude/agents/*.md` | name, description, role instructions |
 | Blueprints | YAML | `references/blueprints/*.yaml` | workflow DAG, tools scope, failure policy |
 
@@ -77,5 +76,4 @@ max_tokens: 16384
 
 - `references/managed-agents-hybrid.md` — Hybrid Architecture 全体像
 - `references/agent-portability.md` — ベンダーロックイン回避
-- `.codex/agents/` — 現在の Codex エージェント定義
 - `.config/claude/agents/` — 現在の Claude Code エージェント定義

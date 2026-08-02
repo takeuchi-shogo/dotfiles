@@ -41,7 +41,7 @@ Raise the size one level for auth, security, data deletion, migrations, public A
 
 ## Reviewer Selection
 
-Prefer read-only built-in subagents (via `spawn_agent`) when available, and instruct each one in its prompt to focus on one of these areas:
+Prefer built-in subagents (via `spawn_agent`) when available, and instruct each one in its prompt to focus on one of these areas:
 
 - default correctness, security, and test-gap review
 - interface drift, imports, callers, and multi-file refactors
@@ -52,7 +52,9 @@ Prefer read-only built-in subagents (via `spawn_agent`) when available, and inst
 
 Use the smallest reviewer set that covers the risk. Do not launch extra reviewers after a clean pass just to get nicer wording or a second opinion.
 
-If subagent delegation is unavailable, record that attempt and use a read-only CLI fallback such as `codex review --uncommitted --plain` or an equivalent read-only `codex exec --sandbox read-only` review. The fallback must still produce enough structured findings to decide the gate.
+`spawn_agent` has no sandbox parameter — subagents inherit the parent's sandbox, which defaults to `workspace-write`. Prompt wording does not enforce read-only. When the gate requires read-only review, start the parent under `--sandbox read-only` instead of relying on the reviewer prompt.
+
+If subagent delegation is unavailable, record that attempt and use a read-only CLI fallback such as `codex review --uncommitted` or an equivalent `codex exec --sandbox read-only` review. The fallback must still produce enough structured findings to decide the gate.
 
 ## Reviewer Prompt Contract
 
