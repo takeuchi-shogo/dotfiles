@@ -2255,3 +2255,13 @@
 - 取り込み: 採用 1 件 (T1, S) — `decision-tables-index.md` に「障害診断 系」セクション (症状→harness/loop/graph 層の routing、既存資産リンクのみ) + 未リンクだった `repair-routing.md` を別軸注記つきで索引化
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
+
+## [2026-08-03] ingest | CLAUDE.md と AGENTS.md を削ったら、AI コーディングがグンと賢くなった
+
+- ソース: https://note.com/o_ob/n/nd19cba8e11d7 (白井暁彦, note, 2026-07-30)
+- family: context-file クラスタ 8 件目、Saturation PASS(warning、採用率 50% 超)
+- 判定: Already 6 / Partial 5 / 保留 1 / N/A 0 (13 手法)。記事由来の新規 instruction は 0 件
+- 取り込み: reader ゼロだった references/negative-knowledge.md を writer 2 本ごと撤去 / project CLAUDE.md の global 重複 5 行を削除 / japanese-ai-prose.md に「リンクの示し方」節を追加 / doctor:context プラン作成
+- Phase 2.5: Codex only (Gemini は IneligibleTierError)。判定 4 件を覆した — <important if> は遅延ロードでない (M4 Already→Partial)、Pass 1 が deprecated な improve-policy.md を根拠にしていた、M13 は既存規定の見落とし + secrets URL の情報露出リスク
+- PR: https://github.com/takeuchi-shogo/dotfiles/pull/211
+- レポート: docs/research/2026-08-03-shirai-claude-md-trim-absorb-analysis.md
