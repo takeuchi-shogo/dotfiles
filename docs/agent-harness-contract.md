@@ -152,8 +152,6 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
   - memory-capture skill
   - Codex memories / Chronicle configuration (`[features].memories`, `[memories]`)
   - subagent runtime (`[agents]` - `max_threads`, `max_depth`)
-  - custom agents (`.codex/agents/*.toml` - read-only explorer / reviewer / researcher / validation mapper)
-  - subagent operation playbook (`docs/playbooks/codex-subagent-usage.md`)
   - optional Symphony pilot workflow (`docs/workflows/symphony/WORKFLOW.md`) for tracker-driven Codex runs
 
 ## Runtime Integration Notes

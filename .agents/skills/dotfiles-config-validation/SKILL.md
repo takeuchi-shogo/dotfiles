@@ -26,7 +26,7 @@ platforms: [agents, codex]
 - tool 別 README 変更だけなら `task validate-readmes`
 - shell / script / config 変更なら `task validate-configs`
 - 迷ったら `Taskfile.yml` と `.bin/validate_*.sh` を読んで最小コマンドを選ぶ
-- 変更面が複数領域にまたがる、または matrix と README の両方を横断して判断したいなら `validation_explorer` に委譲してよい
+- 変更面が複数領域にまたがる、または matrix と README の両方を横断して判断したいなら built-in subagent に探索を委譲してよい
 - optional tool binary が無い場合は skip を明示し、無関係な failure にしない
 
 ## Before Editing

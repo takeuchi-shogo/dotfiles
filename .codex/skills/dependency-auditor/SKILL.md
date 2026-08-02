@@ -140,5 +140,4 @@ pip-audit --format json
 
 ## Related (Codex)
 
-- コード品質レビュー → `reviewer` agent
-- セキュリティ深掘り → `security_auditor` agent
+- コード品質レビュー・セキュリティ深掘り → built-in subagent へ並列委譲

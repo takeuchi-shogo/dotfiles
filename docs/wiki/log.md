@@ -2255,3 +2255,13 @@
 - 取り込み: 採用 1 件 (T1, S) — `decision-tables-index.md` に「障害診断 系」セクション (症状→harness/loop/graph 層の routing、既存資産リンクのみ) + 未リンクだった `repair-routing.md` を別軸注記つきで索引化
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
+
+## [2026-08-02] ingest (light Phase 2) | Codex を Sol オーケストレータ + Luna Max worker に組む
+
+- ソース: X @Tz_2022 / @antonioleivag (Obsidian Vault raw clipping 2 本)
+- 理由: multi-agent-orchestration family N≈16、SATURATED-but-novel (delta=3) → user 選択 light-phase2
+- 判定: 8 手法中 rehash 5 (named prior 照合済) / ambiguous 2 / novel 1 → 採用 1 件
+- 取り込み: #4 のみ (S) — `change-surface-matrix.md` に config 変更の 3 点確認 (diff / 形式互換 / 有効性)
+- 実測: codex-cli 0.144.6 の `spawn_agent` は `task_name`/`message`/`fork_turns` のみ。`agent_type` が無く記事の手順は成立しない
+- 副次 (実バグ 6 件): 死んだ custom agent 艦隊 12 個を削除 / 9+ 箇所の誤記述を訂正 / live config drift 収束 / hooks 二重定義 warning 解消
+- 分析: docs/research/2026-08-02-codex-orchestrator-worker-subagent-absorb-analysis.md
