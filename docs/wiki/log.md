@@ -2255,3 +2255,10 @@
 - 取り込み: 採用 1 件 (T1, S) — `decision-tables-index.md` に「障害診断 系」セクション (症状→harness/loop/graph 層の routing、既存資産リンクのみ) + 未リンクだった `repair-routing.md` を別軸注記つきで索引化
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
+
+## [2026-08-03] ingest | AIエージェント4体を herdr だけでオーケストレーションする intent-cli — 指示待ちで止まらない仕組み
+
+- ソース: https://github.com/J-Tech-Japan/intent-system/releases/tag/v0.8.0 (ユーザー貼り付けテキスト)
+- 判定: Gap 2, Partial 4, Already 2, N/A 1 (Phase 2.5 で Codex が 5 件修正)
+- 取り込み: 4 件すべて実装済み (T1 dispatch router に herdr 分岐 / T2 dispatch-log.sh に pending 追加 + filter 全セッション横断化 / T3 herdr collect の成功条件強化 / T4 T3 plan の idle 判定訂正)
+- family: multi-agent-orchestration (N=17+, Saturation PASS warning)

@@ -115,6 +115,9 @@ ${TASK}
       fi
     fi
     dispatch_log_prompt "$WORKER_ID" "$PROMPT"
+    # claude は pane スクレイプで回収するため、送信プロンプトが必ず画面に残る。
+    # collect 側が「応答が無い」を判定できるよう、除外するエコー行を控えておく。
+    printf '%s\n' "$PROMPT" > "${RESULT_FILE}.prompt"
     ;;
   codex|gemini)
     # argv 直接 spawn なのでコマンドラインは画面にエコーされない。
