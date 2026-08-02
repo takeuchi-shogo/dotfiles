@@ -53,3 +53,4 @@ confidence: established
 - [Subagent Context Fork absorb分析 (aitmpl系記事)](../../research/2026-04-27-subagent-context-fork-absorb-analysis.md) — Subagent context fork記事を分析、fork機能非採用・観測3件採用
 - [Distribution vs Escalation: Subagents or Advisors absorb分析](../../research/2026-05-04-distribution-vs-escalation-absorb-analysis.md) — Subagent/Advisor使い分け記事を分析、決定表等5件統合
 - [The Self-Improving Loop: 300-agent swarm on Kimi K2.6](../../research/2026-06-18-kimi-k26-self-improving-swarm-loop-absorb-analysis.md) — Kimi swarm記事はほぼrehash、Cost-Arbitrageのみbest-of-nガイドに採用
+- [AIエージェント4体を herdr だけでオーケストレーションする intent-cli (absorb分析)](../../research/2026-08-03-intent-cli-wake-sources-absorb-analysis.md) — wake源多重化記事を分析、router drift可観測性(上記項目)の具体例を発見・修正: dispatch/SKILL.mdのherdr参照が0件で配線先が呼ばれていなかった件と、dispatch-logがプロセス単位でセッション分割され未回収workerを検出できなかった件
