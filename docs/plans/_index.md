@@ -22,6 +22,7 @@ last_reviewed: 2026-04-23
 
 | Plan | パス | 概要 |
 |---|---|---|
+| 2026-08-03-doctor-context-inventory-plan | `active/2026-08-03-doctor-context-inventory-plan.md` | 常時ロード量 (CLAUDE.md 行数 / skill description tax / 未接続 producer) を `task doctor:context` で一枚に出す |
 | 2026-04-23-agents-md-absorb-plan | `active/2026-04-23-agents-md-absorb-plan.md` | AGENTS.md patterns absorb 7 タスク統合 |
 | 2026-04-21-harness-pipeline-absorb-plan | `active/2026-04-21-harness-pipeline-absorb-plan.md` | Harness Pipeline (BAN article) absorb |
 | 2026-04-20-karpathy-absorb-plan | `active/2026-04-20-karpathy-absorb-plan.md` | Karpathy Skills absorb |
