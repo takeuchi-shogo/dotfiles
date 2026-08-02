@@ -1,9 +1,3 @@
----
-paths:
-  - "**/*.go"
-  - "**/go.mod"
----
-
 # Go Rules
 
 Go Code Review Comments・Effective Go・Learn Go with Tests に基づく。
