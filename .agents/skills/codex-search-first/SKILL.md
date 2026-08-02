@@ -24,7 +24,7 @@ platforms: [agents, codex]
 - MCP で済むか
 - tool 固有 README に既に運用ルールがないか
 - 既存構造に 1 ファイル足すだけで済まないか
-- code path / docs / config を並列に読む価値があるなら `pr_explorer` や `docs_researcher` を使うべきか
+- code path / docs / config を並列に読む価値があるなら built-in subagent への並列委譲を使うべきか
 
 ## Decision Rules
 

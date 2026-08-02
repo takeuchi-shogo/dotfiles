@@ -9,7 +9,6 @@
 - `PLANS.md`
 - `docs/agent-harness-contract.md`
 - `docs/guides/codex-long-horizon-workflow.md`
-- `docs/playbooks/codex-subagent-usage.md`
 - Apps / connectors を触る場合は `docs/playbooks/codex-apps-pilot.md`
 - OpenAI Hosted / Local Shell pilot を触る場合は `docs/playbooks/openai-shell-pilot.md`
 
@@ -47,7 +46,6 @@
 - `personality` と task ごとの output control を混ぜない
 - Claude 固有 hook を Codex 側へ持ち込まない
 - 新しい skill を追加したのに `~/.codex/skills/` と `~/.agents/skills/` の公開を忘れない
-- subagent の詳細テンプレートは `docs/playbooks/codex-subagent-usage.md` へ寄せ、`.codex/AGENTS.md` は短い運用ルールに留める
 - `Rules` は experimental 前提で扱い、初回は read-only / low-risk prefix だけに絞る
 - Apps / connectors は常時有効化の前に one-off pilot を優先する
 - OpenAI shell も常用 config より one-off pilot と runbook 固定を先に行う
