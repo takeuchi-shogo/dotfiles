@@ -2286,3 +2286,10 @@
 - 副次: root `tests/` の 128 件が CI・task test・lefthook のいずれからも実行されない孤児 + collection error / pytest 実行が追跡ファイル `negative-knowledge.md` を汚染 (master にコミット済み) / deprecated な improve-policy.md への現役参照
 - Stale-Plan Audit: `2026-05-10-12-rule-claude-md` を実ファイル照合のうえ `status: implemented` に確定
 - 分析: docs/research/2026-08-02-context-files-ablation-absorb-analysis.md
+
+## [2026-08-03] ingest | AIエージェント4体を herdr だけでオーケストレーションする intent-cli — 指示待ちで止まらない仕組み
+
+- ソース: https://github.com/J-Tech-Japan/intent-system/releases/tag/v0.8.0 (ユーザー貼り付けテキスト)
+- 判定: Gap 2, Partial 4, Already 2, N/A 1 (Phase 2.5 で Codex が 5 件修正)
+- 取り込み: 4 件すべて実装済み (T1 dispatch router に herdr 分岐 / T2 dispatch-log.sh に pending 追加 + filter 全セッション横断化 / T3 herdr collect の成功条件強化 / T4 T3 plan の idle 判定訂正)
+- family: multi-agent-orchestration (N=17+, Saturation PASS warning)
