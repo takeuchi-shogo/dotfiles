@@ -58,7 +58,7 @@ tasks:
       Post-clone / post-nix:switch orchestration. Idempotent — safe to re-run.
       Pre-req: `task nix:bootstrap PROFILE=...` (first machine) or `task nix:switch PROFILE=...`.
       Chains the steps that are NOT covered by nix-darwin / init-install.sh:
-        build-hooks → lefthook:install → build-claude → patch-claude → claude:plugins → herdr:plugins → doctor
+        build-hooks → lefthook:install → build-claude → patch-claude → claude:plugins → herdr:plugins → terminal-browser:install → doctor
       Skills are vendored in the repo (symlinked by nix), so nix:switch already
       provides them; claude:plugins / herdr:plugins fetch plugin payloads that
       are machine-local.
@@ -70,6 +70,7 @@ tasks:
       - task: patch-claude
       - task: claude:plugins
       - task: herdr:plugins
+      - task: terminal-browser:install
       - task: doctor
 
   brew:
@@ -319,6 +320,25 @@ tasks:
     desc: 'Read-only: report herdr plugins declared but not installed (exit 1 if any missing)'
     cmds:
       - bash ~/dotfiles/scripts/lifecycle/herdr-plugins-sync.sh check
+
+  terminal-browser:install:
+    desc: |
+      Install terminal-browser (https://terminal-browser.com/) via the vendor
+      installer. Binary → ~/.local/bin, app payload → ~/.local/share, both
+      machine-local. Skipped when the binary is already in PATH.
+      The installer links its skill into every `<editor>/skills` dir it finds,
+      but skips paths that are real directories — so the vendored copy at
+      .config/claude/skills/terminal-browser/ survives. .cursor/skills/ holds a
+      symlink, which the installer does rewrite to an absolute path, so we
+      restore the repo-relative form afterwards (same shape as the herdr entry).
+      NOTE: nix/pkgs/terminal-browser.nix (#199) already pins v0.3.3 by sha256
+      and ships the same binary via home.packages — see the PR discussion before
+      relying on this task.
+    status:
+      - command -v terminal-browser >/dev/null
+    cmds:
+      - curl -fsSL https://terminal-browser.sh/install | bash
+      - ln -sfn ../../.config/claude/skills/terminal-browser ~/dotfiles/.cursor/skills/terminal-browser
 
   codex-janitor:
     desc: Run the repo-local Codex janitor workflow runner
