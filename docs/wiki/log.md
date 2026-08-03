@@ -2274,3 +2274,15 @@
 - 実測: codex-cli 0.144.6 の `spawn_agent` は `task_name`/`message`/`fork_turns` のみ。`agent_type` が無く記事の手順は成立しない
 - 副次 (実バグ 6 件): 死んだ custom agent 艦隊 12 個を削除 / 9+ 箇所の誤記述を訂正 / live config drift 収束 / hooks 二重定義 warning 解消
 - 分析: docs/research/2026-08-02-codex-orchestrator-worker-subagent-absorb-analysis.md
+
+## [2026-08-02] ingest | Do Context Files Help Coding Agents? A Two-Agent Ablation Study on Real Repositories
+
+- ソース: arXiv:2607.27250 (Prakhar Khatri) — alphaxiv.org 経由で全文取得
+- Saturation: PASS (warning) — agentic-instruction-following family N=2 / 未登録の context-file クラスタで数えると N=6・採用率 50%+
+- 判定: Gap 3件 (#4 borderline band, #9 power analysis, #15 反復 vs 対象数), Partial 7件, Already 2件 (#7 process/outcome 分離, #13 完了ゲート), N/A 2件 (#12 egress pod, #14 品質ルーブリック)
+- 取り込み: 採用 3 件 (S×3) — T1 `skill-audit/SKILL.md:513` の検出力ガイダンス修正 + 床/天井の事前確認 / T4' `dead-weight-scan-protocol.md` に「手順 3 は集計成功率の検定ではない」を明記 / T6 `holdout_accept_gate.py` の verdict に `sample_sizes` 追加
+- 不採用: 3-arm ablation (論文の SELECTIVE arm 自体が corpus 10x/18x で交絡) / process-cost の主判定昇格 / T2 canary 追記 / T3 失敗トリアージ軸 / T5 turn 非可搬性 (`benchmark-dimensions.md` に consumer なし)
+- Phase 2.5: Gemini sunset + cmux 不在のため Codex 2 本を役割分担 (批評 / 配線検証) = model-family diversity は degraded。spoke B が spoke A の `improve-policy.md` (deprecated) 追記勧告を阻止
+- 副次: root `tests/` の 128 件が CI・task test・lefthook のいずれからも実行されない孤児 + collection error / pytest 実行が追跡ファイル `negative-knowledge.md` を汚染 (master にコミット済み) / deprecated な improve-policy.md への現役参照
+- Stale-Plan Audit: `2026-05-10-12-rule-claude-md` を実ファイル照合のうえ `status: implemented` に確定
+- 分析: docs/research/2026-08-02-context-files-ablation-absorb-analysis.md

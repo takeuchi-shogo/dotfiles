@@ -29,6 +29,12 @@ from session_events import (
 # Ref: docs/audit/telemetry-coverage.md "2026-04-17 Update" — Action 2.
 _RECOVERY_SIGNAL_CATEGORIES = frozenset({"correction", "pattern", "skill"})
 
+NEGATIVE_KNOWLEDGE_PATH = (
+    Path(__file__).resolve().parent.parent.parent
+    / "references"
+    / "negative-knowledge.md"
+)
+
 
 def _infer_recovery(events: list[dict]) -> bool:
     """Infer whether the session recovered from errors.
@@ -218,11 +224,7 @@ def _extract_negative_patterns(summary: dict, logger: logging.Logger) -> None:
             return
 
         # negative-knowledge.md に追記
-        neg_path = (
-            Path(__file__).resolve().parent.parent.parent
-            / "references"
-            / "negative-knowledge.md"
-        )
+        neg_path = NEGATIVE_KNOWLEDGE_PATH
         if not neg_path.exists():
             return
 

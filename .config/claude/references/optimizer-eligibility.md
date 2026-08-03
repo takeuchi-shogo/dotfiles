@@ -55,7 +55,7 @@ artifact を objective-checkable lane に入れるには、3 問すべて Yes �
 
 ## ルール
 
-- strict gate (`holdout_accept_gate.py`) の対象は objective lane **のみ**。judgement lane への自動最適化は block (improve-policy.md Rule 10/22 と同趣旨)
+- strict gate (`holdout_accept_gate.py`) の対象は objective lane **のみ**。judgement lane への自動最適化は block (improve-policy.md Rule 10/22 と同趣旨、同ファイルは status: deprecated につき参考情報)
 - 1 つの skill の中に objective な部分 (分類・routing) と judgement な部分 (提案文) が混在する場合、objective な部分だけを切り出して最適化する。skill 全体を objective 扱いしない
 - lane 割当の変更・allowlist への追加は人間承認必須。自動プロセス (nightly / AutoEvolve) が本ファイルを書き換えることを禁止する (Rule 22 の延長)
 
