@@ -44,7 +44,7 @@ routing degradation を防ぐため、Triggers と Do NOT use for を grid 化�
 | `taste-skill` (v2) | `taste-skill` | Landing / Portfolio / Marketing anti-slop (vibe 不明時の default) | Dashboard, data tables, multi-step product UI, design system 体系設計 (use ui-ux-pro-max), existing UI overhaul (use redesign-skill) | Claude Code / Codex |
 | `redesign-skill` | `redesign-skill` | Full UI overhaul (audit + restructure) | New greenfield, targeted polish (use impeccable) | Claude Code / Codex |
 | `brandkit` | `brandkit` | Logo / identity / brand board 画像生成 | Code 生成、UI 実装 | ChatGPT Images / Codex image / MCP |
-| `design-md-init` | (dotfiles 直置き) | プロジェクト root に DESIGN.md 配置 (grill-me 47 branch + awesome-design-md exemplar) | 既存 DESIGN.md の改修、greenfield UI 実装そのもの | Claude Code |
+| `design-md-init` | (dotfiles 直置き) | プロジェクト root に DESIGN.md 配置 (grilling 47 branch + awesome-design-md exemplar) | 既存 DESIGN.md の改修、greenfield UI 実装そのもの | Claude Code |
 | `output-skill` | `full-output-enforcement` | Truncation 防止、placeholder 禁止 enforce | 普通の短いタスク | All agents |
 | `frontend-design` (plugin) | (Anthropic) | Creative build/refine (polish / distill / critique / energize / calm)、単発 component / Artifact | Dashboard / Admin / design system 体系設計 (use ui-ux-pro-max), Landing / Portfolio (use taste-skill), UI review (use web-design-guidelines) | Claude Code |
 | `ui-ux-pro-max` | `ui-ux-pro-max` | Design system / a11y / typography / color / chart の体系設計、SaaS Dashboard、Mobile App UI | Landing / Portfolio (use taste-skill), creative polish/refine (use frontend-design), UI コード review (use web-design-guidelines) | Claude Code |

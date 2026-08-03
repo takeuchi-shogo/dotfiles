@@ -1,6 +1,6 @@
 ---
 name: design-md-init
-description: プロジェクト root に DESIGN.md を 1 度だけ配置 (grill-me で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き)。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; 既存 UI overhaul (use taste-skill), 既存 DESIGN.md 改修 (手動 rm/rename), UI 実装 (use taste-skill / frontend-design).
+description: プロジェクト root に DESIGN.md を 1 度だけ配置 (grilling で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き)。Triggers&#58; 'DESIGN.md 置きたい', 'DESIGN.md 作りたい', 'デザインシステム決めたい', 'design tokens 整えたい', 'スタイルがブレる'. Do NOT use for&#58; 既存 UI overhaul (use taste-skill), 既存 DESIGN.md 改修 (手動 rm/rename), UI 実装 (use taste-skill / frontend-design).
 ---
 
 # design-md-init — Project DESIGN.md Bootstrap
@@ -12,7 +12,7 @@ DESIGN.md は agent が UI を組む前に読む契約物で、色 / 型階層 /
 
 このスキルの責務は 3 つだけ:
 
-1. **grill-me に投げる** — `references/design-decision-tree.md` をシードに、47 branch のデザイン意図を引き出してもらう。grill-me 本体には触らない(管理ボールを持たない)。
+1. **grilling に投げる** — `references/design-decision-tree.md` をシードに、47 branch のデザイン意図を引き出してもらう。grilling 本体には触らない(管理ボールを持たない)。
 2. **awesome-design-md から exemplar を 1 件取ってくる** — grilling 結果の vibe profile に最も近い 1 件を WebFetch でコピー、grilling で出た delta(色上書き / フォント差替 / 禁則追記)だけ反映。
 3. **agent に読ませる線を引く** — `CLAUDE.md` / `AGENTS.md` の末尾に固定の "## Design" 段落を append。
 
@@ -20,7 +20,7 @@ DESIGN.md は agent が UI を組む前に読む契約物で、色 / 型階層 /
 
 - このプロジェクトに DESIGN.md がまだ無いこと(あれば abort)
 - インターネット接続(`github.com` / `raw.githubusercontent.com` へ WebFetch)
-- Claude Code セッション(Skill tool で grill-me を呼ぶ)
+- Claude Code セッション(Skill tool で grilling を呼ぶ)
 
 ## Execution Steps
 
@@ -36,9 +36,13 @@ test -f ./DESIGN.md
 
 理由: DESIGN.md は契約物で silent 上書き禁止。merge mode は意図的に持たない(YAGNI、必要になったら別 skill で `/design-md-revise` を切る)。
 
-### Step 2 — grill-me 起動
+### Step 2 — grilling 起動
 
-`Skill(mattpocock-skills:grill-me)` を以下のシード付きで起動する。シードは `references/design-decision-tree.md` を読み込んで args に展開する:
+`Skill(mattpocock-skills:grilling)` を以下のシード付きで起動する。シードは `references/design-decision-tree.md` を読み込んで args に展開する:
+
+upstream は grilling 本体を `grill-me` から `grilling` に移し、`grill-me` は
+`Run a /grilling session.` の 1 行シム + `disable-model-invocation: true` になった。
+人間が `/grill-me` と打つ入口としては生きているが、skill から呼ぶ先は `grilling`。
 
 ```
 このプロジェクトに置く DESIGN.md の中身を決める。以下の 47 branch を
@@ -55,7 +59,7 @@ test -f ./DESIGN.md
   - mode (light / dark / both)
 ```
 
-grill-me は一問ずつ進めるので、ユーザーが default を accept していけば 5–10 分で抜けられる。こだわりがあれば 47 全部詰められる。
+grilling は一問ずつ進めるので、ユーザーが default を accept していけば 5–10 分で抜けられる。こだわりがあれば 47 全部詰められる。
 
 ### Step 3 — Vibe profile 抽出
 
@@ -169,12 +173,12 @@ Do not introduce styles, fonts, or colors that contradict it.
 | README WebFetch 失敗 | abort、疎通確認案内 |
 | 選択した exemplar fetch 失敗 | 1 回 retry → next best → 全失敗で abort |
 | vibe profile が極端で match 候補なし | 中立 default(`vercel.md`)を提示、ユーザー accept で続行 |
-| grill-me 中断 | DESIGN.md 配置せず終了、再実行時は Step 1 から |
+| grilling 中断 | DESIGN.md 配置せず終了、再実行時は Step 1 から |
 
 ## Non-goals (意図的に持たない)
 
 - 既存 DESIGN.md の diff / merge / 部分更新
 - decision log の出力(必要なら `/decision` skill 使う)
-- Codex からの直接起動(grill-me が Claude Code 専用)
+- Codex からの直接起動(grilling が Claude Code 専用)
 - 73 exemplar のローカル cache / vendor(upstream に一任)
 - DESIGN.md に従っているかの lint / hook(YAGNI、3 回事故るまで待つ)
