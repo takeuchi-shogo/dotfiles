@@ -22,7 +22,7 @@ devbox init
 
 # Add packages
 devbox add nodejs@20
-devbox add python@3.12 go@1.22
+devbox add python@3.12 go@1.26
 
 # Remove a package
 devbox rm nodejs
