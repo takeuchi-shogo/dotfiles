@@ -2318,3 +2318,4 @@
 - 副次: 記事の framing が露出させた既存の穴が 3 件 (orphan hook 2 件は 2026-04-23 escalation → 2026-06-07 再検出 → 今回で 3 度目 / memory feedback_explore_subagent_bash_limit.md の因果が誤り)
 - Phase 2.5: Gemini は IneligibleTierError で degraded、Codex 単独。判定 6 件を修正 (#14/#13 を Gap→Broken、#5 Gap→Partial、#1 の N/A 根拠が ADR 誤読と指摘)
 - 分析: docs/research/2026-08-03-prompt-improver-nudge-injection-absorb-analysis.md
+
