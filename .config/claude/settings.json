@@ -853,7 +853,7 @@
     "typescript-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
-    "terraform-skill@antonbabenko-terraform": true,
+    "terraform-skill@antonbabenko": true,
     "warp@claude-code-warp": true,
     "mattpocock-skills@mattpocock-skills": true,
     "ponytail@ponytail": true
@@ -871,7 +871,7 @@
         "repo": "kepano/obsidian-skills"
       }
     },
-    "antonbabenko-terraform": {
+    "antonbabenko": {
       "source": {
         "source": "github",
         "repo": "antonbabenko/terraform-skill"
