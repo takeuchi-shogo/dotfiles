@@ -81,50 +81,6 @@ def prune_old_errors(errors: list[dict], now: float) -> list[dict]:
     return [e for e in errors if e.get("ts", 0) > cutoff]
 
 
-def append_to_negative_knowledge(fm_code: str, error_text: str, count: int) -> None:
-    """negative-knowledge.md にスパイクパターンを追記する（存在する場合のみ）。"""
-    try:
-        neg_path = (
-            Path(__file__).resolve().parent.parent.parent
-            / ".config"
-            / "claude"
-            / "references"
-            / "negative-knowledge.md"
-        )
-        # dotfiles 構造: scripts/runtime/ → dotfiles root
-        # 代替パス: symlink 経由
-        alt_path = Path.home() / ".claude" / "references" / "negative-knowledge.md"
-
-        target = (
-            neg_path if neg_path.exists() else (alt_path if alt_path.exists() else None)
-        )
-        if not target:
-            return
-
-        from datetime import datetime, timezone
-
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        anti_pattern = f"[{fm_code}] Error spike ({count}x in 5min): {error_text[:80]}"
-        entry = (
-            f"| {ts} | auto | {anti_pattern} | Error rate spike detected | failure |"
-        )
-
-        content = target.read_text(encoding="utf-8")
-        lines = content.splitlines()
-        lines.append(entry)
-
-        # ローテート: ヘッダ7行 + データ200行
-        header = lines[:7]
-        data_lines = lines[7:]
-        if len(data_lines) > 200:
-            data_lines = data_lines[-200:]
-        lines = header + data_lines
-
-        target.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    except OSError as e:
-        sys.stderr.write(f"[error-rate-monitor] negative-knowledge write failed: {e}\n")
-
-
 def main() -> None:
     # stdin パススルー
     data = sys.stdin.read()
@@ -181,9 +137,6 @@ def main() -> None:
             + f"直近のエラー: {error_text[:100]}\n"
         )
         sys.stderr.write(warning)
-
-        # negative-knowledge.md に追記
-        append_to_negative_knowledge(fm_code, error_text, same_fm_count)
 
 
 if __name__ == "__main__":

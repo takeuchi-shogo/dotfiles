@@ -2293,3 +2293,12 @@
 - 判定: Gap 2, Partial 4, Already 2, N/A 1 (Phase 2.5 で Codex が 5 件修正)
 - 取り込み: 4 件すべて実装済み (T1 dispatch router に herdr 分岐 / T2 dispatch-log.sh に pending 追加 + filter 全セッション横断化 / T3 herdr collect の成功条件強化 / T4 T3 plan の idle 判定訂正)
 - family: multi-agent-orchestration (N=17+, Saturation PASS warning)
+## [2026-08-03] ingest | CLAUDE.md と AGENTS.md を削ったら、AI コーディングがグンと賢くなった
+
+- ソース: https://note.com/o_ob/n/nd19cba8e11d7 (白井暁彦, note, 2026-07-30)
+- family: context-file クラスタ 8 件目、Saturation PASS(warning、採用率 50% 超)
+- 判定: Already 6 / Partial 5 / 保留 1 / N/A 0 (13 手法)。記事由来の新規 instruction は 0 件
+- 取り込み: reader ゼロだった references/negative-knowledge.md を writer 2 本ごと撤去 / project CLAUDE.md の global 重複 5 行を削除 / japanese-ai-prose.md に「リンクの示し方」節を追加 / doctor:context プラン作成
+- Phase 2.5: Codex only (Gemini は IneligibleTierError)。判定 4 件を覆した — <important if> は遅延ロードでない (M4 Already→Partial)、Pass 1 が deprecated な improve-policy.md を根拠にしていた、M13 は既存規定の見落とし + secrets URL の情報露出リスク
+- PR: https://github.com/takeuchi-shogo/dotfiles/pull/211
+- レポート: docs/research/2026-08-03-shirai-claude-md-trim-absorb-analysis.md
