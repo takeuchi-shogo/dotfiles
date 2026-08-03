@@ -146,6 +146,17 @@ Codex は instruction を「自然語テキストの連結」ではなく「型�
 
 **残存リスク**: `--sandbox read-only` のままなので、Codex は自分の判断で `AGENTS.md` を読みにいける。注入されなくなるだけで、読めなくなるわけではない。完全に断つには空ディレクトリを作業根 (`-C`) にして diff を prompt に埋め込む必要があるが、それはファイル横断のコンテキストを失う取引になるため採らない。
 
+### 名前付き custom agent は作らない
+
+codex-cli 0.144.6 の `spawn_agent` が取るのは `task_name` / `message` / `fork_turns` の 3 つだけで、`agent_type` が無い (`references/agent-config-standard.md`)。`.codex/agents/*.toml` に定義しても選ぶ手段がないため、「Sol をオーケストレータ、Luna Max を worker に」系の手順はこの機体では成立しない。過去に 12 個定義して 5 ヶ月間 1 度も動かず、PR #208 で撤去した。モデルを使い分けるなら `codex exec -m <model>` を使う。
+
+**撤退条件**: 次のコマンドの出力に `agent_type` が現れたら、この判断は無効になる。
+
+```bash
+codex exec --skip-git-repo-check --sandbox read-only -c model_reasoning_effort=low \
+  "List the parameter names of your spawn_agent tool, one per line. Nothing else."
+```
+
 ### `-p <profile>` は使わない
 
 codex v0.144.6 では `[profiles.*]` テーブルと `--profile` の併用が**エラーになる**。profile は `$CODEX_HOME/<name>.config.toml` の別ファイル方式に移行した。

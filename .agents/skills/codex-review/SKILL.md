@@ -33,26 +33,30 @@ Prepare the review input before launching a reviewer:
 
 | Size | Heuristic | Reviewer strategy |
 |---|---|---|
-| small | <=3 files and <=100 changed lines | one `reviewer` diff pass |
-| medium | 4-10 files or 100-500 changed lines | `reviewer`; add `cross_file_reviewer` for multi-file contracts |
-| large | >10 files or >500 changed lines | split by directory or concern; run 3-4 focused reviewers, then synthesize |
+| small | <=3 files and <=100 changed lines | one subagent diff pass |
+| medium | 4-10 files or 100-500 changed lines | one subagent pass; add a second pass focused on cross-file interface drift for multi-file contracts |
+| large | >10 files or >500 changed lines | split by directory or concern; run 3-4 focused subagent passes, then synthesize |
 
 Raise the size one level for auth, security, data deletion, migrations, public APIs, infra/config, external side effects, dependency changes, or harness changes.
 
 ## Reviewer Selection
 
-Prefer configured read-only Codex custom agents when available:
+Prefer built-in subagents (via `spawn_agent`) when available, and instruct each one in its prompt to focus on one of these areas:
 
-- `reviewer`: default correctness, security, and test-gap review
-- `cross_file_reviewer`: interface drift, imports, callers, and multi-file refactors
-- `security_auditor`: auth, secrets, input validation, scripts, MCP, or config security
-- `edge_case_hunter`: nil, empty, boundary, retry, timeout, timezone, and unusual-path risks
-- `silent_failure_hunter`: swallowed errors, unsafe fallback, log-and-continue patterns
-- `migration_guard`: DB/API/dependency breaking changes
+- default correctness, security, and test-gap review
+- interface drift, imports, callers, and multi-file refactors
+- auth, secrets, input validation, scripts, MCP, or config security
+- nil, empty, boundary, retry, timeout, timezone, and unusual-path risks
+- swallowed errors, unsafe fallback, log-and-continue patterns
+- DB/API/dependency breaking changes
 
 Use the smallest reviewer set that covers the risk. Do not launch extra reviewers after a clean pass just to get nicer wording or a second opinion.
 
-If custom agents are unavailable, record that attempt and use a read-only CLI fallback such as `codex review --uncommitted --plain` or an equivalent read-only `codex exec --sandbox read-only` review. The fallback must still produce enough structured findings to decide the gate.
+`spawn_agent` has no sandbox parameter — subagents inherit the parent's sandbox, which defaults to `workspace-write`. Telling a reviewer to stay read-only is a prompt instruction, not an enforced boundary. Do not make the parent read-only to compensate: the Fix Loop below needs that same parent to edit files.
+
+When the gate needs an enforced read-only reviewer, run the review pass as a separate process instead: `codex review --uncommitted`, or `codex exec --sandbox read-only`. Keep the fix loop in the writable parent.
+
+Use the same separate read-only process, at `--config model_reasoning_effort="xhigh"`, for security deep-dives — see `.codex/AGENTS.md` and `.config/claude/rules/codex-delegation.md`.
 
 ## Reviewer Prompt Contract
 
@@ -105,7 +109,7 @@ Do not independently dismiss a blocking issue. If dismissal seems correct, docum
 
 Report these items:
 
-- mode: custom agents or read-only CLI fallback
+- mode: subagent delegation or read-only CLI fallback
 - review scope and size
 - reviewers used and fallback evidence, if any
 - iterations used

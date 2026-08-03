@@ -1,14 +1,3 @@
----
-paths:
-  - "**/*.ts"
-  - "**/*.tsx"
-  - "**/*.js"
-  - "**/*.jsx"
-  - "**/*.go"
-  - "**/*.py"
-  - "**/*.rs"
----
-
 # Error Handling
 
 ## Principles

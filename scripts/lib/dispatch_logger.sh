@@ -6,7 +6,7 @@ set -euo pipefail
 
 # セッションID（プロセス起動時に1回生成）
 DISPATCH_SESSION_ID="${DISPATCH_SESSION_ID:-$(date +%Y%m%d-%H%M%S)-$$}"
-DISPATCH_LOG_DIR="/tmp/cmux-dispatch-log"
+DISPATCH_LOG_DIR="${DISPATCH_LOG_DIR:-/tmp/cmux-dispatch-log}"
 DISPATCH_LOG_FILE="${DISPATCH_LOG_DIR}/${DISPATCH_SESSION_ID}.jsonl"
 DISPATCH_RESULT_DIR="/tmp/cmux-results"
 DISPATCH_DONE_SIGNAL="${DISPATCH_DONE_SIGNAL:-===DISPATCH_DONE===}"

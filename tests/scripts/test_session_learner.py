@@ -14,7 +14,7 @@ sys.path.insert(0, scripts_dir)
 sys.path.insert(0, lib_dir)
 
 
-def _import_session_learner():
+def _import_session_learner(neg_knowledge_dir=None):
     """ハイフン付きファイル名 session-learner.py をインポートする。"""
     spec = importlib.util.spec_from_file_location(
         "session_learner",
@@ -22,6 +22,8 @@ def _import_session_learner():
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
+    if neg_knowledge_dir is not None:
+        mod.NEGATIVE_KNOWLEDGE_PATH = Path(neg_knowledge_dir) / "negative-knowledge.md"
     return mod
 
 
@@ -40,7 +42,7 @@ class TestSessionLearner:
         emit_event("error", {"message": "ReferenceError", "command": "node app.js"})
         emit_event("quality", {"rule": "GP-004", "file": "src/app.ts"})
 
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         summary = session_learner.build_session_summary(cwd="/tmp/test-project")
 
         assert summary["errors_count"] == 2
@@ -48,7 +50,7 @@ class TestSessionLearner:
         assert summary["project"] == "test-project"
 
     def test_build_session_summary_empty(self):
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         summary = session_learner.build_session_summary(cwd="/tmp/test-project")
         assert summary["errors_count"] == 0
         assert summary["quality_issues"] == 0
@@ -59,7 +61,7 @@ class TestSessionLearner:
 
         emit_event("error", {"message": "TypeError", "command": "npm test"})
 
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         session_learner.process_session(cwd="/tmp/test-project")
 
         errors_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
@@ -69,14 +71,14 @@ class TestSessionLearner:
         assert metrics_path.exists()
 
     def test_process_skips_when_no_events(self):
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         session_learner.process_session(cwd="/tmp/test-project")
 
         metrics_path = Path(self.tmpdir) / "metrics" / "session-metrics.jsonl"
         assert not metrics_path.exists()
 
     def test_session_outcome_clean_success(self):
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         summary = session_learner.build_session_summary(cwd="/tmp/test")
         assert summary["outcome"] == "clean_success"
 
@@ -84,7 +86,7 @@ class TestSessionLearner:
         from session_events import emit_event
 
         emit_event("error", {"message": "TypeError", "command": "npm test"})
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         summary = session_learner.build_session_summary(cwd="/tmp/test")
         assert summary["outcome"] == "failure"
 
@@ -93,7 +95,7 @@ class TestSessionLearner:
 
         emit_event("error", {"message": "TypeError", "command": "npm test"})
         emit_event("correction", {"message": "Fixed TypeError"})
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         summary = session_learner.build_session_summary(cwd="/tmp/test")
         assert summary["outcome"] == "recovery"
 
@@ -103,7 +105,7 @@ class TestSessionLearner:
         emit_event(
             "error", {"message": "Error in /Users/test/app.ts", "command": "npm test"}
         )
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         session_learner.process_session(cwd="/tmp/test")
 
         errors_path = Path(self.tmpdir) / "learnings" / "errors.jsonl"
@@ -119,7 +121,7 @@ class TestSessionLearner:
         )
         emit_event("correction", {"message": "Fixed by adding null check"})
 
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         session_learner.process_session(cwd="/tmp/test")
 
         tips_path = Path(self.tmpdir) / "learnings" / "recovery-tips.jsonl"
@@ -133,7 +135,7 @@ class TestSessionLearner:
 
         emit_event("error", {"message": "TypeError", "command": "npm test"})
 
-        session_learner = _import_session_learner()
+        session_learner = _import_session_learner(self.tmpdir)
         session_learner.process_session(cwd="/tmp/test")
 
         tips_path = Path(self.tmpdir) / "learnings" / "recovery-tips.jsonl"
@@ -149,7 +151,7 @@ class TestSessionLearner:
                 "test-skill", f"hyp-{i}", v, 0.5, 0.6 if v == "keep" else 0.4, i
             )
 
-        sl = _import_session_learner()
+        sl = _import_session_learner(self.tmpdir)
         summary = sl.build_session_summary(cwd=self.tmpdir)
         proposals = [e for e in summary["_events"] if e.get("category") == "proposal"]
         assert len(proposals) == 4
@@ -162,7 +164,7 @@ class TestSessionLearner:
         emit_proposal_verdict("s", "h", "keep", 0.5, 0.7, 1)
         emit_proposal_verdict("s", "h", "revert", 0.7, 0.6, 2)
 
-        sl = _import_session_learner()
+        sl = _import_session_learner(self.tmpdir)
         summary = sl.build_session_summary(cwd=self.tmpdir)
         pm = sl._compute_proposal_metrics(summary["_events"])
         assert pm["proposal_count"] == 2

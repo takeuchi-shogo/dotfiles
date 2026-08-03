@@ -106,7 +106,7 @@ b := append(a[:len(a):len(a)], 4)
 
 ### Map concurrent access
 
-Maps MUST NOT be accessed concurrently — → see `samber/cc-skills-golang@golang-concurrency` for sync primitives.
+Maps MUST NOT be accessed concurrently — → see `~/.claude/references/review-checklists/go.md` (GO-4) for sync primitives and goroutine lifecycle.
 
 See **[Slice and Map Deep Dive](./references/slice-map-safety.md)** for range pitfalls, subslice memory retention, and `slices.Clone`/`maps.Clone`.
 
@@ -181,7 +181,7 @@ func processOne(path string) error {
 
 ### Goroutine leaks
 
-→ See `samber/cc-skills-golang@golang-concurrency` for goroutine lifecycle and leak prevention.
+→ See `~/.claude/references/review-checklists/go.md` (GO-4) for goroutine lifecycle, leak prevention, and unmanaged background tasks.
 
 ## Immutability & Defensive Copying
 
@@ -256,7 +256,7 @@ if s, ok := reflect.TypeAssert[string](v); ok {
 
 ## Cross-References
 
-- → See `samber/cc-skills-golang@golang-concurrency` skill for concurrent access patterns and sync primitives
+- → See `~/.claude/references/review-checklists/go.md` (GO-4, GO-7) for concurrent access patterns, background task ownership, and detached context rules
 - → See `samber/cc-skills-golang@golang-data-structures` skill for slice/map internals, capacity growth, and container/ packages
 - → See `samber/cc-skills-golang@golang-error-handling` skill for nil error interface trap
 - → See `samber/cc-skills-golang@golang-security` skill for security-relevant safety issues (memory safety, integer overflow)

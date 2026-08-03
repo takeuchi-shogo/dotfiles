@@ -151,6 +151,18 @@ if [[ ! -s "$RESULT_FILE" ]]; then
   exit 1
 fi
 
+# claude 経路は pane スクレイプなので送信プロンプトが必ず混ざり、「非空」だけでは
+# 常に真になる = 状態が idle に到達しただけで成功扱いになる。エコーを除いた残りが
+# 空なら応答が無かったとみなす。.prompt が無い場合 (旧 worker) は従来通り素通し。
+if [[ -f "${RESULT_FILE}.prompt" ]]; then
+  if ! grep -vxFf "${RESULT_FILE}.prompt" "$RESULT_FILE" | grep -q '[^[:space:]]'; then
+    dispatch_log_result "$WORKER_ID" "failed" "no response (prompt echo only)"
+    dispatch_log_state "$WORKER_ID" "running" "failed"
+    echo "[herdr-collect-result] 応答がありません (回収したのは送信プロンプトのエコーのみ: ${RESULT_FILE})" >&2
+    exit 1
+  fi
+fi
+
 dispatch_log_result "$WORKER_ID" "completed" "$RESULT_FILE"
 dispatch_log_state "$WORKER_ID" "running" "completed"
 

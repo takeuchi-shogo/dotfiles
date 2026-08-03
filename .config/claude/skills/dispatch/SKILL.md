@@ -94,7 +94,7 @@ GOOD: "Fix the null pointer in src/auth/validate.ts:42.
 ### cmux Worker に振り分ける場合
 
 <IMPORTANT>
-cmux 内で実行していることを確認すること。`CMUX_WORKSPACE_ID` 環境変数が設定されていない場合は cmux 外なのでサブエージェントにフォールバックする。
+cmux 内で実行していることを確認すること。`CMUX_WORKSPACE_ID` 環境変数が設定されていない場合は cmux 外。`HERDR_ENV=1` なら herdr Worker に振り替え、どちらでもなければサブエージェントにフォールバックする（「cmux 外での挙動」節）。
 </IMPORTANT>
 
 **Step 1: Worker を起動する**
@@ -207,7 +207,27 @@ scripts/runtime/dispatch-log.sh summary
 
 ## cmux 外での挙動
 
-cmux 外で実行された場合、全てサブエージェントにフォールバックする。cmux Worker 機能は無効化される。
+判定順は `CMUX_WORKSPACE_ID` → `HERDR_ENV` → サブエージェント。
+
+**herdr の場合** (`HERDR_ENV=1`): 上の判定フローはそのまま使い、スクリプトだけ herdr 版に差し替える。
+コマンド面は cmux 版と同形で、`--workspace` の代わりに pane 参照を渡す。
+
+```bash
+scripts/runtime/herdr-launch-worker.sh --model codex --task "タスク内容"
+# → stdout に "<pane> <worker_id>" が返る
+scripts/runtime/herdr-collect-result.sh --pane <pane> --worker <worker_id> --timeout 1800
+```
+
+cmux 版との使い分け（worktree 隔離が要るか / 承認待ちを検出したいか）は
+`references/subagent-vs-cmux-worker.md` の境界表が正。ここでは繰り返さない。
+
+herdr 版の差分で判定に効くのは 2 点:
+
+- `--worktree` は**未対応**。並列で同じファイルを触るタスクは cmux 版を使う
+- `herdr-collect-result.sh` は承認待ちを検出すると timeout を待たず **exit 4** で返す。
+  この場合 worker は失敗していない。人間が pane で承認すれば続行する
+
+**どちらでもない場合**: 全てサブエージェントにフォールバックする。Worker 機能は無効化される。
 
 ## Anti-Patterns
 

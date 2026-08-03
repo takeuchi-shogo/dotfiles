@@ -69,6 +69,26 @@ def test_holdout_tie_rejects():
     assert verdict["deltas"]["holdout_pass_rate"] == pytest.approx(0.0)
 
 
+def test_verdict_reports_sample_sizes():
+    baseline_train = _results([("t1", True, 0.5), ("t2", False, 0.5)])
+    baseline_holdout = _results(
+        [("h1", True, 0.5), ("h2", False, 0.5), ("h3", False, 0.5)]
+    )
+    candidate_train = _results([("t1", True, 0.5), ("t2", True, 0.5)])
+    candidate_holdout = _results(
+        [("h1", True, 0.5), ("h2", True, 0.5), ("h3", False, 0.5)]
+    )
+
+    verdict = hag.evaluate_gate(
+        _splits(baseline_train, baseline_holdout, candidate_train, candidate_holdout),
+        _metric(),
+        "e3",
+        "lane-a",
+    )
+
+    assert verdict["sample_sizes"] == {"train": 2, "holdout": 3}
+
+
 def test_empty_results_errors():
     baseline_train = []
     baseline_holdout = _results([("h1", True, 0.5)])

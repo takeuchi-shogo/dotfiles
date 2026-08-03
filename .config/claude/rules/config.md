@@ -1,11 +1,3 @@
----
-paths:
-  - "**/*.yaml"
-  - "**/*.yml"
-  - "**/*.json"
-  - "**/.env*"
----
-
 # Configuration File Rules
 
 ## Schema Validation

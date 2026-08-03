@@ -1,14 +1,3 @@
----
-paths:
-  - "**/*.ts"
-  - "**/*.tsx"
-  - "**/*.js"
-  - "**/*.jsx"
-  - "**/*.go"
-  - "**/*.py"
-  - "**/*.rs"
----
-
 # Code Quality
 
 ## Readability First
