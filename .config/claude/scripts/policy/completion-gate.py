@@ -501,14 +501,18 @@ def _check_review_gate() -> str | None:
     )
 
 
-def _get_session_initial_harness() -> set[str]:
+def _get_session_initial_harness(session_id: str = "") -> set[str]:
     """Read snapshot of files modified at session start.
 
     Returns empty set if snapshot is missing (back-compat: behave as before).
     Used to filter out parallel-session edits from this session's harness gate.
+
+    session_id comes from the hook stdin payload. CLAUDE_SESSION_ID is not set
+    in the hook environment, so the env lookup alone always yielded "" and the
+    filter never ran (harness-snapshot.py wrote snapshots nobody read).
     """
-    sid = os.environ.get("CLAUDE_SESSION_ID", "")
-    if not sid:
+    sid = os.path.basename(session_id or os.environ.get("CLAUDE_SESSION_ID", ""))
+    if not sid or sid in (".", ".."):
         return set()
     snapshot = os.path.join(
         os.environ.get("HOME", ""),
@@ -525,7 +529,7 @@ def _get_session_initial_harness() -> set[str]:
         return set()
 
 
-def _get_changed_harness_files() -> list[str]:
+def _get_changed_harness_files(session_id: str = "") -> list[str]:
     """Get uncommitted harness file changes from git diff.
 
     Filters out files that were already modified when this session started
@@ -551,7 +555,7 @@ def _get_changed_harness_files() -> list[str]:
         return []
 
     # Session-aware filter: exclude files that were already modified at session start
-    initial = _get_session_initial_harness()
+    initial = _get_session_initial_harness(session_id)
     if initial:
         return [f for f in all_changed if f not in initial]
     return all_changed
@@ -567,14 +571,14 @@ def _harness_review_flag_path(harness_files: list[str]) -> str:
     return os.path.join(HARNESS_REVIEW_FLAG_DIR, f"pass-{h}")
 
 
-def _check_harness_review_gate() -> dict | None:
+def _check_harness_review_gate(session_id: str = "") -> dict | None:
     """Mandatory review gate for harness file changes.
 
     Blocks stop if harness files changed without /review PASS.
     The flag is keyed by the exact set of changed files, so
     additional edits after review invalidate the flag.
     """
-    harness_files = _get_changed_harness_files()
+    harness_files = _get_changed_harness_files(session_id)
     if not harness_files:
         return None
 
@@ -1357,6 +1361,9 @@ def main() -> None:
             hook_data = json.load(sys.stdin)
         except (json.JSONDecodeError, EOFError, ValueError):
             hook_data = {}
+    if not isinstance(hook_data, dict):
+        hook_data = {}
+    session_id = str(hook_data.get("session_id", ""))
     if hook_data:
         claim_result = _check_fabricated_claims(hook_data)
         if claim_result is not None:
@@ -1398,7 +1405,7 @@ def main() -> None:
         ralph_iteration = _get_ralph_count() + 1
 
         if ralph_iteration > MAX_RALPH_ITERATIONS:
-            harness_block = _check_harness_review_gate()
+            harness_block = _check_harness_review_gate(session_id)
             if harness_block:
                 json.dump(harness_block, sys.stdout)
                 return
@@ -1446,7 +1453,7 @@ def main() -> None:
         return
 
     # --- Harness Review Gate (mandatory) ---
-    harness_block = _check_harness_review_gate()
+    harness_block = _check_harness_review_gate(session_id)
     if harness_block:
         _set_retry_count(retries + 1)
         json.dump(harness_block, sys.stdout)

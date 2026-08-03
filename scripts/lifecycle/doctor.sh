@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/lifecycle/doctor.sh — dotfiles setup health check
 #
-# Usage: doctor.sh [binary|nix|hook|brew|all]
+# Usage: doctor.sh [binary|nix|hook|settings|brew|all]
 # Output: [CATEGORY] SEVERITY: message (hint)
 # Exit:   0 if no FAIL, 1 if any FAIL
 #
@@ -169,6 +169,72 @@ check_hook() {
   fi
 }
 
+check_settings() {
+  local repo_settings="${SETUP_DOCTOR_REPO_SETTINGS:-$ROOT_DIR/.config/claude/settings.json}"
+  if [[ ! -f "$repo_settings" ]]; then
+    emit settings SKIP "$repo_settings not found"
+    return
+  fi
+  if [[ ! -f "$SETTINGS_FILE" ]]; then
+    emit settings FAIL "$SETTINGS_FILE missing" "merge keys from $repo_settings"
+    return
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    emit settings SKIP "jq not installed (required to parse settings.json)"
+    return
+  fi
+  local f jq_err
+  for f in "$repo_settings" "$SETTINGS_FILE"; do
+    jq_err=$(jq empty "$f" 2>&1) || {
+      emit settings FAIL "$f is not valid JSON" "${jq_err%%$'\n'*}"
+      return
+    }
+  done
+  # settings.json is deliberately outside home-manager (nix/home/default.nix):
+  # Superset/Orca inject hooks into the live file at runtime, and symlinking it
+  # would drop both the injection and `/model` changes. The cost of that choice
+  # is that nothing keeps live and repo in sync, so the repo copy can go fully
+  # inert without any visible symptom — skills and CLAUDE.md keep working via
+  # their own symlinks while permissions, hooks and plugins silently vanish.
+  #
+  # Compare key PRESENCE only, never values: `/model`, `/config` toggles and
+  # runtime injection all rewrite values legitimately, so a value diff is noise.
+  #
+  # Presence alone is not enough either — the live file has two owners. Claude
+  # Code deletes keys as well as rewriting them (picking the default in `/model`
+  # drops `model` entirely), so a plain "missing from live" rule fires on
+  # ordinary use. Only the repo-owned keys below carry harness enforcement, and
+  # runtime never writes them; those are the ones worth failing on. Anything
+  # else missing is reported as WARN so it stays visible without crying wolf.
+  local -r REPO_OWNED="permissions hooks env enabledPlugins extraKnownMarketplaces skillOverrides statusLine"
+  local repo_keys live_keys missing extra
+  repo_keys=$(jq -r 'keys[]' "$repo_settings" | sort)
+  live_keys=$(jq -r 'keys[]' "$SETTINGS_FILE" | sort)
+  missing=$(comm -23 <(printf '%s\n' "$repo_keys") <(printf '%s\n' "$live_keys"))
+  extra=$(comm -13 <(printf '%s\n' "$repo_keys") <(printf '%s\n' "$live_keys"))
+  if [[ -n "$missing" ]]; then
+    local k soft=""
+    while IFS= read -r k; do
+      [[ -z "$k" ]] && continue
+      if [[ " $REPO_OWNED " == *" $k "* ]]; then
+        emit settings FAIL "repo-owned key '$k' absent from live settings" \
+          "merge repo keys into $SETTINGS_FILE (nix-unmanaged by design)"
+      else
+        soft="$soft $k"
+      fi
+    done <<< "$missing"
+    # One line for the soft set: a wholesale replacement drops ~16 of these at
+    # once, and 16 identical WARNs bury the FAILs that actually matter.
+    [[ -n "${soft// }" ]] && emit settings WARN "repo keys absent from live:${soft}" \
+      "runtime may own these (/model, /config); harmless unless set deliberately"
+  else
+    emit settings OK "all $(printf '%s\n' "$repo_keys" | grep -c .) repo top-level keys present in live"
+  fi
+  if [[ -n "$extra" ]]; then
+    emit settings OK "live-only keys (runtime-injected, expected): $(tr '\n' ' ' <<< "$extra")"
+  fi
+}
+
 check_brew() {
   if [[ ! -f "$NIX_FILE" ]]; then
     emit brew SKIP "$NIX_FILE not found"
@@ -231,7 +297,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [CATEGORY]
 
-CATEGORY: binary | nix | hook | brew | all (default)
+CATEGORY: binary | nix | hook | settings | brew | all (default)
 
 Read-only setup health check. Exits 1 if any FAIL is reported.
 Spec: docs/specs/2026-05-13-setup-doctor.md
@@ -243,8 +309,9 @@ main() {
     binary)    check_binary ;;
     nix)       check_nix ;;
     hook)      check_hook ;;
+    settings)  check_settings ;;
     brew)      check_brew ;;
-    all)       check_binary; check_nix; check_hook; check_brew ;;
+    all)       check_binary; check_nix; check_hook; check_settings; check_brew ;;
     -h|--help) usage; exit 0 ;;
     *)         usage; exit 2 ;;
   esac

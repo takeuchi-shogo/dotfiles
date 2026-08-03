@@ -25,7 +25,7 @@ Create a container image:
 
 ```dockerfile
 # Multi-stage build for smaller, more secure images
-FROM golang:1.22 AS builder
+FROM golang:1.26 AS builder
 WORKDIR /app
 COPY . .
 RUN CGO_ENABLED=0 go build -o server .

@@ -1,9 +1,9 @@
-# Design Decision Tree (grill-me seed)
+# Design Decision Tree (grilling seed)
 
-このドキュメントは `design-md-init` skill が `grill-me` に渡すシード。
+このドキュメントは `design-md-init` skill が `grilling` に渡すシード。
 47 branch をカテゴリ別に列挙、各 branch に **推奨デフォルト** と **判断材料** を併記する。
 
-grill-me には以下の指示で渡す:
+grilling には以下の指示で渡す:
 
 > 各 branch を 1 問ずつ relentlessly に grill してください。default を accept する場合は次へ進んで OK。
 > ユーザーが「わからない」と答えたら推奨 default に倒し、選んだ理由を 1 行メモ。
@@ -262,7 +262,7 @@ elevation tier 数。
 
 ---
 
-## まとめテンプレ(grill-me が最後に返す形)
+## まとめテンプレ(grilling が最後に返す形)
 
 ```yaml
 vibe_profile:

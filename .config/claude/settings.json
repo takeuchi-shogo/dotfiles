@@ -676,6 +676,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/plan-implement-bridge.py",
+            "timeout": 5,
+            "statusMessage": "Plan-Implement bridge check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/runtime/skill-suggest.py",
             "timeout": 5,
             "statusMessage": "Skill suggest..."
@@ -853,9 +864,9 @@
     "typescript-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
-    "terraform-skill@antonbabenko-terraform": true,
+    "terraform-skill@antonbabenko": true,
     "warp@claude-code-warp": true,
-    "mattpocock-skills@mattpocock-skills": true,
+    "mattpocock-skills@mattpocock": true,
     "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
@@ -871,7 +882,7 @@
         "repo": "kepano/obsidian-skills"
       }
     },
-    "antonbabenko-terraform": {
+    "antonbabenko": {
       "source": {
         "source": "github",
         "repo": "antonbabenko/terraform-skill"
@@ -883,10 +894,10 @@
         "repo": "warpdotdev/claude-code-warp"
       }
     },
-    "mattpocock-skills": {
+    "mattpocock": {
       "source": {
-        "source": "directory",
-        "path": "/Users/takeuchishougo/dotfiles/.config/claude/marketplaces/mattpocock-skills"
+        "source": "github",
+        "repo": "mattpocock/skills"
       }
     },
     "ponytail": {

@@ -46,6 +46,9 @@ commit メッセージまたは PR 説明で明示し、分類に応じた実装
 
 - **条件**: (a) pattern マッチで「疑わしい」ケースを検出できる、(b) ただし false positive が避けられない、(c) 最終判断は人間・LLM が行う
 - **実装**: `exit 0` で stdout に WARN 出力、blocking しない
+  - 条件 (b) への実装規約: 注入文は条件節で始め（「もし〜なら」）、自己キャンセル句で終える（「該当しない場合は無視してよい」）。見逃しはフルの手戻り 1 周のコストだが、誤発火は数トークンの読み飛ばしで済む非対称があるため、この設計は高 recall ゲートを正当化する
+  - 出典: `severity1/claude-code-prompt-improver` README ("Fire wide, self-cancel cheap")
+  - 分類 1 (Deterministic Block) には適用しない — block する hook が自己キャンセル句を持つのは矛盾する
 - **既存例**:
   - `change-surface-advisor.py` — 変更規模や近接ファイルの advisory
   - `impact-scan` PostToolUse hook — 参照先ファイルの一覧通知

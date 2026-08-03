@@ -16,6 +16,7 @@
 | Symlink 抜け | `~/.claude/` 配下の一部ファイルが dotfiles 管理から漏れて旧版が残存 |
 | Profile mismatch | `darwin-rebuild switch --flake .#private` 想定のマシンで `#work` を適用するなどの取り違え |
 | Hook 起動失敗 | settings.json の hook `command` が PATH 不整合や旧 subcommand で `exit≠0`、Claude Code 上で `Failed with non-blocking status code` 連発 |
+| user 設定の消失 | `~/.claude/settings.json` は runtime 注入があるため home-manager 管理外。live が Claude Code 側の書き込みで stub に置き換わり、repo の permissions / hooks / plugins が丸ごと無効化されても、skills と CLAUDE.md は symlink 経由で動き続けるので気づけない |
 
 既存 `task validate-{configs,agents,readmes,symlinks}` は **静的 syntax 検証のみ**で、上記の動的・環境依存な問題を検出できない。
 
@@ -27,6 +28,7 @@
 | `symlink` | 既存 `validate-symlinks` を継承し、`~/.claude/`, `~/.config/`, `~/.zshrc` 配下の管理対象 link を確認 | dotfiles の編集が反映されない |
 | `nix` | `nix flake check` + `hostname` と適用済み profile の整合 (private/work) | 別 profile を誤適用、再起動後の設定 drift |
 | `hook` | settings.json の hook `command` を **静的 validation のみ** (read-only 厳守): (a) 第1トークンを resolve して binary 存在確認、(b) `rtk hook claude` のような subcommand を `<binary> <sub> --help` で「subcommand 認識可否」を確認、(c) `$HOME` 等の env 展開後パス存在確認。**実行 (空 JSON 投入含む) は禁止** — このリポジトリの hook は memory sync / background job / sound 再生等 side effect を持つため、health check のたびにマシン状態を破壊する | Claude Code 上の hook fail |
+| `settings` | repo `.config/claude/settings.json` の top-level キーが live `~/.claude/settings.json` に存在するかを確認。**値は比較しない** (`/model` や `/config` の変更で正当に書き換わるため)。live は 2 者所有 — runtime はキーごと削除もする (`/model` で default を選ぶと `model` が消える) ので、harness の強制力を持つ repo 所有キー (`permissions` `hooks` `env` `enabledPlugins` `extraKnownMarketplaces` `skillOverrides` `statusLine`) の欠落のみ FAIL、それ以外の欠落は WARN | deny ルール・hook・plugin が全て無効のまま気づかず稼働 |
 | `brew` | nix-darwin `homebrew.brews` + `homebrew.taps` の宣言と `brew list` / `brew tap` の差分 | 宣言したのに未 install / Cellar mismatch / tap 未追加 |
 
 ### Non-goals

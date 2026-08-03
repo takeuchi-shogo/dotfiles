@@ -5,9 +5,16 @@ Measure total instruction budget exposed to the model per session.
 Categories:
   - claude_md: CLAUDE.md content (always exposed)
   - references: ~/.claude/references/*.md files (loaded on demand)
-  - hook_injected: PreToolUse/PostToolUse hook outputs from recent session
   - mcp_descriptions: MCP tool descriptions (estimated from settings.json)
   - skill_descriptions: SKILL.md frontmatter `description` fields (always exposed)
+
+Note: a `hook_injected` category (hook output text injected into the prompt)
+existed here until 2026-08-03 but was removed. No producer in this repo ever
+wrote the hook-output-body log format it read (`session-*.jsonl` with
+`hook_output`/`tool_result`/`context_injection` events), so it always
+measured 0 -- a silent zero, not a real measurement. Reviving it requires
+first building a mechanism that logs hook output bodies to JSONL; see
+docs/research/2026-08-03-prompt-improver-nudge-injection-absorb-analysis.md.
 
 Output: JSONL to ~/.claude/logs/instruction-budget-YYYY-MM-DD.jsonl
 Threshold: warn if total > 6000 tokens (approx. Stanford "Lost in the Middle"
@@ -47,6 +54,7 @@ def measure_claude_md(claude_dir: Path) -> dict:
             "chars": 0,
             "tokens_est": 0,
             "note": "file not found",
+            "measurable": False,
         }
     chars = len(claude_md.read_text(encoding="utf-8"))
     return {
@@ -71,6 +79,7 @@ def measure_mcp_descriptions(settings_path: Path) -> dict:
             "tokens_est": 0,
             "server_count": 0,
             "note": "settings.json not found",
+            "measurable": False,
         }
 
     try:
@@ -82,6 +91,7 @@ def measure_mcp_descriptions(settings_path: Path) -> dict:
             "tokens_est": 0,
             "server_count": 0,
             "note": f"JSON parse error: {e}",
+            "measurable": False,
         }
 
     # Count enabled MCP servers from enabledMcpjsonServers and mcpServers
@@ -104,89 +114,6 @@ def measure_mcp_descriptions(settings_path: Path) -> dict:
         "tokens_est": tokens_est,
         "server_count": server_count,
         "note": f"~{TOKENS_PER_MCP_SERVER} tokens/server approximation",
-    }
-
-
-_HOOK_EVENT_TYPES = frozenset(("hook_output", "tool_result", "context_injection"))
-
-
-def _extract_content_chars(record: dict) -> int:
-    """Extract character count from a hook event record's content field."""
-    content = record.get("content") or record.get("output") or ""
-    if isinstance(content, str):
-        return len(content)
-    if isinstance(content, list):
-        return sum(
-            len(item.get("text", "")) for item in content if isinstance(item, dict)
-        )
-    return 0
-
-
-def _parse_hook_log(log_path: Path) -> tuple[int, int]:
-    """Parse a session JSONL log and return (total_chars, event_count)."""
-    total_chars = 0
-    event_count = 0
-    for raw in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
-        raw = raw.strip()
-        if not raw:
-            continue
-        try:
-            record = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
-        if record.get("type", "") not in _HOOK_EVENT_TYPES:
-            continue
-        chars = _extract_content_chars(record)
-        if chars:
-            total_chars += chars
-            event_count += 1
-    return total_chars, event_count
-
-
-def measure_hook_outputs(log_dir: Path) -> dict:
-    """Estimate hook injection size from the most recent session JSONL log.
-
-    Looks for PreToolUse/PostToolUse hook output fields in the latest session log.
-    Returns 0 if no logs are found.
-    """
-    if not log_dir.exists():
-        return {
-            "source": "hook_injected",
-            "chars": 0,
-            "tokens_est": 0,
-            "note": "log dir not found",
-        }
-
-    session_logs = sorted(
-        log_dir.glob("session-*.jsonl"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if not session_logs:
-        return {
-            "source": "hook_injected",
-            "chars": 0,
-            "tokens_est": 0,
-            "note": "no session logs found",
-        }
-
-    latest = session_logs[0]
-    try:
-        total_chars, event_count = _parse_hook_log(latest)
-    except OSError as e:
-        return {
-            "source": "hook_injected",
-            "chars": 0,
-            "tokens_est": 0,
-            "note": f"read error: {e}",
-        }
-
-    return {
-        "source": "hook_injected",
-        "chars": total_chars,
-        "tokens_est": total_chars // CHARS_PER_TOKEN,
-        "hook_events": event_count,
-        "log_file": latest.name,
     }
 
 
@@ -283,6 +210,7 @@ def measure_skill_descriptions(claude_dir: Path) -> dict:
             "tokens_est": 0,
             "skill_count": 0,
             "note": "skills dir not found",
+            "measurable": False,
         }
 
     total_chars = 0
@@ -308,15 +236,51 @@ def measure_skill_descriptions(claude_dir: Path) -> dict:
 
 
 def _collect_results(claude_dir: Path, log_dir: Path) -> tuple[dict, Path]:
-    """Collect all budget measurements and return (results_dict, log_path)."""
+    """Collect all budget measurements and return (results_dict, log_path).
+
+    Status priority: degraded outranks warn. Each of claude_md/
+    mcp_descriptions/skill_descriptions marks its own early-return fallback
+    branches with an explicit `"measurable": False` key when the branch
+    means "could not measure this" (missing file, missing dir, unparseable
+    JSON) rather than "measured and the answer is zero" (e.g. 0 enabled MCP
+    servers is a legitimate, fully-measured value). Only components carrying
+    `measurable: False` count as degraded_sources; `note` alone is not a
+    signal because measure_mcp_descriptions also attaches a `note` to its
+    normal success path (the "~N tokens/server approximation" explanation).
+    `references` is excluded here because it's advisory-only and already
+    outside total_tokens_est.
+
+    threshold_exceeded is recorded independently of status, and is
+    tri-state: True / False / None. Component totals are non-negative, so
+    a partial sum (computed while some components are unmeasurable) that
+    already exceeds THRESHOLD_TOKENS proves the true total exceeds it too
+    — that stays True even when status is "degraded". The converse does
+    not hold: a partial sum under the threshold says nothing about the
+    unmeasured remainder, so that case is None (unknown), never False.
+    Reporting False there would assert "within budget" from an
+    incomplete measurement, which is the exact silent-misinformation
+    this module was fixed to stop emitting (2026-08-03).
+    """
     components = [
         measure_claude_md(claude_dir),
         measure_mcp_descriptions(claude_dir / "settings.json"),
-        measure_hook_outputs(log_dir),
         measure_skill_descriptions(claude_dir),
     ]
     references_info = measure_references()
     total_tokens = sum(c["tokens_est"] for c in components)
+    degraded_sources = [c["source"] for c in components if c.get("measurable") is False]
+    if total_tokens > THRESHOLD_TOKENS:
+        threshold_exceeded = True
+    elif degraded_sources:
+        threshold_exceeded = None
+    else:
+        threshold_exceeded = False
+    if degraded_sources:
+        status = "degraded"
+    elif threshold_exceeded:
+        status = "warn"
+    else:
+        status = "ok"
     results = {
         "date": date.today().isoformat(),
         "timestamp": datetime.now().isoformat(timespec="seconds"),
@@ -324,7 +288,9 @@ def _collect_results(claude_dir: Path, log_dir: Path) -> tuple[dict, Path]:
         "references_advisory": references_info,
         "total_tokens_est": total_tokens,
         "threshold": THRESHOLD_TOKENS,
-        "status": "warn" if total_tokens > THRESHOLD_TOKENS else "ok",
+        "status": status,
+        "degraded_sources": degraded_sources,
+        "threshold_exceeded": threshold_exceeded,
     }
     log_path = log_dir / f"instruction-budget-{date.today()}.jsonl"
     return results, log_path
@@ -342,6 +308,11 @@ def _print_summary(results: dict, log_path: Path) -> None:
     total = results["total_tokens_est"]
     status = results["status"]
     print(f"[instruction-budget] total={total} tokens, status={status}")
+    if results.get("degraded_sources"):
+        reason = f"measurement unavailable for {', '.join(results['degraded_sources'])}"
+        if results.get("threshold_exceeded"):
+            reason += "; partial total already exceeds threshold"
+        print(f"  degraded: {reason}")
     for c in results["components"]:
         print(f"  {c['source']}: {c['tokens_est']} tokens")
     ref = results["references_advisory"]

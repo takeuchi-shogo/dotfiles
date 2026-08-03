@@ -64,10 +64,9 @@ python3 ~/.claude/scripts/policy/measure-instruction-budget.py
 期待出力 (新カテゴリ追加後):
 
 ```
-[instruction-budget] total=NNNN tokens, status={ok|warn}
+[instruction-budget] total=NNNN tokens, status={ok|warn|degraded}
   claude_md: ~1500 tokens
   mcp_descriptions: ~0 tokens
-  hook_injected: ~NNN tokens
   skill_descriptions: ~8000 tokens (107 skills)   <-- 本 spec の対象
   references (advisory): ~NNNNN tokens (NN files)
   output: ~/.claude/logs/instruction-budget-YYYY-MM-DD.jsonl
