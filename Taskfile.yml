@@ -200,7 +200,7 @@ tasks:
       - python3 ~/dotfiles/scripts/lifecycle/gen-harness-overview.py --check
 
   doctor:
-    desc: Run setup health check (binary/symlink/nix/hook/brew) — see docs/specs/2026-05-13-setup-doctor.md
+    desc: Run setup health check (binary/symlink/nix/hook/settings/brew) — see docs/specs/2026-05-13-setup-doctor.md
     cmds:
       # `defer` ensures symlink validation runs even if doctor.sh exits non-zero.
       # Without it Task stops on the first FAIL and skips symlink checks — but FAIL
@@ -227,6 +227,11 @@ tasks:
     desc: Statically validate settings.json hook commands (read-only, no execution)
     cmds:
       - bash scripts/lifecycle/doctor.sh hook
+
+  doctor:settings:
+    desc: Check repo settings.json keys are present in live ~/.claude/settings.json (nix-unmanaged, drifts silently)
+    cmds:
+      - bash scripts/lifecycle/doctor.sh settings
 
   doctor:brew:
     desc: Check declared brews (nix-darwin) vs installed
