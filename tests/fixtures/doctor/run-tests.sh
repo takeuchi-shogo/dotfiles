@@ -108,6 +108,28 @@ NIX
 out=$(SETUP_DOCTOR_NIX_FILE="$TMP/extra-tap.nix" $DOCTOR brew 2>&1 || true)
 assert_contains "07-brew-tap-drift" "$out" '\[brew[[:space:]]*\] FAIL: nonexistent-org/nonexistent-tap-xyz declared in nix\.taps but not tapped'
 
+# ----- Scenario 8: live settings replaced wholesale -> repo-owned keys FAIL -----
+# The real incident: ~/.claude/settings.json shrank to a runtime-written stub,
+# silently disabling permissions/hooks/plugins while skills kept working.
+cat > "$TMP/repo-settings.json" <<'JSON'
+{ "permissions": {}, "hooks": {}, "enabledPlugins": {}, "model": "opus" }
+JSON
+printf '{ "tui": "fullscreen" }' > "$TMP/stub-settings.json"
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-settings.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/stub-settings.json" $DOCTOR settings 2>&1 || true)
+assert_contains "08-settings-wholesale-drift" "$out" "\[settings\] FAIL: repo-owned key 'permissions' absent from live settings"
+
+# ----- Scenario 9: runtime-owned key absent -> WARN, never FAIL -----
+# Picking the default in `/model` deletes the `model` key outright. Failing on
+# that would fire on ordinary use and train the check to be ignored.
+cat > "$TMP/live-no-model.json" <<'JSON'
+{ "permissions": {}, "hooks": {}, "enabledPlugins": {} }
+JSON
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-settings.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/live-no-model.json" $DOCTOR settings 2>&1 || true)
+assert_contains "09-settings-runtime-key-warn" "$out" '\[settings\] WARN: repo keys absent from live: model'
+assert_contains "09b-settings-no-false-fail" "$out" 'Summary: FAIL=0'
+
 echo
 echo "=== Summary: PASS=$PASS FAIL=$FAIL ==="
 [[ $FAIL -eq 0 ]] || exit 1

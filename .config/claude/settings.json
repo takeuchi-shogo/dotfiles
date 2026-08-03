@@ -855,7 +855,7 @@
     "obsidian@obsidian-skills": true,
     "terraform-skill@antonbabenko": true,
     "warp@claude-code-warp": true,
-    "mattpocock-skills@mattpocock-skills": true,
+    "mattpocock-skills@mattpocock": true,
     "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
@@ -883,10 +883,10 @@
         "repo": "warpdotdev/claude-code-warp"
       }
     },
-    "mattpocock-skills": {
+    "mattpocock": {
       "source": {
-        "source": "directory",
-        "path": "/Users/takeuchishougo/dotfiles/.config/claude/marketplaces/mattpocock-skills"
+        "source": "github",
+        "repo": "mattpocock/skills"
       }
     },
     "ponytail": {
