@@ -20,6 +20,13 @@ User CLAUDE.md covers KISS/YAGNI/DRY, search-first, and harness rules. This file
 - "Fix the bug" → write a test that reproduces it, then make it pass.
 - "Refactor X" → ensure tests pass before and after.
 
+## 知識ベースの境界
+
+`docs/wiki/` は **harness/セットアップ固有の運用知識**（hook・skill・自分の設定への適用）に限る。
+一般 IT 技術知識（技術の事実・パターン・比較）は `~/dev-app/project/llm-wiki/` の領分 —
+索引は `~/dev-app/project/llm-wiki/index.md`。取り込むときは `/absorb` 経由で、
+知識の流れは llm-wiki → dotfiles の一方向。llm-wiki 側は dotfiles に依存させない。
+
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
 
