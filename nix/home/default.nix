@@ -8,6 +8,7 @@ let
   ghqr = pkgs.callPackage ../pkgs/ghqr.nix {};
   crit = pkgs.callPackage ../pkgs/crit.nix {};
   terminal-browser = pkgs.callPackage ../pkgs/terminal-browser.nix {};
+  mirador = pkgs.callPackage ../pkgs/mirador.nix {};
 in
 {
   home.username = userName;
@@ -51,6 +52,8 @@ in
     crit
     # 自前 derivation: ターミナル内ブラウザ + agent-browser 互換 CLI (zenbu-labs)
     terminal-browser
+    # 自前 derivation: ターミナルダッシュボード (jchultarsky/mirador)
+    mirador
     # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
     herdr
   ];
