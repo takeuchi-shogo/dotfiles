@@ -7,6 +7,9 @@ session_id は hook の stdin payload から来るので、引数で受け取れ
 """
 
 import importlib.util
+import io
+import json
+import sys
 from pathlib import Path
 
 SPEC = Path(__file__).resolve().parent.parent / "policy" / "completion-gate.py"
@@ -55,6 +58,23 @@ def test_session_id_is_basenamed(tmp_path, monkeypatch):
     assert _load()._get_session_initial_harness("../../etc/sid-1") == {"CLAUDE.md"}
 
 
+def test_env_fallback_is_also_basenamed(tmp_path, monkeypatch):
+    """引数が空のとき使う env 側も正規化する (env は信頼できる前提を置かない)。"""
+    _write_snapshot(tmp_path, "sid-1", ["CLAUDE.md"])
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CLAUDE_SESSION_ID", "../../etc/sid-1")
+    assert _load()._get_session_initial_harness() == {"CLAUDE.md"}
+
+
+def test_dot_session_id_rejected(tmp_path, monkeypatch):
+    """basename が "." / ".." に潰れる入力はディレクトリを指すので拒否する。"""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
+    mod = _load()
+    assert mod._get_session_initial_harness("..") == set()
+    assert mod._get_session_initial_harness("some/dir/") == set()
+
+
 def test_preexisting_changes_excluded_but_new_ones_kept(tmp_path, monkeypatch):
     """セッション開始時からの変更は落とし、開始後の変更は残す。"""
     _write_snapshot(tmp_path, "sid-1", ["CLAUDE.md"])
@@ -71,3 +91,39 @@ def test_preexisting_changes_excluded_but_new_ones_kept(tmp_path, monkeypatch):
     assert mod._get_changed_harness_files("sid-1") == [".config/claude/settings.json"]
     # 引数なしでは filter が効かず、開始時からの CLAUDE.md まで残る (バグ再現)
     assert "CLAUDE.md" in mod._get_changed_harness_files()
+
+
+def _run_main(mod, monkeypatch, payload, seen):
+    """main() を stdin payload つきで走らせ、gate に届いた session_id を捕まえる。"""
+
+    def _gate(session_id: str = ""):
+        seen["session_id"] = session_id
+        return None
+
+    monkeypatch.setattr(mod, "_check_harness_review_gate", _gate)
+    monkeypatch.setattr(mod, "_find_incomplete_plan", lambda: None)
+    monkeypatch.setattr(mod, "_detect_test_command", lambda: None)
+    monkeypatch.setattr(mod, "_get_retry_count", lambda: 0)
+    monkeypatch.setattr(mod, "_reset_ralph", lambda: None)
+    monkeypatch.setattr(mod, "_reset_retries", lambda: None)
+    monkeypatch.setattr(mod, "_check_fabricated_claims", lambda _d: None)
+    monkeypatch.delenv("CLAUDE_SKIP_TEST_GATE", raising=False)
+    monkeypatch.setattr(sys, "stdin", io.StringIO(payload))
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: False, raising=False)
+    mod.main()
+
+
+def test_main_wires_stdin_session_id_into_the_gate(monkeypatch):
+    """配線の回帰: main() の呼び出しで引数を落とすとこのテストが落ちる。"""
+    seen: dict = {}
+    mod = _load()
+    _run_main(mod, monkeypatch, json.dumps({"session_id": "sid-from-stdin"}), seen)
+    assert seen["session_id"] == "sid-from-stdin"
+
+
+def test_main_survives_non_object_stdin_json(monkeypatch):
+    """valid JSON でも object でなければ .get は無い。落とさず素通りさせる。"""
+    seen: dict = {}
+    mod = _load()
+    _run_main(mod, monkeypatch, "null", seen)
+    assert seen["session_id"] == ""

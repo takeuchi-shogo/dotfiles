@@ -511,8 +511,8 @@ def _get_session_initial_harness(session_id: str = "") -> set[str]:
     in the hook environment, so the env lookup alone always yielded "" and the
     filter never ran (harness-snapshot.py wrote snapshots nobody read).
     """
-    sid = os.path.basename(session_id) or os.environ.get("CLAUDE_SESSION_ID", "")
-    if not sid:
+    sid = os.path.basename(session_id or os.environ.get("CLAUDE_SESSION_ID", ""))
+    if not sid or sid in (".", ".."):
         return set()
     snapshot = os.path.join(
         os.environ.get("HOME", ""),
@@ -1361,6 +1361,8 @@ def main() -> None:
             hook_data = json.load(sys.stdin)
         except (json.JSONDecodeError, EOFError, ValueError):
             hook_data = {}
+    if not isinstance(hook_data, dict):
+        hook_data = {}
     session_id = str(hook_data.get("session_id", ""))
     if hook_data:
         claim_result = _check_fabricated_claims(hook_data)
