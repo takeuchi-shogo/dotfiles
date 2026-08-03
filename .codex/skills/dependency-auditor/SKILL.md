@@ -6,7 +6,7 @@ description: >
   Codex 用 read-only バージョン (Claude 版から Agent / Write 削除)。
   Triggers: '依存監査', 'dependency audit', 'npm audit', '脆弱性チェック', '放棄パッケージ',
   'outdated packages', 'license check', 'supply chain'.
-  Do NOT use for: 新規依存の選定、コード品質レビュー (use `reviewer` agent)、単発の npm install。
+  Do NOT use for: 新規依存の選定、汎用のコード品質レビュー、単発の npm install。
 origin: self
 metadata:
   pattern: scanner+prioritizer
@@ -18,7 +18,7 @@ metadata:
 # Dependency Auditor (Codex 版) — 依存監査と優先度付け
 
 プロジェクトの依存マニフェストを検出し、脆弱性・放棄・license・major version lag を
-**独立した lens** で検査する。`reviewer` agent とは視点が異なり、supply chain 視点に特化する。
+**独立した lens** で検査する。汎用のコードレビューとは視点が異なり、supply chain 視点に特化する。
 
 **Codex 版の差分** (Claude 版との違い):
 - Read-only mode のみ。レポートはターミナル出力。ユーザーが必要なら手動で保存する
@@ -140,5 +140,6 @@ pip-audit --format json
 
 ## Related (Codex)
 
-- コード品質レビュー → `reviewer` agent
-- セキュリティ深掘り → `security_auditor` agent
+- コード品質レビュー → built-in subagent へ並列委譲
+- セキュリティ深掘り → `codex exec --sandbox read-only --config model_reasoning_effort="xhigh"`
+  (`.codex/AGENTS.md:105`)。subagent は親の sandbox と effort を継承するため、この経路の代わりにならない

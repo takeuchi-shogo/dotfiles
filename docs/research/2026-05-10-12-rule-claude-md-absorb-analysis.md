@@ -1,7 +1,10 @@
 ---
 source: "anonymous Telegram-promoted article (匿名 + skool.com 販売漏斗パターン)"
 date: 2026-05-10
-status: analyzed
+status: implemented
+implemented_at: 2026-05-11
+implementation_commit: 3f21862e
+verified_by: "2026-08-02 stale-plan audit (/absorb Phase 1.5 Step 7) — completion-gate.py:224-229 / checkpoint_manager.py:241-258 / review-dimensions.md:21-28 に現存を確認"
 verdict: "Selective adoption (T1+T2 のみ採用、T3 12-rule 全採用は Reject)"
 adopted_tasks:
   - "T1: R12 silent success audit"

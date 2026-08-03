@@ -2256,6 +2256,37 @@
 - 副次: 総索引が repair-routing.md / failure-taxonomy 診断フローを未リンクだった索引 drift を修正
 - 分析: docs/research/2026-08-02-harness-loop-graph-3layers-absorb-analysis.md
 
+## [2026-08-02] ingest | Supervised fire-and-forget in Go
+
+- ソース: https://rednafi.com/go/supervised-fire-and-forget/ (Redowan Delowar, 2026-07-25)
+- 判定: Gap 3件 (panic 隔離 / WithoutCancel 例外規則 / closed channel send の競合排他), Partial 4件 (bounded pool / detach 後の自前 timeout / shutdown 順序 / エラーの可視化), Already 1件 (WaitGroup.Go), N/A 1件 (Asynq)
+- 取り込み: 4 件 — review-checklists/go.md GO-4 に「管理外の background task」小見出し + GO-7 に detached context 規則 / rules/go.md に裸の go func 禁止と shutdown 順序 / golang-safety SKILL.md の dead cross-reference 3 箇所を張り替え
+- 副次: golang-safety が指す `samber/cc-skills-golang@golang-concurrency` が未 install の dead reference だったことを発見 (skills-lock.json にも無い手動 vendor)
+- Phase 2.5: Codex 単独 (Gemini は IneligibleTierError で未取得)。Codex の助言で pool 実装コードと Asynq 推奨は不採用、「契約」だけ追加
+- 分析: docs/research/2026-08-02-supervised-fire-and-forget-go-absorb-analysis.md
+
+## [2026-08-02] ingest (light Phase 2) | Codex を Sol オーケストレータ + Luna Max worker に組む
+
+- ソース: X @Tz_2022 / @antonioleivag (Obsidian Vault raw clipping 2 本)
+- 理由: multi-agent-orchestration family N≈16、SATURATED-but-novel (delta=3) → user 選択 light-phase2
+- 判定: 8 手法中 rehash 5 (named prior 照合済) / ambiguous 2 / novel 1 → 採用 1 件
+- 取り込み: #4 のみ (S) — `change-surface-matrix.md` に config 変更の 3 点確認 (diff / 形式互換 / 有効性)
+- 実測: codex-cli 0.144.6 の `spawn_agent` は `task_name`/`message`/`fork_turns` のみ。`agent_type` が無く記事の手順は成立しない
+- 副次 (実バグ 6 件): 死んだ custom agent 艦隊 12 個を削除 / 9+ 箇所の誤記述を訂正 / live config drift 収束 / hooks 二重定義 warning 解消
+- 分析: docs/research/2026-08-02-codex-orchestrator-worker-subagent-absorb-analysis.md
+
+## [2026-08-02] ingest | Do Context Files Help Coding Agents? A Two-Agent Ablation Study on Real Repositories
+
+- ソース: arXiv:2607.27250 (Prakhar Khatri) — alphaxiv.org 経由で全文取得
+- Saturation: PASS (warning) — agentic-instruction-following family N=2 / 未登録の context-file クラスタで数えると N=6・採用率 50%+
+- 判定: Gap 3件 (#4 borderline band, #9 power analysis, #15 反復 vs 対象数), Partial 7件, Already 2件 (#7 process/outcome 分離, #13 完了ゲート), N/A 2件 (#12 egress pod, #14 品質ルーブリック)
+- 取り込み: 採用 3 件 (S×3) — T1 `skill-audit/SKILL.md:513` の検出力ガイダンス修正 + 床/天井の事前確認 / T4' `dead-weight-scan-protocol.md` に「手順 3 は集計成功率の検定ではない」を明記 / T6 `holdout_accept_gate.py` の verdict に `sample_sizes` 追加
+- 不採用: 3-arm ablation (論文の SELECTIVE arm 自体が corpus 10x/18x で交絡) / process-cost の主判定昇格 / T2 canary 追記 / T3 失敗トリアージ軸 / T5 turn 非可搬性 (`benchmark-dimensions.md` に consumer なし)
+- Phase 2.5: Gemini sunset + cmux 不在のため Codex 2 本を役割分担 (批評 / 配線検証) = model-family diversity は degraded。spoke B が spoke A の `improve-policy.md` (deprecated) 追記勧告を阻止
+- 副次: root `tests/` の 128 件が CI・task test・lefthook のいずれからも実行されない孤児 + collection error / pytest 実行が追跡ファイル `negative-knowledge.md` を汚染 (master にコミット済み) / deprecated な improve-policy.md への現役参照
+- Stale-Plan Audit: `2026-05-10-12-rule-claude-md` を実ファイル照合のうえ `status: implemented` に確定
+- 分析: docs/research/2026-08-02-context-files-ablation-absorb-analysis.md
+
 ## [2026-08-03] ingest | AIエージェント4体を herdr だけでオーケストレーションする intent-cli — 指示待ちで止まらない仕組み
 
 - ソース: https://github.com/J-Tech-Japan/intent-system/releases/tag/v0.8.0 (ユーザー貼り付けテキスト)

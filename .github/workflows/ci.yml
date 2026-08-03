@@ -23,3 +23,5 @@ jobs:
       - name: Claude scripts tests
         working-directory: .config/claude/scripts
         run: uvx pytest tests/ -q
+      - name: Root harness tests
+        run: uvx pytest tests/ -q
