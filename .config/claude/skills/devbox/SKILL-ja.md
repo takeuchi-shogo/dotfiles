@@ -21,7 +21,7 @@ devbox init
 
 # パッケージ追加
 devbox add nodejs@20
-devbox add python@3.12 go@1.22
+devbox add python@3.12 go@1.26
 
 # パッケージ削除
 devbox rm nodejs
