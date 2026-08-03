@@ -89,7 +89,9 @@ tasks:
       - sh: command -v lefthook >/dev/null
         msg: 'lefthook not found in PATH — install via `brew install lefthook` (or add to nix-darwin homebrew.brews)'
     cmds:
-      - lefthook install
+      # --reset-hooks-path: lefthook 2.x refuses install when local core.hooksPath is set
+      # (even if it points at the default .git/hooks). Recurs after tools re-set the key.
+      - lefthook install --reset-hooks-path
 
   nix:bootstrap:
     desc: 'First-time apply (darwin-rebuild not yet installed). Usage: task nix:bootstrap PROFILE=private'
