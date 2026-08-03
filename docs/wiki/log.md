@@ -2302,3 +2302,19 @@
 - Phase 2.5: Codex only (Gemini は IneligibleTierError)。判定 4 件を覆した — <important if> は遅延ロードでない (M4 Already→Partial)、Pass 1 が deprecated な improve-policy.md を根拠にしていた、M13 は既存規定の見落とし + secrets URL の情報露出リスク
 - PR: https://github.com/takeuchi-shogo/dotfiles/pull/211
 - レポート: docs/research/2026-08-03-shirai-claude-md-trim-absorb-analysis.md
+## [2026-08-03] ingest | 構造化ループエンジニアリング (torukona/Zenn)
+
+- ソース: https://zenn.dev/torukona/articles/4b6f0bfe083d2b
+- 判定: Gap 0, Partial 0, Already 6, N/A 4
+- 取り込み: 採用0。validation-only 1件 — memory feedback_sonnet_cursor_underused.md の「Sonnet 未発火」が stale と判明 (実測 510 件) → memory と MEMORY.md 索引を訂正
+- Phase 2.5: Gemini は IneligibleTierError で失敗、Codex 単独批評 (verdict「採用ゼロでよい」)
+
+## [2026-08-03] ingest | claude-code-prompt-improver (severity1/GitHub)
+
+- ソース: https://github.com/severity1/claude-code-prompt-improver (v0.6.1、リポジトリ実装)
+- 判定: Gap 2 (audience/timing 規約、bypass prefix), Partial 4, Already 5, N/A 3, Broken 2 (既存実装の未配線)
+- Saturation: family 閾値未達で PASS (harness-engineering は `hook` 1 hit のみ、3 hit 必要)
+- 取り込み: 採用 6 件 — T1 measure-instruction-budget.py の hook_injected 撤去 + 週次 nightly 配線 / T2 plan-implement-bridge.py の配線 / T3 router 系 hook に self-cancel 句 + ADR-0006 明文化 / T4 audience-timing 規約表 / T5 run_hook fail-open 回帰テスト / T6 memory の因果訂正
+- 副次: 記事の framing が露出させた既存の穴が 3 件 (orphan hook 2 件は 2026-04-23 escalation → 2026-06-07 再検出 → 今回で 3 度目 / memory feedback_explore_subagent_bash_limit.md の因果が誤り)
+- Phase 2.5: Gemini は IneligibleTierError で degraded、Codex 単独。判定 6 件を修正 (#14/#13 を Gap→Broken、#5 Gap→Partial、#1 の N/A 根拠が ADR 誤読と指摘)
+- 分析: docs/research/2026-08-03-prompt-improver-nudge-injection-absorb-analysis.md

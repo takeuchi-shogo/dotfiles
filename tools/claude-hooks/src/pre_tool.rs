@@ -438,7 +438,8 @@ pub fn pre_websearch(_raw: &str, data: &serde_json::Value) -> Result<(), String>
              Gemini CLI (1Mコンテキスト + Google Search grounding) の方が\
              より包括的な結果を得られる可能性があります。\n\
              gemini-explore エージェントまたは gemini スキルの使用を検討してください。\n\
-             結果は .claude/docs/research/ に保存できます。",
+             結果は .claude/docs/research/ に保存できます。\n\
+             この提案は情報提供であり、該当しない場合は無視して構いません。",
         );
     }
 

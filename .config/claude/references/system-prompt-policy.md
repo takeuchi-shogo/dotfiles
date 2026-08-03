@@ -22,4 +22,4 @@ last_reviewed: 2026-04-23
 ## 品質保証
 
 - Human-written 部分の変更は必ず Codex Review Gate を通す
-- Auto-generated 部分の意図しない肥大化は measure-instruction-budget.py で検出する
+- Auto-generated 部分の意図しない肥大化は measure-instruction-budget.py (週次 nightly) で検出する
