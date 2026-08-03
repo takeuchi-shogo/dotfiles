@@ -96,7 +96,8 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
             &format!(
                 "[Agent Router] マルチモーダルファイル (.{}) が検出されました。\
                  Gemini CLI (1Mコンテキスト) での処理を推奨します。\
-                 gemini-explore エージェントまたは gemini スキルを使用してください。",
+                 gemini-explore エージェントまたは gemini スキルを使用してください。\
+                 この提案は情報提供であり、該当しない場合は無視して構いません。",
                 ext
             ),
         );
@@ -114,7 +115,8 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
             &format!(
                 "[Agent Router] 設計/推論キーワード ({}) が検出されました。\
                  Codex CLI での深い分析を検討してください。\
-                 codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。",
+                 codex スキル、codex-debugger エージェント、または直接 codex exec で実行できます。\
+                 この提案は情報提供であり、該当しない場合は無視して構いません。",
                 keywords.join(", ")
             ),
         );
@@ -132,7 +134,8 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
             &format!(
                 "[Agent Router] リサーチ/分析キーワード ({}) が検出されました。\
                  Gemini CLI (1Mコンテキスト + Google Search) での調査を検討してください。\
-                 gemini-explore エージェントまたは gemini スキルを使用できます。",
+                 gemini-explore エージェントまたは gemini スキルを使用できます。\
+                 この提案は情報提供であり、該当しない場合は無視して構いません。",
                 keywords.join(", ")
             ),
         );

@@ -40,7 +40,7 @@ last_reviewed: 2026-05-30
 | impact-scan | False | policy-advisory | PostToolUse |
 | mcp-response-inspector | False | policy-advisory | PostToolUse |
 | memory-integrity-check | False | policy-advisory | SessionStart |
-| plan-implement-bridge | False | policy-advisory | (indirect) |
+| plan-implement-bridge | False | policy-advisory | PostToolUse |
 | spec-quality-check | False | policy-advisory | PostToolUse |
 | tdd-guard | False | policy-advisory | (indirect) |
 | type-safety-delta | False | policy-advisory | PostToolUse |
@@ -66,6 +66,25 @@ last_reviewed: 2026-05-30
 - **fail_closed=True の 6 件は全て security/policy gate** で原則 1 に整合 (PreToolUse 3 + PostToolUse 3)。
 - block しない advisory/observability hook は全て fail-open。原則 2 に整合。
 - 新規 hook 追加時は分類 (block するか) を判定し、本表に 1 行追加する。block する security gate なら必ず `fail_closed=True`。
+
+## Audience / Timing 契約 (2026-08-03 追記)
+
+hook が返す `additionalContext` / `reason` は「誰が読み、いつ届き、どれだけ持続するか」が event ごとに異なる。読めない相手向けの助言を書いても無駄になる。
+
+出典: `severity1/claude-code-prompt-improver` (https://github.com/severity1/claude-code-prompt-improver) の Audience rule / Timing rule (verbatim引用)。列「dotfiles 配線」以降は本リポジトリの `settings.json` で確認した事実、それ以外は出典の主張または未検証の推測として明記する。
+
+| event | dotfiles 配線 | 読者 | 到達タイミング | 持続性 |
+|---|---|---|---|---|
+| `SubagentStart` | **未使用** (`settings.json` に 0 hit) | (出典) subagent 自身 | — dotfiles では該当しない | — |
+| `UserPromptSubmit` | 3 hooks (claude-hooks user-prompt / user-input-guard.py / memory-vec-recall-hook.py) | (出典) 親エージェント (main agent) | そのターンの冒頭、モデルがプロンプトを処理する前 | そのターンのみ |
+| `PreToolUse` | 10 hook 登録 (pre-bash/pre-commit/pre-edit/comment-guard/prompt-injection-detector/pre-search/pre-websearch/mcp-audit/docker-safety/rtk) | (出典 verbatim) 親エージェント | additionalContext はツール結果の隣に置かれ、次のモデルリクエストで読まれる | 次の1リクエスト分 |
+| `PostToolUse` | claude-hooks post-edit 他多数 | 親エージェント (出典は UserPromptSubmit/PreToolUse のみ名指し。PostToolUse は同型配線からの類推であり未検証) | PreToolUse と同型 (ツール結果の直後、次のモデルリクエストで読まれる) と推測 | 次の1リクエスト分 |
+| `Stop` | completion-gate.py 他 | 親エージェント自身 — dotfiles で確認: `{"decision":"block","reason":...}` が続行を強制し reason を本人に渡す | 応答終了直前 | そのブロック判定 1 回のみ |
+| `SubagentStop` | subagent-monitor.py (唯一の hook) | dotfiles では block/reason を一切使わず observability のみ — 実質「誰も読まない」(telemetry write のみ) | — | — |
+
+`EnterPlanMode` / `ExitPlanMode` は Claude Code のツール名で、`PreToolUse` の matcher 一覧 (上記10件) に該当なし。出典が挙げる「ExitPlanMode advisory は手遅れ」問題は dotfiles では未発生 (そもそも matcher がない)。
+
+**実務ルール**: 親向けの助言を `SubagentStart` (dotfiles では未配線) に書かない。`ExitPlanMode` 相当のタイミングに advisory を置いても手遅れなので、計画提示前に届く経路 (`PreToolUse` 等) を使う。
 
 ## 再生成 (drift チェック)
 
