@@ -25,5 +25,5 @@ agent に config を書かせた変更では、以下の 3 点が揃って初め
 
 3 が抜けると「書いたが読まれていない設定」が静かに残る。
 実例: `.codex/agents/*.toml` の 12 個は 5 ヶ月間 `~/.codex/` へ配備されず、
-配備しても現行 CLI には選択手段が無かった (`rules/codex-delegation.md`「名前付き custom agent は作らない」参照)。
+配備しても現行 CLI には選択手段が無かった (`rules/codex-delegation.md` の「名前付き custom agent は作らない」を参照)。
 1 と 2 だけは当時も満たしていた。
