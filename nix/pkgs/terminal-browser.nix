@@ -24,9 +24,19 @@ stdenvNoCC.mkDerivation rec {
 
   # launcher (bin/terminal-browser) は $0 相対で ROOT を解決するため、
   # upstream tarball と同じレイアウトのまま $out 直下に展開する ($out/bin だけの symlink 化は ROOT がズレて不可)
+  #
+  # さらに $out 直下に置くだけでは足りない: home-manager が profile を作るとき
+  # bin/terminal-browser だけを集約 symlink するため、$0 相対の ROOT が
+  # electron/ を持たない user-environment を指して起動に失敗する。
+  # ROOT を store path 固定に差し替えて $0 依存を断つ。
   installPhase = ''
     mkdir -p $out
     cp -R . $out
+
+    # --replace-fail: upstream が launcher を書き換えて置換が空振りしたら、
+    # 壊れたバイナリを配らずビルドを落とす
+    substituteInPlace $out/bin/terminal-browser \
+      --replace-fail 'ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)"' "ROOT=$out"
   '';
 
   meta = with lib; {
