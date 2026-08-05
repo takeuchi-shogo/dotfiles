@@ -74,12 +74,19 @@
 - UI 実装では `profiles.frontend` を推奨する。global default の high reasoning は維持しつつ、frontend 生成では low / medium reasoning を優先する。
 - 実装前に、UI 品質が重要な場合は `visual thesis`、`content plan`、`interaction thesis` を短く定義する。
 - visual reference、real copy、product context があれば優先して使う。欠けている場合は、必要最小限を聞き返すか、仮定を明示する。
+- UI copy は heading、label、card、setting の下に subtitle、helper text、descriptive copy を既定で足さず、まず concise で self-explanatory な heading / label だけで伝える。supporting copy は user が求めた場合、または misunderstanding・error の防止に必要な場合だけ追加し、heading の言い換えを繰り返さない。
 - landing page は narrative structure、full-bleed visual anchor、cardless hero を基本にする。app / dashboard は workspace-first、utility copy、calm surface hierarchy を基本にする。
 - UI 完了前は可能な限り Playwright で desktop / mobile viewport、主要 flow、overlap、fixed/floating UI、視覚的 hierarchy を確認する。
 
 ## Editing Defaults
 - 変更は既存の命名規則・構成・formatter に従う。無関係な差分を広げない。
-- パッケージ追加や新規 utility の前に、既存の task、script、skill、MCP を確認する。
+- 新しい feature、interaction、architecture を設計する前に、同種の established product と project / library の既存 pattern・convention を調べる。文脈に合う proven pattern を採用し、ゼロから独自方式を発明しない。
+- 現在の要件を完全に満たす最小の実装を選ぶ。将来予測だけの abstraction、configuration、indirection は追加しない。
+- 最小の end-to-end 動作を先に成立させ、動いている system の上に capability を一層ずつ追加する。未完成の複雑さと引き換えに既存動作を失わない。
+- component / module は責務単位で分け、concern と ownership の境界を明確にする。
+- project 既存の dependency を先に使い、全体 complexity を下げるか reliability を上げられる場合は established、well-maintained library を優先する。独自実装や package 追加の前に、既存の task、script、skill、MCP と library の docs・types・current API を確認する。
+- 後方互換性を暗黙の既定にしない。変更対象の旧 path が不要と確認でき、現行要件や外部 contract が要求しなければ削除し、compatibility layer、fallback、migration を追加しない。互換性が必要なら対象 contract と removal criteria を明示する。
+- architecture は長期運用に耐える決定を選び、「後で置き換える」前提の stopgap は避ける。段階導入が必要なら temporary scope と exit criteria を明示する。
 - 同じ運用を 2 回以上繰り返したら、skill 化や AGENTS 追加を検討する。
 - AGENTS / rule を追加する前に、既存が同じか矛盾を持たないか照合する。重複なら新設せず統合・書き換えで一本化する。
 
