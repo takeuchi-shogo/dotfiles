@@ -110,6 +110,9 @@ def main() -> None:
 
     invocation["exit_status"] = "completed" if tool_response else "unknown"
 
+    if isinstance(tool_response, dict):
+        invocation["response_keys"] = sorted(str(k) for k in tool_response)
+
     try:
         emit_agent_invocation(invocation)
     except Exception:  # noqa: BLE001  best-effort, never block

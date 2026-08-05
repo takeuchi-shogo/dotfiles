@@ -384,6 +384,9 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 - レビュー対象の git diff
 - 変更ファイルのパス一覧
 - プロジェクトの CLAUDE.md（存在する場合）
+- **出力末尾に `Coverage: complete | partial | unknown` を必ず置くこと**（完走の終端マーカー。
+  `partial` なら未確認の範囲を 1 行で書く）。Step 4 の Roster 照合がこの行の有無で
+  完走を判定するため、指摘が 0 件でも省略しない
 
 詳細なルーティング情報は `references/reviewer-routing.md` を参照。
 
@@ -394,12 +397,12 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 統合ルール:
 
 1. **セマンティック重複排除**: 同一ファイル ±10行以内 + 同一 failure_mode の指摘は最高信頼度の1件に統合。統合元は「(他 N 件のレビューアーも同様の指摘)」と注記
-2. **信頼度ブースト**: 複数の独立したレビューアーが同じ問題を指摘した場合、信頼度を `max(scores) + 5`（上限100）に引き上げ
+2. **合意の扱い**: 複数のレビューアーが同じ問題を指摘した場合、`agreeing_reviewers` を記録し**並び順のタイブレークにのみ使う**。confidence 値は加算しない（相関した誤検知を増幅するため）。詳細: `references/review-consensus-policy.md` Section 2
 3. **対立検出**: 同じ箇所で矛盾する指摘がある場合、両方残して `[CONFLICT]` タグを付与
-4. **重要度順**: Critical → Important → Watch の順に整理
+4. **重要度順**: レビューアーの表記を `references/review-consensus-policy.md` Section 0 の表で canonical severity (Critical / Important / Watch) に写し、その順に整理。表に無い値は `[UNMAPPED SEVERITY: <値>]` を付けて残し verdict 計算から除外する（勝手に寄せない）
 5. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「要注意」を付与
 6. **判定**: Critical が1件以上 → BLOCK。Important が3件以上 → NEEDS_FIX。それ以外 → PASS。Watch は判定に影響しない。ただし **レビューアーが `NEEDS_HUMAN_REVIEW` を宣言した場合、finding 件数に関わらず verdict を `NEEDS_HUMAN_REVIEW` に倒す** — severity を付けずに保留した項目 (security-reviewer の `needs follow-up` 等) は件数計算に乗らないため、宣言を拾わないと緑で閉じてしまう
-7. **信頼度フィルタ**: confidence < 60 の指摘を除外
+7. **信頼度フィルタ**: `confidence_kind = subjective` の指摘のみ confidence < 60 で除外する。`evidence` 型（security-reviewer の証拠充足型）は数値で落とさない。confidence 欠落は `[UNSCORED]` を付けて残し、verdict 計算と自動修正の入力から除外する。詳細: `references/review-consensus-policy.md` Section 0
 8. **既存コード除外**: diff の追加行以外への指摘を除外
 9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 10. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
@@ -419,6 +422,19 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 - テスト失敗中の場合: verdict を自動的に `BLOCK` に引き上げる
 - 全 reviewer が PASS でもテスト未実行なら PASS とみなさない
 - code-reviewer の出力に `Applied Checklists:` 行が欠落している場合: 合成レポートに `[CHECKLIST MANIFEST MISSING]` 警告を付加する
+
+**Roster 照合（完走判定）**: Step 3 で dispatch したレビューアー名を控えておき、
+`Coverage: complete | partial | unknown` の終端マーカーを返したレビューアーと照合する。
+
+- マーカーを返さなかったレビューアーがあれば `[INCOMPLETE: <reviewer>]` を付加し、
+  **verdict を PASS にしない**（`NEEDS_HUMAN_REVIEW` に倒す）
+- `Coverage: unknown` も未完走と同じ扱いにする。`partial` は残りの範囲を明記させる
+- 途中で切れた出力は「指摘が無い」ことの根拠にならない。maxTurns 到達や応答欠落を
+  PASS と区別できないまま緑で閉じるのを防ぐのがこのルールの目的
+
+> `agent-invocations.jsonl` の `exit_status` は tool_response の有無だけで決まり
+> (`scripts/runtime/agent-invocation-logger.py:111`)、実測で 1724 行すべて `completed`。
+> 切れた応答を harness 側の記録では区別できないため、判定は終端マーカーの有無で行う。
 
 Ref: `references/trust-verification-policy.md`
 

@@ -2319,3 +2319,12 @@
 - Phase 2.5: Gemini は IneligibleTierError で degraded、Codex 単独。判定 6 件を修正 (#14/#13 を Gap→Broken、#5 Gap→Partial、#1 の N/A 根拠が ADR 誤読と指摘)
 - 分析: docs/research/2026-08-03-prompt-improver-nudge-injection-absorb-analysis.md
 
+## [2026-08-06] ingest | MonotaRO Makasetaro — AI コードレビューエージェントのハーネス設計
+
+- ソース: https://tech-blog.monotaro.com/entry/2026/08/05/090000
+- family: code-review-best-practices (N=12)、Saturation Gate = PASS (warning、採用率 64%)
+- 判定: Gap/Partial 6 (M2 M3 M5 M7 M10 + M1 の pr-autofix 経路)、Already 3 (M1 reviewer 経路 / M6 / M9)、条件付き Gap 1 (M4 見送り)
+- 取り込み: T1 finding 出力契約の fail-fast 検証 / T2 終端マーカーによる完走判定 / T3 ラウンド間 ledger / T4 hook の一括 add false positive / T5 投稿前の file:line 照合
+- 実測: review-findings.jsonl 157 件のうち severity 欠落 121 件 (77%)、残り 36 件が 15 値に散在
+- 分析: docs/research/2026-08-06-monotaro-makasetaro-review-harness-absorb-analysis.md
+- プラン: docs/plans/active/2026-08-06-review-finding-contract-plan.md
