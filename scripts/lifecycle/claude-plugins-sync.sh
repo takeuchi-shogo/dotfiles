@@ -16,6 +16,7 @@
 # Usage:
 #   claude-plugins-sync.sh install   # add marketplaces + install enabled plugins (default)
 #   claude-plugins-sync.sh check     # read-only: report declared-but-missing plugins (exit 1 if any)
+#   claude-plugins-sync.sh update    # refresh marketplace catalogs + update installed plugins
 #
 # Source of truth: $CLAUDE_SETTINGS (default ~/.claude/settings.json)
 #   - extraKnownMarketplaces.<name>.source → github repo | directory path
@@ -30,6 +31,9 @@
 # Exit codes:
 #   install: 0 always unless a hard dependency (jq) is missing → 2
 #   check:   0 if nothing missing, 1 if declared plugins are not installed, 2 on dep error
+#   update:  0 always unless jq is missing or installed_plugins.json is unparsable → 2
+#            (a plugin that fails to update is warned, not fatal — stale
+#            marketplace entries are an expected steady state)
 set -uo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -58,7 +62,8 @@ warn() { echo "${c_yellow}[plugins] WARN:${c_reset} $*" >&2; }
 err()  { echo "${c_red}[plugins] ERROR:${c_reset} $*" >&2; }
 
 command -v jq >/dev/null 2>&1 || { err "jq required"; exit 2; }
-if [ ! -f "$SETTINGS" ]; then
+# install/check are settings-driven; update reads installed_plugins.json only.
+if [ "$MODE" != "update" ] && [ ! -f "$SETTINGS" ]; then
   err "settings.json not found: $SETTINGS"
   exit 2
 fi
@@ -88,6 +93,53 @@ resolve_marketplace() {
   esac
   return 1
 }
+
+# ----------------------------------------------------------------------------
+# update mode: driven by installed_plugins.json, not settings.json — it updates
+# what this machine actually has. Runs before the ENABLED lookup for that reason.
+# ----------------------------------------------------------------------------
+if [ "$MODE" = "update" ]; then
+  if ! command -v claude >/dev/null 2>&1; then
+    warn "Claude Code CLI not installed — nothing to update"
+    exit 0
+  fi
+
+  # Marketplace catalogs are cached; without this refresh `plugin update` would
+  # compare against a stale catalog and report everything as already current.
+  log "marketplace update (all)"
+  claude plugin marketplace update >/dev/null 2>&1 || warn "marketplace update reported an error (continuing)"
+
+  if [ ! -f "$INSTALLED" ]; then
+    warn "no installed-plugin record at $INSTALLED — nothing to update"
+    exit 0
+  fi
+
+  # Read the rows up front: inside a process substitution a jq failure is
+  # invisible to pipefail, so a corrupt record would "update" nothing and still
+  # report success. Tab-delimited so a value containing a space cannot split.
+  if ! plugin_rows=$(jq -r '.plugins // {} | to_entries[] | .key as $k | .value[] | "\($k)\t\(.scope)"' "$INSTALLED"); then
+    err "failed to parse $INSTALLED"
+    exit 2
+  fi
+
+  updated=0; failed=0
+  # `plugin update --scope` defaults to user, so project/local installs are
+  # silently skipped unless the recorded scope is passed back explicitly.
+  while IFS=$'\t' read -r plugin scope; do
+    [ -n "$plugin" ] || continue
+    log "update: $plugin ($scope)"
+    if claude plugin update "$plugin" --scope "$scope" >/dev/null 2>&1; then
+      updated=$((updated + 1))
+    else
+      warn "  failed to update $plugin ($scope)"
+      failed=$((failed + 1))
+    fi
+  done <<< "$plugin_rows"
+
+  echo ""
+  log "done — updated=$updated, failed=$failed (restart Claude Code to apply)"
+  exit 0
+fi
 
 # Enabled plugins ("name@marketplace") where value is true.
 mapfile -t ENABLED < <(
