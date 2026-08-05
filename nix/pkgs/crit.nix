@@ -2,6 +2,9 @@
 # インラインコメントを付けてエージェントへ送り返すローカルレビュー CLI。
 # nixpkgs 未収載のため自前 derivation。Go 1.26 必須 (upstream go.mod 指定)。
 # レシピは upstream flake.nix を踏襲 (subPackages/doCheck/ldflags)。
+# 更新手順: upstream の release tag を確認し version と rev (v${version}) を bump。
+# hash/vendorHash は一旦 lib.fakeHash に置き換えて nix build を走らせ、
+# ビルドエラーに出てくる実際のハッシュ値に差し替える (src → vendorHash の順)。
 { lib, buildGo126Module, fetchFromGitHub }:
 
 buildGo126Module rec {
