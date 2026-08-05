@@ -9,16 +9,78 @@ use std::path::Path;
 
 pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
     let command = data["tool_input"]["command"].as_str().unwrap_or("");
-    let re = Regex::new(r"git\s+add\s+(-A|--all|\.\s*$|\.\s)").unwrap();
-    if re.is_match(command) {
+    if is_bulk_git_add(command) {
         crate::io::deny(
-            "一括追加は禁止です。ファイルを個別に確認し、必要なものだけ追加してください",
+            "BLOCKED [bulk-add]: `git add -A`/`--all`/`.` による一括追加が検出されました。\n\
+             WHY: 意図しないファイル (secrets, 生成物, 一時ファイル) を巻き込むのを防ぐため。\n\
+             FIX: 個別に確認して必要なファイルだけ `git add <file>` で追加してください。\n\
+             誤検知の場合: 説明文としてこの文字列を渡したいだけなら、ファイル経由で渡すか\
+             heredoc/引用符の外に直接書かない（例: 一時ファイルに書いてから `--file` で渡す）。",
         );
     }
     if let Some(msg) = check_timeout_clamp(data) {
         crate::io::context("PreToolUse", &msg);
     }
     Ok(())
+}
+
+/// `git add` の一括系フラグ (-A/--all/.) が「実行される」位置に現れているかを判定する。
+///
+/// 素朴な部分一致だと、heredoc 本文やクォート済みの説明文の中でこの文字列を
+/// 引用しただけの Bash まで block してしまう (2026-08-06 に実際に踏んだ:
+/// 外部 LLM CLI へのプロンプト本文にこのルールの説明を書いて block された)。
+/// 完全なシェルパーサは持たないが、次の 2 点で「引用しただけ」を除外する:
+///   1. heredoc 本文 (`<<'EOF' ... EOF`) はまるごと判定対象から外す
+///   2. `git` がコマンド開始位置 (行頭 / `;` `&` `|` `(` `` ` `` の直後) に
+///      無い場合は「他のコマンドの引数として引用されただけ」とみなし除外する
+///      (`git add "."` のように git 自身への引数がクォートされているだけの
+///      ケースは、`git` 自体はコマンド開始位置にあるので引き続き block される)
+fn is_bulk_git_add(command: &str) -> bool {
+    let re = Regex::new(r"git\s+add\s+(-A|--all|\.\s*$|\.\s)").unwrap();
+    let stripped = strip_heredoc_bodies(command);
+    let starts: Vec<usize> = re.find_iter(&stripped).map(|m| m.start()).collect();
+    starts.iter().any(|&start| is_command_start(&stripped[..start]))
+}
+
+/// heredoc (`<<EOF` / `<<'EOF'` / `<<-EOF` など) の本文行をまるごと取り除く。
+/// 開始行・終端行 (delimiter だけの行) 自体は残す。終端が見つからない
+/// 壊れた入力は残り全行を本文とみなして落とす (安全側に倒す)。
+fn strip_heredoc_bodies(command: &str) -> String {
+    let heredoc_start = Regex::new(r#"<<-?\s*['"]?(\w+)['"]?"#).unwrap();
+    let lines: Vec<&str> = command.split('\n').collect();
+    let mut result: Vec<&str> = Vec::new();
+    let mut i = 0;
+    while i < lines.len() {
+        let line = lines[i];
+        result.push(line);
+        if let Some(caps) = heredoc_start.captures(line) {
+            let delim = caps.get(1).unwrap().as_str();
+            i += 1;
+            while i < lines.len() {
+                let is_terminator = lines[i].trim() == delim;
+                i += 1;
+                if is_terminator {
+                    result.push(lines[i - 1]);
+                    break;
+                }
+            }
+            continue;
+        }
+        i += 1;
+    }
+    result.join("\n")
+}
+
+/// `before` (マッチ直前までの文字列) が「新しいコマンドの開始位置」で
+/// 終わっているかを判定する。空白 (スペース/タブ) を読み飛ばした直前の
+/// 文字が区切り文字 (`;` `&` `|` `(` `{` `` ` `` 改行) か、文字列の先頭なら true。
+fn is_command_start(before: &str) -> bool {
+    const SEPARATORS: &[char] = &[';', '&', '|', '(', '{', '`', '\n'];
+    let trimmed = before.trim_end_matches([' ', '\t']);
+    match trimmed.chars().last() {
+        None => true,
+        Some(c) => SEPARATORS.contains(&c),
+    }
 }
 
 /// Bash tool の timeout 上限。これを超える指定は黙って切り捨てられる。
@@ -543,5 +605,39 @@ mod tests {
     #[test]
     fn non_numeric_timeout_is_silent() {
         assert!(check_timeout_clamp(&input(serde_json::json!("960000"))).is_none());
+    }
+
+    #[test]
+    fn bare_bulk_add_is_blocked() {
+        assert!(is_bulk_git_add("git add -A"));
+        assert!(is_bulk_git_add("git add --all"));
+        assert!(is_bulk_git_add("git add ."));
+    }
+
+    #[test]
+    fn heredoc_body_quoting_the_string_is_not_blocked() {
+        let command = "cat <<'EOF' | llm-cli\n\
+                        このプロジェクトでは git add -A は禁止されています。\n\
+                        EOF";
+        assert!(!is_bulk_git_add(command));
+    }
+
+    #[test]
+    fn quoted_explanation_outside_heredoc_is_not_blocked() {
+        assert!(!is_bulk_git_add(
+            r#"echo "please don't run git add -A here""#
+        ));
+    }
+
+    #[test]
+    fn chained_after_separator_is_still_blocked() {
+        assert!(is_bulk_git_add("echo hi && git add -A"));
+        assert!(is_bulk_git_add("echo hi ; git add --all"));
+        assert!(is_bulk_git_add("echo hi | git add ."));
+    }
+
+    #[test]
+    fn individual_file_add_is_not_blocked() {
+        assert!(!is_bulk_git_add("git add src/main.rs"));
     }
 }

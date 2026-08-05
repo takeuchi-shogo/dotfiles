@@ -18,6 +18,7 @@ from session_events import (
     emit_event,
     emit_review_feedback,
     emit_review_finding,
+    emit_review_metrics,
     emit_skill_event,
     emit_skill_step,
     flush_session,
@@ -304,6 +305,19 @@ class TestFailureMode:
 # --- review finding / feedback テスト ---
 
 
+def _finding(**overrides) -> dict:
+    """出力契約を満たす最小 finding。契約: review-consensus-policy.md Section 0。"""
+    base = {
+        "id": "rf-test-000",
+        "reviewer": "cr",
+        "file": "api.go",
+        "severity": "Watch",
+        "finding": "x",
+    }
+    base.update(overrides)
+    return base
+
+
 class TestReviewFinding:
     """レビュー指摘の保存と読み込みテスト。"""
 
@@ -313,7 +327,9 @@ class TestReviewFinding:
             "reviewer": "code-reviewer",
             "file": "api.go",
             "line": 42,
+            "severity": "Critical",
             "confidence": 85,
+            "confidence_kind": "subjective",
             "failure_mode": "FM-002",
             "finding": "エラーが握り潰されている",
             "failure_type": "generalization",
@@ -326,15 +342,15 @@ class TestReviewFinding:
         assert pending[0]["reviewer"] == "code-reviewer"
 
     def test_feedback_resolves_finding(self, tmp_path):
-        emit_review_finding({"id": "rf-test-002", "reviewer": "test", "finding": "x"})
+        emit_review_finding(_finding(id="rf-test-002", reviewer="test"))
         emit_review_feedback("rf-test-002", "accepted")
 
         pending = read_pending_findings()
         assert len(pending) == 0
 
     def test_mixed_pending_and_resolved(self, tmp_path):
-        emit_review_finding({"id": "rf-a", "reviewer": "r1", "finding": "x"})
-        emit_review_finding({"id": "rf-b", "reviewer": "r2", "finding": "y"})
+        emit_review_finding(_finding(id="rf-a", reviewer="r1"))
+        emit_review_finding(_finding(id="rf-b", reviewer="r2", finding="y"))
         emit_review_feedback("rf-a", "ignored")
 
         pending = read_pending_findings()
@@ -346,7 +362,7 @@ class TestUpdateFindingOutcome:
     """update_finding_outcome のテスト。"""
 
     def test_basic_update(self, tmp_path):
-        emit_review_finding({"id": "rf-001", "reviewer": "cr", "finding": "bug"})
+        emit_review_finding(_finding(id="rf-001", finding="bug"))
         result = update_finding_outcome("rf-001", "accept", "explicit")
         assert result is True
 
@@ -359,7 +375,7 @@ class TestUpdateFindingOutcome:
 
     def test_explicit_not_overwritten_by_auto_diff(self, tmp_path):
         """R-05: explicit が記録済みなら auto_diff で上書きしない。"""
-        emit_review_finding({"id": "rf-002", "reviewer": "cr", "finding": "x"})
+        emit_review_finding(_finding(id="rf-002"))
         update_finding_outcome("rf-002", "accept", "explicit")
 
         result = update_finding_outcome("rf-002", "reject", "auto_diff")
@@ -372,7 +388,7 @@ class TestUpdateFindingOutcome:
 
     def test_auto_diff_overwritten_by_explicit(self, tmp_path):
         """auto_diff は explicit で上書きできる。"""
-        emit_review_finding({"id": "rf-003", "reviewer": "cr", "finding": "x"})
+        emit_review_finding(_finding(id="rf-003"))
         update_finding_outcome("rf-003", "reject", "auto_diff")
         result = update_finding_outcome("rf-003", "accept", "explicit")
         assert result is True
@@ -387,14 +403,14 @@ class TestUpdateFindingOutcome:
         assert result is False
 
     def test_invalid_outcome_returns_false(self, tmp_path):
-        emit_review_finding({"id": "rf-004", "reviewer": "cr", "finding": "x"})
+        emit_review_finding(_finding(id="rf-004"))
         result = update_finding_outcome("rf-004", "invalid_value", "explicit")
         assert result is False
 
     def test_outcome_resolves_pending(self, tmp_path):
         """outcome が設定された finding は pending から消える。"""
-        emit_review_finding({"id": "rf-005", "reviewer": "cr", "finding": "x"})
-        emit_review_finding({"id": "rf-006", "reviewer": "cr", "finding": "y"})
+        emit_review_finding(_finding(id="rf-005"))
+        emit_review_finding(_finding(id="rf-006", finding="y"))
         update_finding_outcome("rf-005", "accept", "explicit")
 
         pending = read_pending_findings()
@@ -682,3 +698,96 @@ class TestAgentBehaviorFailureModes:
             "error", {"message": "premature action: git push without confirm"}
         )
         assert fm == "FM-015"
+
+
+# --- finding 出力契約テスト (review-consensus-policy.md Section 0) ---
+
+
+class TestReviewFindingContract:
+    """emit_review_finding が契約違反を拒否することの確認。"""
+
+    def test_missing_severity_rejected(self, tmp_path):
+        bad = _finding()
+        del bad["severity"]
+        with pytest.raises(ValueError, match="severity"):
+            emit_review_finding(bad)
+
+    def test_non_canonical_severity_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="severity"):
+            emit_review_finding(_finding(severity="MUST"))
+
+    def test_missing_file_rejected(self, tmp_path):
+        bad = _finding()
+        del bad["file"]
+        with pytest.raises(ValueError, match="file"):
+            emit_review_finding(bad)
+
+    def test_missing_id_rejected(self, tmp_path):
+        bad = _finding()
+        del bad["id"]
+        with pytest.raises(ValueError, match="id"):
+            emit_review_finding(bad)
+
+    def test_concatenated_reviewers_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="reviewer"):
+            emit_review_finding(_finding(reviewer="code-reviewer+codex-reviewer"))
+
+    def test_reviewer_list_accepted(self, tmp_path):
+        emit_review_finding(_finding(reviewer=["code-reviewer", "codex-reviewer"]))
+        assert len(read_pending_findings()) == 1
+
+    def test_confidence_without_kind_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="confidence_kind"):
+            emit_review_finding(_finding(confidence=85))
+
+    def test_subjective_confidence_out_of_range_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="0-100"):
+            emit_review_finding(_finding(confidence=150, confidence_kind="subjective"))
+
+    def test_evidence_kind_needs_no_number(self, tmp_path):
+        """証拠充足型は数値を持たなくてよい (数値フィルタの対象外)。"""
+        emit_review_finding(_finding(confidence_kind="evidence"))
+        assert len(read_pending_findings()) == 1
+
+    def test_unscored_finding_accepted(self, tmp_path):
+        """confidence 欠落は書ける (verdict 計算から外すのは Synthesis 側の仕事)。"""
+        emit_review_finding(_finding())
+        assert len(read_pending_findings()) == 1
+
+
+class TestReviewMetricsContract:
+    """emit_review_metrics が完走状態を要求することの確認。"""
+
+    def test_missing_terminal_status_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="terminal_status"):
+            emit_review_metrics(
+                {"run_id": "rv-1", "reviewers": [{"name": "code-reviewer"}]}
+            )
+
+    def test_invalid_terminal_status_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="terminal_status"):
+            emit_review_metrics(
+                {
+                    "run_id": "rv-1",
+                    "reviewers": [{"name": "cr", "terminal_status": "done"}],
+                }
+            )
+
+    def test_valid_terminal_status_accepted(self, tmp_path):
+        emit_review_metrics(
+            {
+                "run_id": "rv-1",
+                "reviewers": [
+                    {"name": "cr", "terminal_status": "complete"},
+                    {"name": "sr", "terminal_status": "missing_marker"},
+                ],
+            }
+        )
+        path = tmp_path / "learnings" / "review-metrics.jsonl"
+        assert path.exists()
+
+    def test_light_tier_empty_roster_accepted(self, tmp_path):
+        """light tier は reviewers=[] で 1 行記録する既存仕様を壊さない。"""
+        emit_review_metrics({"run_id": "rv-2", "review_tier": "light", "reviewers": []})
+        path = tmp_path / "learnings" / "review-metrics.jsonl"
+        assert path.exists()

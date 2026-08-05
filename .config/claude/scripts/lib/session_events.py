@@ -375,12 +375,87 @@ def append_to_learnings(filename: str, data: dict) -> None:
             )
 
 
+CANONICAL_SEVERITIES = ("Critical", "Important", "Watch")
+CONFIDENCE_KINDS = ("subjective", "evidence")
+TERMINAL_STATUSES = ("complete", "partial", "unknown", "missing_marker", "error")
+
+
+def validate_review_finding(finding: dict) -> None:
+    """finding が出力契約を満たすか検証し、違反なら ValueError を投げる。
+
+    契約の正典は skills/review/references/review-consensus-policy.md Section 0。
+    正規化はしない — 欠落や別語彙を黙って canonical 値に寄せると、契約違反が
+    観測できなくなる (検証を入れる前の実測で severity 欠落 77%)。
+    """
+    if not isinstance(finding, dict):
+        raise ValueError(f"finding must be a dict, got {type(finding).__name__}")
+
+    if not str(finding.get("id") or "").strip():
+        raise ValueError("finding.id is required (format: rf-YYYY-MM-DD-NNN)")
+
+    reviewer = finding.get("reviewer")
+    if isinstance(reviewer, str):
+        if not reviewer.strip():
+            raise ValueError("finding.reviewer is required")
+        if "+" in reviewer or "," in reviewer:
+            raise ValueError(
+                "finding.reviewer で複数レビューアーを 1 つの文字列に詰めない"
+                f" (got {reviewer!r})。list[str] で渡す"
+            )
+    elif isinstance(reviewer, list):
+        if not reviewer or not all(str(r).strip() for r in reviewer):
+            raise ValueError("finding.reviewer list must contain non-empty names")
+    else:
+        raise ValueError("finding.reviewer must be str or list[str]")
+
+    if not str(finding.get("file") or "").strip():
+        raise ValueError(
+            "finding.file is required (location 欠落の finding は書けない)"
+        )
+
+    line = finding.get("line")
+    if line is not None and not isinstance(line, int):
+        raise ValueError(f"finding.line must be int when present, got {line!r}")
+
+    severity = finding.get("severity")
+    if severity not in CANONICAL_SEVERITIES:
+        raise ValueError(
+            f"finding.severity must be one of {CANONICAL_SEVERITIES}, got {severity!r}."
+            " レビューアー表記は review-consensus-policy.md Section 0 の表で写す"
+            " (PLAN / RETRACTED は severity ではなく status に入れる)"
+        )
+
+    kind = finding.get("confidence_kind")
+    confidence = finding.get("confidence")
+    if confidence is not None:
+        if kind not in CONFIDENCE_KINDS:
+            raise ValueError(
+                f"confidence を付けるなら confidence_kind が必要 {CONFIDENCE_KINDS},"
+                f" got {kind!r}"
+            )
+        if kind == "subjective" and not (
+            isinstance(confidence, int) and 0 <= confidence <= 100
+        ):
+            raise ValueError(
+                f"subjective confidence must be int 0-100, got {confidence!r}"
+            )
+    elif kind is not None and kind not in CONFIDENCE_KINDS:
+        raise ValueError(
+            f"confidence_kind must be one of {CONFIDENCE_KINDS}, got {kind!r}"
+        )
+
+
 def emit_review_finding(finding: dict) -> None:
     """レビュー指摘を review-findings.jsonl に保存する。
 
     finding には以下を含む:
-      id, reviewer, file, line, confidence, failure_mode, finding, failure_type
+      id, reviewer, file, severity, finding, failure_mode, failure_type
+      任意: line, confidence + confidence_kind, status (PLAN / RETRACTED 等)
+
+    契約違反は ValueError で拒否する (境界では Fail Fast)。契約:
+    skills/review/references/review-consensus-policy.md Section 0
     """
+    validate_review_finding(finding)
     append_to_learnings("review-findings", finding)
 
 
@@ -393,12 +468,31 @@ def emit_review_metrics(metrics: dict) -> None:
 
     metrics には以下を含む:
       run_id (rv-YYYY-MM-DD-NNN), review_tier, verdict, total_lines, rerun_count,
-      reviewers: [{name, duration_s, findings, confidence: {min, max, mean}}]
+      reviewers: [{name, duration_s, findings, confidence: {min, max, mean},
+                   terminal_status}]
+
+    terminal_status は dispatch したレビューアーが完走したかを表す
+    (complete / partial / unknown / missing_marker / error)。判定は
+    レビューアー出力末尾の `Coverage:` 行の有無で行う — agent-invocations.jsonl の
+    exit_status は tool_response の有無だけで決まり切れた応答を区別できない
+    (実測 1724 行すべて completed)。complete 以外が 1 つでもあれば verdict を
+    PASS にしない (skills/review/SKILL.md Step 4 Layer 0 の Roster 照合)。
 
     review tier のフィールド名は "review_tier" とする。"tier" は
     append_to_learnings が learnings パイプライン用に setdefault する
     別概念 (raw/promoted) のため使わない。
     """
+    for entry in metrics.get("reviewers") or []:
+        if not isinstance(entry, dict):
+            raise ValueError(f"reviewers entry must be a dict, got {entry!r}")
+        if not str(entry.get("name") or "").strip():
+            raise ValueError("reviewers[].name is required")
+        status = entry.get("terminal_status")
+        if status not in TERMINAL_STATUSES:
+            raise ValueError(
+                f"reviewers[{entry.get('name')!r}].terminal_status must be one of"
+                f" {TERMINAL_STATUSES}, got {status!r}"
+            )
     append_to_learnings("review-metrics", metrics)
 
 

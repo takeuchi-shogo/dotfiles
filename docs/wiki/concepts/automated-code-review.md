@@ -2,9 +2,9 @@
 title: 自動コードレビュー
 topics: [coding, evaluation]
 sources: [2026-03-26-findy-code-review-readability-analysis.md, 2026-03-26-harness-engineering-human-review-analysis.md, 2026-03-30-code-review-graph-analysis.md, 2026-04-01-spec-and-verify-analysis.md]
-updated: 2026-07-05
-last_validated: 2026-07-05
-source_count: 17
+updated: 2026-08-06
+last_validated: 2026-08-06
+source_count: 18
 confidence: established
 ---
 
@@ -33,6 +33,9 @@ confidence: established
 - **観点混在によるレビュー精度低下**: 1 回のレビューでアーキテクチャ・品質・安全性など複数観点を同時に見ると、注意が分散し精度が落ちる（実測でアーキ42%/品質36%/安全31%に分散）。観点ごとに独立してレビューを回す設計が精度を上げる `[EXTRACTED, conf=70]`
 - **assertion 書き換えは tautological testing と別の失敗モード**: エージェントが実装の挙動を変えた後、テストの assertion をその挙動に合わせて書き換えると、テスト自体は「通る」が誤った挙動を encode してしまう。これは既存の tautological testing 検出（テスト単体の質を見る）では捕まらず、同一 diff 内の「非テスト挙動変更」と「既存 assertion 改変」の組み合わせを見る diff-delta 検証が必要 `[EXTRACTED, conf=75]`
 - **公開差分の credential leak gate (publicity-review)**: 無人の自己改善ループや自動 PR 作成では、公開リポジトリへの push 前に staged の added-lines のみを対象とした credential leak 検査が要る。既存のパス・ユーザー識別子が意図的に露出しているリポジトリでは、hard block の対象を credential のみに絞りスコープを翻訳する必要がある `[EXTRACTED, conf=70]`
+- **finding 出力契約は消費側が要求する一箇所に置く**: レビュー agent が N 個いて severity 語彙をそれぞれ独自に定義すると、統合側 (Synthesis) が全語彙を知らないまま集計することになる。canonical severity は Critical / Important / Watch の 3 値とし、各 agent の表記（MUST / 🔴 / 必須 / CRITICAL 等）は対応表で変換する `[EXTRACTED, conf=75]`
+- **confidence は 1 種類ではない**: 自己申告の subjective confidence（0-100）と、証拠充足で決まる evidence confidence（security-reviewer 系）を `confidence_kind` で区別しないと、本来 subjective 型にのみ効かせるべき数値フィルタが evidence 型にも適用されてしまう `[EXTRACTED, conf=70]`
+- **レビュアーの完走判定は終端マーカーで行う**: ログの `exit_status` フィールドは tool_response の有無だけで決まる実装だと、途中で切れた応答も completed と記録される silent success になり得る。出力末尾に終端マーカー（例: `Coverage:` 行）を必須化し、欠落を未完走の判定材料にする設計のほうが頑健 `[EXTRACTED, conf=70]`
 
 ## 実践的な適用
 

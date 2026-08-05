@@ -31,7 +31,9 @@ print(f'{len(findings)} findings saved')
     "reviewer": "{reviewer_agent_name}",
     "file": "{file_path}",
     "line": {line_number},
+    "severity": "Critical | Important | Watch",
     "confidence": {confidence_score},
+    "confidence_kind": "subjective | evidence",
     "failure_mode": "{FM-XXX or empty}",
     "finding": "{指摘の要約}",
     "failure_type": "generalization"
@@ -41,6 +43,21 @@ FINDINGS_JSON
 ```
 
 **ID生成ルール**: `rf-YYYY-MM-DD-NNN` (例: `rf-2026-03-12-001`)
+
+**severity は canonical 値のみ**: レビューアーの表記 (`MUST` / 🔴 / `必須` / `CRITICAL` 等) は
+`references/review-consensus-policy.md` Section 0 の表で `Critical` / `Important` / `Watch` に
+写してから渡す。`emit_review_finding()` は canonical 外・欠落を `ValueError` で拒否する。
+`PLAN` / `RETRACTED` は severity ではないので `status` 欄に入れる。
+
+**confidence_kind は必須ペア**: `confidence` を付けるなら `subjective` (自己申告 0-100) か
+`evidence` (証拠充足型、security-reviewer) を必ず添える。数値フィルタ (< 60 除外) は
+`subjective` にのみ効く。
+
+**複数レビューアーの合意**: `reviewer` に `"a+b"` のような連結文字列を入れない。
+`["a", "b"]` の list で渡す (拒否される)。
+
+> この雛形に severity 欄が無かったため、`review-findings.jsonl` の実データ 157 件のうち
+> 121 件 (77%) で severity が欠落していた。欄の追加と検証はその再発防止。
 
 **failure_mode マッピング**: `references/failure-taxonomy.md` を参照し、指摘内容に最も近い FM-XXX を付与する。
 マッチしない場合は空文字列。
@@ -185,6 +202,13 @@ reviewer 別 duration / findings 数 / confidence 分布 / verdict / rerun 数�
 | `reviewers[].confidence.min` | confidence 最小値 |
 | `reviewers[].confidence.max` | confidence 最大値 |
 | `reviewers[].confidence.mean` | confidence 平均値 |
+| `reviewers[].terminal_status` | 完走状態 (`complete` / `partial` / `unknown` / `missing_marker` / `error`)。**必須** — `emit_review_metrics()` が `reviewers` 各要素で検証する |
+
+**terminal_status の決め方**: reviewer 出力末尾の `Coverage: complete \| partial \| unknown` 行を読む。
+行が無ければ `missing_marker`、dispatch 自体が失敗したら `error`。`complete` 以外が 1 つでもあれば
+verdict を PASS にしない (`SKILL.md` Step 4 Layer 0 の Roster 照合)。
+`agent-invocations.jsonl` の `exit_status` は tool_response の有無だけで決まるため
+(実測 1724 行すべて `completed`) 完走の根拠に使えない。
 
 **注記 (duration_s)**: 初版では dispatch 前後の wall-clock 概算値。reviewer を並列起動するため reviewer 個別の厳密計測はしない。
 
@@ -211,13 +235,15 @@ emit_review_metrics({
             'name': 'code-reviewer',
             'duration_s': 18.4,
             'findings': 3,
-            'confidence': {'min': 72, 'max': 95, 'mean': 84.3}
+            'confidence': {'min': 72, 'max': 95, 'mean': 84.3},
+            'terminal_status': 'complete'
         },
         {
             'name': 'codex-reviewer',
             'duration_s': 22.1,
             'findings': 2,
-            'confidence': {'min': 80, 'max': 88, 'mean': 84.0}
+            'confidence': {'min': 80, 'max': 88, 'mean': 84.0},
+            'terminal_status': 'complete'
         }
     ]
 })

@@ -309,6 +309,15 @@ tasks:
     cmds:
       - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh check
 
+  claude:plugins:update:
+    desc: |
+      Update every installed Claude Code plugin to its latest version (refreshes
+      marketplace catalogs first). Driven by installed_plugins.json, not
+      settings.json. Not part of `setup` — setup stays a fresh-clone materialize
+      step, updating payloads is an explicit call. Restart Claude Code to apply.
+    cmds:
+      - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh update
+
   herdr:plugins:
     desc: |
       Install herdr plugins declared in .config/herdr/plugins.txt (owner/repo
