@@ -36,7 +36,7 @@ scale: L
 .config/claude/skills/pr-autofix-routine/SKILL.md                   # ~ 2.2 に前ラウンド ledger 注入、2.6 に ledger 更新
 .config/claude/scripts/runtime/agent-invocation-logger.py           # ~ tool_response のキー観測 (discovery のみ)
 tools/claude-hooks/src/pre_tool.rs                                  # ~ 一括 add 判定の false positive と deny 文面
-.config/claude/scripts/tests/test_session_events_review.py          # + 検証テスト
+.config/claude/scripts/tests/test_session_events.py                 # ~ 契約テストを追記 (新規ファイルは作らない)
 ```
 
 触らない:
@@ -87,7 +87,7 @@ review/SKILL.md Step 6 保存
 ## Validation
 
 - `cd tools/claude-hooks && cargo test`
-- `python3 -m pytest .config/claude/scripts/tests/test_session_events_review.py -v`
+- `python3 -m pytest .config/claude/scripts/tests/test_session_events.py -q`
 - `task validate-configs` / `task validate-symlinks`
 - 実走行: `/review` を 1 回、`pr-autofix-routine` を dry run で 1 回
 - Codex Review Gate (`codex exec --sandbox read-only`) — harness 変更なので必須
@@ -111,7 +111,7 @@ review/SKILL.md Step 6 保存
 - [x] Step 3 boost 降格 / 欠落時の扱い — Section 2 を「合意は優先順位補助のみ」に書き換え、SKILL.md 統合ルール 2 / 4 / 7 を追随
 - [x] Step 4 roster 照合 + terminal_status — SKILL.md Layer 0 に Roster 照合、`emit_review_metrics` が `reviewers[].terminal_status` を検証
 - [x] Step 5 ledger 引き継ぎ — marker JSON に `findings`、2.2 に既出指摘の注入、2.6 に ledger 更新
-- [ ] Step 6 hook false positive — 委譲中
+- [x] Step 6 hook false positive — **当初の目的 (誤検知解消) は達成せず、方針を fail-closed に転換**。Codex が 5 ラウンドで回避経路を出し続けたため「引用文か実行か」の判別を破棄。引用文も block する代わりに bypass を塞ぐ形にした。副産物で `io.rs` の deny 経路 panic (UTF-8 バイト境界 slice) を修正
 - [x] Step 7 投稿前照合 — pr-autofix 2.6 に stale finding チェック（`/review` の表示経路には入れない: Codex 判断）
 - [x] Step 8 tool_response 観測 — `response_keys` を記録（判定には使わない）
 - [ ] Step 9 検証 + Review Gate — `pytest` 81 passed / `task validate-configs` exit 0 / `task validate-symlinks` exit 0。`cargo test` と Codex Gate 未取得
@@ -136,4 +136,31 @@ review/SKILL.md Step 6 保存
 
 ## Outcome
 
-- 未実施
+T1 / T2 / T3 / T5 は完了。T4 は方針を変えて着地させたが、当初の目的（誤検知の解消）は達成していない。
+
+### 検証結果
+
+| 対象 | 結果 |
+|------|------|
+| `pytest .config/claude/scripts/tests/test_session_events.py` | 97 passed（契約テスト 25 件追加） |
+| `cargo test` (tools/claude-hooks) | 57 passed（bulk-add 回帰テスト 12 件追加） |
+| `task validate-configs` / `task validate-symlinks` | どちらも exit 0 |
+| release バイナリ直接プローブ | 33 ケース FAILS 0 |
+| `qa-tuning-analyzer` の list reviewer / severity 欠落 | 実データ形状で確認済 |
+
+### レビューの状態（PASS は取得していない）
+
+- Codex Review Gate は 5 ラウンド実施し、**最新の受領 verdict は BLOCK**。指摘は毎回実在するもので、都度修正した
+- 最終ラウンドの残存 3 件のうち、`git add -n .` の過剰 block は修正済。残る 2 件は (a) 難読化 (`g\it add -A`) = 依頼時に除外した範囲で変更前も通っていた (b) 引用符内 `;` を含む引数でキャプチャが切れる = クォート解釈が必要で、その方向は 3 度試して 3 度とも別の穴を空けた
+- `/review` のレビュアー subagent 3 体のうち `code-reviewer` だけが遅れて完全な結果を返した（`Coverage: complete`、verdict BLOCK）。`security-reviewer` と `edge-case-hunter` は idle 通知のみで本文なし = `missing_marker`。**本プランで導入した Roster 照合ルールに照らすと、このレビューは INCOMPLETE**
+- `code-reviewer` の MUST（`sudo` / `env` / `time` / `nohup` / `command` / `find -exec` で一括 add が素通りする regression）は round-1/2 時点のコードに対する指摘で、fail-closed 転換で該当関数ごと削除済み。6 経路すべてと、同レビューが「未検出」とした `git add "."` も現在は block することを実バイナリで確認し、指摘されたテスト空白（コマンド修飾子 / `find -exec`）を埋めた
+- `code-reviewer` の残る有効な指摘: 終端マーカーの注入を機械的に強制する仕組みがない（dispatch プロンプトからこの一文が落ちると security-reviewer 以外の全レビューが強制的に `NEEDS_HUMAN_REVIEW` に倒れる）。Codex round-2 の Important と同じ論点で、metrics 境界の検証までは実装したが注入側の強制は未着手
+- `pr-autofix-routine` の dry run 未実施
+
+### 未解決 — ユーザー判断が要る
+
+Codex の構造的指摘: コマンド文字列に対する正規表現は意味論的な網羅ではない。raw Bash の `git add` を禁止し、明示的なファイル配列だけを受けるラッパー（argv 境界で検証）に寄せるのが構造的な解。日常のワークフローが変わるため着手していない。
+
+### 作業ツリーの状態
+
+別セッションが同じ作業ツリーで作業しており、本作業の一部（12 ファイル）が PR #224「claude-plugins-sync に update モードを足す」に巻き込まれて master に squash merge された（`924a9265`）。その時点の `pre_tool.rs` は deny 経路が panic する状態で、修正は未コミットの作業ツリー側にある。
