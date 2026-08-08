@@ -403,18 +403,25 @@ def validate_review_finding(finding: dict) -> None:
                 f" (got {reviewer!r})。list[str] で渡す"
             )
     elif isinstance(reviewer, list):
-        if not reviewer or not all(str(r).strip() for r in reviewer):
-            raise ValueError("finding.reviewer list must contain non-empty names")
+        if not reviewer:
+            raise ValueError("finding.reviewer list must not be empty")
+        for name in reviewer:
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError(
+                    f"finding.reviewer list must contain non-empty str, got {name!r}"
+                )
     else:
         raise ValueError("finding.reviewer must be str or list[str]")
 
-    if not str(finding.get("file") or "").strip():
+    file_path = finding.get("file")
+    if not isinstance(file_path, str) or not file_path.strip():
         raise ValueError(
-            "finding.file is required (location 欠落の finding は書けない)"
+            f"finding.file must be a non-empty str, got {file_path!r}"
+            " (location 欠落の finding は書けない)"
         )
 
     line = finding.get("line")
-    if line is not None and not isinstance(line, int):
+    if line is not None and (isinstance(line, bool) or not isinstance(line, int)):
         raise ValueError(f"finding.line must be int when present, got {line!r}")
 
     severity = finding.get("severity")
@@ -433,11 +440,13 @@ def validate_review_finding(finding: dict) -> None:
                 f"confidence を付けるなら confidence_kind が必要 {CONFIDENCE_KINDS},"
                 f" got {kind!r}"
             )
-        if kind == "subjective" and not (
-            isinstance(confidence, int) and 0 <= confidence <= 100
+        if not (
+            isinstance(confidence, int)
+            and not isinstance(confidence, bool)
+            and 0 <= confidence <= 100
         ):
             raise ValueError(
-                f"subjective confidence must be int 0-100, got {confidence!r}"
+                f"confidence must be int 0-100 when present, got {confidence!r}"
             )
     elif kind is not None and kind not in CONFIDENCE_KINDS:
         raise ValueError(
@@ -457,6 +466,23 @@ def emit_review_finding(finding: dict) -> None:
     """
     validate_review_finding(finding)
     append_to_learnings("review-findings", finding)
+
+
+def emit_review_findings(findings: list[dict]) -> None:
+    """finding 群を全件検証してから書き込む (部分書き込みを避ける)。
+
+    1 件ずつ emit_review_finding を回すと、途中の ValueError で「先頭は保存済み・
+    残りは未保存」になり、再実行が重複を生む。保存はこの関数を使う。
+    """
+    if not isinstance(findings, list):
+        raise ValueError(f"findings must be a list, got {type(findings).__name__}")
+    for index, finding in enumerate(findings):
+        try:
+            validate_review_finding(finding)
+        except ValueError as exc:
+            raise ValueError(f"findings[{index}] が契約違反: {exc}") from exc
+    for finding in findings:
+        append_to_learnings("review-findings", finding)
 
 
 def emit_review_metrics(metrics: dict) -> None:
@@ -482,17 +508,37 @@ def emit_review_metrics(metrics: dict) -> None:
     append_to_learnings が learnings パイプライン用に setdefault する
     別概念 (raw/promoted) のため使わない。
     """
+    incomplete = []
     for entry in metrics.get("reviewers") or []:
         if not isinstance(entry, dict):
             raise ValueError(f"reviewers entry must be a dict, got {entry!r}")
-        if not str(entry.get("name") or "").strip():
-            raise ValueError("reviewers[].name is required")
+        name = entry.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"reviewers[].name must be a non-empty str, got {name!r}")
         status = entry.get("terminal_status")
         if status not in TERMINAL_STATUSES:
             raise ValueError(
-                f"reviewers[{entry.get('name')!r}].terminal_status must be one of"
+                f"reviewers[{name!r}].terminal_status must be one of"
                 f" {TERMINAL_STATUSES}, got {status!r}"
             )
+        if status != "complete":
+            incomplete.append(f"{name}={status}")
+    if incomplete and metrics.get("verdict") == "PASS":
+        raise ValueError(
+            "未完走の reviewer がある run を verdict=PASS で記録できない"
+            f" ({', '.join(incomplete)})。NEEDS_HUMAN_REVIEW に倒す"
+        )
+    tier = metrics.get("review_tier")
+    if (
+        metrics.get("verdict") == "PASS"
+        and tier in ("standard", "deep")
+        and not (metrics.get("reviewers") or [])
+    ):
+        raise ValueError(
+            f"review_tier={tier!r} の run を reviewers 空のまま"
+            " verdict=PASS で記録できない"
+            " (reviewer を 1 体も回していないか roster を渡し忘れている)"
+        )
     append_to_learnings("review-metrics", metrics)
 
 

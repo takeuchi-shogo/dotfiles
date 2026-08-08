@@ -14,8 +14,9 @@ pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
             "BLOCKED [bulk-add]: `git add -A`/`--all`/`.` による一括追加が検出されました。\n\
              WHY: 意図しないファイル (secrets, 生成物, 一時ファイル) を巻き込むのを防ぐため。\n\
              FIX: 個別に確認して必要なファイルだけ `git add <file>` で追加してください。\n\
-             誤検知の場合: 説明文としてこの文字列を渡したいだけなら、ファイル経由で渡すか\
-             heredoc/引用符の外に直接書かない（例: 一時ファイルに書いてから `--file` で渡す）。",
+             この判定は fail-closed で、引用しただけの説明文も block します\
+             （見分けようとすると回避経路が空くため）。文字列を渡したいだけなら\
+             一時ファイルに書いて `\"$(cat <file>)\"` で渡してください。",
         );
     }
     if let Some(msg) = check_timeout_clamp(data) {
@@ -24,63 +25,40 @@ pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
     Ok(())
 }
 
-/// `git add` の一括系フラグ (-A/--all/.) が「実行される」位置に現れているかを判定する。
+/// 一括 `git add` を検出する。
 ///
-/// 素朴な部分一致だと、heredoc 本文やクォート済みの説明文の中でこの文字列を
-/// 引用しただけの Bash まで block してしまう (2026-08-06 に実際に踏んだ:
-/// 外部 LLM CLI へのプロンプト本文にこのルールの説明を書いて block された)。
-/// 完全なシェルパーサは持たないが、次の 2 点で「引用しただけ」を除外する:
-///   1. heredoc 本文 (`<<'EOF' ... EOF`) はまるごと判定対象から外す
-///   2. `git` がコマンド開始位置 (行頭 / `;` `&` `|` `(` `` ` `` の直後) に
-///      無い場合は「他のコマンドの引数として引用されただけ」とみなし除外する
-///      (`git add "."` のように git 自身への引数がクォートされているだけの
-///      ケースは、`git` 自体はコマンド開始位置にあるので引き続き block される)
+/// 「引用しただけの説明文か、実際に実行されるコマンドか」を見分ける方向は
+/// 2026-08-06 に 3 度試して 3 度とも回避経路が空いたため破棄した。引用文も
+/// block する代わりに bypass を塞ぐ。説明文を渡したいだけならファイル経由にする。
+///
+/// これはコマンド文字列に対する検出であり、意味論的な網羅ではない。既知の限界:
+/// (a) 実行時に展開される難読化 (クォート・エスケープを挟んだコマンド名) は捕まえない
+/// (b) 引用符内の `;` を含む引数 (`-c key='a;b'`) で引数列のキャプチャが切れる。
+/// (b) を塞ぐにはクォート解釈が必要だが、その方向は 3 度試して 3 度とも別の
+/// 回避経路を空けた。argv 境界で検証するラッパーに寄せる案が構造的な解
+/// (2026-08-06 Codex 指摘、未着手)。
 fn is_bulk_git_add(command: &str) -> bool {
-    let re = Regex::new(r"git\s+add\s+(-A|--all|\.\s*$|\.\s)").unwrap();
-    let stripped = strip_heredoc_bodies(command);
-    let starts: Vec<usize> = re.find_iter(&stripped).map(|m| m.start()).collect();
-    starts.iter().any(|&start| is_command_start(&stripped[..start]))
-}
+    let git_add = Regex::new(
+        r#"(?:^|[\s;&|`(<'"])(?:[\w.-]*/)*git(?:[^\n;&|]*?)[\s\\]+add\b((?:\\\n|[^\n;&|])*)"#,
+    )
+    .unwrap();
+    let selective =
+        Regex::new(r"(?:^|[\s\\])(?:--dry-run|-n|--patch|-p|--interactive|-i)(?:\s|$)").unwrap();
+    let bulk_pathspec = Regex::new(
+        r#"(?:^|[\s\\])['"]?(?:-A|--all|-u|--update|\./|\.|:/|:\(top\))['"]?(?:$|[^\w./=-])"#,
+    )
+    .unwrap();
 
-/// heredoc (`<<EOF` / `<<'EOF'` / `<<-EOF` など) の本文行をまるごと取り除く。
-/// 開始行・終端行 (delimiter だけの行) 自体は残す。終端が見つからない
-/// 壊れた入力は残り全行を本文とみなして落とす (安全側に倒す)。
-fn strip_heredoc_bodies(command: &str) -> String {
-    let heredoc_start = Regex::new(r#"<<-?\s*['"]?(\w+)['"]?"#).unwrap();
-    let lines: Vec<&str> = command.split('\n').collect();
-    let mut result: Vec<&str> = Vec::new();
-    let mut i = 0;
-    while i < lines.len() {
-        let line = lines[i];
-        result.push(line);
-        if let Some(caps) = heredoc_start.captures(line) {
-            let delim = caps.get(1).unwrap().as_str();
-            i += 1;
-            while i < lines.len() {
-                let is_terminator = lines[i].trim() == delim;
-                i += 1;
-                if is_terminator {
-                    result.push(lines[i - 1]);
-                    break;
-                }
-            }
+    for caps in git_add.captures_iter(command) {
+        let args = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        if selective.is_match(args) {
             continue;
         }
-        i += 1;
+        if bulk_pathspec.is_match(args) {
+            return true;
+        }
     }
-    result.join("\n")
-}
-
-/// `before` (マッチ直前までの文字列) が「新しいコマンドの開始位置」で
-/// 終わっているかを判定する。空白 (スペース/タブ) を読み飛ばした直前の
-/// 文字が区切り文字 (`;` `&` `|` `(` `{` `` ` `` 改行) か、文字列の先頭なら true。
-fn is_command_start(before: &str) -> bool {
-    const SEPARATORS: &[char] = &[';', '&', '|', '(', '{', '`', '\n'];
-    let trimmed = before.trim_end_matches([' ', '\t']);
-    match trimmed.chars().last() {
-        None => true,
-        Some(c) => SEPARATORS.contains(&c),
-    }
+    false
 }
 
 /// Bash tool の timeout 上限。これを超える指定は黙って切り捨てられる。
@@ -615,18 +593,67 @@ mod tests {
     }
 
     #[test]
-    fn heredoc_body_quoting_the_string_is_not_blocked() {
-        let command = "cat <<'EOF' | llm-cli\n\
+    fn quoted_mention_is_blocked_by_design() {
+        // fail-closed: 引用しただけの説明文も block する。見分けようとすると
+        // 回避経路が空く (2026-08-06 に 3 度実証)。説明文はファイル経由で渡す。
+        let heredoc = "cat <<'EOF' | llm-cli\n\
                         このプロジェクトでは git add -A は禁止されています。\n\
                         EOF";
-        assert!(!is_bulk_git_add(command));
+        assert!(is_bulk_git_add(heredoc));
+        assert!(is_bulk_git_add(r#"echo "please don't run git add -A here""#));
     }
 
     #[test]
-    fn quoted_explanation_outside_heredoc_is_not_blocked() {
-        assert!(!is_bulk_git_add(
-            r#"echo "please don't run git add -A here""#
+    fn command_modifiers_and_find_exec_are_blocked() {
+        assert!(is_bulk_git_add("nohup git add -A &"));
+        assert!(is_bulk_git_add("command git add -A"));
+        assert!(is_bulk_git_add("find . -exec git add -A \\;"));
+        assert!(is_bulk_git_add("git add \".\""));
+    }
+
+    #[test]
+    fn bulk_pathspec_forms_are_blocked() {
+        assert!(is_bulk_git_add("git add ./"));
+        assert!(is_bulk_git_add("git add :/"));
+        assert!(is_bulk_git_add("git add :(top)"));
+        assert!(is_bulk_git_add("git add -u"));
+        assert!(is_bulk_git_add("git add --update"));
+    }
+
+    #[test]
+    fn long_git_options_do_not_bypass() {
+        assert!(is_bulk_git_add(
+            "git -C /Users/takeuchishougo/dotfiles/.config/claude/references add -A"
         ));
+        assert!(is_bulk_git_add(
+            "git -c user.email=very.long.address@example.com add -A"
+        ));
+    }
+
+    #[test]
+    fn selective_and_dry_run_are_not_blocked() {
+        assert!(!is_bulk_git_add("git add --dry-run ."));
+        assert!(!is_bulk_git_add("git add --patch ."));
+        assert!(!is_bulk_git_add("git add --interactive ."));
+        assert!(!is_bulk_git_add("git add -p ."));
+    }
+
+    #[test]
+    fn other_commands_ending_in_git_are_not_blocked() {
+        assert!(!is_bulk_git_add("jgit add -A"));
+        assert!(!is_bulk_git_add("legit add ."));
+    }
+
+    #[test]
+    fn command_substitution_and_shell_wrappers_are_blocked() {
+        assert!(is_bulk_git_add(r#"echo "$(git add -A)""#));
+        assert!(is_bulk_git_add("bash --noprofile -c 'git add -A'"));
+        assert!(is_bulk_git_add("cat <(git add -A)"));
+    }
+
+    #[test]
+    fn backslash_line_continuation_is_blocked() {
+        assert!(is_bulk_git_add("git add \\\n  -A"));
     }
 
     #[test]
@@ -639,5 +666,77 @@ mod tests {
     #[test]
     fn individual_file_add_is_not_blocked() {
         assert!(!is_bulk_git_add("git add src/main.rs"));
+    }
+
+    #[test]
+    fn transparent_prefixes_do_not_bypass() {
+        assert!(is_bulk_git_add("env git add -A"));
+        assert!(is_bulk_git_add("sudo git add -A"));
+        assert!(is_bulk_git_add("command git add ."));
+        assert!(is_bulk_git_add("time git add --all"));
+        assert!(is_bulk_git_add("GIT_DIR=/tmp/x git add -A"));
+    }
+
+    #[test]
+    fn transparent_prefix_with_options_does_not_bypass() {
+        assert!(is_bulk_git_add("env -i git add -A"));
+        assert!(is_bulk_git_add("sudo -u root git add -A"));
+        assert!(is_bulk_git_add("nice -n 10 git add -A"));
+        assert!(is_bulk_git_add("env -u GIT_DIR /usr/bin/git add ."));
+    }
+
+    #[test]
+    fn quoted_multiline_mention_is_blocked_by_design() {
+        assert!(is_bulk_git_add("echo \"guide:\ngit add -A\nis forbidden\""));
+    }
+
+    #[test]
+    fn separator_outside_quotes_still_splits() {
+        assert!(is_bulk_git_add("echo \"note\" ; git add -A"));
+    }
+
+    #[test]
+    fn path_qualified_git_does_not_bypass() {
+        assert!(is_bulk_git_add("/usr/bin/git add -A"));
+        assert!(is_bulk_git_add("./bin/git add ."));
+    }
+
+    #[test]
+    fn git_global_options_do_not_bypass() {
+        assert!(is_bulk_git_add("git -C /tmp add -A"));
+        assert!(is_bulk_git_add("git --no-pager add --all"));
+    }
+
+    #[test]
+    fn heredoc_delimiter_with_hyphen_does_not_bypass() {
+        let command = ": <<EOF-1\ntext\nEOF-1\ngit add -A";
+        assert!(is_bulk_git_add(command));
+    }
+
+    #[test]
+    fn unterminated_heredoc_body_is_still_scanned() {
+        let command = "cat <<'EOF'\ngit add -A";
+        assert!(is_bulk_git_add(command));
+    }
+
+    #[test]
+    fn quoted_dot_argument_is_blocked() {
+        assert!(is_bulk_git_add(r#"git add ".""#));
+        assert!(is_bulk_git_add("git add '.'"));
+    }
+
+    #[test]
+    fn path_prefixed_add_is_not_blocked() {
+        assert!(!is_bulk_git_add("git add ./src"));
+        assert!(!is_bulk_git_add("git add .config/claude/settings.json"));
+    }
+
+    #[test]
+    fn wrapper_shell_string_is_still_blocked() {
+        assert!(is_bulk_git_add(r#"bash -c "git add -A""#));
+        assert!(is_bulk_git_add(r#"sh -c 'git add .'"#));
+        assert!(is_bulk_git_add(r#"zsh -lc "git add --all""#));
+        assert!(is_bulk_git_add(r#"eval "git add -A""#));
+        assert!(is_bulk_git_add("git ls-files -m | xargs git add -A"));
     }
 }

@@ -428,7 +428,9 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 
 - マーカーを返さなかったレビューアーがあれば `[INCOMPLETE: <reviewer>]` を付加し、
   **verdict を PASS にしない**（`NEEDS_HUMAN_REVIEW` に倒す）
-- `Coverage: unknown` も未完走と同じ扱いにする。`partial` は残りの範囲を明記させる
+- `complete` 以外（`partial` / `unknown` / マーカー欠落）は 1 つでもあれば PASS にしない。
+  `partial` は加えて未確認の範囲を明記させる（`emit_review_metrics()` も verdict=PASS と
+  `complete` 以外の組み合わせを ValueError で拒否する）
 - 途中で切れた出力は「指摘が無い」ことの根拠にならない。maxTurns 到達や応答欠落を
   PASS と区別できないまま緑で閉じるのを防ぐのがこのルールの目的
 

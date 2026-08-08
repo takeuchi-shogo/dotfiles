@@ -42,7 +42,7 @@ fn audit_log_deny(reason: &str) {
     let entry = serde_json::json!({
         "timestamp": iso_now(),
         "event": "deny",
-        "reason": &reason[..reason.len().min(500)],
+        "reason": truncate_chars(reason, 500),
         "session_id": std::env::var("CLAUDE_SESSION_ID").unwrap_or_default(),
         "cwd": std::env::current_dir()
             .map(|p| p.to_string_lossy().to_string())
@@ -167,4 +167,26 @@ pub fn iso_now() -> String {
         .unwrap_or_default()
         .as_secs();
     unix_to_iso(secs)
+}
+
+fn truncate_chars(s: &str, max_chars: usize) -> String {
+    s.chars().take(max_chars).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::truncate_chars;
+
+    #[test]
+    fn truncates_multibyte_without_panicking() {
+        let reason = "禁止されています。".repeat(200);
+        assert!(reason.len() > 500);
+        let out = truncate_chars(&reason, 500);
+        assert_eq!(out.chars().count(), 500);
+    }
+
+    #[test]
+    fn short_input_is_unchanged() {
+        assert_eq!(truncate_chars("BLOCKED: 一括追加", 500), "BLOCKED: 一括追加");
+    }
 }

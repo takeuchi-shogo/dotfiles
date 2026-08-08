@@ -57,7 +57,7 @@ gh pr list --author "@me" --state open --limit 100 \
 🤖 サマリコメント内の HTML コメントに埋め込む（人間可読サマリ + 機械可読 state を1コメントで兼ねる）:
 
 ```
-<!-- pr-autofix-state {"head":"<reviewed_sha>","last_comment_ts":"<ISO8601>","findings":[{"id":"rf-...","sha":"<指摘時点の SHA>","status":"deferred|fixed|human_decided","note":"<1行>"}]} -->
+<!-- pr-autofix-state {"head":"<reviewed_sha>","last_comment_ts":"<ISO8601>","findings":[{"id":"rf-...","sha":"<指摘時点の SHA>","file":"<path>","line":<N>,"snippet":"<指摘行の内容 80 字まで>","status":"deferred|fixed|human_decided","note":"<1行>"}]} -->
 ```
 
 `findings` は前ラウンドの指摘 ledger（2.2 で次周のレビューに渡す）。**入れるのは自分が生成した
@@ -147,10 +147,11 @@ push 後、新 SHA で 2.2 に戻る（次の周）。
 - 末尾 HTML コメントに `pr-autofix-state` marker（`head` = 最新 push 後 SHA、`findings` = この周の
   ledger。判断系は `deferred`、自動修正したものは `fixed`）
 
-**投稿前チェック**（自動修正・コメント投稿の直前、両方に適用）: 指摘が指す `file` が現在の
-head に存在し、`line` 周辺の内容が指摘時点の想定と一致するかを確認する。ズレていたら
-その指摘は投稿・修正の対象から外し、Summary に「stale finding」として残す。
-`sha` が変わった後の行番号をそのまま使わない。
+**投稿前チェック**（自動修正・コメント投稿の直前、両方に適用）: ledger の `file` が現在の
+head に存在し、`line` の行が `snippet` と一致するかを確認する（`git show <sha>:<file>` と
+現在の内容の差でも可）。一致しなければその指摘は投稿・修正の対象から外し、Summary に
+「stale finding」として残す。`sha` が変わった後の行番号をそのまま使わない。
+照合材料 (`file` / `line` / `snippet`) を ledger に持たせていないと、この確認は再現できない。
 
 このコメントは Step 4 の Slack ダイジェストにも要約を載せる。
 

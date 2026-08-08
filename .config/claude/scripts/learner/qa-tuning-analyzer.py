@@ -61,12 +61,19 @@ def load_rationalization_events() -> list[dict]:
     ]
 
 
+def _reviewer_key(value) -> str:
+    """reviewer は str か list[str]。dict キーに使えるよう str に畳む。"""
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value)
+    return str(value or "")
+
+
 def detect_miss_patterns(findings: list[dict], min_findings: int) -> list[dict]:
     """見逃しパターン: DISAGREE 率が高い reviewer x failure_mode."""
     # reviewer x failure_mode ごとに集計
     groups: dict[tuple[str, str], list[str]] = defaultdict(list)
     for f in findings:
-        reviewer = f.get("reviewer", "")
+        reviewer = _reviewer_key(f.get("reviewer"))
         fm = f.get("failure_mode", "")
         verdict = f.get("outcome") or f.get("human_verdict", "UNKNOWN")
         if reviewer and fm and verdict != "UNKNOWN":
@@ -96,8 +103,11 @@ def detect_overdetection(findings: list[dict], min_findings: int) -> list[dict]:
     """過検出パターン: watch 比率が高い reviewer."""
     by_reviewer: dict[str, list[str]] = defaultdict(list)
     for f in findings:
-        reviewer = f.get("reviewer", "")
-        severity = f.get("severity", "watch")
+        reviewer = _reviewer_key(f.get("reviewer"))
+        raw_severity = f.get("severity")
+        if raw_severity is None or not str(raw_severity).strip():
+            continue
+        severity = str(raw_severity).lower()
         if reviewer:
             by_reviewer[reviewer].append(severity)
 
