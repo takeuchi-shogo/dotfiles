@@ -18,6 +18,7 @@ from session_events import (
     emit_event,
     emit_review_feedback,
     emit_review_finding,
+    emit_review_findings,
     emit_review_metrics,
     emit_skill_event,
     emit_skill_step,
@@ -791,3 +792,131 @@ class TestReviewMetricsContract:
         emit_review_metrics({"run_id": "rv-2", "review_tier": "light", "reviewers": []})
         path = tmp_path / "learnings" / "review-metrics.jsonl"
         assert path.exists()
+
+
+class TestReviewFindingContractStrictness:
+    """Codex Review Gate (2026-08-06) 指摘の回帰テスト。"""
+
+    def test_bool_line_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="line"):
+            emit_review_finding(_finding(line=True))
+
+    def test_non_str_file_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="file"):
+            emit_review_finding(_finding(file=1))
+
+    def test_non_str_reviewer_element_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="reviewer"):
+            emit_review_finding(_finding(reviewer=[1]))
+
+    def test_bool_confidence_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="0-100"):
+            emit_review_finding(_finding(confidence=True, confidence_kind="subjective"))
+
+    def test_zero_confidence_accepted(self, tmp_path):
+        """0 は falsy だが有効な subjective confidence。"""
+        emit_review_finding(_finding(confidence=0, confidence_kind="subjective"))
+        assert len(read_pending_findings()) == 1
+
+
+class TestBatchFindingsAtomicity:
+    """途中の契約違反で部分書き込みにならないことの確認。"""
+
+    def test_invalid_entry_writes_nothing(self, tmp_path):
+        good = _finding(id="rf-batch-001")
+        bad = _finding(id="rf-batch-002", severity="MUST")
+        with pytest.raises(ValueError, match=r"findings\[1\]"):
+            emit_review_findings([good, bad])
+        assert read_pending_findings() == []
+
+    def test_all_valid_writes_all(self, tmp_path):
+        emit_review_findings([_finding(id="rf-batch-003"), _finding(id="rf-batch-004")])
+        assert len(read_pending_findings()) == 2
+
+
+class TestReviewMetricsPassGate:
+    """未完走 reviewer がある run を PASS で記録できないことの確認。"""
+
+    def test_pass_with_missing_marker_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="PASS"):
+            emit_review_metrics(
+                {
+                    "run_id": "rv-9",
+                    "verdict": "PASS",
+                    "reviewers": [{"name": "cr", "terminal_status": "missing_marker"}],
+                }
+            )
+
+    def test_pass_with_partial_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="PASS"):
+            emit_review_metrics(
+                {
+                    "run_id": "rv-10",
+                    "verdict": "PASS",
+                    "reviewers": [{"name": "cr", "terminal_status": "partial"}],
+                }
+            )
+
+    def test_non_pass_verdict_with_partial_accepted(self, tmp_path):
+        emit_review_metrics(
+            {
+                "run_id": "rv-11",
+                "verdict": "NEEDS_HUMAN_REVIEW",
+                "reviewers": [{"name": "cr", "terminal_status": "partial"}],
+            }
+        )
+        assert (tmp_path / "learnings" / "review-metrics.jsonl").exists()
+
+    def test_pass_with_all_complete_accepted(self, tmp_path):
+        emit_review_metrics(
+            {
+                "run_id": "rv-12",
+                "verdict": "PASS",
+                "reviewers": [{"name": "cr", "terminal_status": "complete"}],
+            }
+        )
+        assert (tmp_path / "learnings" / "review-metrics.jsonl").exists()
+
+
+class TestReviewGateRound2:
+    """Codex 再レビュー (2026-08-06 2 回目) 指摘の回帰テスト。"""
+
+    def test_evidence_kind_rejects_non_int_confidence(self, tmp_path):
+        for bad in (True, "yes", 0.0):
+            with pytest.raises(ValueError, match="confidence"):
+                emit_review_finding(
+                    _finding(confidence=bad, confidence_kind="evidence")
+                )
+
+    def test_evidence_kind_accepts_int_confidence(self, tmp_path):
+        emit_review_finding(_finding(confidence=70, confidence_kind="evidence"))
+        assert len(read_pending_findings()) == 1
+
+    def test_standard_tier_pass_with_empty_roster_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="reviewers 空"):
+            emit_review_metrics(
+                {
+                    "run_id": "rv-20",
+                    "review_tier": "standard",
+                    "verdict": "PASS",
+                    "reviewers": [],
+                }
+            )
+
+    def test_deep_tier_pass_without_roster_key_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="reviewers 空"):
+            emit_review_metrics(
+                {"run_id": "rv-21", "review_tier": "deep", "verdict": "PASS"}
+            )
+
+    def test_light_tier_pass_with_empty_roster_accepted(self, tmp_path):
+        """light tier は reviewers=[] で 1 行記録する既存仕様を維持する。"""
+        emit_review_metrics(
+            {
+                "run_id": "rv-22",
+                "review_tier": "light",
+                "verdict": "PASS",
+                "reviewers": [],
+            }
+        )
+        assert (tmp_path / "learnings" / "review-metrics.jsonl").exists()

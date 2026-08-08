@@ -19,6 +19,7 @@ severity_multiplier と同一)。各レビューアーの表記はここで写�
 | `HIGH` | **Critical** | security-reviewer, silent-failure-hunter (セキュリティの HIGH は BLOCK 相当として扱う) |
 | `CONSIDER` / `consider` / `SHOULD` / `MEDIUM` / `important` / `Important` / `重要` / 🟡 Warning / 🟡 Should Fix / 「問題点 (修正推奨)」 | **Important** | code-reviewer, security-reviewer, test-analyzer, product-reviewer, design-reviewer, simplify, type-design-analyzer |
 | `NIT` / `ASK` / `FYI` / `LOW` / `Watch` / `推奨` / `参考` / 🔵 Suggestion / 🔵 Consider / 「改善提案 (optional)」 | **Watch** | code-reviewer, security-reviewer, test-analyzer, product-reviewer, design-reviewer, simplify, type-design-analyzer |
+| `PLAN` (Plan 批評) / `RETRACTED` (撤回済み) | **severity ではない** → `severity` 欄に入れず `status` 欄に入れる。canonical severity は別途付ける | codex-plan-reviewer, 撤回運用 |
 
 表に無い値が来たら canonical に写さず `[UNMAPPED SEVERITY: <値>]` を付けてレポートに残し、
 **verdict 計算には乗せない**。写せない値を勝手に Critical/Important に寄せてはいけない。

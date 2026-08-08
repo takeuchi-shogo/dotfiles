@@ -17,12 +17,11 @@ Step 4 の統合後、最終レポートに含まれる各指摘を `review-find
 ```bash
 python3 -c "
 import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
-from session_events import emit_review_finding
-import json, hashlib, datetime
+from session_events import emit_review_findings
+import json
 
 findings = json.loads(sys.stdin.read())
-for f in findings:
-    emit_review_finding(f)
+emit_review_findings(findings)
 print(f'{len(findings)} findings saved')
 " <<'FINDINGS_JSON'
 [
@@ -53,8 +52,12 @@ FINDINGS_JSON
 `evidence` (証拠充足型、security-reviewer) を必ず添える。数値フィルタ (< 60 除外) は
 `subjective` にのみ効く。
 
-**複数レビューアーの合意**: `reviewer` に `"a+b"` のような連結文字列を入れない。
-`["a", "b"]` の list で渡す (拒否される)。
+**複数レビューアーの合意**: `reviewer` は単一なら str、複数なら `["a", "b"]` の list。
+`"a+b"` や `"a,b"` のような連結文字列は ValueError で拒否する。
+
+**保存は全件検証してから**: `emit_review_findings(findings)` を使う。1 件ずつ
+`emit_review_finding()` を回すと、途中の契約違反で「先頭は保存済み・残りは未保存」になり、
+再実行が重複を生む。
 
 > この雛形に severity 欄が無かったため、`review-findings.jsonl` の実データ 157 件のうち
 > 121 件 (77%) で severity が欠落していた。欄の追加と検証はその再発防止。
