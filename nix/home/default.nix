@@ -112,6 +112,8 @@ in
     # NOTE: .cursor/hooks.json は cmux が起動時に自己書き換え (afterAgentResponse /
     # beforeShellExecution 等のフックを注入) するため home.file 管理外
     # (.codex/config.toml と同じ self-rewriting app パターン)。
+    # NOTE: ~/.cursor/cli-config.json も auth/model を含む self-rewriting。
+    # deny のみ .cursor/cli-permissions.json → mergeCursorCliDeny activation で反映。
     ".cursor/rules"      = outLink ".cursor/rules";
     ".cursor/skills"     = outLink ".cursor/skills";
     ".cursor/agents"     = outLink ".cursor/agents";
@@ -209,6 +211,20 @@ in
       share "$AGENTS_SKILLS/$skill" "$CODEX_DIR/$skill"
       share "$AGENTS_SKILLS/$skill" "$AGENTS_DIR/$skill"
     done
+  '';
+
+  # Cursor CLI deny: SSOT (.cursor/cli-permissions.json) → live cli-config.json。
+  # cli-config.json 全体は home.file に載せない (auth/model がアプリ書き換え)。
+  home.activation.mergeCursorCliDeny = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    PY="${pkgs.python3}/bin/python3"
+    HELPER="${dotfiles}/scripts/lib/merge_cursor_cli_deny.py"
+    SSOT="${dotfiles}/.cursor/cli-permissions.json"
+    LIVE="${config.home.homeDirectory}/.cursor/cli-config.json"
+
+    [ -f "$HELPER" ] || { echo "merge_cursor_cli_deny.py not found, skip" >&2; exit 0; }
+    [ -f "$SSOT" ] || { echo "cli-permissions.json not found, skip" >&2; exit 0; }
+
+    $DRY_RUN_CMD "$PY" "$HELPER" --ssot "$SSOT" --live "$LIVE"
   '';
 
   programs.home-manager.enable = true;

@@ -74,6 +74,9 @@
 - `.config/claude/CLAUDE.md`, `.config/claude/settings.json`, `.config/claude/scripts/`, `.config/claude/skills/`
   - 併せて見る: `.config/claude/references/workflow-guide.md`, `PLANS.md`, `docs/agent-harness-contract.md`
   - 最低検証: `task validate-configs`, `task validate-symlinks`
+- `.cursor/cli-permissions.json` (Cursor CLI global deny SSOT → live `~/.cursor/cli-config.json` via `mergeCursorCliDeny`)
+  - 併せて見る: `scripts/lib/merge_cursor_cli_deny.py`, `nix/home/default.nix`, `.cursorignore`
+  - 最低検証: `task validate-configs`（反映は `python3 scripts/lib/merge_cursor_cli_deny.py` または `nix:switch`）
 - `.bin/symlink.sh`, `.bin/validate_symlinks.sh`
   - 併せて見る: `Taskfile.yml`, `.codex/AGENTS.md`, `.config/claude/CLAUDE.md`
   - 最低検証: `task symlink`, `task validate-symlinks`
