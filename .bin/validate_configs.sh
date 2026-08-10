@@ -26,6 +26,7 @@ json_files = [
     ".config/claude/settings.json",
     ".config/karabiner/karabiner.json",
     ".config/nvim/lazyvim.json",
+    ".cursor/cli-permissions.json",
 ]
 
 for path_str in toml_files:
@@ -68,6 +69,31 @@ if errors:
     print("    fix: deny-rules-catalog.md のヘッダ・合計・カテゴリ件数を settings.json に一致させる")
     sys.exit(1)
 print(f"ok  deny-rules-catalog.md (deny={live['deny']} allow={live['allow']} ask={live['ask']})")
+PY
+
+echo "==> Validate Cursor CLI permissions SSOT"
+python3 - <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(".cursor/cli-permissions.json")
+data = json.loads(path.read_text())
+deny = data.get("permissions", {}).get("deny")
+if not isinstance(deny, list) or not deny:
+    print("NG  .cursor/cli-permissions.json: permissions.deny must be a non-empty array")
+    sys.exit(1)
+if not all(isinstance(item, str) and item for item in deny):
+    print("NG  .cursor/cli-permissions.json: permissions.deny entries must be non-empty strings")
+    sys.exit(1)
+required = ("Read(.env*)", "Read(**/.env*)", "Write(**/.env*)")
+missing = [r for r in required if r not in deny]
+if missing:
+    print("NG  .cursor/cli-permissions.json missing required deny entries:")
+    for item in missing:
+        print(f"    - {item}")
+    sys.exit(1)
+print(f"ok  .cursor/cli-permissions.json (deny={len(deny)})")
 PY
 
 echo "==> Validate shell scripts"
