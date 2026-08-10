@@ -93,7 +93,9 @@ in
     # 注入や /model 変更が消える (memory: project_claude_settings_live_drift)。
     # 新PC bootstrap は dotfiles/.config/claude/settings.json を手動 cp する。
     # terminal-browser 同梱の agent skill (installer が ~/.agents/skills に置くのと同じ配線を nix で再現)
-    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/skill"; };
+    # v0.4.9 で同梱レイアウトが skill/ → skills/<agent-variant>/<skill-name>/ に変わった。
+    # variant は tarball の skills/manifest 参照 (claude/cursor/gemini = default, codex = codex)。
+    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/skills/default/terminal-browser"; };
 
     ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
     ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";

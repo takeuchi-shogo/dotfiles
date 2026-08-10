@@ -7,11 +7,11 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "terminal-browser";
-  version = "0.3.3";
+  version = "0.4.9";
 
   src = fetchurl {
     url = "https://terminal-browser.sh/install/dl/stable/v${version}/terminal-browser-darwin-arm64.tar.gz";
-    hash = "sha256-gAQjGCeiscquAyL5mEgllp1xbtVTwtfM3HhNPPhH/Qk=";
+    hash = "sha256-amfynlTwESZcM8Du+pVbpd3LtevSkcPcv2tMWP9KxRE=";
   };
 
   sourceRoot = "terminal-browser";
