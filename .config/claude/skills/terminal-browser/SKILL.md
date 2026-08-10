@@ -4,10 +4,12 @@ description: A real browser running inside the terminal. It splits the human's t
 ---
 
 > **このセットアップ限定の制約**: herdr / tmux などの TUI multiplexer 配下では全
-> サブコマンドが `could not find this pane in Ghostty` で失敗する (pane タイトルを
-> multiplexer が書き換えるため)。herdr 内では代わりに `agent-browser`
+> サブコマンドが `could not find this pane in Ghostty` で失敗する。terminal-browser は
+> 自分の tty をマークして Ghostty にどの pane が名乗り出るかを問い合わせるが、
+> multiplexer が張った pty は Ghostty の pane ではないので誰も応答しない
+> (`TERM_PROGRAM=ghostty` でも関係なく落ちる)。herdr 内では代わりに `agent-browser`
 > (webapp-testing skill) を使う。terminal-browser は herdr を通さない素の Ghostty
-> タブでのみ動く。2026-08-04 / v0.3.3 で確認。
+> タブでのみ動く。2026-08-04 (v0.3.3) / 2026-08-10 (v0.4.9) に確認。
 >
 > **`upgrade` は使えない**: この環境の terminal-browser は nix (home-manager) が
 > 配る read-only な store path なので自己更新できない。上げるときは
