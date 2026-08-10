@@ -41,11 +41,34 @@
             }
           ];
         };
+
+      # WSL (Linux) 向け standalone home-manager。nix-darwin を通さないので ./darwin 配下
+      # (Homebrew / system defaults) は一切評価されない。手順は
+      # docs/playbooks/wsl-windows-setup.md。
+      mkHome = { system, userName }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ herdr.overlays.default ];
+          };
+          extraSpecialArgs = { inherit userName; };
+          modules = [ ./home ];
+        };
     in
     {
       darwinConfigurations = {
         private = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro";      hostModule = ./darwin/private.nix; userName = "takeuchishougo"; };
         work    = mkDarwin { system = "aarch64-darwin"; hostName = "MacBookPro-work"; hostModule = ./darwin/work.nix;    userName = "shogo_takeuchi"; };
+      };
+
+      # WSL (Windows) 用。CHANGEME は Ubuntu 初回起動で決めた UNIX ユーザー名に差し替える
+      # (attr key と userName の両方)。適用は
+      #   home-manager switch -b backup --flake ~/dotfiles/nix#<user>@wsl
+      # -b backup が必須。standalone home-manager に backupFileExtension オプションは無く、
+      # Ubuntu 既存の ~/.profile / apt zsh の ~/.zshrc と衝突して初回 switch が abort する。
+      homeConfigurations."CHANGEME@wsl" = mkHome {
+        system = "x86_64-linux";
+        userName = "CHANGEME";
       };
 
       devShells = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" ] (system:
