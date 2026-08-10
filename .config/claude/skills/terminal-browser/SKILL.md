@@ -3,13 +3,15 @@ name: terminal-browser
 description: A real browser running inside the terminal. It splits the human's terminal pane automatically, so you can show a website side by side with the conversation, render HTML to visualize something, and drive whatever tab is open — snapshot, click, fill, eval — with the `terminal-browser action` subcommand.
 ---
 
-> **このセットアップ限定の制約**: herdr / tmux などの TUI multiplexer 配下では全
-> サブコマンドが `could not find this pane in Ghostty` で失敗する。terminal-browser は
-> 自分の tty をマークして Ghostty にどの pane が名乗り出るかを問い合わせるが、
-> multiplexer が張った pty は Ghostty の pane ではないので誰も応答しない
-> (`TERM_PROGRAM=ghostty` でも関係なく落ちる)。herdr 内では代わりに `agent-browser`
-> (webapp-testing skill) を使う。terminal-browser は herdr を通さない素の Ghostty
-> タブでのみ動く。2026-08-04 (v0.3.3) / 2026-08-10 (v0.4.9) に確認。
+> **このセットアップ限定の制約**: herdr 配下では全サブコマンドが
+> `could not find this pane in Ghostty` で失敗する。multiplexer 全般ではない —
+> v0.4.9 の対応 terminal は tmux / tty7 / wezterm / kitty / cmux / supacode /
+> ghostty / vscode で、**herdr だけが未対応**。herdr は pane を特定する env を
+> 出しておらず (`HERDR_ENV=1` のみ、`CMUX_PANE` 等は未設定)、`TERM_PROGRAM=ghostty`
+> なので ghostty 検出に落ちるが、herdr が張った pty は Ghostty の pane ではないため
+> 誰も名乗り出ない。herdr 内では代わりに `agent-browser` (webapp-testing skill) を
+> 使う。terminal-browser は herdr を通さない素の Ghostty タブで動く。
+> 2026-08-04 (v0.3.3) / 2026-08-10 (v0.4.9) に確認。
 >
 > **`upgrade` は使えない**: この環境の terminal-browser は nix (home-manager) が
 > 配る read-only な store path なので自己更新できない。上げるときは
