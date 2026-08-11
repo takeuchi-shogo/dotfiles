@@ -3,7 +3,7 @@ name: review
 description: >
   コード変更のレビューを実行。変更規模に応じてレビューアーを自動選択・並列起動し、結果を統合する。
   コード変更後の Review 段階で使用、または /review で手動起動。
-  言語固有チェックリストは references/review-checklists/ に配置。code-reviewer のプロンプトに注入して使用。
+  言語固有チェックリストを code-reviewer のプロンプトに注入して使用（配置場所は本文 Step 2 の表）。
   Triggers: 'レビューして', 'review', 'コードレビュー', 'セルフレビュー', 'check my code'.
   Do NOT use for: 直近の差分確認のみ（use git diff）、100行超の Codex レビュー（use /codex-review）、Product 観点の検証（use /validate）。
 origin: self
@@ -80,7 +80,7 @@ Google eng-practices `standard.md` "Principles" 由来。**style guide / project
 
 - **適用範囲**: 命名 (引数名・ローカル変数名) / コード並び順 / 抽象化の粒度 / コメントの分量 / etc. のうち、以下の判定で「style guide / convention にない」と判定されたもの
 - **判定フロー** (Step 1 → Step 2 を順に確認、両方 No のとき Principle 4 適用):
-  1. 該当する style guide (Google Style Guide / Effective Go / TypeScript handbook / 内部 `references/review-checklists/*.md`) に明文化されているか?
+  1. 該当する style guide (Google Style Guide / Effective Go / TypeScript handbook / 内部 `~/.claude/references/review-checklists/*.md`) に明文化されているか?
      - **Yes** → reviewer の指摘は valid。Principle 2 で Evidence を提示。判定終了
      - **No** → Step 2 へ進む
   2. 該当する project convention があるか? (本リポジトリ内 5 箇所以上で同パターン使用 = empirical convention)
@@ -247,16 +247,28 @@ M/L 規模の変更では、レビュー開始前に Design Rationale の存在�
 
 `code-reviewer` のプロンプトに、**cross-cutting + 該当言語**のチェックリストを Read して注入する:
 
-| 拡張子              | 参照ファイル                                  |
-| ------------------- | --------------------------------------------- |
-| **全レビュー共通**  | `references/review-checklists/cross-cutting.md` |
-| `.ts/.tsx/.js/.jsx` | `references/review-checklists/typescript.md`  |
-| `.go`               | `references/review-checklists/go.md`          |
-| `.py`               | `references/review-checklists/python.md`      |
-| `.rs`               | `references/review-checklists/rust.md`        |
-| 複数言語混在        | 該当する全チェックリストをプロンプトに含める  |
+| 拡張子              | 参照ファイル                                             |
+| ------------------- | -------------------------------------------------------- |
+| **全レビュー共通**  | `~/.claude/references/review-checklists/cross-cutting.md` |
+| `.ts/.tsx/.js/.jsx` | `~/.claude/references/review-checklists/typescript.md`    |
+| `.go`               | `~/.claude/references/review-checklists/go.md`            |
+| `.py`               | `~/.claude/references/review-checklists/python.md`        |
+| `.rs`               | `~/.claude/references/review-checklists/rust.md`          |
+| 複数言語混在        | 該当する全チェックリストをプロンプトに含める             |
 
 > **cross-cutting.md は常時注入する。** 言語固有チェックリストは追加で注入する。
+> 読めない場合は注入せず、その旨を code-reviewer への指示に明記する（暗黙フォールバック禁止）。
+
+> **本ファイル内の `references/` 表記は 2 種類ある。** 上表だけが絶対パスなのは解決経路が違うため:
+>
+> - `references/reviewer-routing.md` 等（skill 相対）— skill 本体と同じ `skills/review/references/` に
+>   同梱され、skill base dir から解決される
+> - 上表の review-checklists（絶対パス）— skill の外 (`~/.claude/references/`) にあり、Read tool で
+>   取りに行く。Read は絶対パス必須で cwd 相対解決を一切しないため、`references/...` 表記のままでは
+>   ファイルの所在に関わらず解決できない
+>
+> 表記を「揃える」目的でどちらかに寄せると壊れる。dotfiles の worktree で作業中は
+> `~/.claude/` が main repo 側を指す点にも注意（Gotchas の worktree 項を参照）。
 
 ### プロジェクト特化レビューアー（ペルソナレビュー）
 

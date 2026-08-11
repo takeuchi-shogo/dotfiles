@@ -103,14 +103,14 @@ COMPLETION CONTRACT の形式に従って最終出力を生成する。
 ## Language-Specific Checklists
 
 変更ファイルの拡張子に応じて、言語固有のチェックリストを追加適用する。
-チェックリストは `references/review-checklists/` に配置:
+チェックリストは `~/.claude/references/review-checklists/` に配置:
 
-| 拡張子              | 参照ファイル                                 |
-| ------------------- | -------------------------------------------- |
-| `.ts/.tsx/.js/.jsx` | `references/review-checklists/typescript.md` |
-| `.go`               | `references/review-checklists/go.md`         |
-| `.py`               | `references/review-checklists/python.md`     |
-| `.rs`               | `references/review-checklists/rust.md`       |
+| 拡張子              | 参照ファイル                                           |
+| ------------------- | ------------------------------------------------------ |
+| `.ts/.tsx/.js/.jsx` | `~/.claude/references/review-checklists/typescript.md` |
+| `.go`               | `~/.claude/references/review-checklists/go.md`         |
+| `.py`               | `~/.claude/references/review-checklists/python.md`     |
+| `.rs`               | `~/.claude/references/review-checklists/rust.md`       |
 
 ## Severity Labels: Pragmatic Expert
 
@@ -375,6 +375,8 @@ weakest: <最低スコアの次元名>
 
 ## Verdict
 {PASS / PASS [NITS_REMAIN: N NIT, M FYI] / NEEDS_FIX / BLOCK}
+
+Applied Checklists: {注入されたチェックリスト名をカンマ区切り / (none)}
 ```
 
 Verdict 判定基準:
@@ -422,11 +424,16 @@ weakest: N/A
 
 ## Verdict
 PASS
+
+Applied Checklists: cross-cutting
 ```
+
+> 指摘 0 件でも `Applied Checklists:` を省略しない。この行が無いと合成側 (`skills/review/SKILL.md`
+> Step 4 Layer 0) が `[CHECKLIST MANIFEST MISSING]` を立てる。注入が無かったなら `(none)` と書く。
 
 ## ガイドライン自己提案
 
-レビュー完了後、既存チェックリスト（`references/review-checklists/`）でカバーされていないパターンを発見した場合:
+レビュー完了後、既存チェックリスト（`~/.claude/references/review-checklists/`）でカバーされていないパターンを発見した場合:
 
 1. 指摘の末尾に `[NEW_PATTERN]` タグを付与する
 2. Findings の後に以下を追加:
