@@ -10,6 +10,17 @@ fi
 if [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
   . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
 fi
+# Linux (WSL): standalone home-manager は /etc/profiles/per-user ではなく ~/.nix-profile に置く。
+# OSTYPE で切るのは、macOS にも ~/.nix-profile が実在するため — `-d` 判定だけで先頭に足すと
+# Mac 側の brew 先頭順序 (上の Phase B1 Step 2) を壊す。
+if [[ "$OSTYPE" == linux* ]]; then
+  if [ -d "$HOME/.nix-profile/bin" ]; then
+    export PATH="$HOME/.nix-profile/bin:$PATH"
+  fi
+  if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
+    . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+  fi
+fi
 if [ -d "/run/current-system/sw/bin" ]; then
   export PATH="$PATH:/run/current-system/sw/bin"
 fi

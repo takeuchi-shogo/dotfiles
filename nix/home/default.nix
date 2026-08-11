@@ -12,7 +12,9 @@ let
 in
 {
   home.username = userName;
-  home.homeDirectory = "/Users/${userName}";
+  # darwin は nix-darwin module 経由、linux (WSL) は standalone homeConfigurations 経由で入る。
+  home.homeDirectory =
+    if pkgs.stdenv.isDarwin then "/Users/${userName}" else "/home/${userName}";
 
   # HM release 文字列 enum。system.stateVersion (integer) とは別物。
   home.stateVersion = "25.11";
@@ -56,6 +58,23 @@ in
     mirador
     # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
     herdr
+  ] ++ lib.optionals (!stdenv.isDarwin) [
+    # Linux (WSL) 限定。Mac ではこの層を Homebrew が供給している (nix/darwin/default.nix の brews)
+    # が、WSL に Homebrew は無いので nixpkgs から入れる。Mac 側は B1.5 の判断どおり brew に残す。
+    # go-task が欠けると `task` が使えず、この repo のワークフロー全体が止まる。
+    git
+    sheldon
+    starship
+    mise
+    direnv
+    go-task
+    # node は repo のどこにも宣言が無い (Mac の実体は /opt/homebrew/bin/node)。settings.json の
+    # hook が node を直接叩くので、ここを埋めないと WSL では hook が黙って落ちる。
+    nodejs
+    # task build-hooks (cargo build --release) 用。これも Mac では未宣言依存。
+    cargo
+    rustc
+    # zsh は入れない。Ubuntu の chsh が /etc/shells 掲載のシェルしか受け付けないため apt 版を使う。
   ];
 
   # Phase B2.1: symlink.sh の block 1-5 を home-manager に移植 (D6 実証済み)。
@@ -65,7 +84,7 @@ in
   # Phase 0+A fixture (.config/zsh-test-nix) は本リリースで削除。
   home.file = {
     # block 1: directory-level symlinks
-    ".hammerspoon" = outLink ".hammerspoon";
+    # (.hammerspoon は macOS 専用。末尾の optionalAttrs isDarwin ブロックへ)
     ".config/zsh"  = outLink ".config/zsh";
 
     # block 2: Claude (.config/claude → ~/.claude)
@@ -74,7 +93,9 @@ in
     # 注入や /model 変更が消える (memory: project_claude_settings_live_drift)。
     # 新PC bootstrap は dotfiles/.config/claude/settings.json を手動 cp する。
     # terminal-browser 同梱の agent skill (installer が ~/.agents/skills に置くのと同じ配線を nix で再現)
-    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/skill"; };
+    # v0.4.9 で同梱レイアウトが skill/ → skills/<agent-variant>/<skill-name>/ に変わった。
+    # variant は tarball の skills/manifest 参照 (claude/cursor/gemini = default, codex = codex)。
+    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/skills/default/terminal-browser"; };
 
     ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
     ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";
@@ -137,26 +158,21 @@ in
     ".zshrc"            = outLink ".zshrc";
     # NOTE: ~/.gitignore は dotfiles 外 (system 由来 real file)、ここでは管理しない
 
-    # Root config files at ~ (5)
+    # Root config files at ~ (4 + Brewfile は macOS 専用ブロック)
     "AGENTS.md"     = outLink "AGENTS.md";
-    "Brewfile"      = outLink "Brewfile";
     "lefthook.yml"  = outLink "lefthook.yml";
     "llms.txt"      = outLink "llms.txt";
     "ruff.toml"     = outLink "ruff.toml";
 
-    # .config/<tool> dir-level symlinks (13)
-    ".config/aerospace"   = outLink ".config/aerospace";
-    ".config/borders"     = outLink ".config/borders";
+    # .config/<tool> dir-level symlinks (9 + aerospace/borders/karabiner/sketchybar は macOS 専用ブロック)
     ".config/cmux"        = outLink ".config/cmux";
     ".config/gh"          = outLink ".config/gh";
     ".config/ghostty"     = outLink ".config/ghostty";
     ".config/git"         = outLink ".config/git";
     ".config/jj"          = outLink ".config/jj";
-    ".config/karabiner"   = outLink ".config/karabiner";
     ".config/lazygit"     = outLink ".config/lazygit";
     ".config/nvim"        = outLink ".config/nvim";
     ".config/sheldon"     = outLink ".config/sheldon";
-    ".config/sketchybar"  = outLink ".config/sketchybar";
     ".config/wezterm"     = outLink ".config/wezterm";
     ".config/zed"         = outLink ".config/zed";
 
@@ -164,6 +180,16 @@ in
     ".config/starship.toml"    = outLink ".config/starship.toml";
     ".config/rtk/config.toml"  = outLink ".config/rtk/config.toml";
     ".config/mise/config.toml" = outLink ".config/mise/config.toml";  # mise グローバル設定 (言語ランタイム集約)
+  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    # macOS 専用。WM / キーリマップ / ステータスバー層は Linux に移植先が無いので、
+    # WSL では単に配線しない (Windows 側は PowerToys 等で代替する)。
+    # Brewfile は Homebrew 自体が Linux に無いため同様。
+    ".hammerspoon"        = outLink ".hammerspoon";
+    ".config/aerospace"   = outLink ".config/aerospace";
+    ".config/borders"     = outLink ".config/borders";
+    ".config/karabiner"   = outLink ".config/karabiner";
+    ".config/sketchybar"  = outLink ".config/sketchybar";
+    "Brewfile"            = outLink "Brewfile";
   };
 
   # Phase B2.2: skill-sharing を home-manager activation script に移植。

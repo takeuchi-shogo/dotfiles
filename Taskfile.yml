@@ -342,9 +342,13 @@ tasks:
       .config/claude/skills/terminal-browser/ survives. .cursor/skills/ holds a
       symlink, which the installer does rewrite to an absolute path, so we
       restore the repo-relative form afterwards (same shape as the herdr entry).
-      NOTE: nix/pkgs/terminal-browser.nix (#199) already pins v0.3.3 by sha256
-      and ships the same binary via home.packages — see the PR discussion before
-      relying on this task.
+      NOTE: nix-darwin/home-manager 管理下の mac ではこのタスクは使わない。
+      nix/pkgs/terminal-browser.nix (#199) が v0.4.9 を sha256 pin して
+      home.packages で配るのが唯一の供給元で、vendor installer を走らせると
+      ~/.local/bin が /etc/profiles/per-user を PATH で隠す二重インストールに戻る
+      (2026-08-10 にその状態を解消済み)。残してあるのは nix profile を持たない
+      マシン向け。バージョンを上げるときは nix 側の version/hash を bump して
+      task nix:switch。
     status:
       - command -v terminal-browser >/dev/null
     cmds:
