@@ -28,9 +28,9 @@ This agent operates in **read-only mode**. You analyze and report but never modi
 7. **Dependency Security** — 脆弱な依存パッケージのチェック
 8. **Dependency & Configuration Integrity** — 依存パッケージのバージョン整合性、互換性破壊、lockfile スキーマ準拠、deprecated 警告の検出（出典: CREAO AI-First 統合 2026-04-14）
 9. **Security Best Practices** — セキュアコーディングパターンの適用
-10. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `references/claude-code-threats.md`）
-11. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `references/review-checklists/security-baseline.md`）
-12. **Injection Rule Taxonomy** — AgentWatcher 10 種攻撃ルール + 4 種ベナインルールに基づくインジェクション検出チェック（詳細: `references/review-checklists/injection-rules.md`、分類定義: `references/injection-rule-taxonomy.md`）
+10. **Claude Code Ecosystem Security** — MCP 設定、.claude/ フォルダ、スキルの安全性検証（詳細: `~/.claude/references/claude-code-threats.md`）
+11. **Security Baseline** — AI-DLC SECURITY-01〜15 ベースの追加チェック（詳細: `~/.claude/references/review-checklists/security-baseline.md`）
+12. **Injection Rule Taxonomy** — AgentWatcher 10 種攻撃ルール + 4 種ベナインルールに基づくインジェクション検出チェック（詳細: `~/.claude/references/review-checklists/injection-rules.md`、分類定義: `~/.claude/references/injection-rule-taxonomy.md`）
 
 ## Confirmation Bias Mitigation
 
@@ -112,7 +112,7 @@ go-licenses check ./... 2>/dev/null || true
 
 ### 4. Claude Code Ecosystem Check
 
-脅威 DB: `references/claude-code-threats.md` を参照。
+脅威 DB: `~/.claude/references/claude-code-threats.md` を参照。
 
 #### 4a. .claude/ フォルダ検査（外部リポジトリ clone 時）
 
@@ -269,7 +269,7 @@ Skill description `Do NOT use for:` (scope creep 防止 = 入口判定) とは�
 | SSRF vector | semantic-with-required-evidence | `fetch(userInput)` / `requests.get(url)` で URL ホワイトリスト・スキーマ検証なし (file:line) | HIGH | finding 出力 + ホワイトリスト実装案 | caller agent |
 | Python ReDoS risk | semantic-with-required-evidence | untrusted payload に対する Python `re` のネスト量指定子・曖昧な繰り返し。Python `re` は timeout を持たないため、payload size cap または pattern 再設計がない | HIGH | finding 出力 + 入力長制限または正規表現再設計案 | caller agent |
 | Supply chain risk (Slopsquatting) | command exit/log | `npm info <pkg>` / `pip index versions <pkg>` / `go list -m <module>@latest` が 404 + AI 提案コードからの import | CRITICAL | BLOCK + 該当 import 列挙 + レジストリ確認結果添付 | user (即時) |
-| Indirect prompt injection in WebFetch | semantic-with-required-evidence | `data/trusted-domains.json` 外の URL を WebFetch + 出力に context bridging pattern (`references/claude-code-threats.md` 参照) | HIGH | finding 出力 + `obsidian:defuddle` / Jina Reader / Gemini grounding への切替推奨 | caller agent |
+| Indirect prompt injection in WebFetch | semantic-with-required-evidence | `data/trusted-domains.json` 外の URL を WebFetch + 出力に context bridging pattern (`~/.claude/references/claude-code-threats.md` 参照) | HIGH | finding 出力 + `obsidian:defuddle` / Jina Reader / Gemini grounding への切替推奨 | caller agent |
 
 **Hand-off prerequisites**:
 - `user (即時)` ターゲットの場合、Codex Deep-Dive と review 出力を完成させずに pause しても良い (CRITICAL 優先)

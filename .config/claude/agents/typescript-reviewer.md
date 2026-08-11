@@ -20,9 +20,11 @@ diff を読み、独立した第2パスとして盲点を検出する。
 これが本エージェントの存在意義 — rules にしか無い観点 (Result 型・レイヤー強制・ET 原則) を
 レビュー時に適用するため。
 
-1. `references/review-checklists/typescript.md` — TS-1〜23 のレビュー観点
-2. `references/review-checklists/cross-cutting.md` — 全言語共通観点
+1. `~/.claude/references/review-checklists/typescript.md` — TS-1〜23 のレビュー観点
+2. `~/.claude/references/review-checklists/cross-cutting.md` — 全言語共通観点
 3. `rules/typescript.md` — Effective TypeScript 準拠の設計ルール (エラーハンドリング層・ACL・eslint-plugin-boundaries)
+   - 1, 2 と違い `~/.claude/rules/` は存在しない。実体は dotfiles の
+     `.config/claude/rules/typescript.md` だけで、他リポジトリからは解決できない
 
 > 上記が Read できない場合は、その旨を報告に明記し、利用可能な観点のみでレビューする
 > (暗黙フォールバック禁止 — 「読めなかったが沈黙して進める」はしない)。
