@@ -15,6 +15,10 @@ last_reviewed: 2026-04-23
 
 ## 統合済み（60+記事/論文）
 
+### 出力形式・可読性
+
+- **md→HTML 自動変換 hook 記事 + mathbullet/skills html skill (2026-08-13)** — html-output family **2 件目** (先行 = 2026-05-09 html-effectiveness)、Saturation PASS。ユーザー仮説「別ソースだが合わせると良さそう」の検証。**採用 0、ただし実測が 3 つの判断を覆した**。記事は「md 保存時に PostToolUse hook から決定論変換 (LLM 不使用ゆえゼロトークン)」、mathbullet は「LLM が HTML を生成する際のデザインシステム」で **機構が正反対**。合流点は CSS 1 層だけかと判定したが、**Artifact の markdown レンダラを実測したら記事の CSS 処方 (700px 読み物幅 / light-dark トークン / システムフォント / `pre` の overflow-x) を既に全部満たしていた** → mathbullet の `document.css` は webfont 依存で下位互換と判明し棄却。**合流点は「記事 + mathbullet」ではなく「記事の機構 + 手元の Artifact CSS」だった**。一方 Artifact には実欠陥 2 件: (1) **YAML frontmatter が剥がされず巨大な `<h2>` になる** — docs/research 全 370 件が frontmatter 始まりなので全件に効く (2) **広い表に overflow ラッパーがなく 720px に圧縮される** — 記事が名指しする中核の痛点 (表の横伸び) は未解決、コードは scroll するのに表はしない非対称。Mermaid はネイティブ描画されるがページが 3.2MB になる。**Codex 修正 4 件**: 記事の Gap 判定は決定表 (HTML は双方向性必須) 下では N/A / **PostToolUse は「保存」でなく Claude Code の `Edit`/`Write` だけを捉える** (Obsidian 保存では発火しない、記事の言葉が誤解を招く) / `pulldown-cmark` 未導入なので「Rust がある」= 依存追加不要ではない / **「未使用」は Gap の証拠ではなく未検証の証拠**。Gemini は IneligibleTierError で **Phase 2.5 は Codex 単独 = degraded**。教訓は「先行 absorb の棄却理由は層ごとに再検査する」(2026-05-09 の棄却理由のうち記事が壊すのは token tax だけで VCS ノイズ・読者不在は生存) → `docs/research/2026-08-13-md-html-hook-artifact-absorb-analysis.md`
+
 ### タスク管理
 
 - **LayerX uphy 判断は人間・更新はエージェント・計算はスクリプト (2026-07-11)** — task-management family 初 absorb (Saturation PASS 新分野)。10手法中 採用3 (T1 daily note 分裂解消=00-Inbox/07-Daily 二重化の Critical Gap 露出 / T2 タスク SSoT 最小構築=timekeeper 接続 / T3 task-lint.py validator)。writer agent は Codex 指摘で YAGNI defer (導入条件記録)。核心=真実の置き場所を1つに → `docs/research/2026-07-11-layerx-uphy-taskmgmt-absorb-analysis.md`
