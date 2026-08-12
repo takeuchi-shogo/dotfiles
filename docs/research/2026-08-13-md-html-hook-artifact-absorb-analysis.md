@@ -77,7 +77,9 @@ Codex 推奨の段取り: (1) 実在 md で Artifact を試す → (2) 決定表
 
 Codex 推奨の第 1 段を実行した。検証対象 2 件、WebFetch で生 HTML を取得 (Haiku 要約でなく raw)。
 
-取得経路の注記: `claude-in-chrome` は extension 未接続で失敗。`agent-browser` は独自プロファイルで claude.ai にログインしていないため artifact URL は `Page not found` になる。**artifact を読めるのは WebFetch だけ** (claude.ai のログインを使うと tool contract に明記)。視覚確認は WebFetch が保存した生 HTML を `file://` で `agent-browser open` → `screenshot --full` で行った。この二段構えが artifact を目視する唯一の経路。
+取得経路の注記: `claude-in-chrome` は extension 未接続で失敗。`agent-browser` で artifact URL を開くと `Page not found`、`--profile` で Chrome プロファイルを指定しても同じ (Chrome 起動中でロックされており判定材料にならない)。`claude.ai/code/artifacts` を開いて認証状態を確かめたところ **Cloudflare の bot 検出チャレンジ** に当たった。これは突破しない (bot 検出の回避は行わない) ため、agent-browser で artifact を直接見る経路は閉じている。**当初「未認証だから開けない」と書いたのは未検証の断定で、実際の理由は bot 検出だった。**
+
+**artifact を読めるのは WebFetch** (claude.ai のログインを使うと tool contract に明記)。視覚確認は WebFetch が保存した生 HTML を `file://` で `agent-browser open` → `set media dark` / `set viewport 390 844` → `screenshot --full` で行った。
 
 | 検証項目 | 結果 | 根拠 (生 HTML) |
 |---------|------|---------------|
