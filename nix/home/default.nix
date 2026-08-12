@@ -189,6 +189,9 @@ in
     ".config/borders"     = outLink ".config/borders";
     ".config/karabiner"   = outLink ".config/karabiner";
     ".config/sketchybar"  = outLink ".config/sketchybar";
+    # ~/.config/raycast 自体は Raycast が extensions/ ai/ を書き込む実ディレクトリなので、
+    # scripts/ だけを配線する (親ごと symlink にすると Raycast の書き込み先を奪う)。
+    ".config/raycast/scripts" = outLink ".config/raycast/scripts";
     "Brewfile"            = outLink "Brewfile";
   };
 
