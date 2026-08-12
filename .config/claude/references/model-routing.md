@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-13
 ---
 
 # モデル別ルーティング
@@ -16,7 +16,7 @@ last_reviewed: 2026-07-27
 | **メイン** | セッション最上位 tier (現行: Opus 5 / Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
 | **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
 | **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
-| **実装 (別視点)** | Grok 4.5 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.5-high`) |
+| **実装 (別視点)** | Grok 4.6 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.6-high`) |
 | **レビュー** | Codex `gpt-5.6-sol` | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
 | **抽出・変換** | Haiku 4.5 | WebFetch 生取得 (要約は呼び出し側責務)、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
 
@@ -41,7 +41,7 @@ last_reviewed: 2026-07-27
 |--------|----------|-------------|----------|
 | **Codex** (`gpt-5.6-sol`) | 異視点の深い批評 | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
 | **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
-| **Cursor (Grok 4.5)** | 別視点の実装・マルチモデル・Cloud Agent | Sonnet が詰まった実装、モデル比較、非同期長時間タスク | `/cursor` skill |
+| **Cursor (Grok 4.6)** | 別視点の実装・マルチモデル・Cloud Agent | Sonnet が詰まった実装、モデル比較、非同期長時間タスク | `/cursor` skill |
 | **Managed Agents** | クラウド実行・スケジュール・外部連携 | 日次ブリーフ、Event-triggered PR、Slack/Teams 応答 | `/claude-api` skill + API/CLI |
 
 ## 並行実行の選択肢
@@ -66,7 +66,7 @@ last_reviewed: 2026-07-27
 |-----------|--------|------|
 | 複数ファイル / verify 込み | `Workflow({name:'delegate-implementation'})` | 構造化委譲。各タスクは並行・直書きなので独立ファイルに分解する |
 | 単一〜中規模の実装 | `Agent(model:'sonnet')` 直接 | Workflow はオーバーキル |
-| Sonnet が 2 回詰まった実装 | Grok 4.5 (`/cursor` skill) | 同じモデルで 3 度目を試すより視点を変える。別プロセスの起動コストはここで初めて見合う |
+| Sonnet が 2 回詰まった実装 | Grok 4.6 (`/cursor` skill) | 同じモデルで 3 度目を試すより視点を変える。別プロセスの起動コストはここで初めて見合う |
 | 1-2 回の Grep/Read 等 | メインが自前 | handoff コストが見合わない |
 
 ### 主エージェント (現在のメインモデル) の不可譲な責務 (委譲しない)
