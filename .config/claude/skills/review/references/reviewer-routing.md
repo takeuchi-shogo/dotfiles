@@ -69,9 +69,9 @@
 - **トリガー**: diff の追加行に `type `, `interface `, `struct `, `enum ` が含まれる
 - **評価軸**: カプセル化(1-10), 不変条件表現(1-10), 有用性(1-10), 強制力(1-10)
 
-### pr-test-analyzer
+### test-analyzer
 
-- **subagent_type**: `pr-test-analyzer`
+- **subagent_type**: `test-analyzer`（ローカル版が正典。プラグイン同梱の `pr-review-toolkit:pr-test-analyzer` は別実装で、名前空間なしの `pr-test-analyzer` は解決できない）
 - **観点**: テストカバレッジの質、エッジケースの網羅性
 - **トリガー**: `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイルが変更されている
 - **評価**: 行カバレッジではなく振る舞いカバレッジを重視

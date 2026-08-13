@@ -57,6 +57,7 @@ Google eng-practices `pushback.md` の no-cleanup-later 原則: 「後で直す�
 
 - `consider:` 新しいロジックに対応するテストが追加されているか
 - `consider:` 既存テストが変更後のコードと整合しているか（テストの更新漏れ）
+- `consider:` バグ修正の diff なら、追加された regression test は修正前のコードで落ちるか。落ちないなら今回のバグを検出していない。reviewer は read-only なので、実測は用意済みの別 worktree で base を実行できるか、base SHA に紐づく CI 実行結果・失敗ログを確認できる場合に限り、それ以外は「どの defect を入れれば落ちるか」を根拠として述べる（対象外なら N/A の理由を書く）
 
 ## CC-7. 破壊的変更
 
