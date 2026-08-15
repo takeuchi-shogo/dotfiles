@@ -6,9 +6,9 @@
 
 - 今日の daily note を自動で作成または補完する
 - `systemDidWake` と `screensDidUnlock` で未実施を判定する
-- 未記入なら通知と alert を出す (ノートは menubar の `Open today's note` から手動で開く)
+- 未記入なら wake / unlock 時に macOS 通知を出す (画面中央の alert は出さない。ノートは menubar の `Open today's note` から手動で開く)
 - menubar に `TODO`, `EOD`, `DAY` の状態を出す
-- 15 分ごとに再確認する
+- 15 分ごとに menubar を再確認する (定期 alert / 通知は出さない)
 
 ## 保存先
 
