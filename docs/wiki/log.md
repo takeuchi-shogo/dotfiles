@@ -2328,3 +2328,13 @@
 - 実測: review-findings.jsonl 157 件のうち severity 欠落 121 件 (77%)、残り 36 件が 15 値に散在
 - 分析: docs/research/2026-08-06-monotaro-makasetaro-review-harness-absorb-analysis.md
 - プラン: docs/plans/active/2026-08-06-review-finding-contract-plan.md
+
+## [2026-08-16] ingest | Coding Agent の「All tests passed」を信用する前に確認したい5項目
+
+- ソース: https://zenn.dev/kiritani_r/articles/a16f25f3390246
+- family: code-review-best-practices (N=13)、Saturation Gate = PASS (warning、直近 11 件中 7 件採用で採用率 64%)
+- 判定: Gap 2 (M3 テスト検出力の反実仮想 / M4' 外部 API の冪等性)、Partial 1 (M1 変更範囲と依頼の対応付け、Codex 指摘で rehash から降格)、Already 5 (M2 M4 M5 M6 M7)
+- 取り込み: T1 dispatch 名を pr-test-analyzer → test-analyzer に是正 / T2 test reviewer のトリガーに振る舞い変更を追加 / T3 test-analyzer 4d 反実仮想チェック / T4 external-api に冪等性 / T5 migration-guard drift の一括修正
+- 記事の framing で露出した実配線バグ: /review が存在しない `pr-test-analyzer` を dispatch し正典 test-analyzer (4b/4c 搭載) が未起動 / 退避済み migration-guard を 5 箇所が「起動推奨」と名指しし DB Migration がレビュアー不在
+- Codex Review Gate: 4 回 BLOCK → 5 回目 PASS。BLOCK のうち 2 件は自分の drift 修正が新 drift を作ったもの (docstring だけ直して advice 本体を放置 / 付け替え先 CC-7 の能力を誇張)
+- 分析: docs/research/2026-08-16-all-tests-passed-merge-checklist-absorb-analysis.md
