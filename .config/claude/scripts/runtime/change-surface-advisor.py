@@ -3,7 +3,7 @@
 
 PostToolUse hook for Edit|Write. Detects high-risk change patterns
 and suggests appropriate agents (edge-case-hunter, silent-failure-hunter,
-migration-guard, security-reviewer).
+cross-file-reviewer, security-reviewer).
 
 References:
   - references/change-surface-preflight.md
@@ -47,7 +47,10 @@ SURFACES: list[SurfacePattern] = [
         category="db_migration",
         risk="critical",
         patterns=[r"migration[/.]", r"migrate", r"\.sql$", r"schema"],
-        advice="edge-case-hunter + security-reviewer (データ損失・後方互換性リスク)",
+        advice=(
+            "cross-file-reviewer + edge-case-hunter (データ損失・後方互換性リスク。"
+            "rollback/冪等性は references/task-archetypes/db-migration.md)"
+        ),
     ),
     SurfacePattern(
         category="harness",

@@ -235,7 +235,7 @@ M/L 規模の変更では、レビュー開始前に Design Rationale の存在�
 | -------- | ---------------------------------------------------------------------------------------------------------- | ----- |
 | ~10行    | レビュー省略（Verify のみ）— Step 0 の light tier に統合（light 条件を満たさない ~10行 変更は standard）                          | 0 |
 | ~30行    | `code-reviewer`（言語チェックリスト注入）+ `codex-reviewer`                                                                        | 2 |
-| ~50行    | 上記 + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時のみ）                                                              | 4 |
+| ~50行    | 上記 + `edge-case-hunter` + `cross-file-reviewer`（2+ファイル時、**または DB Migration ファイルを含む場合は単一ファイル・50行未満でも必須**）        | 4 |
 | ~200行   | 上記 + `golang-reviewer`（Go変更時）/ `typescript-reviewer`（.ts/.tsx/.js/.jsx変更時）+ **Gemini セキュリティレビュー**            | 6 |
 | 200行超  | 上記全て + スペシャリスト（3-way: Claude + Codex + Gemini）                                                                        | 8 |
 
@@ -300,18 +300,20 @@ M/L 規模の変更では、レビュー開始前に Design Rationale の存在�
 
 行数に関係なく、diff の内容にマッチするスペシャリストを追加する。
 ただし **50行以上の変更** でのみ適用（10行以下はレビュー自体を省略）。
+**例外**: DB Migration 行だけは 50行ゲートを適用しない（小さな `ALTER TABLE` 1 本がデータ損失を起こすため。退避済み migration-guard の後継担当として、行数・ファイル数によらず必ず選定する）。
 
 | diff 内のシグナル  | スペシャリスト          | 検出パターン                                                       |
 | ------------------ | ----------------------- | ------------------------------------------------------------------ |
 | エラーハンドリング | `silent-failure-hunter` | `catch`, `recover`, `fallback`, `retry`, `on.*error`, `try {`      |
 | 新しい型定義       | `type-design-analyzer`  | `type `, `interface `, `struct `, `enum ` の追加行                 |
-| テスト変更         | `pr-test-analyzer`      | `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイル変更    |
+| テスト変更・振る舞い変更 | `test-analyzer`   | `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイル変更、**または** バグ修正・既存ロジックの振る舞い変更（テストファイルが 1 つも変更されていない場合も含む） |
 | コメント大量変更   | `comment-analyzer`      | `/** */`, `///`, `# ` のブロック追加（10行以上）                   |
 | nil/ポインタ操作   | `nil-path-reviewer`     | `*`, `nil`, `Option`, `.Get()`, ポインタ型フィールドの追加/変更    |
 | spec file 存在     | `product-reviewer`      | `docs/specs/*.prompt.md` がリポジトリに存在                        |
 | UI 変更            | `design-reviewer`       | `.tsx`, `.css`, `.scss`, `.html`, `.vue`, `.svelte` のファイル変更 |
 | L規模/API境界変更  | `longevity-reviewer`    | 200行以上の変更、または API 境界ファイル（handler, controller, api, endpoint, route, server）の変更 |
 | 依存・設定変更     | `security-reviewer`     | `package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`, `*.lock`, `.yaml`, `.toml` のファイル変更 |
+| DB Migration       | `cross-file-reviewer`   | `migration/`, `*_migrate*`, `schema*`, `*.sql` のファイル変更（**単一ファイルでも起動する** — 通常の「2ファイル以上」条件の例外。rollback・冪等性は `references/task-archetypes/db-migration.md` の不変条件で確認） |
 
 ### Multi-Model Triangulation（高リスク変更の多モデル検証）
 

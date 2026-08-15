@@ -1,6 +1,6 @@
 ---
 name: cross-file-reviewer
-description: 変更が他ファイルに与える影響（インターフェース不整合、シグネチャ変更の未追従、import 破損）を検出するレビューエージェント。2ファイル以上の変更時に起動。
+description: 変更が他ファイルに与える影響（インターフェース不整合、シグネチャ変更の未追従、import 破損）を検出するレビューエージェント。2ファイル以上の変更時に起動。DB Migration (`migration/`, `*_migrate*`, `schema*`, `*.sql`) を含む変更では単一ファイル・50行未満でも起動する。
 tools: Read, Bash, Glob, Grep
 model: sonnet
 memory: project
@@ -108,6 +108,13 @@ maxTurns: 15
 - カラム名の変更 → クエリ側の未対応
 - APIレスポンス形状の変更 → クライアント側の未対応
 - マイグレーションとコードの整合性
+
+**DB Migration ファイル（`migration/`, `*_migrate*`, `schema*`, `*.sql`）を含む場合は必須**: `~/.claude/references/task-archetypes/db-migration.md` の「不変条件」「テスト戦略」を読み、次の 4 点を必ず報告に含める。退避済み migration-guard の後継としてこの観点を引き受けているため、コード追従漏れだけを見て終わらせない。
+
+- `up` に対する `down` があり rollback できるか（無い場合は CRITICAL）
+- 冪等か（同じマイグレーションを 2 回流してもエラーにならないか）
+- expand-contract に従っているか（追加→並走→削除の段階を踏まず、いきなり削除・リネームしていないか）
+- 本番データ量でのロック影響を見積もっているか（長時間ロックするテーブル書き換えでないか）
 
 ## 深刻度の判定基準
 
