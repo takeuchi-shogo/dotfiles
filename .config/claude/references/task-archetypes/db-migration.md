@@ -42,5 +42,5 @@ last_reviewed: 2026-04-23
 ## Change Surface 連携
 
 - **対応する Change Surface**: 「DB Migration」(Critical)
-- **推奨 preflight**: migration-guard エージェント起動（rollback 可能性・破壊的変更の検出）
+- **推奨 preflight**: cross-file-reviewer 起動（§5 マイグレーションとコードの整合性 = コード側の追従漏れ）+ **本ファイルの「不変条件」「テスト戦略」**（rollback 可能性・expand-contract・冪等性・ロック影響はここが唯一の担保。`cross-cutting.md` CC-7 は「migration と対になっているか」を問うだけで rollback までは見ない）
 - `change-surface-preflight.md` の `migration/`, `*_migrate*`, `schema*`, `*.sql` パターンに該当

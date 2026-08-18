@@ -23,7 +23,7 @@ last_reviewed: 2026-04-23
 | パターン | ファイル例 | リスク | 推奨エージェント |
 |---------|-----------|--------|----------------|
 | 認証ロジック変更 | `auth.go`, `middleware/jwt.go` | 認可バイパス | edge-case-hunter + security-reviewer |
-| DB スキーマ変更 | `*.sql`, `migration/*.go` | データ損失、後方互換性破壊 | migration-guard |
+| DB スキーマ変更 | `*.sql`, `migration/*.go` | データ損失、後方互換性破壊 | cross-file-reviewer + task-archetypes/db-migration.md |
 | Hook・Policy 変更 | `scripts/policy/*.py`, `settings.json` | ハーネス無効化 | harness contract 準拠確認 |
 | 暗号・署名処理 | `crypto*`, `sign*`, `hash*` | セキュリティ脆弱性 | security-reviewer |
 

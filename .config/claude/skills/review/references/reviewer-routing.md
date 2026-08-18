@@ -50,7 +50,7 @@
 
 - **subagent_type**: `cross-file-reviewer`
 - **観点**: 関数シグネチャ変更の未追従、型不整合、export/import 破損、設定値変更の未追従
-- **起動条件**: 変更ファイルが2つ以上の場合のみ起動（コンテンツシグナル: `git diff --name-only` のファイル数 ≥ 2）
+- **起動条件**: 変更ファイルが2つ以上の場合に起動（コンテンツシグナル: `git diff --name-only` のファイル数 ≥ 2）。**例外**: `migration/`, `*_migrate*`, `schema*`, `*.sql` の変更は単一ファイルでも起動する（DB Migration は退避済み migration-guard の後継担当）
 - **信頼度スコア**: 60以上の指摘を報告
 
 ## スペシャリストレビューアー（コンテンツベースで追加）
@@ -72,8 +72,8 @@
 ### test-analyzer
 
 - **subagent_type**: `test-analyzer`（ローカル版が正典。プラグイン同梱の `pr-review-toolkit:pr-test-analyzer` は別実装で、名前空間なしの `pr-test-analyzer` は解決できない）
-- **観点**: テストカバレッジの質、エッジケースの網羅性
-- **トリガー**: `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイルが変更されている
+- **観点**: テストカバレッジの質、エッジケースの網羅性、テストの検出力
+- **トリガー**: `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイルが変更されている、**または** バグ修正・既存ロジックの振る舞い変更（テストファイルが 1 つも変更されていない場合も起動する）
 - **評価**: 行カバレッジではなく振る舞いカバレッジを重視
 
 ### comment-analyzer

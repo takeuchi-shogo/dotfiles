@@ -171,7 +171,7 @@ Implicit Coordinator から Sequential 原則への移行は、観測シグナ�
   ├── codex-reviewer       ← ~100行以上の変更
   ├── edge-case-hunter     ← ロジック変更時
   ├── silent-failure-hunter ← エラーハンドリング変更時
-  ├── cross-file-reviewer  ← 2ファイル以上の変更
+  ├── cross-file-reviewer  ← 2ファイル以上の変更 / DB Migration は単一ファイルでも必須
   ├── comment-analyzer     ← ドキュメント追加時
   ├── type-design-analyzer ← 新規型定義時
   ├── golang-reviewer      ← Go コード変更時

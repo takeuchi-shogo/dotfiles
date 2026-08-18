@@ -776,7 +776,7 @@
       <tbody>
         <tr><td>~10 行</td><td>省略（Verify のみ）</td></tr>
         <tr><td>~30 行</td><td>code-reviewer（言語チェックリスト注入）+ codex-reviewer</td></tr>
-        <tr><td>~50 行</td><td>上記 + edge-case-hunter + cross-file-reviewer（2+ファイル時）</td></tr>
+        <tr><td>~50 行</td><td>上記 + edge-case-hunter + cross-file-reviewer（2+ファイル時、または DB Migration は単一ファイル・50 行未満でも必須）</td></tr>
         <tr><td>~200 行</td><td>上記 + golang-reviewer / typescript-reviewer + Gemini セキュリティレビュー</td></tr>
         <tr><td>200 行超</td><td>上記全て + スペシャリスト（3-way: Claude + Codex + Gemini）</td></tr>
       </tbody>

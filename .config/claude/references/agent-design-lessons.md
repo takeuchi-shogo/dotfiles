@@ -348,7 +348,7 @@ agent.md / SKILL.md の 3 種の境界記述は完全に直交する。重複さ
 
 ### Archived Agents への適用
 
-`.config/claude/agents/archive/` の autoevolve-core / migration-guard / golden-cleanup / triage-router は再有効化時に本 rubric specification を適用する。再有効化判断は `references/harness-stability.md` の 30 日評価プロセスに従う。Tier 2 候補 (`debugger` / `test-engineer` / `simplify`) の escalation rubric 導入判定は 2026-06-16 friction-events 評価 (前述の Friction Events Schema 参照) で別途実施する。
+`docs/archive/agents/` の migration-guard / golden-cleanup / triage-router 等は再有効化時に本 rubric specification を適用する。退避済みエージェントは起動できないため、`references/` の推奨列から名指ししない（2026-08-16 に DB Migration 系 4 箇所を cross-file-reviewer へ付け替え済み）。再有効化判断は `references/harness-stability.md` の 30 日評価プロセスに従う。Tier 2 候補 (`debugger` / `test-engineer` / `simplify`) の escalation rubric 導入判定は 2026-06-16 friction-events 評価 (前述の Friction Events Schema 参照) で別途実施する。
 
 ---
 

@@ -65,7 +65,7 @@ Plan/Implement ステージで `change-surface-advisor.py` が PostToolUse (Edit
 | Change Surface | リスク | 対応ステージ | アドバイス |
 |---------------|--------|-------------|-----------|
 | 認証・認可 | Critical | Implement, Review | edge-case-hunter + security-reviewer 推奨 |
-| DB Migration | Critical | Implement, Review | migration-guard 推奨 |
+| DB Migration | Critical | Implement, Review | cross-file-reviewer 推奨（コード側の追従漏れ）+ task-archetypes/db-migration.md の不変条件（rollback・冪等性） |
 | Hook・Policy | Critical | Implement | harness contract 準拠確認 |
 | 暗号処理 | Critical | Implement | security-reviewer 推奨 |
 | 外部 API | High | Implement | edge-case-hunter 推奨 |

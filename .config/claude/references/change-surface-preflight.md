@@ -13,7 +13,7 @@ last_reviewed: 2026-04-23
 | Change Surface | ファイルパターン例 | Preflight アクション | 重要度 |
 |---------------|-------------------|---------------------|--------|
 | **認証・認可** | `auth/`, `middleware/auth`, `*_auth*`, `permission*`, `rbac*` | `/edge-case-analysis` + セキュリティレビュー推奨 | Critical |
-| **DB Migration** | `migration/`, `*_migrate*`, `schema*`, `*.sql` | migration-guard エージェント起動推奨 | Critical |
+| **DB Migration** | `migration/`, `*_migrate*`, `schema*`, `*.sql` | cross-file-reviewer 起動推奨（マイグレーションとコードの整合性・後方互換性） | Critical |
 | **外部 API 連携** | `client/`, `*_client*`, `api/external*`, `integration/` | edge-case-hunter（タイムアウト・リトライ・エラーハンドリング） | High |
 | **並行処理** | `*_worker*`, `*goroutine*`, `*channel*`, `*mutex*`, `sync*` | edge-case-hunter（デッドロック・race condition） | High |
 | **設定・環境変数** | `config/`, `.env*`, `*config*` | silent-failure-hunter（設定漏れ・デフォルト値の安全性） | Medium |
