@@ -1,3 +1,5 @@
+require("hs.ipc")
+
 local ok, daily_enforcer = pcall(require, "daily_enforcer")
 
 if not ok then

@@ -22,7 +22,7 @@
 
 1. `task symlink`
 2. Hammerspoon を起動
-3. Hammerspoon で `~/.hammerspoon/init.lua` を reload
+3. Hammerspoon で `~/.hammerspoon/init.lua` を reload（必須。起動中プロセスは古い Lua をメモリに載せたまま動く）
 4. 必要なら macOS の通知権限を許可
 5. 必要なら Hammerspoon の `Launch at login` を有効化
 
