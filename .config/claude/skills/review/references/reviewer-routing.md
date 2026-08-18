@@ -71,7 +71,7 @@
 
 ### test-analyzer
 
-- **subagent_type**: `test-analyzer`（ローカル版が正典。プラグイン同梱の `pr-review-toolkit:pr-test-analyzer` は別実装で、`pr-review-toolkit:review-pr` 経由でのみ使う）
+- **subagent_type**: `test-analyzer`（ローカル版が正典。プラグイン同梱の `pr-review-toolkit:pr-test-analyzer` は別実装で、名前空間なしの `pr-test-analyzer` は解決できない）
 - **観点**: テストカバレッジの質、エッジケースの網羅性、テストの検出力
 - **トリガー**: `_test.go`, `.test.ts`, `.spec.ts`, `__tests__/` のファイルが変更されている、**または** バグ修正・既存ロジックの振る舞い変更（テストファイルが 1 つも変更されていない場合も起動する）
 - **評価**: 行カバレッジではなく振る舞いカバレッジを重視
