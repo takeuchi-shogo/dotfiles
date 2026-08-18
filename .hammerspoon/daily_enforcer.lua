@@ -407,7 +407,6 @@ local function notify(status, reason, ignore_cooldown)
   end
 
   local message = status_message(status)
-  hs.alert.show(message, 4)
   hs.notify.new({
     title = "Daily Enforcer",
     informativeText = message .. " (" .. reason .. ")",
@@ -430,10 +429,6 @@ function M.check(reason, force_notify)
   if force_notify then
     notify(status, reason, reason == "manual" or reason == "unsnooze")
     return status
-  end
-
-  if reason == "timer" then
-    notify(status, reason)
   end
 
   return status
