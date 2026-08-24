@@ -33,14 +33,20 @@ stdenvNoCC.mkDerivation rec {
     mkdir -p $root $out/bin
     cp -R . $root
 
-    # 1. bin/tode は ROOT を $HOME/.local/lib/tode 固定で参照する (installer 前提で $0 相対ですらない)。
-    #    既定値を store path に差し替える。TODE_INSTALL_ROOT による上書き余地は残す。
-    # --replace-fail: upstream が launcher を書き換えて置換が空振りしたら、
-    # 壊れたバイナリを配らずビルドを落とす
-    substituteInPlace $root/bin/tode \
-      --replace-fail 'ROOT="''${TODE_INSTALL_ROOT:-$HOME/.local/lib/tode}"' "ROOT=\"\''${TODE_INSTALL_ROOT:-$root}\""
+    # このパッケージが依存する upstream の前提を明示的に検査する。
+    # 下の launcher 生成は tarball の中身が変わっても黙って成功してしまうため、
+    # hash bump だけ通って実行時に壊れる事故をここで止める。
+    grep -qF 'TODE_TERMINAL_BROWSER_BIN' $root/dist/runtime/release.js \
+      || { echo "release.js が TODE_TERMINAL_BROWSER_BIN override を持たない (回避策の前提が崩れた)"; exit 1; }
+    pinned=$(sed -n 's/.*PINNED_VERSION = "\([^"]*\)".*/\1/p' $root/dist/runtime/release.js)
+    [ -n "$pinned" ] && [ "$pinned" = "$(cat $vendored/VERSION)" ] \
+      || { echo "vendor/terminal-browser が PINNED_VERSION ($pinned) と一致しない"; exit 1; }
+    test -x $vendored/electron/terminal-browser.app/Contents/MacOS/terminal-browser \
+      || { echo "vendored electron entrypoint が想定の場所にない"; exit 1; }
+    test -f $vendored/cli/dist/main.js \
+      || { echo "vendored cli entrypoint が想定の場所にない"; exit 1; }
 
-    # 2. dist/runtime/release.js の resolveRuntime() は起動のたびに vendor 側の launcher を
+    # 1. dist/runtime/release.js の resolveRuntime() は起動のたびに vendor 側の launcher を
     #    writeFileSync で書き直す (XDG パスを焼き込むため) → read-only な store で EACCES。
     #    同関数の TODE_TERMINAL_BROWSER_BIN override 経路だけが writeLauncher() を通らないので、
     #    launcher をビルド時に同等内容で焼いてから override を指させる。
@@ -65,10 +71,27 @@ stdenvNoCC.mkDerivation rec {
     LAUNCHER
     chmod 755 $vendored/bin/terminal-browser
 
-    # 3. tode 本体の launcher から override を渡す。
-    sed -i "2i export TODE_TERMINAL_BROWSER_BIN=\"\''${TODE_TERMINAL_BROWSER_BIN:-$vendored/bin/terminal-browser}\"" $root/bin/tode
+    # 2. bin/tode は ROOT を $HOME/.local/lib/tode 固定で参照する (installer 前提で $0 相対ですらない)。
+    #    store path に差し替えると同時に、上の override を渡す。
+    #    TODE_INSTALL_ROOT は捨てる: これを残すと tode 本体だけ custom root に向き、
+    #    browser は store 固定のまま、という upstream にない組み合わせができてしまう
+    #    (dist/runtime/paths.js も同じ env を読むため unset して JS 側の __dirname 解決に揃える)。
+    # --replace-fail: upstream が launcher を書き換えて置換が空振りしたら、
+    # 壊れたバイナリを配らずビルドを落とす
+    # 置換文字列は 1 行に畳んである。nix の多行文字列はブロック全体の最小インデントを剥がすため、
+    # ここに 1 行でも左端始まりの行を置くと剥がし量が 0 になり、上の <<LAUNCHER の終端子が
+    # 列 0 でなくなってヒアドキュメントが終わらなくなる (しかもビルドは成功してしまう)。
+    substituteInPlace $root/bin/tode \
+      --replace-fail 'ROOT="''${TODE_INSTALL_ROOT:-$HOME/.local/lib/tode}"' \
+      "unset TODE_INSTALL_ROOT; export TODE_TERMINAL_BROWSER_BIN=\"\''${TODE_TERMINAL_BROWSER_BIN:-$vendored/bin/terminal-browser}\"; ROOT=\"$root\""
 
     ln -s $root/bin/tode $out/bin/tode
+
+    # 上の launcher 生成が途中で壊れても build は通ってしまうので、成果物側から検査する
+    test -x $out/bin/tode || { echo "$out/bin/tode が生成されていない"; exit 1; }
+    sh -n $vendored/bin/terminal-browser || { echo "生成した launcher が sh として壊れている"; exit 1; }
+    grep -qF 'TODE_TERMINAL_BROWSER_BIN' $root/bin/tode \
+      || { echo "bin/tode に override が注入されていない"; exit 1; }
   '';
 
   meta = with lib; {
