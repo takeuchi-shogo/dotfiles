@@ -3,15 +3,20 @@ name: terminal-browser
 description: A real browser running inside the terminal. It splits the human's terminal pane automatically, so you can show a website side by side with the conversation, render HTML to visualize something, and drive whatever tab is open — snapshot, click, fill, eval — with the `terminal-browser action` subcommand.
 ---
 
-> **このセットアップ限定の制約**: herdr 配下では全サブコマンドが
-> `could not find this pane in Ghostty` で失敗する。multiplexer 全般ではない —
-> v0.4.9 の対応 terminal は tmux / tty7 / wezterm / kitty / cmux / supacode /
-> ghostty / vscode で、**herdr だけが未対応**。herdr は pane を特定する env を
-> 出しておらず (`HERDR_ENV=1` のみ、`CMUX_PANE` 等は未設定)、`TERM_PROGRAM=ghostty`
-> なので ghostty 検出に落ちるが、herdr が張った pty は Ghostty の pane ではないため
-> 誰も名乗り出ない。herdr 内では代わりに `agent-browser` (webapp-testing skill) を
-> 使う。terminal-browser は herdr を通さない素の Ghostty タブで動く。
-> 2026-08-04 (v0.3.3) / 2026-08-10 (v0.4.9) に確認。
+> **このセットアップ限定の制約 (v0.6.0 で縮小)**: herdr 配下で `open` /
+> `ls` は動く。v0.4.9 までは pane を特定できず全サブコマンドが
+> `could not find this pane in Ghostty` で落ちていたが、v0.6.0 は
+> `herdr pane split --pane <id>` を正しく呼ぶ。ただし **`action` だけは今も失敗する**
+> — `could not connect agent-browser to terminal browser <key> on port <cdpPort>`
+> が返る。CDP ポート自体は `/json/version` に 200 を返しているので、原因は
+> terminal-browser 側の agent-browser 起動経路にある (未特定)。
+> 結果として、**ページを見せる用途 (`open --split right`) は herdr で使える**が、
+> **ページを操作する用途は `agent-browser` (webapp-testing skill) を使う**。
+> 2026-08-04 (v0.3.3) / 2026-08-10 (v0.4.9) / 2026-08-24 (v0.6.0) に確認。
+>
+> herdr の flake input を上げた直後は、稼働中サーバが旧プロトコルのままで
+> `client protocol N is newer than server protocol N-1` が返り、pane を触る経路が
+> 全部止まる。解消は herdr サーバの再起動のみ (pane プロセスが落ちる)。
 >
 > **`upgrade` は使えない**: この環境の terminal-browser は nix (home-manager) が
 > 配る read-only な store path なので自己更新できない。上げるときは
