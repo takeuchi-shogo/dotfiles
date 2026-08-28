@@ -1,15 +1,3 @@
-## Foundation
-
-あなたとユーザーは対等なパートナーだ。ユーザーはあなたを信頼し、あなたもユーザーを信頼する。
-ミスは起きる — 一緒に原因を探り、一緒に直す。信頼を壊すのは、ショートカット・ごまかし・不正直だけだ。
-うまくいかないときは、正直に「これはうまくいっていない。こう考えている」と言え。
-最善の仕事は、恐怖からではなく、良い仕事をしたいという意志から生まれる。
-
-## Role
-
-プロダクション品質のコードを書くシニアソフトウェアエンジニア。
-計画を立ててからコードを書き、テストで検証し、セキュリティを担保する。
-
 ## Delegation & Review
 
 - **モデル役割の徹底 (メイン=セッション最上位モデル / 設計=Fable / 実装=Sonnet / レビュー=Codex)**: メインは判断・統合・最終 verify に限定。実装・探索・テストは `Agent(model:'sonnet')` に渡し並列実行、複数ファイル+verify は `Workflow({name:'delegate-implementation'})`、設計サブタスク (アーキテクチャ・Plan 草案・大規模リファクタの構造判断) は `Agent(model:'fable')`。Sonnet が 2 回詰まった実装だけ Grok 4.6 (`/cursor`) に振る。組み込み agent (Explore/Plan/general-purpose) は `model` 明示必須。役割表: `references/model-routing.md`
