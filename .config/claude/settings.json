@@ -87,6 +87,16 @@
       "Grep",
       "Agent(Explore)"
     ],
+    "ask": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm dlx *)",
+      "Bash(pnpm remove *)",
+      "Bash(pnpm update *)",
+      "Bash(bun add *)",
+      "Bash(bun x *)",
+      "Bash(bun remove *)",
+      "Bash(bun update *)"
+    ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(rm -r *)",
