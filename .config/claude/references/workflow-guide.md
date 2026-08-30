@@ -312,6 +312,22 @@ Plan 承認後の変更実行時は `references/auto-accept-policy.md` の判定
 
 根拠: Theory of Code Space 論文 (arXiv:2603.00601) — config 優先戦略は Random の 3倍の効率。構造化マップの保持で依存関係理解が +14 F1 改善。
 
+### 1.4. Design Gate: 決めてはいけない判断をユーザーに返す — M/L 規模のみ
+
+Plan 確定前に、AI が単独で決めるべきでない判断を **最大 3 件だけ** `AskUserQuestion` でユーザーに戻す。全項目を聞くと運用が死ぬので、次のいずれかに当たるものだけを選ぶ: 価値判断 / 不可逆 / 後で高くつく / 複数案が同程度。該当が 0 件なら質問せず、その判断を Plan に 1 行残す。
+
+質問軸は Design Doc の 3 本柱に対応させる:
+
+| 軸 | ユーザーに聞くこと | Plan の書き戻し先 |
+|---|---|---|
+| **代替案** | 却下した案と、その判断基準は妥当か | `## Decision Log` の 代替案 / 却下理由 |
+| **懸念点** | 決めたが不安が残る点はどれか（「分からない」側は `## Unknowns` に置き、混ぜない） | `## Decision Log` の 残る懸念 |
+| **未決定事項** | 今は決めない事項の「なぜ今決めないか」「いつ誰が決めるか」 | `## Decision Log` の 延期事項 → 承認後にチケット化 |
+
+**なぜ AI が書くだけでは足りないか**: 人間が設計文書を書く前提では空欄が思考を促すが、AI が書く前提では空欄はもっともらしく埋まる。翻訳すべきは書式ではなく割り込み。
+
+出典: pospome「優秀なエンジニアが書く Design Doc は何が違うのか?」(2026-08-24)
+
 ### 1.5. Codex Gate: Spec/Plan 批評 — M/L 規模のみ
 
 Spec/Plan 作成後、実装前に Codex(gpt-5.6-terra) で批評するゲート。
@@ -335,7 +351,7 @@ Spec/Plan 作成後、実装前に Codex(gpt-5.6-terra) で批評するゲート
    - **迷う**もの（トレードオフ・複数の選択肢・確信なし）→ ユーザーに選択肢を提示 → ユーザーが判断
 3. ユーザー承認で Implement に進む
 
-**grill-interview（任意ステップ）**: ADR 追加・workflow 変更・不可逆判断を含む高不確実性プランでは、Codex Gate の前に `/grill-interview` でプランをストレステストする。superpowers:brainstorming（要件の探索）とは役割が異なり、grill-interview は確定済みプランの決定木の各分岐を尋問して潰す。全 M/L への必須化はしない（Gate 遅延を避ける）。
+**grill-interview（任意ステップ・ユーザー起動）**: ADR 追加・workflow 変更・不可逆判断を含む高不確実性プランで、1.4 の 3 問で足りないときは `/grill-interview` の実行をユーザーに促す（`disable-model-invocation: true` のため Claude からは起動できない。促すだけで、自分で呼ぼうとしない）。superpowers:brainstorming（要件の探索）とは役割が異なり、grill-interview は確定済みプランの決定木の各分岐を尋問して潰す。全 M/L への必須化はしない（Gate 遅延を避ける）。
 
 ### 2. Implement（実装）
 
