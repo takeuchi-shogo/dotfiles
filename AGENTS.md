@@ -77,6 +77,9 @@
 - `.cursor/cli-permissions.json` (Cursor CLI global deny SSOT → live `~/.cursor/cli-config.json` via `mergeCursorCliDeny`)
   - 併せて見る: `scripts/lib/merge_cursor_cli_deny.py`, `nix/home/default.nix`, `.cursorignore`
   - 最低検証: `task validate-configs`（反映は `python3 scripts/lib/merge_cursor_cli_deny.py` または `nix:switch`）
+- `.config/orca/settings.json` (Orca settings SSOT → live `orca-data.json` via `mergeOrcaSettings`)
+  - 併せて見る: `scripts/lib/merge_orca_settings.py`, `nix/home/default.nix`
+  - 最低検証: `task validate-configs`（反映は `python3 scripts/lib/merge_orca_settings.py` または `nix:switch`）
 - `.bin/symlink.sh`, `.bin/validate_symlinks.sh`
   - 併せて見る: `Taskfile.yml`, `.codex/AGENTS.md`, `.config/claude/CLAUDE.md`
   - 最低検証: `task symlink`, `task validate-symlinks`

@@ -263,6 +263,19 @@ in
     $DRY_RUN_CMD "$PY" "$HELPER" --ssot "$SSOT" --live "$LIVE"
   '';
 
+  # Orca settings: SSOT (.config/orca/settings.json) → live orca-data.json。
+  # orca-data.json 全体は home.file に載せない (worktree / SSH / account がアプリ書き換え)。
+  home.activation.mergeOrcaSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    PY="${pkgs.python3}/bin/python3"
+    HELPER="${dotfiles}/scripts/lib/merge_orca_settings.py"
+    SSOT="${dotfiles}/.config/orca/settings.json"
+
+    [ -f "$HELPER" ] || { echo "merge_orca_settings.py not found, skip" >&2; exit 0; }
+    [ -f "$SSOT" ] || { echo "orca settings.json not found, skip" >&2; exit 0; }
+
+    $DRY_RUN_CMD "$PY" "$HELPER" --ssot "$SSOT"
+  '';
+
   programs.home-manager.enable = true;
 
   # nh: Nix helper CLI. `nh darwin switch` で flake auto-detect、nvd diff 同梱。

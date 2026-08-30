@@ -26,6 +26,7 @@ json_files = [
     ".config/claude/settings.json",
     ".config/karabiner/karabiner.json",
     ".config/nvim/lazyvim.json",
+    ".config/orca/settings.json",
     ".cursor/cli-permissions.json",
 ]
 
@@ -95,6 +96,9 @@ if missing:
     sys.exit(1)
 print(f"ok  .cursor/cli-permissions.json (deny={len(deny)})")
 PY
+
+echo "==> Validate Orca settings SSOT"
+python3 scripts/lib/merge_orca_settings.py --validate-ssot
 
 echo "==> Validate shell scripts"
 while IFS= read -r file; do
