@@ -20,6 +20,9 @@ vim.opt.spellfile = {
 -- Enable this option to avoid conflicts with Prettier.
 vim.g.lazyvim_prettier_needs_config = true
 
+-- snacks explorer ではなく neo-tree を既定のファイラにする
+vim.g.lazyvim_explorer = "neo-tree"
+
 --
 -- Window
 --
