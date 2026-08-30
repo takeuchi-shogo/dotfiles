@@ -12,6 +12,14 @@ Accepted | Superseded by ADR-XXXX | Deprecated
 
 [何を決定したか]
 
+## Rejected Alternatives
+
+採用しなかった選択肢と却下理由。ここが空だと、後から「なぜこれ以外を選ばなかったか」を復元できない。
+
+| 代替案 | 却下理由 | 再検討の条件 |
+|---|---|---|
+| [案] | [理由] | [この状況になれば再検討する] |
+
 ## Verification
 
 ADR↔実装の drift を AI レビュー / grep で機械照合できるようにする（任意だが、logic / security / API 境界を縛る決定では推奨）。文章化された決定ほど AI が機械的に整合チェックでき、人間が見るべき範囲が減る。
