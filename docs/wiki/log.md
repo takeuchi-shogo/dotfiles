@@ -2338,3 +2338,12 @@
 - 記事の framing で露出した実配線バグ: /review が存在しない `pr-test-analyzer` を dispatch し正典 test-analyzer (4b/4c 搭載) が未起動 / 退避済み migration-guard を 5 箇所が「起動推奨」と名指しし DB Migration がレビュアー不在
 - Codex Review Gate: 4 回 BLOCK → 5 回目 PASS。BLOCK のうち 2 件は自分の drift 修正が新 drift を作ったもの (docstring だけ直して advice 本体を放置 / 付け替え先 CC-7 の能力を誇張)
 - 分析: docs/research/2026-08-16-all-tests-passed-merge-checklist-absorb-analysis.md
+
+## [2026-08-31] ingest | コミットメッセージの書き方 (mayah.jp, 2017)
+
+- ソース: https://mayah.jp/article/2017/commit_message/
+- 判定: Gap 1 / Already 6 / 不採用 2 / N/A 1 (family 該当なし、Saturation PASS)
+- 取り込み: `skills/commit/SKILL.md` の `intent(scope)` を「目的・動機、または修正前の問題状態と影響」に拡張。bug fix で「この変更がなければ何がまずいか」が構造的に落ちる欠落を埋める
+- 不採用: 1行目50文字 (日本語 subject と衝突) / body 72文字折り返し (Codex 指摘、action line の1行1レコード性を壊す)
+- Validation-only: commands/commit.md の stale 複製を削除 (Output Self-Check 欠落) + 付随する README drift 3 箇所を是正 / agentshield の FP エントリは retarget を Codex Gate で撤回し削除、skill の argument-hint から --no-verify 自体を除去 / gpt-5.6-terra が CLI 0.133.0 で 400 (66箇所, 未対応) / agentshield-filter.py の parse 失敗 (未対応, 原因未特定)
+- 分析: docs/research/2026-08-31-mayah-commit-message-absorb-analysis.md

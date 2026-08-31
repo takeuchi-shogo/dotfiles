@@ -83,7 +83,7 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 ├── settings.json          # hooks, permissions, env
 ├── agents/                # 23 専門エージェント + _archived 10 (code-reviewer, debugger, etc.)
 ├── skills/                # 121 スキル (native ~57 + installed 64: review, commit, spec, epd, etc.)
-├── commands/              # 33 スラッシュコマンド (/commit, /review, /spec, etc.)
+├── commands/              # 31 スラッシュコマンド (/review, /spec, /rpi, etc.)
 ├── scripts/
 │   ├── policy/            # ガードレール hooks (golden-check, protect-linter-config, etc.)
 │   ├── runtime/           # セッション管理 (checkpoint, output-offload, etc.)
