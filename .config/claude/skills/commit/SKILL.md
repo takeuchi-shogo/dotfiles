@@ -1,7 +1,7 @@
 ---
 name: commit
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Bash(git log:*), Bash(ls tmp/plans:*), Bash(rm tmp/plans/:*)
-argument-hint: [message] | --amend | --no-verify
+argument-hint: [message] | --amend
 description: >
   conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。
   Triggers: 'commit', 'コミット', 'コミットして', 'save changes', 'git commit'.
@@ -85,7 +85,8 @@ Ref: https://github.com/berserkdisruptors/contextual-commits (SPEC v0.1.0)
 
 ### アクションタイプ
 
-- `intent(scope)`: ユーザーの目的・動機。ユーザーの言葉で記述する
+- `intent(scope)`: ユーザーの目的・動機、または修正前の問題状態と影響。
+  bug/security/regression fix では「この変更がなければ何がまずいか」を先に書く。ユーザーの言葉で記述する
 - `decision(scope)`: 選択したアプローチ。代替案が存在した場合のみ
 - `rejected(scope)`: 却下した選択肢。**理由を必ず含める**（理由なしの rejected は禁止）
 - `constraint(scope)`: 実装を形作った制約。次の人が知るべき境界条件

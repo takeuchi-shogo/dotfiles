@@ -118,7 +118,7 @@ graph TB
 ├── statusline.sh                 # ステータスライン表示
 │
 ├── agents/                       # サブエージェント定義 (22個 + _archived 10)
-├── commands/                     # カスタムコマンド (33個)
+├── commands/                     # カスタムコマンド (31個)
 ├── skills/                       # 再利用可能なスキル (121個: native ~57 + installed 64)
 ├── rules/                        # 言語・ドメイン別ルール (11個)
 │   └── common/                   # 共通ルール (品質・セキュリティ・テスト)
@@ -652,13 +652,12 @@ flowchart TB
 
 ---
 
-## カスタムコマンド (27個)
+## カスタムコマンド (26個)
 
 `/command` で呼び出すスラッシュコマンド。
 
 | コマンド | 説明 | 規模 |
 |---------|------|------|
-| `/commit` | conventional commit + 絵文字プレフィックスでコミット | S |
 | `/review` | 変更規模に応じてレビューアーを自動選択・並列起動 | M-L |
 | `/pull-request` | PR 作成 (ブランチ push + タイトル/本文自動生成) | S |
 | `/rpi` | Research → Plan → Implement の3フェーズ | L |

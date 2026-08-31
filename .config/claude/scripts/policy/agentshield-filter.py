@@ -47,7 +47,6 @@ DENY_KEYWORDS = {
 # Documentation files that reference dangerous patterns to say "don't do X"
 DOC_FP_PATTERNS = {
     ("CLAUDE.md", "--no-verify"),
-    ("commands/commit.md", "--no-verify"),
     ("commands/security-scan.md", "--no-verify"),
 }
 
