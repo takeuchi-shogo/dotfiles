@@ -30,6 +30,11 @@ success_criteria:
 ---
 ```
 
+条件が 1 つなら `PLANS.md` Required Sections の scalar 形式 (`success_criteria: "..."`)
+でもよい。`completion-gate.py` の `_extract_success_criteria` は両形式を読む
+(list は `" / "` で結合)。2026-09-04 以前は scalar しか読めず、list 形式の plan は
+criteria が空のまま汎用 `COMPLETION_PROMISE` に落ちていた。
+
 ### 本文 (必須)
 
 ```markdown

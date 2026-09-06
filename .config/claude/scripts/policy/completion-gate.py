@@ -394,19 +394,58 @@ def _has_active_status(lines: list[str]) -> bool:
 
 
 def _extract_success_criteria(lines: list[str]) -> str | None:
-    """Extract success_criteria from plan frontmatter."""
+    """Extract success_criteria from plan frontmatter.
+
+    Both schemas are in use across docs/plans/active/: a scalar string
+    (PLANS.md Required Sections) and a YAML list (resume-anchor-contract.md).
+    Reading only the scalar form made list-form plans fall back to the generic
+    COMPLETION_PROMISE with no signal, so both are accepted here.
+
+    This is a line scanner, not a YAML parser. Only an unindented
+    ``success_criteria:`` is read, so an indented key of the same name under
+    some other mapping is ignored. Scalar, block sequence (``- ``) and block
+    scalar (``|`` / ``>``) forms are understood; comments and blank lines
+    inside a block are skipped; an unindented line ends the block. Anything
+    else returns None so the caller falls back to the generic prompt, rather
+    than surfacing a wrong value such as ">" or "[]".
+    """
     in_frontmatter = False
-    for line in lines:
-        stripped = line.strip()
+    mode: str | None = None
+    items: list[str] = []
+    for raw in lines:
+        stripped = raw.strip()
         if stripped == "---":
             if not in_frontmatter:
                 in_frontmatter = True
                 continue
-            else:
+            break
+        if not in_frontmatter:
+            continue
+        if mode:
+            if not stripped or stripped.startswith("#"):
+                continue
+            if len(raw) - len(raw.lstrip()) == 0:
                 break
-        if in_frontmatter and stripped.startswith("success_criteria:"):
-            return stripped.split(":", 1)[1].strip()
-    return None
+            if mode == "list":
+                if not stripped.startswith("- "):
+                    break
+                items.append(stripped[2:].strip().strip("\"'"))
+            else:
+                items.append(stripped)
+            continue
+        if raw.startswith("success_criteria:"):
+            value = stripped.split(":", 1)[1].strip()
+            if value in ("|", ">", "|-", ">-", "|+", ">+"):
+                mode = "block"
+                continue
+            if value in ("[]", "{}", "~", "null"):
+                return None
+            if value:
+                return value
+            mode = "list"
+    if not items:
+        return None
+    return " / ".join(items) if mode == "list" else " ".join(items)
 
 
 def _find_incomplete_plan() -> tuple[str, list[str], str | None] | None:

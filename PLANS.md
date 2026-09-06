@@ -34,6 +34,8 @@ git 履歴が plan の最終的な置き場。`/recall` が commit body から�
 ```md
 ---
 success_criteria: "1行で書ける検証可能な完了条件（任意、completion-gate が Ralph Loop で参照する）"
+# 複数条件なら YAML list でもよい。completion-gate は scalar / list の両方を読む
+# （list は " / " で結合して表示される）
 ---
 
 # <Task title>
