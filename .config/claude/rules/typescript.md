@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
 # TypeScript Rules
 
 Effective TypeScript (2nd Ed.)・TypeScript 公式ドキュメントに基づく。

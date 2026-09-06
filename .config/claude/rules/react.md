@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.tsx"
+  - "**/*.jsx"
+---
 # React Rules
 
 ## Hooks Rules

@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
+---
 # Python Rules
 
 PEP 8・Effective Python・Fluent Python に基づく。

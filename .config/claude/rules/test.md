@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/*_test.go"
+---
 # Test Rules
 
 ## AAA Pattern
