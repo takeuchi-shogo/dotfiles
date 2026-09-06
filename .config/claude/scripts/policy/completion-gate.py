@@ -448,6 +448,35 @@ def _extract_success_criteria(lines: list[str]) -> str | None:
     return " / ".join(items) if mode == "list" else " ".join(items)
 
 
+def _format_criteria_lines(
+    plan_name: str, success_criteria: str | None, fallback: str | None
+) -> list[str]:
+    """Render the success-criteria block of the Ralph Loop message.
+
+    Names the source of the criteria. Substituting ``fallback`` for a missing
+    ``success_criteria`` without saying so let a generic env string read as the
+    plan's own criteria, which hides plans that never declared any.
+    """
+    if success_criteria:
+        return [f"  成功基準 (plan frontmatter): {success_criteria}", ""]
+    if fallback:
+        return [
+            f"  成功基準 (汎用 fallback): {fallback}",
+            f"  ⚠ '{plan_name}' の frontmatter に success_criteria が"
+            "無い/読めないため、plan 固有の完了条件では判定していません "
+            "(このゲートが読むのは frontmatter だけで、本文の "
+            "`## Success Criteria` は読みません)。"
+            "resume-anchor-contract.md の Success Criteria Schema に従い "
+            "frontmatter を補ってください。",
+            "",
+        ]
+    return [
+        f"  ⚠ '{plan_name}' に success_criteria が無く、汎用 fallback も未設定です。"
+        "完了条件が未定義のまま Ralph Loop が回っています。",
+        "",
+    ]
+
+
 def _find_incomplete_plan() -> tuple[str, list[str], str | None] | None:
     """Find active plan with unchecked items that is relevant to the current session.
 
@@ -621,7 +650,7 @@ def _check_harness_review_gate(session_id: str = "") -> dict | None:
     if not harness_files:
         return None
 
-    flag = _harness_review_flag_path(harness_files)
+    flag = _harness_review_flag_path(_get_changed_harness_files())
     if os.path.exists(flag):
         return None
 
@@ -1467,11 +1496,9 @@ def main() -> None:
             f"(iteration {ralph_iteration}/{MAX_RALPH_ITERATIONS}):",
             "",
         ]
-        # Show success criteria if defined in plan frontmatter or env
-        effective_criteria = success_criteria or COMPLETION_PROMISE
-        if effective_criteria:
-            ctx_parts.append(f"  成功基準: {effective_criteria}")
-            ctx_parts.append("")
+        ctx_parts.extend(
+            _format_criteria_lines(plan_name, success_criteria, COMPLETION_PROMISE)
+        )
         ctx_parts.extend(shown)
         if remaining_count > 0:
             ctx_parts.append(f"  ...他 {remaining_count} 件")

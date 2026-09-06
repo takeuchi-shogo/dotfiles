@@ -2377,7 +2377,8 @@
 
 - ソース: https://arxiv.org/abs/2608.26263
 - 判定: Gap 1 / Partial 2 / Already 強化可能 1 / N/A 3 (Phase 2.5 の Codex 批評で 3 件の判定を修正)
-- 取り込み: T1 doctor-stale.sh に `[resume anchors]` 節を追加 (実装済み) / T2 resume-anchor-contract.md に「検知・cleanup 経路」列を追加 (実装済み) / T3 anchor frontmatter の機械検証 (未着手) / T4 resume fixture (未着手) / T5 HANDOFF の Stop→SessionEnd 配線修正 (未着手、レビューで発覚)
-- 中核の発見: resume-anchor-contract.md は 3 anchor に寿命と owner を定義していたが owner は書き込み経路でしかなく、寿命切れの検知経路は 3 分の 2 しか存在しなかった。RUNNING_BRIEF.md が 104 日 stale で放置され (gitignore 対象、orphan-artifact-scan.sh は worktree/branch 専用で対象外)、retire 済み。加えて Codex Review Gate で HANDOFF.md も契約と乖離していることが判明 (session-save.js が matcher なしの Stop に配線されターン毎に削除、契約の寿命「次セッション開始まで」を満たさない)
+- 取り込み: T1-T5 すべて実装済み。T1 doctor-stale.sh に `[resume anchors]` 節 / T2 resume-anchor-contract.md に「検知・cleanup 経路」列 / T3 completion-gate.py の暗黙 fallback を出所ラベル + 欠落警告に (当初案の doc-status-audit.py は呼び出し元ゼロで休眠と判明し対象変更、テスト 4 件追加) / T4 resume-anchor-lint.sh + `/checkpoint` 手順 5 から起動 / T5 HANDOFF の retire を読み手 (session-load.js) に移動
+- 中核の発見: resume-anchor-contract.md は 3 anchor に寿命と owner を定義していたが owner は書き込み経路でしかなく、寿命切れの検知経路は 3 分の 2 しか存在しなかった。**同じ lens (契約と実装の照合) で 3 anchor 全部に乖離**: RUNNING_BRIEF は検知経路なしで 104 日 stale (gitignore 対象、orphan-artifact-scan.sh は worktree/branch 専用で対象外) → retire 済み / HANDOFF は Stop 配線でターン毎に消え、かつテンプレートが 2 系統 (checkpoint skill 版と handoff-template.md 版) に分裂 / Plan は success_criteria の読み取りが片形式のみ (2026-09-04 別途修正済み)
+- 反転した判断: HANDOFF の修正案第一版 (Stop → SessionEnd) は誤り。session-load.js が SessionStart で読む設計なので SessionEnd では読まれる前に消える。正解は読み手が読了後に retire すること。Codex Review Gate が 2 度差し戻して確定 (BLOCK → BLOCK → 再レビュー)
 - Phase 2.5: Codex のみの degraded 実行。Gemini は IneligibleTierError で使用不可
 - 分析: docs/research/2026-09-05-skill-state-absorb-analysis.md

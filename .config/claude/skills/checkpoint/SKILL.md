@@ -74,9 +74,16 @@ print(f'Checkpoint saved: {path}')
 {`git diff --name-only HEAD` と `git status --porcelain` の結果から関連ファイルをリスト}
 ```
 
-5. 生成結果をユーザーに報告（ファイルパスと内容サマリ）
+5. `task resume-anchor-lint` を実行し、生成した HANDOFF.md を検査する
 
-6. `feature_list.json` が存在する場合、`progress.log` にもエントリが追記されたことを確認・報告する
+   MISSING / HOLLOW が出たら、その節を埋めてから報告する。特に `## What Didn't Work` は
+   git が知らない情報が入る唯一の節で、空だと次セッションが同じ dead end を踏み直す。
+   pass は「形が揃っている」であって「再開できる」ではないので、pass を根拠に
+   内容の薄さを見逃さないこと。
+
+6. 生成結果をユーザーに報告（ファイルパスと内容サマリ、lint 結果）
+
+7. `feature_list.json` が存在する場合、`progress.log` にもエントリが追記されたことを確認・報告する
    - フォーマット: `[YYYY-MM-DD HH:MM] session_id | 作業内容 | 変更ファイル数 | git SHA`
    - checkpoint_manager.py が自動で追記するが、手動 checkpoint の場合も追記される
 
