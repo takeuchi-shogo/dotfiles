@@ -247,9 +247,14 @@ tasks:
       - task: claude:plugins:check
 
   doctor:stale:
-    desc: Inventory stale state (orphaned codex job state, backup residue) — read-only, deletes nothing
+    desc: Inventory stale state (orphaned codex job state, backup residue, stale resume anchors) — read-only, deletes nothing
     cmds:
       - bash scripts/lifecycle/doctor-stale.sh
+
+  resume-anchor-lint:
+    desc: Lint HANDOFF.md against handoff-template.md — flags missing/hollow sections (exit 2 if no anchor present)
+    cmds:
+      - bash scripts/lifecycle/resume-anchor-lint.sh {{.CLI_ARGS}}
 
   upgrade-claude:
     desc: Upgrade Claude Code and apply system prompt patches

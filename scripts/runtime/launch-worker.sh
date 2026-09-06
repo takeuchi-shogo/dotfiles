@@ -41,6 +41,14 @@ if [[ -z "$MODEL" || -z "$TASK" ]]; then
   exit 1
 fi
 
+# MODEL は WORKER_ID 経由で /tmp/cmux-worktrees/<id> のパスと cmux/<branch> 名に入る。
+# 起動分岐の case まで検証を遅らせると、未知のモデル名でも worktree と branch を作ってから
+# exit 1 することになり、race-runner はその worker を登録していないので cleanup も回らない。
+case "$MODEL" in
+  claude|codex|gemini) ;;
+  *) echo "[launch-worker] Unknown model: ${MODEL} (claude|codex|gemini)" >&2; exit 1 ;;
+esac
+
 # --- ワーカーID生成 ---
 WORKER_ID="w-$(date +%s)-${MODEL}"
 
@@ -77,9 +85,11 @@ fi
 
 dispatch_log_state "$WORKER_ID" "pending" "launching"
 
-# --- worktree 作成 (Claude Code の場合) ---
+# --- worktree 作成 (全モデル共通) ---
+# RESULT_FILE / TASK_FILE は ${DISPATCH_RESULT_DIR} 配下の絶対パスなので cd しても壊れない。
+# 以前は claude のみ worktree を作り、codex/gemini では --worktree が無言で捨てられていた。
 WORK_DIR="$(pwd)"
-if [[ "$MODEL" == "claude" && -n "$WORKTREE" ]]; then
+if [[ -n "$WORKTREE" ]]; then
   WORK_DIR="/tmp/cmux-worktrees/${WORKER_ID}"
   git worktree add "$WORK_DIR" -b "cmux/${WORKTREE}" 2>/dev/null || \
     git worktree add "$WORK_DIR" "cmux/${WORKTREE}" || {

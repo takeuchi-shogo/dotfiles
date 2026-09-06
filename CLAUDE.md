@@ -2,19 +2,30 @@
 
 User CLAUDE.md covers KISS/YAGNI/DRY, search-first, and harness rules. This file adds project-specific concrete checks not in the global guide.
 
-## Scope discipline
+`AGENTS.md` and `.codex/AGENTS.md` point here for the Karpathy 4 principles below — this file is the canonical copy for agents that do not load `~/.claude/rules/`. The long-form versions live in `.config/claude/rules/common/{overconfidence-prevention,code-quality}.md`; keep both in sync when editing either.
+
+## 1. Think Before Coding
+
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick one silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing, then ask.
+
+## 2. Simplicity First (scope discipline)
 
 - Propose scope extensions separately — don't implement them.
 - If you write 200 lines and it could be 50, rewrite it.
+- No abstractions for single-use code, no configurability that wasn't requested.
 
-## Editing rules
+## 3. Surgical Changes (editing rules)
 
 - Don't "improve" adjacent code, comments, or formatting — leave neighbors untouched and mention observations in the final report.
 - Don't remove pre-existing dead code unless asked — flag it so the user can decide.
 - Match existing style, even if you'd do it differently.
 - Remove imports/variables/functions that YOUR changes made unused; don't touch others.
+- The test: every changed line should trace directly to the request.
 
-## Goal-driven examples
+## 4. Goal-Driven Execution (goal-driven examples)
 
 - "Add validation" → write tests for invalid inputs, then make them pass.
 - "Fix the bug" → write a test that reproduces it, then make it pass.

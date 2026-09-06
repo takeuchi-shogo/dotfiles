@@ -127,3 +127,48 @@ def test_main_survives_non_object_stdin_json(monkeypatch):
     mod = _load()
     _run_main(mod, monkeypatch, "null", seen)
     assert seen["session_id"] == ""
+
+
+FLAG_LIB = Path(__file__).resolve().parent.parent / "lib" / "harness_review_flag.py"
+
+
+def _load_flag_lib():
+    spec = importlib.util.spec_from_file_location("harness_review_flag", FLAG_LIB)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_gate_finds_the_pass_flag_review_actually_writes(tmp_path, monkeypatch):
+    """/review の PASS が gate に届くこと。
+
+    harness_review_flag.py は session_id を持たず常に未フィルタの全 harness diff を
+    鍵にする。gate 側が session-filtered な部分集合で鍵を作ると、セッション開始時から
+    dirty なツリーでは両者のハッシュが一致しない。正当な PASS を取っても永久に
+    block し続ける。
+    """
+    _write_snapshot(tmp_path, "sid-1", ["CLAUDE.md"])
+    state_dir = tmp_path / ".claude" / "session-state"
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CLAUDE_SESSION_STATE_DIR", str(state_dir))
+    monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
+
+    new_file = ".config/claude/scripts/runtime/session-load.js"
+
+    class _Result:
+        returncode = 0
+        stdout = f"CLAUDE.md\n{new_file}\nREADME.md\n"
+
+    mod = _load()
+    lib = _load_flag_lib()
+    monkeypatch.setattr(mod.subprocess, "run", lambda *a, **k: _Result())
+    monkeypatch.setattr(lib.subprocess, "run", lambda *a, **k: _Result())
+
+    # 開始後に変わったのは 1 件だけ → block 判定はその集合で行う
+    assert mod._get_changed_harness_files("sid-1") == [new_file]
+    # PASS 前は block する
+    assert mod._check_harness_review_gate("sid-1") is not None
+
+    # /review が PASS を書いたら gate は通る
+    assert lib.write_flag() is True
+    assert mod._check_harness_review_gate("sid-1") is None

@@ -47,9 +47,19 @@ function loadState() {
 	}
 }
 
+function retireHandoff(filePath) {
+	try {
+		fs.unlinkSync(filePath);
+	} catch (e) {
+		process.stderr.write(
+			`[Handoff] 読み込み済み HANDOFF.md を削除できませんでした (${filePath}): ${e.message}\n`,
+		);
+	}
+}
+
 /**
  * HANDOFF.md を検索して読み込む。
- * 24時間以内のものがあれば stderr に出力し true を返す。
+ * 24時間以内のものがあれば stderr に出力し、読み終えた実体を削除して true を返す。
  * @returns {boolean} HANDOFF.md が有効だった場合 true
  */
 function loadHandoff() {
@@ -84,6 +94,7 @@ function loadHandoff() {
 				content,
 			];
 			process.stderr.write(lines.join("\n") + "\n");
+			retireHandoff(filePath);
 			return true;
 		} catch {
 			// ファイル読み込みエラーは無視

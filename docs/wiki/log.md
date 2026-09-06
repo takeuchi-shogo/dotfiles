@@ -4,6 +4,19 @@
 > `## [YYYY-MM-DD] operation | Title`
 >
 
+## [2026-09-04] ingest | 今日からClaudeを触る人でも理解できる「神ハーネス理論」
+
+- ソース: https://x.com/MakeAI_CEO/status/2093264660082597994 (Obsidian Vault raw clipping、全文 700 行)
+- 判定: Gap 2 (実バグ), Partial 1, N/A 1, Already 9 (13手法)
+- 記事由来の新規 instruction: **0 件**。13 手法中 9 が per-method 台帳で named rehash、残り 4 も既存機構でカバー済み
+- 取り込み (採用3、すべて記事の lens が照らした dotfiles 側の実バグ): B1 `AGENTS.md`/`.codex/AGENTS.md` が指す root CLAUDE.md の Karpathy 4 原則を復活 (`37a3e397` の pruning で 4 ヶ月宙吊り) / B2 `completion-gate.py` の success_criteria を scalar+YAML list 両対応に (list 形式は空読みで silent fallback していた) / B3 `launch-worker.sh` の worktree を model 非依存化 (codex/gemini で `--worktree` が silent NO-OP、`race-runner.sh` が同一 tree に 2 モデル並列書き込み)
+- validation-only: `.codex/config.toml` の repo/live 乖離 244 行 (#241) / `task validate-configs` の pre-existing fail (#242) / CLAUDE.md の code-review-graph 可用性記述 (scope creep として revert、別途提案)
+- Stale-Plan Audit: `2026-07-27-dex-harness-not-enough` を `status: implemented` に更新
+- family: harness-engineering (N=13、直近3件の採用 5/1/2 で採用率20%超 → PASS(warning))
+- degraded: Phase 2.5 / Review Gate は Codex 単独 (Gemini は IneligibleTierError)
+- Codex Review Gate: BLOCK 2 回 (parser の YAML 誤抽出 4 ケース + scope creep / 自分の修正が作った winner file 空読み競合)
+- レポート: docs/research/2026-09-04-god-harness-theory-absorb-analysis.md
+
 ## [2026-07-11] ingest | LayerX uphy 判断は人間・更新はエージェント・計算はスクリプト
 
 - ソース: https://zenn.dev/layerx/articles/797bb5b8935bf6
@@ -2347,3 +2360,25 @@
 - 不採用: 1行目50文字 (日本語 subject と衝突) / body 72文字折り返し (Codex 指摘、action line の1行1レコード性を壊す)
 - Validation-only: commands/commit.md の stale 複製を削除 (Output Self-Check 欠落) + 付随する README drift 3 箇所を是正 / agentshield の FP エントリは retarget を Codex Gate で撤回し削除、skill の argument-hint から --no-verify 自体を除去 / gpt-5.6-terra が CLI 0.133.0 で 400 (66箇所, 未対応) / agentshield-filter.py の parse 失敗 (未対応, 原因未特定)
 - 分析: docs/research/2026-08-31-mayah-commit-message-absorb-analysis.md
+
+## [2026-09-04] ingest | クラウドエージェントが未来である (sc30gsw/Zenn)
+
+- ソース: https://zenn.dev/sc30gsw/articles/953334f11df507
+- Saturation: 新 family `cloud-agent-execution` の 1 件目 (N=0) → PASS。`multi-agent-orchestration` とは軸が違う (協調パターン vs 実行場所) ため分離
+- 判定: Gap 1 (#11 環境定義)、Partial 1 (#4 PR の検証証拠)、Already 6、N/A 9
+- 取り込み: T1 のみ (S)。`docs/guides/2026-05-09-claude-cowork-equivalents.md` の「Cowork Cloud Agents = claude.ai web 側の機能、利用しない」を訂正し §1.2 を新設 — CLI v2.1.259 に `--cloud` / `--environment` / `--teleport` / `ultrareview` が実在する事実と、ローカル 126 hooks + deny 88 件に対しリモートは hook 2 個・permission ゼロという統制境界を表で記録
+- 中核の発見: 記事の全メリットは「エージェントの実行環境に自分の統制が載っている」を暗黙の前提にしている。この harness は価値がマシンローカルな設定そのものなので前提が反転する。hook 4 個が `/opt/homebrew/bin/node` 直書きで Linux VM では動かない点も含め、コピーでは移植できない
+- Codex が Opus 判定を 3 件訂正: #14 計画の昇格は Already (「handoff」が既にクラウド実行を含む) / #4 の当初案「screenshot のパスを PR に貼る」はレビュアーがそのファイルシステムを読めず技術的に誤り / #11 は文書でなく機構の問題で、必要なのは統制の分類 → repo 側への切り出し → 使い捨て Linux での preflight。第一推奨は「移植可能ガバナンスベースラインを作って検証する」だが、クラウド運用の採用判断が先なのでユーザー選択により見送り
+- 見送り: 移植可能ベースライン (M/L) / PR の Verification セクション / PLANS.md 昇格トリガー追記。却下: YOLO 採用 (VM 隔離はファイルシステムしか守らず、git 認証情報・シークレット・ネットワークは隔離しない) / multi-repo / feedback-agent / トークン効率 20-30% (検証不能なベンダー主張)
+- Validation-only 残 2 件: routines playbook (16.6K) が前提にする「Claude Code on the web が有効」の稼働未確認 / `skills/cursor/SKILL.md:56-64` の Cursor Cloud Agent 経路に統制注記なし
+- 分析: docs/research/2026-09-04-cloud-agent-execution-absorb-analysis.md
+
+## [2026-09-05] ingest | SKILL.state: Scalable Long-Horizon Agent Skills (arXiv:2608.26263)
+
+- ソース: https://arxiv.org/abs/2608.26263
+- 判定: Gap 1 / Partial 2 / Already 強化可能 1 / N/A 3 (Phase 2.5 の Codex 批評で 3 件の判定を修正)
+- 取り込み: T1-T5 すべて実装済み。T1 doctor-stale.sh に `[resume anchors]` 節 / T2 resume-anchor-contract.md に「検知・cleanup 経路」列 / T3 completion-gate.py の暗黙 fallback を出所ラベル + 欠落警告に (当初案の doc-status-audit.py は呼び出し元ゼロで休眠と判明し対象変更、テスト 4 件追加) / T4 resume-anchor-lint.sh + `/checkpoint` 手順 5 から起動 / T5 HANDOFF の retire を読み手 (session-load.js) に移動
+- 中核の発見: resume-anchor-contract.md は 3 anchor に寿命と owner を定義していたが owner は書き込み経路でしかなく、寿命切れの検知経路は 3 分の 2 しか存在しなかった。**同じ lens (契約と実装の照合) で 3 anchor 全部に乖離**: RUNNING_BRIEF は検知経路なしで 104 日 stale (gitignore 対象、orphan-artifact-scan.sh は worktree/branch 専用で対象外) → retire 済み / HANDOFF は Stop 配線でターン毎に消え、かつテンプレートが 2 系統 (checkpoint skill 版と handoff-template.md 版) に分裂 / Plan は success_criteria の読み取りが片形式のみ (2026-09-04 別途修正済み)
+- 反転した判断: HANDOFF の修正案第一版 (Stop → SessionEnd) は誤り。session-load.js が SessionStart で読む設計なので SessionEnd では読まれる前に消える。正解は読み手が読了後に retire すること。Codex Review Gate が 2 度差し戻して確定 (BLOCK → BLOCK → 再レビュー)
+- Phase 2.5: Codex のみの degraded 実行。Gemini は IneligibleTierError で使用不可
+- 分析: docs/research/2026-09-05-skill-state-absorb-analysis.md

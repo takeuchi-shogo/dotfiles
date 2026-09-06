@@ -1,8 +1,11 @@
 # terraform-skill@antonbabenko-terraform Trial
 
-Status: trial-active
+Status: rolled-back (2026-09-06)
 Enabled: 2026-04-25
 Evaluate-by: 2026-05-25 (30 days)
+Outcome: invocations = 0 のまま評価期限を超過 (`docs/research/2026-05-09-skill-inventory-vs-usage.md:117`
+で usage=0 / age=15d を記録)。下の Rollback Conditions 1 番目に該当したため
+`settings.json` の `enabledPlugins` と `extraKnownMarketplaces` から削除した。
 Plugin: `terraform-skill@antonbabenko-terraform`
 Source: `github.com/antonbabenko/terraform-skill`
 

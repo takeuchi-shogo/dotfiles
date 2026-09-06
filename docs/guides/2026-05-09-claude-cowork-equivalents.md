@@ -33,9 +33,31 @@
 | Cowork `/schedule` | Claude Code Routines (`/schedule` skill 経由、別実装) |
 | Cowork Folder/Global instructions | `<repo>/CLAUDE.md` + `~/.claude/CLAUDE.md` + `.claude/projects/*/CLAUDE.md` |
 | Cowork Plugins (marketplace) | Skills (本環境に 100+ 登録済み) + plugin (`~/.claude/plugins/`) |
-| Cowork Cloud Agents | Claude.ai web 側の機能、dotfiles からは利用しない |
+| Cowork Cloud Agents | クラウド実行は Claude Code CLI からも使えるが、dotfiles のサポート対象ワークフローではない (§1.2) |
 
 **Cowork `/schedule` と Claude Code Routines は別実装** (公式 docs 上は同名だが surface が異なる)。混同しないこと。
+
+### 1.2 クラウド実行を「未サポート」とする理由 (2026-09-04 追記)
+
+旧版はここに「Claude.ai web 側の機能、dotfiles からは利用しない」と書いていたが、これは surface の説明として stale だった。インストール済み CLI (v2.1.259) の `claude --help` は `--cloud [description|session_id|url]` / `--environment <ccpool_...>` / `--teleport` / `ultrareview` (クラウド実行の multi-agent review) を持つ。**CLI 上は利用可能**。
+
+クラウド実行の経路自体も既に 1 本ある。`.config/claude/skills/cursor/SKILL.md:56-64` が Cursor Cloud Agent (`agent -c` で非同期実行、起動前にユーザー確認) を運用手順として持っている。ただしこちらも下の統制ギャップをそのまま引き継ぐうえ、環境定義 (`.cursor/environment.json`) は置いていないので既定環境で走る。
+
+利用可能でないのは統制の方で、理由は 1 つ — **ローカルの統制はリモートに付いてこない**。
+
+| | ローカル (このマシン) | 別ホスト (クラウド / 他マシン) |
+|---|---|---|
+| hook コマンド | 126 個 (`~/.claude/settings.json`、実体は `.config/claude/settings.json`) | **2 個** (repo 追跡の `.claude/settings.json`、code-review-graph のみ) |
+| permission ルール | allow 71 / deny 88 / ask 8、`disableBypassPermissionsMode: "disable"` | **なし** (`Bash(rm -rf *)` の deny も届かない) |
+| skills / agents / memory | user スコープに 100+ | repo 追跡分のみ |
+
+そのままコピーしても移植できない: hook のうち 4 個が `/opt/homebrew/bin/node` を、1 個が `afplay /System/Library/Sounds/...` を直書きしており、Linux VM では動かない。
+
+クラウド実行を採用する前に必要なのは文書ではなく機構で、順序は (1) security 上必須の統制と、ローカル専用の利便性を分類する (2) 前者を追跡対象・クロスプラットフォームな repo 側 hook/設定に切り出す (3) 使い捨ての Linux 環境でロードと enforcement を実証する preflight を通す。
+
+なお VM 隔離が守るのはファイルシステムだけで、git 認証情報・シークレット・ネットワーク・共有リモートへの push は隔離しない。「隔離されているから YOLO で走らせてよい」という論法を採るには、使い捨て認証情報・最小権限・egress 制御が別途要る。
+
+> 出典: `docs/research/2026-09-04-cloud-agent-execution-absorb-analysis.md` (Zenn 記事 absorb + Codex 批評)
 
 ## 2. 公式機能の使い方マップ
 

@@ -35,31 +35,6 @@ function saveState() {
 	process.stderr.write("[Session] State saved.\n");
 }
 
-/**
- * セッション正常終了時に HANDOFF.md を削除する。
- * 次のセッションで古い引き継ぎ情報が残らないようにする。
- */
-function cleanupHandoff() {
-	const cwd = process.cwd();
-	const home = process.env.HOME;
-	const candidates = [
-		path.join(cwd, "HANDOFF.md"),
-		path.join(cwd, "tmp", "HANDOFF.md"),
-		path.join(home, "dotfiles", "tmp", "HANDOFF.md"),
-	];
-
-	for (const filePath of candidates) {
-		try {
-			if (fs.existsSync(filePath)) {
-				fs.unlinkSync(filePath);
-				process.stderr.write(`[Session] HANDOFF.md を削除: ${filePath}\n`);
-			}
-		} catch {
-			// 削除失敗は無視（権限エラー等）
-		}
-	}
-}
-
 // Read stdin (required by hook protocol) and pass through
 let data = "";
 process.stdin.on("data", (chunk) => {
@@ -68,7 +43,6 @@ process.stdin.on("data", (chunk) => {
 process.stdin.on("end", () => {
 	try {
 		saveState();
-		cleanupHandoff();
 	} catch (e) {
 		process.stderr.write(`[Session] Save failed: ${e.message}\n`);
 	}

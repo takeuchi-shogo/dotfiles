@@ -6,7 +6,8 @@
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "ENABLE_LSP_TOOL": "1",
-    "CLAUDE_CODE_NO_FLICKER": "1"
+    "CLAUDE_CODE_NO_FLICKER": "1",
+    "CLAUDE_CODE_THRIFTY_SONIC": "0"
   },
   "attribution": {
     "commit": "",
@@ -874,7 +875,6 @@
     "typescript-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
-    "terraform-skill@antonbabenko": true,
     "warp@claude-code-warp": true,
     "mattpocock-skills@mattpocock": true,
     "ponytail@ponytail": true
@@ -890,12 +890,6 @@
       "source": {
         "source": "github",
         "repo": "kepano/obsidian-skills"
-      }
-    },
-    "antonbabenko": {
-      "source": {
-        "source": "github",
-        "repo": "antonbabenko/terraform-skill"
       }
     },
     "claude-code-warp": {

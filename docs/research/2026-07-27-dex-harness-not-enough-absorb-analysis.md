@@ -9,7 +9,8 @@ source:
   type: conference-talk
   note: "yt-dlp で英語字幕を取得し重複行を畳んで平文化 (4,045 語 / 21,393 字) を一次ソースとして使用"
   trigger: "https://x.com/iwashi86/status/2081220463615938878 のいいね経由 (rank 0)。ツイート自体が詳細な日本語まとめだが第三者要約なので原典を取得した"
-status: analyzed
+status: implemented
+implemented-verified: 2026-09-04  # references/why-humans-read-code.md 実在, PLANS.md:59 Program Design 節 実在
 family: "harness-engineering (keyword 閾値未達だが内容は family の前提への反論)"
 saturation: "PASS — 登録キーワードは `harness` のみ hit で 3+ 閾値未達。ただし本記事は family の tactic 追加ではなく前提の否定なので、飽和とは別カテゴリとして扱った"
 adopted: 2

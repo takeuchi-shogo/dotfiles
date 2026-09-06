@@ -9,6 +9,10 @@ Tree-sitter ベースの構造グラフを MCP 経由で提供するツール。
 コードベースの関数・クラス・import をノード、呼び出し・継承・テストをエッジとして SQLite に永続化し、
 変更の blast radius を自動算出する。
 
+> 他リポジトリ (本業等) への導入判断・4 ツール構成・更新経路のリスクは
+> [`docs/playbooks/code-graph-stack-introduction.md`](../../../docs/playbooks/code-graph-stack-introduction.md) を参照。
+> 本ファイルは dotfiles での code-review-graph 2.x の**使い方**に限る。
+
 ## セットアップ
 
 各プロジェクトで初回のみ:
