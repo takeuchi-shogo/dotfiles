@@ -18,13 +18,21 @@ pre-commit:
     oxlint:
       glob: "*.{ts,tsx,js,jsx}"
       run: npx --yes oxlint@latest {staged_files}
+    # vendored external skill (origin: external) の Python は upstream の成果物なので
+    # format も lint もかけない。整形すると upstream 再取得時に毎回衝突し、
+    # skills-lock.json の computedHash も自前の整形で動く。
+    # 新たに vendored python skill を入れたらこの alternation に足す。
     ruff-format:
       glob: "*.py"
-      run: ruff format {staged_files}
+      run: |
+        files=$(printf '%s\n' {staged_files} | grep -v '\.config/claude/skills/natural-japanese/' || true)
+        [ -z "$files" ] || ruff format $files
       stage_fixed: true
     ruff-check:
       glob: "*.py"
-      run: ruff check --fix {staged_files}
+      run: |
+        files=$(printf '%s\n' {staged_files} | grep -v '\.config/claude/skills/natural-japanese/' || true)
+        [ -z "$files" ] || ruff check --fix $files
       stage_fixed: true
     gofmt:
       glob: "*.go"

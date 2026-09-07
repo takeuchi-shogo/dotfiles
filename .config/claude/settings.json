@@ -242,6 +242,7 @@
     "refactor-session": "off",
     "rewrite": "user-invocable-only",
     "salesforce-rest-api": "off",
+    "stop-ai-slop-jp": "user-invocable-only",
     "tech-article-reproducibility": "user-invocable-only",
     "ubiquitous-language": "off",
     "vercel-composition-patterns": "off",
