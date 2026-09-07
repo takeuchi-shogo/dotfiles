@@ -52,7 +52,9 @@ find_skill_dir() {
 # Compute a stable content hash over a skill directory.
 compute_hash() {
   local dir="$1"
-  (cd "$dir" && find . -type f \! -name '.DS_Store' -print0 | sort -z | xargs -0 shasum -a 256) \
+  # __pycache__ はスキルのスクリプトを実行するたび生成される派生物。
+  # 含めると「使うと必ず FAIL する」ハッシュになるので除外する。
+  (cd "$dir" && find . -type f \! -name '.DS_Store' \! -path './*__pycache__/*' -print0 | sort -z | xargs -0 shasum -a 256) \
     | shasum -a 256 \
     | awk '{print $1}'
 }
