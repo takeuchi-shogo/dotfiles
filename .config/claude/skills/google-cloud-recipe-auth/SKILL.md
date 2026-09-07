@@ -198,7 +198,8 @@ authenticated principal can do.
 *   **[Predefined
     Roles](https://docs.cloud.google.com/iam/docs/understanding-roles)**:
     Prebuilt roles like `roles/storage.objectViewer` or
-    `roles/bigquery.dataEditor`. **Always try to use these first.**
+    `roles/bigquery.dataEditor`. Prefer these; create a custom role only
+    when no predefined role grants the needed permission set.
 *   **[Custom
     Roles](https://docs.cloud.google.com/iam/docs/creating-custom-roles)**:
     User-defined collections of specific permissions if predefined roles are too

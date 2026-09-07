@@ -70,6 +70,30 @@ enabled = true
 trusted_hash = "sha256:49ce36456a4d19511d5b5fcb13328ab576aba93f3e552a131a575cff4cbdafb5"
 enabled = false
 
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:e1e103a35a07f3ff8fb86139e8b3ba52e3fd98a0368e64102991c0f2e7198a97"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:7bf839811a6c803e7f3d9ca3839e7c61434085fdd1e160f5f79cf21445bd2f95"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:206f8d94c55b036f003c5dd10413b1b2e763194d12b5a98cf1fad08df92b3238"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:486a7803ae98a7b3e57482277e6a39e652f1282ba5e02ab66644a6ed608e0282"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:92c7a95a777d2994f638946a6ffe57a6378849546ff7b8a9c9d72f8e872284be"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:9fecfd7a54b27d6301d40b0fbfc01bb42d90e2b4d82caf85e0d23f2f233f6e4b"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:subagent_stop:0:0"]
+trusted_hash = "sha256:c5df4fa4d59b19e8c459026e2ab5296d7b78734eaef7522eb07b4a1f243148d4"
+
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:1fbd92ab2786341838374b1f66b5e9e4603d2a53255bad6eaf09fd604d214a88"
+
 [memories]
 use_memories = true
 generate_memories = true
@@ -155,6 +179,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/shogo_takeuchi/projects/knowledge-work/knowledgework2"]
+trust_level = "trusted"
+
+[projects."/Users/shogo_takeuchi/Library/Application Support/orca/rate-limit-pty-cwd"]
 trust_level = "trusted"
 
 [agents]

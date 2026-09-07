@@ -12,7 +12,7 @@
 - redaction は**表示**のみ、モデルの thinking spend は変わらない
 - interactive モード default: redacted (collapsed stub のみ表示)
 - non-interactive (`-p`) / SDK は常に summary 受信
-- 「思考量を減らしたい」なら budget/disable thinking で制御 (`MAX_THINKING_TOKENS=0` or effort level 下げ)
+- 「思考量を減らしたい」なら effort level を下げる (`effortLevel` / `CLAUDE_CODE_EFFORT_LEVEL`)。Fable 5 系・Opus 5 は thinking 常時 ON で、fixed budget も disable も受理されない
 
 ## 運用方針: 常時 OFF (= 未設定)
 
@@ -56,8 +56,8 @@ settings.json に `"showThinkingSummaries": true` を**一時追加し、debug �
 |--------|------|
 | `effortLevel` (settings: `xhigh`) | thinking budget の上限。下げると thinking 全体が短くなる (summary も含めて) |
 | `CLAUDE_CODE_EFFORT_LEVEL` env var | 上記 settings を session override |
-| `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` (env var) | adaptive 無効化。**Opus 4.7 では no-op** (公式 docs: "Has no effect on Opus 4.7, which always uses adaptive reasoning")。Opus 4.6 / Sonnet 4.6 のみ有効。本 dotfiles では `settings.json` から除外 (2026-05-19、当時 Opus 4.7 lock-in 前提)。**⚠️ 2026-05-30: Opus 4.8 へ移行済。effort control 導入で 4.8 の adaptive 挙動が変わる可能性あり — 設定を再投入する前に `https://code.claude.com/docs/en/env-vars` で 4.8 の注記を再確認すること (Gemini grounding 未取得のため未検証)** |
-| `MAX_THINKING_TOKENS` env var | fixed budget。`0` で thinking 自体を無効化 |
+| `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` (env var) | Opus 4.6 / Sonnet 4.6 専用。Opus 4.7 以降と Fable 5 系は常時 adaptive のため no-op。本 dotfiles では未設定 |
+| `MAX_THINKING_TOKENS` env var | 旧世代の fixed budget。Fable 5 / 5.1・Opus 5 では budget 指定自体が通らないので使わない (Haiku 4.5 等の旧モデル専用) |
 
 ## 出典
 

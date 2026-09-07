@@ -5,7 +5,6 @@ tools: Read, Bash, Glob, Grep, Agent
 model: sonnet
 maxTurns: 15
 memory: project
-ultrathink: true
 ---
 
 # Go Code Reviewer
