@@ -878,7 +878,8 @@
     "obsidian@obsidian-skills": true,
     "warp@claude-code-warp": true,
     "mattpocock-skills@mattpocock": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "show-me@skills": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -909,6 +910,12 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "skills": {
+      "source": {
+        "source": "github",
+        "repo": "humanlayer/skills"
       }
     }
   },
