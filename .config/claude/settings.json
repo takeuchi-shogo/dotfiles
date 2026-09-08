@@ -879,7 +879,8 @@
     "warp@claude-code-warp": true,
     "mattpocock-skills@mattpocock": true,
     "ponytail@ponytail": true,
-    "show-me@skills": true
+    "show-me@skills": true,
+    "document-skills@anthropic-agent-skills": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -916,6 +917,12 @@
       "source": {
         "source": "github",
         "repo": "humanlayer/skills"
+      }
+    },
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/skills"
       }
     }
   },
