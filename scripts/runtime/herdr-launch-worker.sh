@@ -126,11 +126,11 @@ ${TASK}
     # 終了後も bash に落として pane を保持 (close は collect 側)
     # codex は positional prompt なので `--` で option 終端し、task 文字列が
     # `--sandbox=...` 等の option として解釈される injection を塞ぐ。
-    # gemini は `-p <value>` で束縛済みだが対称性のため同様に扱う。
+    # agy は `-p <value>` で束縛済みだが対称性のため同様に扱う。
     if [[ "$MODEL" == "codex" ]]; then
       WORKER_CMD='codex exec --skip-git-repo-check --color never -- "$(cat "$1")"'
     else
-      WORKER_CMD='gemini -p "$(cat "$1")"'
+      WORKER_CMD='agy -p "$(cat "$1")"'
     fi
     if ! PANE=$(start_agent bash -c \
       "${WORKER_CMD}"' > "$2" 2>&1; echo $? > "$2.status"; echo "$3"; exec bash' \

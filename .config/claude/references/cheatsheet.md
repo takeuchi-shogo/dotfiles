@@ -128,7 +128,7 @@ Claude Code (メイン: Opus 5) ── サブエージェント委譲
     ├── Agent(model:'sonnet')  # 実装・探索 (並列 / delegate-implementation Workflow)
     ├── cursor-agent --model cursor-grok-4.6-high  # Sonnet が詰まった実装
     ├── codex exec "..."       # レビュー・リスク分析
-    └── gemini "..."           # 1M 分析・リサーチ・マルチモーダル
+    └── agy -p "..."           # 大規模分析・リサーチ・マルチモーダル
 ```
 
 ---

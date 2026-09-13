@@ -55,7 +55,7 @@ codex exec --skip-git-repo-check -m gpt-5.6-terra \
 ### Gemini（広い視野・エコシステム知識）
 
 ```bash
-gemini --approval-mode plan -p "{english_prompt}" 2>/dev/null
+agy --mode plan -p "{english_prompt}" 2>/dev/null
 ```
 
 **重要**: 各モデルには同じ質問と同じコンテキストを渡す。独立した判断を得るために、他モデルの回答は見せない。

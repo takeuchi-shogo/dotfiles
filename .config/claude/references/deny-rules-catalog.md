@@ -37,7 +37,7 @@ last_reviewed: 2026-07-16
 | git (read + 安全な write) | 8 | `git status/log/diff/branch/add/commit *`, `git worktree list` |
 | バージョン probe | 10 | `node --version`, `go version`, `rustc --version` ほか |
 | brew read | 2 | `brew list/info *` |
-| AI CLI | 2 | `codex exec *`, `gemini *` |
+| AI CLI | 2 | `codex exec *`, `agy *` |
 | linter | 1 | `ruff *` |
 | ネットワーク (許可) | 2 | `WebFetch(*)`, `WebSearch` |
 | gh PR read | 5 | `gh pr view/checks/diff/list *`, `*gh-unresolved-threads*` |

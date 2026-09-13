@@ -22,17 +22,52 @@ last_reviewed: 2026-05-22
 
 ## Family Taxonomy
 
-初期 4 族 (実績ベース)。新しい飽和パターンを観測したら追加する。
+キーワード列は Step 1 (family 判定) 用、`baseline_N` 列は Step 2 (件数集計) 用。
+新しい飽和パターンを観測したら行を追加する。
 
-| Family ID | キーワード (case-insensitive, OR) | 過去事例 |
-|-----------|---------------------------------|---------|
-| `obsidian-second-brain` | `obsidian`, `second brain`, `PARA`, `vault`, `session log` のうち **3 つ以上** hit | Cyril x3, akira_papa, Karpathy Second Brain Modified, Hermes, damidefi (2026-05-23 で N=10、直近 3 連続 reference-only) |
-| `skill-graphs` | `skill graph`, `atom`, `molecule`, `compound`, `skill composition` のうち **2 つ以上** | Skill Graphs 2.0, Tan thin-harness, Atomic Skills |
-| `harness-engineering` | `harness`, `hook`, `scaffold`, `agent platform`, `harness everything` のうち **3 つ以上** | AlphaSignal Harness, Harness Pipeline BAN, Cursor harness, Self-Healing |
-| `claude-code-tips` | `claude code tips`, `hidden features`, `N tricks`, `N tips`, `cheat code` のうち **2 つ以上** | Boris 30 Tips, Three-Model Stack, 73% Overhead 9 Patterns |
+| Family ID | キーワード (case-insensitive, OR) | baseline_N | baseline 記録日 |
+|-----------|---------------------------------|-----------|----------------|
+| `obsidian-second-brain` | `obsidian`, `second brain`, `PARA`, `vault`, `session log` のうち **3 つ以上** hit | 22 | 2026-07-31 |
+| `claude-code-tips` | `claude code tips`, `hidden features`, `N tricks`, `N tips`, `cheat code` のうち **2 つ以上** | 16 | 2026-07-31 |
+| `multi-agent-orchestration` | `orchestrator`, `worker`, `fan-out`, `swarm`, `subagent`, `agent team` のうち **2 つ以上** | 17 | 2026-07-25 |
+| `harness-engineering` | `harness`, `hook`, `scaffold`, `agent platform`, `harness everything` のうち **3 つ以上** | 13 | 2026-09-04 |
+| `code-review-best-practices` | `code review`, `reviewer`, `PR review`, `merge checklist` のうち **2 つ以上** | 13 | 2026-08-16 |
+| `personal-agent-os-hermes` | `personal OS`, `24/7`, `charter`, `hermes`, `always-on agent` のうち **2 つ以上** | 9 | 2026-06-17 |
+| `agentic-instruction-following` | `AGENTS.md`, `CLAUDE.md`, `context file`, `instruction following`, `system prompt` のうち **2 つ以上** | 8 | 2026-08-03 |
+| `agentic-security` | `prompt injection`, `MCP security`, `agent sandbox`, `zero trust`, `supply chain` のうち **2 つ以上** | 3 | 2026-07-31 |
+| `skill-graphs` | `skill graph`, `atom`, `molecule`, `compound`, `skill composition` のうち **2 つ以上** | 3 | 2026-04-12 |
+| `cloud-agent-execution` | `cloud agent`, `remote session`, `sandbox VM`, `web agent` のうち **2 つ以上** | 1 | 2026-09-04 |
+| `agent-runtime-state` | `runtime state`, `handoff artifact`, `session state`, `sufficient statistic` のうち **2 つ以上** | 1 | 2026-09-05 |
 
 判定はユーザー固有のため、taxonomy は wash-out しない長期パターンのみを登録する。
 1 回限りの記事タイトル一致では追加しない。
+
+### baseline_N の意味と限界
+
+`baseline_N` は **baseline 記録日までに蓄積した件数**を、`MEMORY.md` と
+`memory/family_lessons_absorb_saturation.md` の人手記録から転記した値。
+
+遡及 grep で数え直さないのは、`family:` を持つ既存レポート 96 件 (2026-09-11 時点) の値が
+テンプレート定義を欠いたまま自由記述で書かれてきたため。Family ID と一致するものは
+一部で、`family: self-evolving / self-healing-harness、N>=13 (...)。採用率 >=20% (...)` のように
+判定文が丸ごと値に入り YAML として壊れている行もある。既存分の正規化はしない
+(`baseline_N` が代表する)。テンプレートに `family:` を定義したのは同じ日で、以後の分は
+Family ID かちょうど `none` で揃う。
+
+`agentic-instruction-following` の baseline_N=8 は 2 つのラベルを 1 行に統合した値。
+MEMORY.md は狭義の `agentic-instruction-following` を N=2 (2026-07-31)、
+「context-file クラスタ」を N=8 (2026-08-03) として別々に記録している。同じ主題を
+2 つの呼び方で数えていたため広い方を採った。**以後の記事は Family ID
+`agentic-instruction-following` で書く** — Step 2 は完全一致 grep なので、
+「context-file クラスタ」と書くと N に計上されない。
+
+転記元の記録には揺れがある (例: `code-review-best-practices` は 2026-06 の N=10、
+2026-08-06 の N=12、2026-08-16 の N=13 が併存)。**各 family で最後に記録された値を採用した**。
+過大側に振れた場合でも Step 3.7 の delta 計算と Step 4 の `AskUserQuestion` が
+自動 skip を防ぐため、false-skip には直結しない。
+
+baseline は原則として更新しない (増分は Step 2 の日付フィルタが担う)。
+family を新設したときだけ `baseline_N` = 0、記録日 = 当日で行を足す。
 
 ## 検出手順
 
@@ -47,20 +82,79 @@ Phase 1 の構造化抽出結果 (主張 + 手法) を taxonomy の各キーワ�
 
 ### Step 2: 過去 absorb 件数を集計する
 
+N = taxonomy の `baseline_N` + **baseline 記録日より後**に増えた分。
+
 ```bash
-# 例: obsidian-second-brain family のキーワードで _index.md を grep
-grep -i -E "obsidian|second brain|PARA|vault" /Users/takeuchishougo/dotfiles/docs/research/_index.md \
-  | grep -E "absorb|analysis" \
-  | wc -l
+FAM=obsidian-second-brain          # taxonomy の Family ID
+SINCE=2026-07-31                   # taxonomy の baseline 記録日
+D=/Users/takeuchishougo/dotfiles
+
+# 分析レポート。3 つのガードが要る:
+#   -Fxl     : FAM を正規表現でなく固定文字列・行全体一致で照合する (ID にメタ文字が
+#              入ったとき `harness.engineering` が `harnessXengineering` に当たるのを防ぐ)
+#   $NF ~ .. : ファイル名が日付で始まるものだけ通す (README.md は substr が
+#              "README.md" > "2026-07-31" となり素通りする)
+#   substr   : ファイル名全体と SINCE を比べると "2026-09-04-foo.md" > "2026-09-04" が
+#              真になり、baseline 記録日と同じ日のレポートが baseline と二重計上される
+new=$(grep -Fxl "family: ${FAM}" "$D"/docs/research/*.md 2>/dev/null \
+      | awk -F/ -v s="$SINCE" '$NF ~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}/ && substr($NF,1,10) > s' \
+      | wc -l | tr -d ' ')
+
+# Step 6 で skip した記事 — レポートを作らないので log.md 側にしか残らない。
+#   ingest-skip 見出しに限る : 通常の ingest エントリが本文に family 名を書いていても拾わない
+#   light Phase 2 を除く     : Step 6.5 は mini report を作るので new 側で数えており、
+#                              log からも数えると二重計上になる
+#   seen フラグ              : 1 エントリ内に family 名が 2 回出ても 1 件として数える
+skipped=$(awk -v s="$SINCE" -v f="$FAM" '
+  /^## \[/ { d = substr($2,2,10); isskip = ($0 ~ /ingest-skip/ && $0 !~ /light Phase 2/); seen = 0 }
+  isskip && !seen && d > s && index($0, "topic family \"" f "\"") { n++; seen = 1 }
+  END { print n+0 }' "$D"/docs/wiki/log.md)
+
+echo "N = baseline_N + new($new) + skipped($skipped)"
 ```
 
-`docs/research/_index.md` を grep し、family に属する過去 absorb のエントリ数 N を数える。
-正確な集計が困難な場合は、Bash で `ls docs/research/*-absorb-analysis.md` を列挙して
-ファイル名から family 推定 (タイトルキーワードマッチ) も可。
+`new` が常に 0 のときは「まだ増えていない」と「集計が壊れている」の区別がつかない。
+内訳を出すのはそのため。worktree から実行すると `$D` が main repo を指すので、
+worktree 内で作ったレポートは `new` に入らない (過小方向)。
+
+skip 分を足すのは、飽和判定の N が「その family で **見た記事の数**」であって
+「レポートを書いた数」ではないため。Step 6 の log テンプレは
+`理由: topic family "<family>" ...` の形で family 名を残すので、そこから数える。
+
+日付で切るのは二重計上を避けるため。`baseline_N` は人手記録からの転記値で、
+その時点までのレポートと skip をすでに含んでいる。
+
+**キーワード grep で N を数えてはいけない。** `docs/research/_index.md` も
+本文全文もファイル名も、どれも family 件数の集計対象にしない。理由は下記。
+
+2026-09-11 実測。キーワードは本ファイルの taxonomy 表の定義をそのまま使い、
+`docs/research/` で以下を実行した:
+
+```bash
+i=$(grep -icE "$kw" _index.md)                              # index grep
+f=$(ls *.md | grep -v '^_index' | grep -icE "$kw")          # ファイル名 grep
+t=$(grep -ilE "$kw" *.md | grep -v '^_index' | wc -l)       # 本文全文 grep
+```
+
+| 方式 | obsidian | code-review | harness | 問題 |
+|------|----------|-------------|---------|------|
+| 人手記録 (正) | 22 | 13 | 13 | — |
+| `_index.md` grep | 15 | 12 | 47 | index が名指しするのは 78/391 (20%)。残りは散文ヒットで過大にも過小にも振れる |
+| ファイル名 grep | 11 | 1 | 38 | slug に語が入らない記事が落ちる (`code review` はスペース入りでファイル名に現れない)。汎用語 (`harness`) は無関係な記事を拾う |
+| 本文全文 grep | 132 | 138 | 268 | 語が 1 回出るだけでヒット。391 件中 268 件が「harness」に該当してしまう |
+
+キーワードセットを少し変えるだけで値が大きく動く (`code-review` のファイル名 grep は
+`code.review|reviewer|pull.request` なら 9、taxonomy 定義どおりなら 1)。
+family は記事の**主題**であって語の出現ではないため、文字列一致では原理的に決まらない。
+集計できるのは frontmatter に明示された `family:` だけ。
+
+`family:` が付いていないファイル (2026-09-11 より前の 391 件) は
+`baseline_N` が代表する。個別に数え直さない。
 
 ### Step 3: 採用率を推定する
 
-エントリ本文に対し case-insensitive + スペース揺れ吸収パターンで採用度合いを推定する:
+`docs/research/` の**実ファイル本文** (`_index.md` の要約ではない) に対し、
+case-insensitive + スペース揺れ吸収パターンで採用度合いを推定する:
 
 - **採用なし指標** (regex `i` flag、`\s*` で空白揺れ吸収):
   - `採用\s*0` (採用 0 / 採用0 / 採用　0)
@@ -232,8 +326,14 @@ Step 4 の判定後、N >= 1 (同 family に過去 absorb が 1 件以上存在)
 
 1. **対象抽出**: 同 family の最新 3 件の analysis report を `docs/research/*-absorb-analysis.md` から列挙
 2. **frontmatter status 確認**: 各レポートの frontmatter `status:` フィールドを Read
-   - `implemented` / `superseded` / `retired` / `partially-superseded` のいずれか → audit skip (棚卸し済)
-   - status なし or `analyzed` / `planned` → audit 対象
+   - `integrated` / `implemented` / `skipped` / `reference-only` / `superseded` / `retired` /
+     `partially-superseded` のいずれか → audit skip (統合済み・skip 済み・棚卸し済のいずれか)
+   - status なし or `analyzed` / `planned` / `triaged` / `light-phase2-only` → audit 対象
+
+   `integrated` と `skipped` は `templates/analysis-report.md` が定義する既定値で、
+   実データで最も多い (2026-09-11 時点で 150 件 / 14 件)。これを skip 条件から落とすと
+   統合済みのレポートが毎回 audit 対象に落ちる。
+   接頭辞が一致する複合値 (`integrated-partial`, `partially-implemented` 等) も同じ扱いにする。
 3. **30 日経過判定**: `date:` フィールドから経過日数を計算。30 日未満なら audit skip (実装猶予期間)
 4. **AskUserQuestion**: audit 対象が 1 件以上ある場合、user に各レポートの planned tasks 状態を確認:
 
@@ -273,7 +373,8 @@ Step 4 の判定後、N >= 1 (同 family に過去 absorb が 1 件以上存在)
     判定不能の理由: <reason — 例: 表記揺れで grep が分類できない/該当 entry の本文が要約のみ等>
 
   どう扱いますか？
-    - manual-count: ユーザーが手動で _index.md を読んで採用率を返す
+    - manual-count: ユーザーが手動で `docs/research/` の該当レポートを読んで採用率を返す
+      (`_index.md` は 78/391 しか名指ししておらず、採用率の母集団にならない)
     - continue: gate を通過させてフル absorb workflow に進む
     - skip: SATURATED とみなして ingest-skip ログのみ残す
   ```
@@ -297,4 +398,4 @@ Step 4 の判定後、N >= 1 (同 family に過去 absorb が 1 件以上存在)
 
 - `/absorb` Phase 1.5 — このリファレンスを参照して判定
 - `references/improve-policy.md` — Pruning-First philosophy の源流
-- `docs/research/_index.md` — 集計対象のインデックス
+- `docs/research/_index.md` — 過去 absorb の読み物索引。**N の集計対象ではない** (Step 2 参照)
