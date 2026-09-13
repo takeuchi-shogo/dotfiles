@@ -11,14 +11,12 @@
 | ファイル | 生成方法 |
 |---|---|
 | `CLAUDE.md` | document-factory (mode: constitution) |
-| `.claudeignore` | document-factory (mode: constitution) |
 
 ### M（Standard）
 
 | ファイル | 生成方法 |
 |---|---|
 | `CLAUDE.md` | document-factory (mode: constitution) |
-| `.claudeignore` | document-factory (mode: constitution) |
 | `references/workflow-guide.md` | document-factory (mode: constitution) |
 | `.claude/rules/{lang}.md` | 直接生成 |
 | `docs/architecture.md` | document-factory (mode: context) |
@@ -44,7 +42,7 @@ M の全ファイルに加え:
 
 **S レベル:**
 ```
-以下のプロジェクトの CLAUDE.md と .claudeignore を生成してください。
+以下のプロジェクトの CLAUDE.md を生成してください。
 - プロジェクトパス: {cwd}
 - 技術スタック: {tech_stack}
 - 最小限の構成（S レベル）: CLAUDE.md は 50 行以内
@@ -56,7 +54,7 @@ M の全ファイルに加え:
 
 **M/L レベル:**
 ```
-以下のプロジェクトの CLAUDE.md, .claudeignore, references/workflow-guide.md を生成してください。
+以下のプロジェクトの CLAUDE.md, references/workflow-guide.md を生成してください。
 - プロジェクトパス: {cwd}
 - 技術スタック: {tech_stack}
 - M/L レベル: CLAUDE.md は 80 行以内
@@ -125,7 +123,7 @@ document-factory (mode: constitution) (直列)
 
 ### M
 ```
-┌─ document-factory (mode: constitution) (CLAUDE.md + .claudeignore + workflow-guide)
+┌─ document-factory (mode: constitution) (CLAUDE.md + workflow-guide)
 │
 ├─ document-factory (mode: context) (docs/architecture.md)           ← 並列
 │
@@ -134,7 +132,7 @@ document-factory (mode: constitution) (直列)
 
 ### L
 ```
-┌─ document-factory (mode: constitution) (CLAUDE.md + .claudeignore + workflow-guide)
+┌─ document-factory (mode: constitution) (CLAUDE.md + workflow-guide)
 │
 ├─ document-factory (mode: context) (docs/architecture.md)           ← 並列
 │

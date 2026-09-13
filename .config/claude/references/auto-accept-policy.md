@@ -28,7 +28,7 @@ Plan 承認後、低リスクな変更を確認なしで実行するための判
 ### Never Auto-Accept（常に確認必須）
 
 - `settings.json`, `settings.local.json` の変更
-- `CLAUDE.md`, `.claudeignore` の変更
+- `CLAUDE.md` の変更
 - セキュリティ関連ファイル（`*policy*`, `*security*`）
 - `rm`, `git push`, `git reset` 等の破壊的操作
 - 本番環境への影響がある変更

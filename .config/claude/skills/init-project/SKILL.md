@@ -2,7 +2,7 @@
 name: init-project
 description: >
   プロジェクトに最適な Claude Code 構造を初期化・適応するオーケストレータ。プロジェクト分析 → 規模判定(S/M/L) →
-  ファクトリエージェント委譲で CLAUDE.md, .claudeignore, references/, rules/, docs/, Local CLAUDE.md を段階的に生成。
+  ファクトリエージェント委譲で CLAUDE.md, references/, rules/, docs/, Local CLAUDE.md を段階的に生成。
   新プロジェクト初期化、既存プロジェクトへの Claude Code 導入、S→M→L の段階的アップグレードに使用。
   Use when: 'init project', 'setup claude', 'プロジェクト初期化', 'Claude Code 導入',
   'CLAUDE.md 作りたい', 'プロジェクト構造', 'scaffold', 'プロジェクトセットアップ'.
@@ -70,7 +70,7 @@ find . -name '*_test.go' -o -name '*.test.ts' -o -name '*.spec.ts' | head -3
 ls -d docs/ 2>/dev/null
 
 # 既存 Claude Code 構造
-ls CLAUDE.md .claude/ .claudeignore 2>/dev/null
+ls CLAUDE.md .claude/ 2>/dev/null
 ```
 
 ### Phase 1.1b — フレームワーク検出
@@ -148,7 +148,7 @@ find . -maxdepth 3 -type d \( \
 
 | レベル | 委譲先 | 実行方式 |
 |---|---|---|
-| **S** | document-factory (mode: constitution)（CLAUDE.md + .claudeignore） | 直列 |
+| **S** | document-factory (mode: constitution)（CLAUDE.md） | 直列 |
 | **M** | document-factory (mode: constitution) + document-factory (mode: context)（architecture.md） | 並列 → rules 直接生成（直列） |
 | **L** | M + document-factory (mode: context)（Local CLAUDE.md, ADR） + setup-background-agents | 並列 → rules + hooks 直接生成（直列） |
 
@@ -180,10 +180,9 @@ Codified Context 論文に基づくプロジェクト固有の知識検索サー
 生成完了後、以下を検証する:
 
 1. **CLAUDE.md 行数**: レベルに応じた制約を確認（S: 50行以内 / M・L: 80行以内）
-2. **.claudeignore**: 技術スタックに適合していることを確認
-3. **参照整合性**: CLAUDE.md 内のファイル参照が実在することを確認
-4. **Local CLAUDE.md**: リスキーモジュールの実際の内容を反映していることを確認
-5. **最小性**: CLAUDE.md がアクション可能な指示のみを含み、コードベース概要や冗長な説明を含まないことを確認
+2. **参照整合性**: CLAUDE.md 内のファイル参照が実在することを確認
+3. **Local CLAUDE.md**: リスキーモジュールの実際の内容を反映していることを確認
+4. **最小性**: CLAUDE.md がアクション可能な指示のみを含み、コードベース概要や冗長な説明を含まないことを確認
 
 ```bash
 # 行数チェック
@@ -202,7 +201,6 @@ done
 
 生成ファイル:
   - CLAUDE.md ({lines} 行)
-  - .claudeignore
   {M/L の場合: 追加ファイルリスト}
 
 次のステップ:

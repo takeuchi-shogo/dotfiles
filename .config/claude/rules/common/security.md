@@ -27,7 +27,7 @@ Before ANY commit:
 
 - **禁止命令は防御にならない**: LLM はプロンプトインジェクションで迂回される（アーキテクチャ上の制約）
 - **短命トークン**: 有効期限 1 時間以内、IP 制限、最小権限スコープの 3 点セット
-- **`.claudeignore`**: 補助的防御層として `.env`, `*.pem`, `*.key` 等を遮断（ただし完全ではない）
+- **`permissions.deny`**: `settings.json` の deny ルールで `Read(**/.env*)`, `Read(**/*.pem)`, `Read(**/*.key)` 等を遮断する（補助的防御層であり完全ではない）。`.claudeignore` は Claude Code の公式機能ではないので使わない
 - **コード検査**: AI 生成コードに `print(os.environ)` 等の情報漏洩パターンがないか確認
 
 ## Claude Code Ecosystem Security

@@ -113,8 +113,7 @@ Layer 1 + Layer 3 + (Layer 4 or 5)     → L
 1. **既存 CLAUDE.md は絶対に上書きしない**
 2. 既存ファイルがある場合 → 「追記提案」として差分を提示
 3. ユーザーが明示的に承認した場合のみマージ
-4. `.claudeignore` は既存エントリを保持しつつ不足分を追加
-5. `.claude/settings.json` が存在する場合 → hooks セクションのみ追加提案
+4. `.claude/settings.json` が存在する場合 → hooks セクションのみ追加提案
 
 ---
 
