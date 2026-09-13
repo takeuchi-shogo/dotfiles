@@ -127,7 +127,7 @@ fn effective_command_parts(command: &str) -> (String, String) {
 const IGNORE_COMMANDS: &[&str] = &[
     "git status", "git log", "git diff", "git branch",
     "ls", "cat", "head", "tail", "pwd", "which", "echo",
-    "codex", "gemini",
+    "codex", "agy",
 ];
 
 // Commands where exit_code != 0 is NOT an error (used by check_exit_code_error only):

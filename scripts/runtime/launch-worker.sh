@@ -177,7 +177,7 @@ case "$MODEL" in
     ;;
   gemini)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "gemini -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'${CLOSE_SUFFIX}\n"
+      "agy -p \"\$(cat '${TASK_FILE}')\" > '${RESULT_FILE}' 2>&1 && echo '${DONE_SIGNAL}'${CLOSE_SUFFIX}\n"
     ;;
 esac
 

@@ -126,7 +126,7 @@ collect-result.sh --workspace workspace:M --worker w-...-claude --timeout 600
   `collect-result.sh` は `DISPATCH_*` を export せず直接呼べる。
 - **claude worker は workspace が残る** (codex/gemini は成功時に `&& close-workspace`
   で自動 close)。統合後に `cmux close-workspace --workspace workspace:M` で掃除する。
-- **gemini は sunset** (IneligibleTierError) なので実質 codex + claude の 2 spoke。
+- **`--model gemini` は `agy` を起動する** (個人向け Gemini CLI は sunset)。
 - **独立 context が価値**: 各 spoke は別 workspace = 別 context なので視点が割れる。
   単一モデルの fan-out (同一 context) より多様性が出る。
 - **多数決・無制限ラリーは品質を上げない** (「収束して見える誤答」を作る)。conductor

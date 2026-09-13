@@ -72,7 +72,7 @@ IGNORE_COMMANDS = [
     "which",
     "echo",
     "codex",
-    "gemini",
+    "agy",
 ]
 
 # --- Friction Detection Constants ---

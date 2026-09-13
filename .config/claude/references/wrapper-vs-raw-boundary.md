@@ -13,7 +13,7 @@ Agent harness を育てていくと、同じ下位 tool に対して複数の層
 
 ```
 Opus → /dispatch → cmux Worker (launch-worker.sh --model codex) → codex CLI → (本当にやりたかったこと)
-Opus → /gemini    → gemini-explore → gemini CLI → (同上)
+Opus → /gemini    → gemini-explore → agy CLI → (同上)
 Opus → /codex     → codex skill → codex CLI → (同上)
 ```
 
@@ -75,7 +75,7 @@ PostHog の例: 4 つの別 tool (`projects-get`, `insight-get`, `insight-query`
 |---------|-----------|---------|------|
 | `/dispatch` | cmux Worker / Subagent | Cross-tool orchestration, Taste encoding | ルーティング判断を集約 |
 | `/codex` skill | `codex` CLI | Token economy, Taste encoding | 20+ option のうち推奨 3 つだけ露出 |
-| `/gemini` skill | `gemini` CLI | Taste encoding (1M context の使い所) | 適用条件の絞り込み |
+| `/gemini` skill | `agy` CLI | Taste encoding (巨大 context の使い所) | 適用条件の絞り込み |
 | `/commit` skill | `git commit` | Taste encoding (conventional commit 規則) | regex+emoji を固定化 |
 | `/review` skill | subagents 群 | Cross-tool orchestration | 変更規模に応じて parallel fan-out |
 | ~~`codex-rescue` agent~~ | ~~`codex` CLI~~ | ~~Taste encoding~~ | **廃止 (2026-05-23)**: Permission Storm / Silent Stall / orphan 蓄積で観察不能。cmux Worker (`launch-worker.sh --model codex`) で代替 |

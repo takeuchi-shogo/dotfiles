@@ -24,7 +24,7 @@ Gemini CLI は 1M コンテキストの大規模分析、Google Search grounding
 
 - **サブエージェント**: `gemini-explore` エージェント（推奨 — 出力を要約して返す）
 - **スキル実行**: `gemini` スキル
-- **直接呼び出し**: `gemini --approval-mode plan -p "..." 2>/dev/null`
+- **直接呼び出し**: `agy --mode plan -p "..." 2>/dev/null`
 - **結果保存**: 大きな出力は `.claude/docs/research/{topic}.md` に保存
 
 ## 委譲しないケース

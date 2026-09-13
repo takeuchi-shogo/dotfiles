@@ -407,7 +407,7 @@ function detectTools() {
 		"Package managers": ["pnpm", "npm", "yarn"],
 		"Languages/Runtimes": ["go", "node", "python3", "ruby", "rust"],
 		"Dev tools": ["gh", "docker", "kubectl", "terraform"],
-		"AI tools": ["codex", "gemini"],
+		"AI tools": ["codex", "agy"],
 	};
 
 	try {

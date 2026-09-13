@@ -242,8 +242,8 @@ claude -p "$(cat .research/{name}/prompts/${i}.md)" \
   --allowedTools "Read,WebFetch,WebSearch,Bash,Grep,Glob" \
   > .research/{name}/child_outputs/${i}.md 2>/dev/null &
 
-# Gemini サブタスク
-gemini --approval-mode plan \
+# agy サブタスク
+agy --mode plan \
   -p "$(cat .research/{name}/prompts/${i}.md)" \
   > .research/{name}/child_outputs/${i}.md 2>/dev/null &
 

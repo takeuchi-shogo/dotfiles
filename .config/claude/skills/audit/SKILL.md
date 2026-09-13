@@ -112,7 +112,7 @@ Output as structured JSON array:
 **小規模プロジェクト（ファイル50未満）の場合**: Gemini を使わず、直接 Glob + Read + Grep で分析する。
 並列エージェント（Step 3）のみで十分な深さが得られる。
 
-**Gate**: Gemini の結果が空または `gemini` コマンドが利用不可の場合、Step 3 の並列エージェントのみで進む。
+**Gate**: Gemini の結果が空または `agy` コマンドが利用不可の場合、Step 3 の並列エージェントのみで進む。
 
 ## Step 3 — Category Deep-Dive（カテゴリ別深掘り）
 
@@ -345,6 +345,6 @@ QUESTIONS.md をユーザーに提示し、回答を待つ。
 ## Gotchas
 
 - **大規模モノレポ**: ファイル数が1000を超える場合、Step 1 でスコープを絞る（特定サブディレクトリに限定）
-- **Gemini 未インストール**: `gemini --version` が失敗したら Step 3 の並列エージェントのみで進む
+- **agy 未インストール**: `agy --version` が失敗したら Step 3 の並列エージェントのみで進む
 - **QUESTIONS.md の肥大化**: 100問を超える場合、P0/P1 のみ出力し、P2 は別ファイル `QUESTIONS-P2.md` に分離
 - **既存 QUESTIONS.md の上書き**: 既存ファイルがある場合は `QUESTIONS-{date}.md` で出力

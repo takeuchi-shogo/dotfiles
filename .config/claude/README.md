@@ -68,7 +68,7 @@ graph TB
     subgraph external["External CLI Tools"]
         direction LR
         CODEX["Codex CLI<br><small>gpt-5.6-terra / 深い推論</small>"]
-        GEMINI["Gemini CLI<br><small>1M tokens / 大規模分析</small>"]
+        GEMINI["agy (Antigravity)<br><small>大規模分析</small>"]
     end
 
     subgraph data["Data & Learning Layer"]
@@ -103,7 +103,7 @@ graph TB
 |----|--------|-------------|------|-----------|
 | **Orchestrator** | Claude Opus 4.8 | 1M | 全体制御、コード生成、レビュー統合 | - |
 | **Deep Reasoning** | Codex CLI (gpt-5.6-terra) | 400K | 設計・推論・複雑なデバッグ | `rules/codex-delegation.md` |
-| **Large Context** | Gemini CLI | 1M | 大規模分析・外部リサーチ・マルチモーダル | `rules/gemini-delegation.md` |
+| **Large Context** | Antigravity CLI (`agy`) | 巨大 | 大規模分析・外部リサーチ・マルチモーダル | `rules/gemini-delegation.md` |
 
 ---
 
@@ -183,7 +183,7 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 | **UserPromptSubmit** | `claude-hooks` (Rust, `user-prompt`) | Codex/Gemini キーワード検出、最適エージェント推薦 |
 | **PreToolUse** (Edit/Write) | `claude-hooks` (Rust, `pre-edit`) | lint設定保護、GP違反ブロック、検索優先ガード、ファイルパターンルーティング、TDDガード（統合） |
 | **PreToolUse** (Bash) | `pre-commit-check.js`, `docker-safety.py` | コミット検証、Docker 安全性チェック |
-| **PreToolUse** (WebSearch) | `claude-hooks` (Rust, `pre-websearch`) | 大規模リサーチ時に Gemini CLI を提案 |
+| **PreToolUse** (WebSearch) | `claude-hooks` (Rust, `pre-websearch`) | 大規模リサーチ時に `/gemini` (`agy`) を提案 |
 | **PostToolUse** (Edit/Write) | `auto-format.js`, `golden-check.py`, `checkpoint_manager.py`, `file-proliferation-guard.py` | 自動整形、GP違反検出、チェックポイント、ファイル増殖防止 |
 | **PostToolUse** (Bash) | `claude-hooks` (Rust, `post-bash`), `stagnation-detector.py` | 出力退避、エラー分析、テスト解析、計画追跡、レビュー追跡（Rust 統合）。停滞検知は `stagnation-detector.py` (Python, 多機能版) が担当 |
 | **PreCompact** | `pre-compact-save.js` | コンテキスト圧縮前にセッション状態保存 |
@@ -302,7 +302,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `codex` | Codex CLI (gpt-5.6-terra) 実行 |
 | `codex-review` | Codex AI コードレビュー・CHANGELOG 生成 |
-| `gemini` | Gemini CLI (1M ctx) 大規模分析 |
+| `gemini` | Antigravity CLI (`agy`) 大規模分析 |
 | `research` | マルチエージェント並列リサーチ |
 | `debate` | 複数 AI モデルによるセカンドオピニオン |
 
@@ -644,7 +644,7 @@ flowchart TB
 | ファイル | 役割 |
 |---------|------|
 | `codex-delegation.md` | Codex CLI に委譲するタイミングと方法 |
-| `gemini-delegation.md` | Gemini CLI に委譲するタイミングと方法 |
+| `gemini-delegation.md` | `/gemini` (`agy`) に委譲するタイミングと方法 |
 
 ### 共通ルール (`common/`)
 

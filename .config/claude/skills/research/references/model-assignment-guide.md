@@ -6,19 +6,19 @@
 
 | サブタスク性質 | 推奨モデル | 理由 |
 |---------------|-----------|------|
-| 外部リサーチ（Web検索、最新情報） | Gemini CLI | Google Search grounding、1Mコンテキスト |
+| 外部リサーチ（Web検索、最新情報） | agy (Antigravity CLI) | 巨大コンテキスト・外部リサーチ |
 | 深い推論・設計分析 | Codex CLI (gpt-5.6-terra) | reasoning effort: high で深い分析 |
 | コードベース分析 | claude -p | ローカルファイル直接アクセス |
-| 論文要約・文献調査 | Gemini CLI | 1Mコンテキストで長文処理 |
+| 論文要約・文献調査 | agy (Antigravity CLI) | 巨大コンテキストで長文処理 |
 | 比較分析・トレードオフ | Codex CLI | 構造化推論が得意 |
 | デフォルト（汎用） | claude -p | 最も安定・高速 |
 
 ## Model Characteristics
 
-### Gemini CLI
-- **強み**: 1M コンテキスト、Google Search grounding、マルチモーダル
+### agy (Antigravity CLI)
+- **強み**: 巨大コンテキスト、外部リサーチ、マルチモーダル
 - **弱み**: 過度に楽観的な傾向、指示の細部を見落とす場合あり
-- **コマンド例**: `gemini -p "Research topic" --grounding`
+- **コマンド例**: `agy --mode plan -p "Research topic"`
 
 ### Codex CLI (gpt-5.6-terra)
 - **強み**: 深い推論、構造化分析、reasoning effort 調整可能
