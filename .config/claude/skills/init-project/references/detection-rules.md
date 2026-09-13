@@ -66,7 +66,6 @@ find . -maxdepth 3 -type d \( \
 |---|---|---|
 | CLAUDE.md | `test -f CLAUDE.md` | 初期化済み |
 | .claude/ | `test -d .claude` | 設定あり |
-| .claudeignore | `test -f .claudeignore` | 部分セットアップ |
 | settings.json | `test -f .claude/settings.json` | hooks 設定あり |
 | skills/ | `ls .claude/skills/ 2>/dev/null` | スキルあり |
 | rules/ | `ls .claude/rules/ 2>/dev/null` | ルールあり |
@@ -92,7 +91,7 @@ find . -maxdepth 3 -type d \( \
 
 (1) L で進める
 (2) M に下げる（hooks/agents/background agents を省略）
-(3) S に下げる（CLAUDE.md + .claudeignore のみ）
+(3) S に下げる（CLAUDE.md のみ）
 (4) --dry-run で生成物を確認
 ```
 

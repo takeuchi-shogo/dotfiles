@@ -47,7 +47,7 @@ Augment の AuggieBench 実測に基づく AGENTS.md ベストプラクティス
 4. バッチ実行: 全ファイルに frontmatter を付与（手動レビュー or --fix）
 5. `docs/research/_index.md` と `docs/plans/_index.md` (新規) に status 列を追加
 6. PostToolUse hook: Grep/Glob 結果に archive ドキュメントが含まれたら suppress 推奨を出す
-7. `.claudeignore` 候補: `docs/plans/archive/`, `docs/research/archive/` の除外検討
+7. ~~`.claudeignore` 候補: `docs/plans/archive/`, `docs/research/archive/` の除外検討~~ → 中止（`.claudeignore` は Claude Code の公式機能ではない）
 
 **Files affected**:
 - new: `.config/claude/references/doc-status-schema.md`

@@ -130,8 +130,6 @@ git log --oneline -20 2>/dev/null
 - [ ] Commands verified
 - [ ] No sensitive data
 
-Also generate `.claudeignore` based on detected tech stack.
-
 ---
 
 ## Mode: context
