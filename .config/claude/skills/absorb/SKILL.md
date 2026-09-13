@@ -155,15 +155,13 @@ Phase 1 抽出結果 (主張 + 手法) を `references/topic-family-saturation.m
 
 ### Step 2: 過去 absorb 件数の集計 [Bash]
 
-```bash
-# 例: obsidian-second-brain family
-grep -i -E "obsidian|second brain|PARA|vault" \
-  /Users/takeuchishougo/dotfiles/docs/research/_index.md \
-  | grep -E "absorb|analysis" | wc -l
-```
+N = taxonomy の `baseline_N` + baseline 記録日より後に増えた分
+(frontmatter `family:` のレポート + `log.md` の skip エントリ)。
+**集計コマンドは `references/topic-family-saturation.md` Step 2 が正典** — そのまま実行する。
 
-`docs/research/_index.md` から同 family の過去 absorb 件数 N を集計する。
-集計手順の詳細とフォールバック (ファイル名 enumeration) は reference 参照。
+**キーワード grep で N を数えない。** `_index.md` も本文全文もファイル名も集計対象にしない。
+family は記事の主題であって語の出現ではないため、文字列一致では原理的に決まらない
+(2026-09-11 実測で 3 方式とも人手記録から大きく外れた。比較表は reference の Step 2)。
 
 ### Step 3: 採用率の推定 [Opus]
 
@@ -178,25 +176,18 @@ N >= 3 なら、各エントリ本文の以下マーカーで採用度合いを�
 N >= 3 かつ採用率 < 20% で SATURATED 候補となった場合、**skip 判定の前に必ず実行する**。
 飽和判定だけで skip すると、新規論点 (architecturally novel claims) を含む N+1 件目を見逃す。
 
-> **本セクションと reference の Step 3.7 は同一手順を指す。** SKILL.md は workflow 内の挿入位置を強調するため Step 3.5、reference は既存 Step 3.5/3.6 (証拠記録/件数集計) と並べるため Step 3.7。両ファイル実装は同一。
+**手順は `references/topic-family-saturation.md` Step 3.7 が正典** — 番号のずれは挿入位置を
+強調するためで、実装は同一。実行前にそちらを Read する。要点だけ再掲する:
 
-1. Phase 1 抽出結果の **手法リスト** (current_methods) を抽出 (Phase 1 出力 JSON の `手法` フィールド、list of strings)
-2. 同 family の直近 3 件の analysis report (`docs/research/*-absorb-analysis.md`) を Read し、各レポートの「手法」「主張」セクションから prior 手法 set を構築
-   - **Read 失敗 / 「手法」セクション欠落の場合**: `prior_methods = unknown` として記録し、Step 4 で `AskUserQuestion` 経由 manual override 強制 (空集合扱いで false-novel 過大評価防止)
-3. **per-method 照合台帳を作る (集合演算で丸めない — skip の立証責任)**:
-   current_methods の **各手法を1行ずつ** 次の表に分類する。「全部似てる」と一括で丸める判断は禁止。
-
-   | current 手法 | verdict | matched_prior (rehash のみ必須・3点セット) |
-   |--------------|---------|---------------|
-   | <手法名> | rehash / novel / ambiguous | `<report ファイル名>` の `<prior heading か引用句>` + 同等性の理由1文 |
-
-   - **rehash** (= 既出ゆえ delta から除外): prior のどの手法と意味的同等かを `matched_prior` に**名指しで**書く。必須3点: (1) レポートのファイル名 (2) prior の heading か引用句 (3) なぜ同等かの理由1文。**次のいずれかなら rehash 無効 → `novel` か `ambiguous` に倒す**: `matched_prior` が空欄 / family label だけの広い一致 (例「どちらも second-brain 系」) / 引用句が出せない。「似ている」という類似度の主観だけで rehash にしない (例: 「IPARAG 採用」を rehash にするなら「`2026-XX-cyril.md` の "9-folder 構造採用" / 両者とも PARA 派生の固定フォルダ階層で同一」と名指す)。迷ったら ambiguous
-   - **ambiguous** (半 novel): novel に計上しつつ `ambiguous_count` に別途記録し Step 4 提示時に明示
-   - **novel**: prior に対応物を名指しできない
-   - 過去 absorb で **明示的に Reject 済み** の手法 (rejection registry: `references/rejected-techniques.md` 参照、存在しなければ analysis report の "Reject" 明示記載) は **再評価対象** として novel に含める。ただし bounded recursion 条件:
-     - 同一手法で **直近 12 ヶ月以内に 3 回以上** light-phase2 で Reject 再確認済なら novel から **除外** (永続ループ防止)
-4. `delta_methods` = verdict が `novel` または `ambiguous` の行集合。`delta = |delta_methods|` を整数で記録 (**Step 4 の閾値判定・Step 5/5.5 の検証対象は常にこの `delta_methods` = novel + ambiguous**。ambiguous を落とさない)。**非整数値は禁止** — Opus は台帳の行数を返す。各 rehash 行に `matched_prior` 3点が揃って初めて delta から除外できる (名指しなき rehash は無効 → novel)
-5. **台帳を保持する** — Step 6 (skip) / Step 5.5 (light-phase2) で skip/絞り込みの立証根拠として log・mini report に残す
+- current_methods の **各手法を 1 行ずつ** rehash / novel / ambiguous に分類する。
+  「全部似てる」と集合演算で丸める判断は禁止
+- **rehash と書けるのは 3 点が揃ったときだけ** — prior レポートのファイル名 / heading か引用句 /
+  同等性の理由 1 文。1 つでも欠けたら novel か ambiguous に倒す。「似ている」という主観では
+  rehash にしない
+- `delta_methods` = novel + ambiguous の行集合。ambiguous を落とさない
+- prior レポートの Read 失敗や「手法」セクション欠落は `prior_methods = unknown` として記録し、
+  空集合で代用しない
+- 台帳は Step 5 の提示・Step 6 の log・light-phase2 の mini report に必ず残す
 
 判定への影響 (Step 4 参照):
 - delta >= 2 → **SATURATED-but-novel** → `light-phase2` 強制提示
@@ -219,78 +210,27 @@ N >= 3 かつ採用率 < 20% で SATURATED 候補となった場合、**skip 判
 
 delta_methods (novel + ambiguous) の有無で提示内容を切り替える。**どちらのテンプレも Step 3.5 の per-method 照合台帳を選択肢の前に必ず提示する** — 台帳を見せずに skip/light-phase2 の選択肢を出すのは禁止 (skip の立証は事後ログではなく user が判断する前提条件)。台帳が未完成なら選択肢を出さず先に台帳を埋める。
 
-**SATURATED-but-novel / SATURATED-borderline / DELTA-UNKNOWN (delta >= 1 or unknown):**
-
-```
-この記事は topic family "<family>" の N 件目です:
-  過去事例: <最新 3 件のファイル名>
-  採用率: X% (Y 件中 Z 件で採用あり)
-  検証対象 delta_methods (delta=D, novel + ambiguous): <delta_methods のリスト>
-  ambiguous (半 novel 判定): <ambiguous_count> 件
-  prior_methods 取得: <ok | unknown (理由: Read 失敗 / セクション欠落 等)>
-
-  per-method 照合台帳 (全 current 手法、rehash は matched_prior 3点付き):
-  <台帳をそのまま貼る — rehash 行は matched_prior の引用句+理由まで見せる>
-
-選択肢:
-  - light-phase2: delta_methods D 件だけ Phase 2 で検証 (Phase 2.5 省略可、mini レポート作成)
-  - continue: フル workflow (Phase 2-5 + Phase 2.5) に進む
-  - skip: log.md 1 行で閉じる (delta_methods も無視)
-```
-
-**SATURATED-pure-rehash (delta == 0):**
-
-```
-この記事は topic family "<family>" の N 件目、新規論点なし (delta = 0、完全な再パッケージ):
-  過去事例: <最新 3 件のファイル名>
-  採用率: X%
-
-  per-method 照合台帳 (全 current 手法が rehash であることの立証 — これを見て skip を判断する):
-  <台帳をそのまま貼る。各行に matched_prior (ファイル名 + 引用句 + 同等性の理由) が埋まっていること。
-   1 行でも matched_prior が空 / family label だけ / 引用句なし なら delta>=1 となりこのテンプレは使わない>
-
-skip にしますか？ (台帳の各 rehash に納得できれば skip 推奨)
-
-選択肢:
-  - skip: Wiki Log に台帳付きで追記して終了
-  - continue: 念のため Phase 2 へ進む (台帳の照合に疑いがある場合)
-```
+**提示テンプレは `references/topic-family-saturation.md` Step 5 が正典。**
+そこには SKILL.md に無い **Step 4.5 (連続 reject trend 副ガード)** もある — 全体採用率が
+20% を超えて `PASS (warning)` になっても、直近 2 件が連続 reject なら `AskUserQuestion` を
+発火させる分岐なので、Step 4 の表だけで進めずに reference を読む。
 
 ### Step 5.5: light-phase2 選択時のショートカット [Opus]
 
-Step 3.5 で抽出した delta_methods (novel + ambiguous) だけを対象に絞り込み Phase 2 を実行する。**ただし全 current 手法の照合台帳 (rehash として除外した分も含む) を mini report に必須セクションとして残す** — 除外側の立証が成果物から消えると light-phase2 が「最も楽な抜け道」になるため:
+delta_methods だけに絞って Phase 2 を実行する。**全 current 手法の照合台帳 (rehash として
+除外した分も含む) を mini report に必須セクションとして残す** — 除外側の立証が成果物から
+消えると light-phase2 が「最も楽な抜け道」になるため。**手順は reference Step 6.5 が正典。**
 
-1. **Phase 2 Pass 1 (Sonnet Explore)** — delta_methods のキーワードだけを渡す (full method list ではなく)
-2. **Phase 2 Pass 2 (Opus)** — Already/Partial/Gap/N/A 判定
-3. **Phase 2.5 (Codex+Gemini) は省略可** — light flag。Gap 判定 >= 1 件出た場合は自動昇格で continue (フル workflow) に切り替えるかを `AskUserQuestion` で確認
-4. **Phase 3 (Triage)** — adopt 候補があれば AskUserQuestion で選別
-5. **Phase 4 (Plan + mini report)** — `docs/research/YYYY-MM-DD-{slug}-absorb-analysis.md` を作成、frontmatter に `status: light-phase2-only` を明記
-   - **mini レポート定義**: frontmatter + Source Summary + Pass 1/Pass 2 judgment table + adopted/rejected decisions + **per-method 照合台帳 (全 current 手法、rehash として除外した分も `excluded as rehash` として matched_prior 付きで残す)** のみ。Phase 2.5 セクションは省略可
-6. **Phase 5 (Handoff)** — 採用候補が S 規模なら即実行、それ以上は通常 handoff
-
-log.md 追記時の operation 表記:
-- adopt 候補が **1 件以上** → `ingest (light Phase 2)`、本体に「採用 N 件」明記
-- adopt 候補が **0 件確定** → `ingest-skip (light Phase 2, adopt=0)`、本体に「Phase 2 まで検証したが全て Already/N/A」明記し skip 同等扱い
+mini report の frontmatter には `status: light-phase2-only` と `family: <Family ID>` を書く
+(family は Step 2 の集計入力なので mini report でも省略しない)。
 
 ### Step 6: skip 選択時のショートカット [Opus]
 
-Phase 2-5 をスキップして以下のみ実行:
+Phase 2-5 をスキップし、`docs/wiki/log.md` に照合台帳付きで 1 エントリ追記して閉じる。
+MEMORY.md 索引にも Phase 5.5-5.7 にも進まない。**log テンプレは reference Step 6 が正典。**
 
-1. `docs/wiki/log.md` に追記:
-   ```
-   ## [YYYY-MM-DD] ingest-skip | <記事タイトル>
-   - ソース: <URL or タイトル>
-   - 理由: topic family "<family>" saturated-pure-rehash (N 件目, 採用率 X%, delta=0)
-   - 根拠: <Step 3.5 で記録した evidence (採用ありエントリの grep ヒット文字列リスト)>
-   - per-method 照合台帳 (delta=0 の立証 — 各 current 手法 → matched_prior の名指し):
-     - <current 手法 A> → `<report ファイル名>` の <prior 手法名> (rehash)
-     - <current 手法 B> → `<report ファイル名>` の <prior 手法名> (rehash)
-     - (全 current 手法を列挙。名指しできない手法が1つでもあれば delta>=1 となり skip しない)
-   - 該当 family のキーワード hit: <Step 1 で照合したキーワード>
-   - スキップ判定: Phase 1.5 gate
-   ```
-2. MEMORY.md 索引には追記しない (Reference Only 以下のため)
-3. Phase 5.5-5.7 (Wiki INDEX / Obsidian / Wiki Log フル更新) も実行しない (log.md 1 行のみ)
+log の `理由:` 行は `topic family "<family>"` の形で Family ID を残す。
+Step 2 の集計が skip 分をこの表記から数えるため、崩すと以後の N が過小になる。
 
 ### Step 7: Stale-Plan Audit — 過去採用タスクの棚卸し
 
@@ -301,7 +241,8 @@ PASS / SATURATED どちらの判定でも、N >= 1 (同 family に過去 absorb 
 
 要点:
 - 同 family の最新 3 件の analysis report frontmatter を確認
-- `status` 既に明示 (implemented / superseded / retired / partially-superseded) → audit skip
+- `status` が integrated / implemented / skipped / reference-only / superseded / retired /
+  partially-superseded (およびこれらを接頭辞に持つ複合値) → audit skip
 - `date` から 30 日未満 → audit skip (実装猶予期間)
 - それ以外 → `AskUserQuestion` で `implemented / superseded / narrowed / retired / kept` を user に選択させ frontmatter を更新
 - `kept` 選択は明示的判断であり `kept-by: YYYY-MM-DD` を必須記録 (暗黙的放置との区別)
@@ -496,6 +437,9 @@ Opus がプラン策定を完了した後、レポートの書き出しを `Agen
 
 > 以下の分析結果を `docs/research/YYYY-MM-DD-{slug}-analysis.md` に保存してください。
 > テンプレート: `templates/analysis-report.md`
+> frontmatter の `family:` には Phase 1.5 Step 1 で判定した Family ID を**そのまま 1 語で**書く
+> (該当なしは `none`)。判定理由や N の値を同じ行に書かない — 次回の Saturation Gate が
+> この値を機械集計するため、自由記述にすると数えられなくなる。
 > {Phase 1 の構造化抽出}
 > {Phase 2 + 2.5 の修正済みテーブル}
 > {Phase 3 の選択/スキップ結果}

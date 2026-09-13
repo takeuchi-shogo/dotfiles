@@ -2,7 +2,16 @@
 source: "{URL or title}"
 date: {YYYY-MM-DD}
 status: {analyzed | integrated | skipped}
+family: {Family ID | none}
 ---
+
+<!--
+family は Phase 1.5 Step 1 で判定した Family ID をそのまま書く
+(`references/topic-family-saturation.md` の taxonomy 表の左列)。
+該当 family なし = 新分野なら `none`。判定が割れて分類しないと決めた場合も `none`。
+このフィールドが Step 2 の件数集計の唯一の入力なので、省略すると次回以降の N が過小になる。
+-->
+
 
 ## Source Summary
 
