@@ -37,6 +37,8 @@ CLAUDE.local.md
 .cursor/rules/kw-proto-codegen.mdc
 # product/recording 固有の AIT 実装スキル — user scope で使うが dotfiles では管理しない
 .config/claude/skills/implementing-recording-ait/
+# Claude Code が ~/.claude/skills へ同期する公式 skill キャッシュ。アカウント ID 付きで上書きされる
+.config/claude/skills/synced/
 __pycache__/
 .worktrees/
 worktrees/
