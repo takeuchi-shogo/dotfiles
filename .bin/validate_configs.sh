@@ -54,14 +54,12 @@ def declared(tier):
     return int(m.group(1)) if m else None
 
 errors = []
-for tier, key in (("DENY", "deny"), ("ALLOW", "allow")):
+for tier, key in (("DENY", "deny"), ("ALLOW", "allow"), ("ASK", "ask")):
     d = declared(tier)
     if d is None:
         errors.append(f"deny-rules-catalog.md に '## {tier} (N)' ヘッダがない")
     elif d != live[key]:
         errors.append(f"{tier}: 台帳宣言={d} / settings.json 実数={live[key]} (drift)")
-if live["ask"] != 0:
-    errors.append(f"ask tier が {live['ask']} 件出現。deny-rules-catalog.md に ASK セクションを追加して同期せよ")
 
 if errors:
     print("NG  gate count drift:")

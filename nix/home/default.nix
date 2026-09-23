@@ -10,6 +10,7 @@ let
   terminal-browser = pkgs.callPackage ../pkgs/terminal-browser.nix {};
   terminal-code = pkgs.callPackage ../pkgs/terminal-code.nix {};
   mirador = pkgs.callPackage ../pkgs/mirador.nix {};
+  agent-browser = pkgs.callPackage ../pkgs/agent-browser.nix {};
 in
 {
   home.username = userName;
@@ -61,6 +62,10 @@ in
     mirador
     # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
     herdr
+  ] ++ lib.optionals (stdenv.isDarwin && stdenv.isAarch64) [
+    # 自前 derivation: AI エージェント向けブラウザ自動操作 CLI (vercel-labs/agent-browser)。
+    # prebuilt は aarch64-darwin のみ取得しているので WSL / Intel Mac には入れない。
+    agent-browser
   ] ++ lib.optionals (!stdenv.isDarwin) [
     # Linux (WSL) 限定。Mac ではこの層を Homebrew が供給している (nix/darwin/default.nix の brews)
     # が、WSL に Homebrew は無いので nixpkgs から入れる。Mac 側は B1.5 の判断どおり brew に残す。
