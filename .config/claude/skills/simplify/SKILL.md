@@ -5,7 +5,7 @@ description: >
   並列リファインアーを起動し、重複ロジック・過度なネスト・非効率クエリ・再利用機会を検出して修正する。
   コード変更後の DRY/KISS チェック、または手動で /simplify で起動。
   Triggers: '/simplify', 'simplify', 'コード簡素化', 'DRY チェック', '重複検出', 'reduce complexity'.
-  Do NOT use for: 汎用コードレビュー（use /review）、アーキテクチャ改善（use improve-codebase-architecture）、セキュリティ検証（use security-reviewer agent）。
+  Do NOT use for: 汎用コードレビュー（use /review）、セキュリティ検証（use security-reviewer agent）。
 origin: self
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, Agent
 metadata:

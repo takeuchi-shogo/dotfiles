@@ -958,7 +958,7 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 | 層 | 検証内容 | ツール | 判定 |
 |---|---|---|---|
 | **Static** | lint + type check | 言語固有ツール（`tsc`, `go vet` 等） | PASS/FAIL |
-| **Dynamic** | unit test + E2E | `/autocover`, `webapp-testing` | PASS/FAIL |
+| **Dynamic** | unit test + E2E | `test-engineer` agent, `webapp-testing` | PASS/FAIL |
 | **Semantic** | code review + product validation | `/review`, `/validate` | PASS/NEEDS_FIX/BLOCK |
 
 ### 統合判定基準
@@ -976,7 +976,7 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 新規スクリプトは不要。既存スキルの組み合わせで統合判定を実現する:
 
 - **Static**: `completion-gate.py` が lint/type check を自動実行
-- **Dynamic**: `/autocover` がカバレッジ分析 + テスト生成、`webapp-testing` が E2E
+- **Dynamic**: カバレッジレポートを入力に `test-engineer` agent (AUTOCOVER Mode) がテスト生成、`webapp-testing` が E2E
 - **Semantic**: `/review` が並列レビュー、`/validate` が仕様整合性
 
 ワークフローの Verify 段階で、3層すべてが PASS であることを確認してからタスク完了とする。

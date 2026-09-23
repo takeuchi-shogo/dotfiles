@@ -1,7 +1,7 @@
 blueprint:
   name: autocover
   description: Analyze coverage gaps and auto-generate tests
-  trigger: "/autocover, coverage gap analysis, test generation"
+  trigger: "coverage gap analysis, test generation"
   completion: graduated  # partial test generation is still useful
 
   nodes:

@@ -1,7 +1,7 @@
 ---
 status: reference
 last_reviewed: 2026-04-27
-related: skills/paper-analysis/, skills/compile-wiki/, skills/research/
+related: skills/compile-wiki/, skills/research/
 origin: graphify absorb (2026-04-27) — GraphRAG 由来の業界標準
 ---
 
@@ -87,7 +87,6 @@ confidence 50 未満の項目は `AMBIGUOUS` に降格するか、抽出自体�
 
 | 場所 | 適用方法 |
 |------|---------|
-| `paper-analysis/templates/paper-analysis-report.md` | Step 2 (Contradictions), Step 3 (Citation), Step 3.5 (Concept Relations), Step 5 (Gaps), Step 9 (Assumptions) のテーブルに provenance + conf 列を追加 |
 | `compile-wiki/templates/concept-article.md` | 主要な知見セクションのキーポイントに `[provenance, conf=NN]` をインライン併記 |
 | `research/SKILL.md` | citation merge 時に provenance を保持 |
 
@@ -103,6 +102,4 @@ confidence 50 未満の項目は `AMBIGUOUS` に降格するか、抽出自体�
 
 ## Chaining
 
-- `paper-analysis/references/relation-extraction.md` — 概念ペア関係抽出での provenance 利用
-- `paper-analysis/references/analysis-prompts.md` — 既存抽出 prompt への provenance 注入
 - `compile-wiki/templates/concept-article.md` — wiki 概念記事への展開

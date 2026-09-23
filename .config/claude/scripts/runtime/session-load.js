@@ -392,7 +392,7 @@ function suggestRefactorSession() {
 		if (allFeats) {
 			process.stderr.write(
 				"[Refactor Suggestion] 直近5セッションが全て機能追加です。" +
-					"`/refactor-session` でリファクタリングセッションを検討してください。\n",
+					"リファクタリングセッションを検討してください。\n",
 			);
 		}
 	} catch (err) {

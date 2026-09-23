@@ -46,7 +46,7 @@ pre-commit:
     no-skill-readme:
       # Anthropic 公式 Skills ガイド: skill folder には README.md ではなく SKILL.md を置く
       # README.md は Claude Code の discovery 対象外で agent から見えない
-      # 既存 legacy README.md (e.g. vercel-composition-patterns) は別途整理。
+      # 唯一の legacy README.md (vercel-composition-patterns) は 2026-09-23 の skill 退役で消えた。
       # この hook は新規追加のみ block する。
       glob: ".config/claude/skills/*/README.md"
       run: |

@@ -41,7 +41,7 @@ learner 側の 2 本を計測の根拠にしないこと:
 妥協を残すなら **期限と解消条件を書く** — 「今は warn。理由は X。X が解消したら error に上げる」。
 条件のない warn は永久に warn のまま残る。
 
-既存の先例: `skills/ast-grep-practice/references/cli.md` の「デフォルトで開始 → 段階的に厳しくする」
+既存の先例: ast-grep の lint 運用 (旧 `ast-grep-practice` skill、2026-09 退役) の「デフォルトで開始 → 段階的に厳しくする」
 （`--error` の閾値を後から上げる）。
 
 この節が扱うのは **検査を導入するときの厳しさの段階** であって、hook が予期せずクラッシュした

@@ -42,7 +42,7 @@ last_validated: 2026-07-05
 
 ## 実践的な適用
 
-dotfiles リポジトリでは `/spec` スキルが Prompt-as-PRD を生成し、`/interview` が仕様のための深いインタビューを実施する。`/prd-to-issues` が PRD を垂直スライスの独立 Issue 群に分解し、`/autonomous` や `/rpi` による並列実行の起点となる。`overconfidence-prevention.md` が仕様なし実装への抑制ガイドラインを定義している。EPD ワークフロー（`/spec` → `/spike` → `/validate` → `/epd`）が不確実性の高いタスクの標準プロセスとなっており、`Codex Spec/Plan Gate`（M 規模以上必須）が仕様書を人間に代わって機械的にレビューする。`/prd-to-issues` の Issue テンプレートには Execution Mode (HITL/AFK) が明示され、実行可否の誤認を防ぐ。`ui-observer` は baseline snapshot 比較を備え、`/validate` の acceptance criteria 照合後に UX スコア閾値ゲートを通す。`docs/adr/template.md` には Verification セクション（Affected paths / Invariants / Verification command）が追加され、`/review` skill には AI 指摘ゼロ時に仕様書を人間が深掘りする Negative Signal Review Rule が実装されている。
+dotfiles リポジトリでは `/spec` スキルが Prompt-as-PRD を生成し、`/interview` が仕様のための深いインタビューを実施する。PRD を垂直スライスの Issue 群に分解していた `/prd-to-issues` は 2026-09-23 に退役した。`overconfidence-prevention.md` が仕様なし実装への抑制ガイドラインを定義している。EPD ワークフロー（`/spec` → `/spike` → `/validate` → `/epd`）が不確実性の高いタスクの標準プロセスとなっており、`Codex Spec/Plan Gate`（M 規模以上必須）が仕様書を人間に代わって機械的にレビューする。`ui-observer` は baseline snapshot 比較を備え、`/validate` の acceptance criteria 照合後に UX スコア閾値ゲートを通す。`docs/adr/template.md` には Verification セクション（Affected paths / Invariants / Verification command）が追加され、`/review` skill には AI 指摘ゼロ時に仕様書を人間が深掘りする Negative Signal Review Rule が実装されている。
 
 ## 関連概念
 

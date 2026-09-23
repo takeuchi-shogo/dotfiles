@@ -123,7 +123,7 @@ metadata:
 | `pipeline` | 多段パイプライン | `/absorb`, `/digest` |
 | `gate` | pass/block 判定 | `/review`, `/validate` |
 | `tool` | 特定ツール実行 | `/commit`, `/codex`, `/gemini` |
-| `reference` | 参照情報のみ | `/justfile`, `/dotenvx` |
+| `reference` | 参照情報のみ | `/react-best-practices` |
 
 ## 適用フロー (revitalization 時)
 

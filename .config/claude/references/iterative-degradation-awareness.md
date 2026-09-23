@@ -131,7 +131,6 @@ C1 でハードコードした言語固有ロジックが C2, C5 で cascading r
 | /spike | プロトタイプの設計判断が後続に与える影響を意識 |
 | /review | CC-9 Iterative Slop Detection チェック |
 | /simplify | God function 化パターンの検出 |
-| /refactor-session | 蓄積された slop の定期的清掃 |
 
 ## 出典
 

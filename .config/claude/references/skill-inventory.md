@@ -56,9 +56,7 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 | react-best-practices | tool-wrapper | Reference |
 | react-expert | tool-wrapper | Reference |
 | frontend-design | generator | Workflow |
-| web-design-guidelines | reviewer | Reference |
 | webapp-testing | tool-wrapper | MCP-Enhance |
-| vercel-composition-patterns | tool-wrapper | Reference |
 | edge-case-analysis | reviewer | Workflow |
 | ui-ux-pro-max | tool-wrapper+generator | Reference |
 
@@ -69,7 +67,6 @@ workflow 自体を改善するときに使う。
 | Skill | Pattern | Category |
 |-------|---------|----------|
 | autonomous | pipeline | Workflow |
-| create-pr-wait | pipeline | Workflow |
 | improve | pipeline | Workflow |
 | eureka | generator | Doc |
 | skill-audit | reviewer | Workflow |
@@ -82,7 +79,6 @@ workflow 自体を改善するときに使う。
 
 | Skill | Pattern | Category |
 |-------|---------|----------|
-| daily-report | generator | Doc |
 | dev-ops-setup | pipeline | Workflow |
 | morning | inversion+generator | Doc |
 | capture | generator | Doc |

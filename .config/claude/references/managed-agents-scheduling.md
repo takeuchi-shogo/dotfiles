@@ -114,10 +114,10 @@ dotfiles 既存スキルとの組合せで動かす generic な routine 雛形�
 
 | # | Recipe | Schedule | 既存スキル組合せ | 代替する手作業 |
 |---|--------|----------|----------------|--------------|
-| R1 | Daily PR Review | 平日 09:00 | `gh-fix-ci` + `/review` の rubric を Routine 用 prompt に展開 | 朝の PR 棚卸し |
-| R2 | Weekly Dependency Audit | 月曜 06:00 | `dependency-auditor` skill の severity matrix を prompt に展開 | 手動 `npm audit` / `cargo audit` |
+| R1 | Daily PR Review | 平日 09:00 | `references/ci-fix-policy.md` + `/review` の rubric を Routine 用 prompt に展開 | 朝の PR 棚卸し |
+| R2 | Weekly Dependency Audit | 月曜 06:00 | `.codex/skills/dependency-auditor/references/severity-matrix.md` を prompt に展開 | 手動 `npm audit` / `cargo audit` |
 | R3 | Doc Drift Detection | 金曜 17:00 | `check-health` の rubric を Routine 化、`docs/` と `README.md` の API 言及をスキャン | 手動 doc 棚卸し |
-| R4 | Changelog from Release Tag | GitHub event (release tag push) | `conventional-changelog` reference を prompt に展開 | 手動 CHANGELOG.md 更新 |
+| R4 | Changelog from Release Tag | GitHub event (release tag push) | Conventional Commits の type 分類 (`/commit` 規約) を prompt に展開 | 手動 CHANGELOG.md 更新 |
 | R5 | Tech Debt Sweep | 月初 08:00 | `/audit` skill rubric から TODO/deprecated dep/test gap を抽出 | 手動 tech debt 棚卸し |
 
 各 recipe の prompt は **必ず `routine-prompt-rubric.md` の 6 要素** を満たして書く。dotfiles 内で実機 pilot するときは以下の段階運用:

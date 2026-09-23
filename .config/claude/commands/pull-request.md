@@ -57,7 +57,7 @@ PR 作成前に以下のいずれかが未実行と判断したら **実行を�
 | 状況 | 推奨スキル | 判断根拠 |
 |------|----------|---------|
 | 直近コミットでコード変更あり、レビュー未実施 | `/review` | git diff `main...HEAD` で 50 行超の変更 |
-| CI 設定変更を含む | `/gh-fix-ci` 事前確認 + `references/ci-fix-policy.md` 一読 | `.github/workflows/` に diff |
+| CI 設定変更を含む | `references/ci-fix-policy.md` 一読 | `.github/workflows/` に diff |
 | テストが不足 | `test-engineer` agent / 既存 test framework | source diff に対して test diff が著しく少ない |
 | breaking change の可能性 | `/spec` または migration note 追記 | export 削除、API signature 変更 |
 

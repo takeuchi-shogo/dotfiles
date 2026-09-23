@@ -18,24 +18,13 @@ from hook_utils import load_hook_input, run_hook  # noqa: E402
 # File extension → suggested skills mapping
 SKILL_MAP: dict[str, list[str]] = {
     # Frontend
-    ".tsx": ["/frontend-design", "/web-design-guidelines", "/react-best-practices"],
+    ".tsx": ["/frontend-design", "/react-best-practices"],
     ".jsx": ["/frontend-design", "/react-best-practices"],
-    ".css": ["/frontend-design", "/web-design-guidelines"],
-    ".scss": ["/frontend-design", "/web-design-guidelines"],
-    ".html": ["/frontend-design", "/web-design-guidelines"],
+    ".css": ["/frontend-design"],
+    ".scss": ["/frontend-design"],
+    ".html": ["/frontend-design"],
     ".svelte": ["/frontend-design"],
     ".vue": ["/frontend-design"],
-    # Proto
-    ".proto": ["/buf-protobuf"],
-    # GraphQL
-    ".graphql": ["/graphql-expert"],
-    ".gql": ["/graphql-expert"],
-    # Test files (detected by name pattern, not extension)
-    "_test.go": ["/autocover"],
-    ".test.ts": ["/autocover"],
-    ".test.tsx": ["/autocover"],
-    ".spec.ts": ["/autocover"],
-    ".spec.tsx": ["/autocover"],
     # Skill/agent definitions
     "SKILL.md": ["/skill-creator"],
     # Harness config
