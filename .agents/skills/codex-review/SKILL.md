@@ -39,6 +39,12 @@ Prepare the review input before launching a reviewer:
 
 Raise the size one level for auth, security, data deletion, migrations, public APIs, infra/config, external side effects, dependency changes, or harness changes.
 
+## Standalone Review and Re-review
+
+Use this path when the user asks for a read-only review of a diff or files, including changes implemented outside the current Codex task. Inspect the requested scope and relevant source files directly, and follow the requested verdict and response format. Do not edit files unless implementation or fixes are explicitly requested.
+
+For a re-review, read the current files and verify each carried-forward finding against the code. Report prior findings as resolved or still open, and identify newly found issues separately. Do not treat a finding as fixed based only on the user's summary; cite the current code or validation evidence. If the reviewed diff or requested scope changed, state the scope change before giving the verdict.
+
 ## Reviewer Selection
 
 Prefer built-in subagents (via `spawn_agent`) when available, and instruct each one in its prompt to focus on one of these areas:
