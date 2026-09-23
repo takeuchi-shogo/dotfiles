@@ -25,12 +25,12 @@ last_validated: 2026-07-05
 
 ## 実践的な適用
 
-`.config/claude/skills/paper-analysis/SKILL.md` は学術論文コーパスを対象にした矛盾検出を含む9段階の分析ワークフローとして実装されている。`references/contradiction-mapping.md` (Rule 26) は Claude memory 内の矛盾を扱う既存機構として維持され、外部コーパスとは責務が分離されている。Vault 全体の矛盾検出は `contradiction-scanner.py` の対象拡大ではなく、`/think` Step 4 や `/obsidian-knowledge` の明示実行時にとどめる方針が確認されている。
+学術論文コーパスを対象にした矛盾検出は 9 段階の `/paper-analysis` skill として実装されたが、使用ゼロのため 2026-09-23 に退役した (`docs/decommission-log.md`)。`references/contradiction-mapping.md` (Rule 26) は Claude memory 内の矛盾を扱う既存機構として維持され、外部コーパスとは責務が分離されている。Vault 全体の矛盾検出は `contradiction-scanner.py` の対象拡大ではなく、`/think` Step 4 や `/obsidian-knowledge` の明示実行時にとどめる方針が確認されている。
 
 ## 関連概念
 
 - [Obsidian統合](obsidian-integration.md) — Vault-wide contradiction detection の適用範囲と、常時化を避ける設計判断
-- [ナレッジパイプライン](knowledge-pipeline.md) — /paper-analysis skill を含む知見統合ワークフローとの関連
+- [ナレッジパイプライン](knowledge-pipeline.md) — 知見統合ワークフローとの関連 (/paper-analysis skill は 2026-09-23 退役)
 - [プルーニングファースト](pruning-first.md) — 既存の contradiction-mapping.md が記事提案を上回ると判断される際の基準
 - [Sonnetイマジネーションバイアス](sonnet-imagination-bias.md) — Daily 4-section synthesis が novel と誤判定された事例との関連
 

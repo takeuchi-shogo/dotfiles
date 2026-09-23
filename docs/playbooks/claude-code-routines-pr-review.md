@@ -267,4 +267,4 @@ PR ごとに以下を実行:
 - [Routines 公式 docs (ja)](https://code.claude.com/docs/ja/routines)
 - `docs/playbooks/worktree-based-tasking.md` — ローカル並列タスクとの使い分け
 - `~/.claude/skills/github-pr/` — 対話的に PR をレビュー・対応するスキル（routine 不在環境の代替）
-- `~/.claude/skills/gh-fix-ci/` — failing CI の調査・修正（PR レビュー routine とは別レイヤー）
+- `~/.claude/references/ci-fix-policy.md` — failing CI を直すときのガードレール（PR レビュー routine とは別レイヤー）

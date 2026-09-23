@@ -69,10 +69,6 @@ LLM にユーザーの文体を学習させ、一貫した voice でコンテン
 /obsidian-content ニュースレター書いて（Voice Profile に従って）
 ```
 
-### /rewrite での活用
-
-`/rewrite for [自分の名前]` でカスタムペルソナとして自分の voice を指定可能。
-
 ## 制限事項
 
 ### LLM の文体学習の構造的問題
