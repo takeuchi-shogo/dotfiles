@@ -21,6 +21,7 @@
       "Bash(npx eslint *)",
       "Bash(pnpm *)",
       "Bash(bun *)",
+      "Bash(agent-browser *)",
       "Bash(go build *)",
       "Bash(go test *)",
       "Bash(go run *)",
@@ -96,7 +97,17 @@
       "Bash(bun add *)",
       "Bash(bun x *)",
       "Bash(bun remove *)",
-      "Bash(bun update *)"
+      "Bash(bun update *)",
+      "Bash(agent-browser *--cdp*)",
+      "Bash(agent-browser *--auto-connect*)",
+      "Bash(agent-browser *connect *)",
+      "Bash(agent-browser *--session arc*)",
+      "Bash(agent-browser *--profile*)",
+      "Bash(agent-browser *--state*)",
+      "Bash(agent-browser *--restore*)",
+      "Bash(agent-browser *state load*)",
+      "Bash(agent-browser *auth *)",
+      "Bash(arc-debug*)"
     ],
     "deny": [
       "Bash(rm -rf *)",

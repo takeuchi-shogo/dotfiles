@@ -6,13 +6,13 @@ last_reviewed: 2026-07-16
 # Deny Rules Catalog (settings.json permissions auditability)
 
 `.config/claude/settings.json` の `permissions` を **カテゴリ別**に読めるようにした台帳。
-目的は auditability — 88 件の deny / 71 件の allow の **意図** をカテゴリ単位で追えるようにする
+目的は auditability — 88 件の deny / 72 件の allow / 18 件の ask の **意図** をカテゴリ単位で追えるようにする
 (claude-code-harness の番号付きガードレールレジストリに相当、ただし「生成」はせず読み物に留める)。
 
 > **single source は `settings.json` の `permissions` ブロック。本ファイルは編集しても挙動を変えない**
-> (auditability 用)。`## DENY (N)` / `## ALLOW (N)` ヘッダの件数は `task validate-configs`
+> (auditability 用)。`## DENY (N)` / `## ALLOW (N)` / `## ASK (N)` ヘッダの件数は `task validate-configs`
 > (`.bin/validate_configs.sh`) が settings.json と自動照合し、drift すると CI が fail する。
-> 手動同期に頼らず、件数が変わったらヘッダ・合計・カテゴリを直すこと。`ask` tier は現状 0 件。
+> 手動同期に頼らず、件数が変わったらヘッダ・合計・カテゴリを直すこと。
 
 ## DENY (88)
 
@@ -28,11 +28,12 @@ last_reviewed: 2026-07-16
 
 **deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 4 = 88** (settings.json と一致)
 
-## ALLOW (71) — カテゴリ要約
+## ALLOW (72) — カテゴリ要約
 
 | category | 件数 | 例 |
 |----------|------|----|
 | JS/TS ツールチェーン | 7 | `npm run *`, `pnpm *`, `bun *`, `npx prettier/eslint/oxlint/@biomejs/biome *` |
+| ブラウザ自動操作 | 1 | `agent-browser *` (headless の使い捨てプロファイル。実ブラウザ接続は ASK 側で止める) |
 | Go ツールチェーン | 4 | `go build/test/run/mod *` |
 | git (read + 安全な write) | 8 | `git status/log/diff/branch/add/commit *`, `git worktree list` |
 | バージョン probe | 10 | `node --version`, `go version`, `rustc --version` ほか |
@@ -45,7 +46,23 @@ last_reviewed: 2026-07-16
 | 読み取り専用 file inspect | 25 | `ls/cat/head/tail/wc/diff/jq/sort/uniq/cut/stat/tree/...` |
 | tool 許可 | 4 | `Read`, `Glob`, `Grep`, `Agent(Explore)` |
 
-**allow 合計: 7+4+8+10+2+2+1+2+5+1+25+4 = 71** (settings.json と一致)
+**allow 合計: 7+1+4+8+10+2+2+1+2+5+1+25+4 = 72** (settings.json と一致)
+
+## ASK (18) — カテゴリ要約
+
+ask は deny の後・allow の前に評価される。allow の広いルールから、確認を挟みたい呼び出しだけを切り出す用途。
+
+| category | 件数 | 例 | 理由 |
+|----------|------|----|------|
+| パッケージ追加・実行 | 8 | `pnpm add/dlx/remove/update *`, `bun add/x/remove/update *` | `pnpm *` / `bun *` の allow から、依存の変更と未知パッケージの実行を切り出す |
+| 実ログイン状態の持ち込み | 9 | `agent-browser *--cdp*`, `*--auto-connect*`, `*connect *`, `*--session arc*`, `*--profile*`, `*--state*`, `*--restore*`, `*state load*`, `*auth *` | 実ブラウザへの CDP 接続や保存済み cookie・認証情報の読み込みを伴うと、任意 JS・cookie 読み出し・upload が本物のセッションで動く |
+
+| Arc の再起動 | 1 | `arc-debug*` | Arc をデバッグポート付き / 通常起動に切り替える zsh 関数。中で `osascript` と `open -a Arc` を呼ぶので `Bash(osascript *)` / `Bash(open *)` deny の**意図的な例外**になる (deny はコマンド文字列にしか一致せず、関数本体には届かない)。再起動はユーザーの作業を中断しうるので、auto mode でも毎回確認を挟む |
+
+実ログイン状態の残余リスク: この ask は列挙型なので境界ではなく「確認の摩擦」に留まる。ask を承認して接続した後、
+別名 session で `--cdp` を付けずに操作を続ける呼び出しはルールに一致しない。手順 (`webapp-testing` skill) で
+Arc 操作を常に `--session arc` に固定してこれを塞いでいる。agent-browser 側の設定ファイルで profile 等を既定化した場合も一致しない。
+環境変数 (`AGENT_BROWSER_AUTO_CONNECT=1` 等) を前置した呼び出しは、allow が既知の安全な変数以外の代入を越えて一致しないため確認になる。
 
 ## 監査の観察 (2026-05-30)
 

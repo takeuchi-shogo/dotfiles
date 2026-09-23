@@ -18,9 +18,8 @@ metadata:
 
 Use **agent-browser** CLI for all browser automation. It provides an accessibility-tree-based workflow optimized for AI agents.
 
-**Prerequisites**: `agent-browser` installed globally. このマシンの実体は `/opt/homebrew/lib/node_modules/agent-browser`
-なので、更新は `npm install -g --prefix /opt/homebrew agent-browser@latest`。素の `npm install -g` は mise の node prefix に
-入って PATH 上で二重化する（古い方が launchd 等の非 mise シェルに残る）。
+**Prerequisites**: `agent-browser` は nix の自前 derivation (`nix/pkgs/agent-browser.nix`) で入る。
+更新はその derivation の version と hash を差し替えて `task nix:switch`。npm global 版を併存させると PATH 上で二重化する。
 
 **バージョン同梱スキル**: `agent-browser skills list` / `skills get core` で CLI 本体と version-matched な使い方が読める。
 同じサイトを繰り返し叩くと分かった時点で `skills get derive-client`（ブラウザ通信を HTTP クライアントに落とす）へ移行する。
@@ -140,6 +139,35 @@ agent-browser state save /tmp/auth-state.json
 agent-browser state load /tmp/auth-state.json
 agent-browser open http://localhost:3000/dashboard
 ```
+
+### 普段の Arc のログイン状態を使う
+
+ユーザーが「Arc で確認して」と言ったら、headless でなく Arc に CDP で接続する。
+Arc は `--executable-path` で起動させても DevTools ポートを開かないため、この経路しかない。
+
+```bash
+# Claude が実行する。Arc の再起動を伴うので settings.json の ask で毎回ユーザー承認が入る
+arc-debug            # Arc を --remote-debugging-port=9222 付きで再起動
+
+# Claude 側: 自分で開いたタブだけを操作し、終わったらそのタブだけ閉じる
+# --pin-tab が無いと、bound tab を閉じた後の操作がユーザーの別タブへフォールバックする。
+# 付けておけば tab_gone で止まる (v0.38.1 で実測)。open は既存タブを遷移させるので使わず tab new で開く
+# t<N> の id は既存のユーザータブにも振られるので、閉じるときは自分で付けたラベルで指す
+agent-browser --session arc --cdp 9222 --pin-tab tab new --label claude-verify http://localhost:3000
+agent-browser --session arc snapshot -i
+agent-browser --session arc tab close claude-verify
+
+# 確認が終わったら必ずポートを閉じる。問題が見つかって中断する場合も閉じてから報告する
+arc-debug off
+```
+
+`arc-debug` が「既に待ち受けている」と返したら、ユーザーが自分で開けたポートなので `off` はしない。
+自分で開けたときだけ閉じる。
+
+Arc 操作は常に `--session arc` を付ける。settings.json の ask ルール (`*--cdp*` / `*--session arc*` ほか) が
+この形の呼び出しを毎回確認に回すので、別名 session を使うと確認が抜ける。
+`close` は使わない (CDP 接続時の挙動は未検証で、Arc 本体を閉じる可能性を排除できていない)。ポートが開いている間はローカルの任意のプロセスが
+ログイン済み Arc を操作できるので、開けっぱなしで終わらせない。
 
 ## Debugging
 
