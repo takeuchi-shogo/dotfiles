@@ -9,6 +9,8 @@
 # ポートが開いている間は、このマシンの任意のプロセスがログイン済み Arc を操作できる。
 # デバッグが終わったら arc-debug off で閉じる。
 # Arc は起動済みだと起動フラグを無視するため、付け外しには必ず再起動が要る。
+# Claude Code からも呼ぶ (settings.json の ask で毎回承認)。中の osascript / open は
+# Bash(osascript *) / Bash(open *) deny の意図的な例外 (references/deny-rules-catalog.md の ASK 節)。
 
 _arc_debug_port() { print -r -- "${ARC_DEBUG_PORT:-9222}"; }
 

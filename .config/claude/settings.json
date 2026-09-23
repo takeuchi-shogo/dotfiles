@@ -106,7 +106,8 @@
       "Bash(agent-browser *--state*)",
       "Bash(agent-browser *--restore*)",
       "Bash(agent-browser *state load*)",
-      "Bash(agent-browser *auth *)"
+      "Bash(agent-browser *auth *)",
+      "Bash(arc-debug*)"
     ],
     "deny": [
       "Bash(rm -rf *)",

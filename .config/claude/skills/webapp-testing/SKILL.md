@@ -146,9 +146,8 @@ agent-browser open http://localhost:3000/dashboard
 Arc は `--executable-path` で起動させても DevTools ポートを開かないため、この経路しかない。
 
 ```bash
-# ユーザーが自分のターミナルで実行する (Arc の再起動に osascript が要り、Claude 側では deny)
+# Claude が実行する。Arc の再起動を伴うので settings.json の ask で毎回ユーザー承認が入る
 arc-debug            # Arc を --remote-debugging-port=9222 付きで再起動
-arc-debug off        # 検証が終わったら通常起動に戻す
 
 # Claude 側: 自分で開いたタブだけを操作し、終わったらそのタブだけ閉じる
 # --pin-tab が無いと、bound tab を閉じた後の操作がユーザーの別タブへフォールバックする。
@@ -157,12 +156,18 @@ arc-debug off        # 検証が終わったら通常起動に戻す
 agent-browser --session arc --cdp 9222 --pin-tab tab new --label claude-verify http://localhost:3000
 agent-browser --session arc snapshot -i
 agent-browser --session arc tab close claude-verify
+
+# 確認が終わったら必ずポートを閉じる。問題が見つかって中断する場合も閉じてから報告する
+arc-debug off
 ```
+
+`arc-debug` が「既に待ち受けている」と返したら、ユーザーが自分で開けたポートなので `off` はしない。
+自分で開けたときだけ閉じる。
 
 Arc 操作は常に `--session arc` を付ける。settings.json の ask ルール (`*--cdp*` / `*--session arc*` ほか) が
 この形の呼び出しを毎回確認に回すので、別名 session を使うと確認が抜ける。
 `close` は使わない (CDP 接続時の挙動は未検証で、Arc 本体を閉じる可能性を排除できていない)。ポートが開いている間はローカルの任意のプロセスが
-ログイン済み Arc を操作できるので、検証後は `arc-debug off` を促す。
+ログイン済み Arc を操作できるので、開けっぱなしで終わらせない。
 
 ## Debugging
 
