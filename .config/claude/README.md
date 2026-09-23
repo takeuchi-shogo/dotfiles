@@ -278,7 +278,6 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `edge-case-analysis` | 異常系・境界値洗い出し |
 | `interviewing-issues` | Issue 明確化インタビュー |
 | `audit` | コードベース品質監査 |
-| `autocover` | テスト自動生成パイプライン |
 
 ### Domain Specialist (専門知識)
 
@@ -290,11 +289,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `react-best-practices` | React パフォーマンス最適化 (40+ ルール) |
 | `react-expert` | React API リサーチ |
 | `frontend-design` | 高品質 UI デザイン生成 |
-| `graphql-expert` | GraphQL 設計・実装 |
-| `buf-protobuf` | Protocol Buffers / Buf エコシステム |
 | `ui-ux-pro-max` | UI/UX 最適化 (10 スタック対応) |
-| `web-design-guidelines` | Web Interface Guidelines 準拠レビュー |
-| `vercel-composition-patterns` | React コンポジションパターン |
 
 ### External Model (外部モデル連携)
 
@@ -311,7 +306,6 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | スキル | 説明 |
 |--------|------|
 | `autonomous` | マルチセッション自律実行 |
-| `create-pr-wait` | PR → CI 監視 → 自動修正 |
 | `github-pr` | PR セルフレビュー・マージ判断 |
 | `setup-background-agents` | バックグラウンドエージェント基盤セットアップ |
 | `absorb` | 外部記事・論文の知見統合 |
@@ -324,7 +318,6 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `kanban` | カンバンボード操作 |
 | `capture` | GTD 即時キャプチャ |
 | `weekly-review` | GTD 式週次レビュー |
-| `daily-report` | 全プロジェクト横断日報 |
 | `dev-insights` | 開発データ分析 |
 | `timekeeper` | 朝の計画・夕方の振り返り |
 
@@ -569,7 +562,7 @@ flowchart TB
 | 層 | トリガー | やること |
 |----|---------|---------|
 | **セッション** | Stop / SessionEnd hook | エラー・品質指摘を jsonl に自動記録 |
-| **日次** | `/daily-report` | 「今日の学び」セクションで振り返り |
+| **日次** | nightly `run-daily-report.sh` | 「今日の学び」セクションで振り返り |
 | **バックグラウンド** | `autoevolve-runner.sh` (cron) | 深夜に自律改善、朝レビュー |
 
 ### データフロー
@@ -675,7 +668,6 @@ flowchart TB
 | `/checkpoint` | セッション状態の手動チェックポイント | S |
 | `/check-context` | コンテキストウィンドウ使用率確認 | S |
 | `/memory-status` | メモリシステム状態サマリー | S |
-| `/daily-report` | 全プロジェクト横断の日報生成 | M |
 | `/absorb` | 外部記事・論文の知見統合 | M-L |
 | `/interview` | spec のための深いインタビュー | M |
 | `/recall` | コミット履歴からコンテキスト復元 | S |

@@ -446,7 +446,6 @@
       <ul class="clean">
         <li><b>frontend-design / ui-ux-pro-max</b> — UI 生成</li>
         <li><b>react-best-practices</b> — React 最適化</li>
-        <li><b>graphql-expert / buf-protobuf</b> — スキーマ設計</li>
         <li><b>edge-case-analysis</b> — 異常系・境界値</li>
         <li><b>webapp-testing</b> — agent-browser テスト</li>
         <li><b>security-scan</b> — 監査</li>
@@ -456,7 +455,6 @@
       <h4>🔧 Automation / Meta</h4>
       <p class="muted">ワークフロー自体を改善</p>
       <ul class="clean">
-        <li><b>create-pr-wait</b> — PR→CI 監視→自動修正</li>
         <li><b>skill-creator / skill-audit</b> — skill 作成・監査</li>
         <li><b>promote-learnings / auto-triage</b> — 学習昇格</li>
         <li><b>eureka</b> — ブレイクスルー記録</li>
@@ -466,7 +464,7 @@
       <h4>📓 Personal Ops</h4>
       <p class="muted">GTD・知識管理（coding の前提にしない）</p>
       <ul class="clean">
-        <li><b>daily-report / weekly-review</b> — 振り返り</li>
+        <li><b>weekly-review</b> — 振り返り</li>
         <li><b>timekeeper</b> — 朝計画</li>
         <li><b>obsidian-knowledge / digest</b> — ナレッジ整理</li>
         <li><b>note / decision</b> — 即時記録</li>
@@ -475,11 +473,9 @@
       </ul>
     </div>
     <div class="card accent-purple">
-      <h4>☁️ Installed（外部 64）</h4>
+      <h4>☁️ Installed（外部）</h4>
       <p class="muted">skills.sh / marketplace 由来</p>
       <ul class="clean">
-        <li><b>google/skills</b> — bigquery, cloud-run, gke, firebase…</li>
-        <li><b>mizchi/skills</b> — ast-grep, playwright, devbox, nix-setup…</li>
         <li><b>superpowers</b> — brainstorming, TDD, worktrees…</li>
         <li><b>pr-review-toolkit</b> — 専門レビュー agent 群</li>
         <li><b>obsidian / discord / mattpocock</b> — plugin skills</li>
@@ -635,7 +631,7 @@
       <p>OpenAI Codex（gpt-5.6-terra）。<code>config.toml</code> + <code>rules/default.rules</code>。Claude のサブエージェントとしても起動。</p>
       <ul class="clean">
         <li><b>役割</b> 深い推論・Spec/Plan ゲート・Review ゲート</li>
-        <li><b>skills</b> dependency-auditor, hook-debugger</li>
+        <li><b>skills</b> hook-debugger</li>
       </ul>
     </div>
     <div class="card accent-blue">
@@ -809,7 +805,7 @@
   <p class="muted">セッションデータを自動収集・分析し、設定自体を改善する提案を生成する。生ログ（local 非公開）→ 反復出現で insights → 確信度が高ければ MEMORY/skill/rule へ昇格（人間が承認）。</p>
   <div class="grid g4">
     <div class="card accent-pink"><h4>セッション</h4><p>Stop/SessionEnd hook が errors / quality 指摘を jsonl に自動記録</p></div>
-    <div class="card accent-blue"><h4>日次</h4><p><code>/daily-report</code> の「今日の学び」で振り返り</p></div>
+    <div class="card accent-blue"><h4>日次</h4><p>nightly <code>run-daily-report.sh</code> の活動サマリで振り返り</p></div>
     <div class="card accent-amber"><h4>バックグラウンド</h4><p>launchd cron で深夜に分析、朝レビュー（auto-triage dry-run）</p></div>
     <div class="card accent-green"><h4>昇格</h4><p>patterns.jsonl → <code>/promote-learnings</code> で skill/rule 化</p></div>
   </div>

@@ -441,7 +441,7 @@ Git worktree はファイルシステムの隔離だけでなく、**ランタ�
 
 **dotfiles での実装**:
 - `autoevolve-runner.sh`（cron: `0 3 * * *`）→ `/improve` を自動実行
-- `/daily-report`（手動 or cron）
+- nightly `run-daily-report.sh`（nightly-orchestrator）
 - CronCreate ツール（セッション内から動的にスケジュール）
 
 **静的 cron vs 動的 CronCreate の使い分け**:

@@ -201,7 +201,7 @@ NotebookLM/Literature Note とは独立した汎用圧縮モード。任意の�
 
 オプション引数:
 - 語数指定: `/digest summarize 300` → 300語
-- 読者指定: `/digest summarize for [audience]` → `/rewrite` のプリセットと同じオーディエンス分類
+- 読者指定: `/digest summarize for [audience]`
 
 ### Step 3: 圧縮実行
 
@@ -230,7 +230,6 @@ NotebookLM/Literature Note とは独立した汎用圧縮モード。任意の�
 
 ### Chaining
 
-- `/digest summarize` → `/rewrite` でオーディエンス別変換
 - `/digest summarize` → `/note` で Obsidian Inbox に保存
 - `/research` → `/digest summarize` でリサーチ結果の圧縮
 

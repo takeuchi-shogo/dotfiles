@@ -29,8 +29,6 @@ Skills whose domains overlap heavily with the base model's knowledge. These are 
 
 - `react-best-practices`
 - `security-scan`
-- `buf-protobuf`
-- `ast-grep-practice`
 - `frontend-design`
 - `ui-ux-pro-max`
 
