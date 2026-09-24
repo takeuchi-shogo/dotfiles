@@ -17,7 +17,7 @@ last_reviewed: 2026-04-23
 learner 側の 2 本を計測の根拠にしないこと:
 
 - `scripts/learner/staleness-detector.py` — hook 未登録。`memory-eviction.py` からの import と `/improve` 実行時の advisory (`improve-policy.md:489`) が唯一の consumer で、常時収集はしていない
-- `scripts/learner/skill-usage-tracker.py` — consumer ゼロの休眠スクリプト。`.config/claude/README.md:190,237` と `references/diagrams/architecture-overview.md:45` は Stop/SessionEnd で動くと書いているが、settings.json に登録がなく実行されていない (要修正の drift)
+- `scripts/learner/skill-usage-tracker.py` — consumer ゼロの休眠スクリプトだったため 2026-09-25 に削除した。skill の使用記録は `scripts/policy/skill-tracker.py` が唯一の経路
 
 ## 例外
 

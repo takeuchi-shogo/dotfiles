@@ -42,7 +42,6 @@ graph TD
     subgraph lr_hooks ["Learner 代表"]
         LR1["session-learner.py"]
         LR2["edit-failure-tracker.py"]
-        LR3["skill-usage-tracker.py"]
     end
 
     LIB["lib/ 共有基盤<br/>hook_utils.py, storage.py,<br/>session_events.py, rl_advantage.py"]

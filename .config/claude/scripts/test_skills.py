@@ -4,6 +4,7 @@
 Usage:
     python3 .config/claude/scripts/test_skills.py
 """
+
 from __future__ import annotations
 
 import re
@@ -104,14 +105,22 @@ def test_references(skill_path: Path) -> list[str]:
     # references/ と scripts/ への参照を検出
     # Also strip lines that are clearly examples (contain "Example" or "例")
     lines = [
-        line for line in cleaned.split("\n")
-        if not re.search(r"(?:Example|例|When to include|Benefits)", line, re.IGNORECASE)
+        line
+        for line in cleaned.split("\n")
+        if not re.search(
+            r"(?:Example|例|When to include|Benefits)", line, re.IGNORECASE
+        )
     ]
     cleaned = "\n".join(lines)
     refs = re.findall(r"`((?:references|scripts|assets)/[^`]+)`", cleaned)
     for ref in refs:
-        ref_path = skill_path / ref
-        if not ref_path.exists():
+        path_part = re.sub(r":\d+$", "", ref.split(" § ")[0].split()[0])
+        if any(marker in path_part for marker in ("{", "...", "*")):
+            continue
+        in_skill = (skill_path / path_part).exists()
+        in_shared = (SKILLS_DIR.parent / path_part).exists()
+        in_repo = (SKILLS_DIR.parent.parent.parent / path_part).exists()
+        if not (in_skill or in_shared or in_repo):
             errors.append(f"referenced file not found: {ref}")
 
     return errors
@@ -144,7 +153,7 @@ def main() -> None:
             passed += 1
             print(f"✅ {skill_path.name}")
 
-    print(f"\n{'='*40}")
+    print(f"\n{'=' * 40}")
     print(f"Results: {passed} passed, {failed} failed, {passed + failed} total")
 
     sys.exit(exit_code)

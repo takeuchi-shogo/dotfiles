@@ -187,7 +187,7 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 | **PostToolUse** (Edit/Write) | `auto-format.js`, `golden-check.py`, `checkpoint_manager.py`, `file-proliferation-guard.py` | 自動整形、GP違反検出、チェックポイント、ファイル増殖防止 |
 | **PostToolUse** (Bash) | `claude-hooks` (Rust, `post-bash`), `stagnation-detector.py` | 出力退避、エラー分析、テスト解析、計画追跡、レビュー追跡（Rust 統合）。停滞検知は `stagnation-detector.py` (Python, 多機能版) が担当 |
 | **PreCompact** | `pre-compact-save.js` | コンテキスト圧縮前にセッション状態保存 |
-| **Stop/SessionEnd** | `completion-gate.py`, `session-save.js`, `session-learner.py`, `skill-usage-tracker.py` | テスト実行ゲート、状態保存、学習データ永続化、スキル利用追跡 |
+| **Stop/SessionEnd** | `completion-gate.py`, `session-save.js`, `session-learner.py` | テスト実行ゲート、状態保存、学習データ永続化 |
 
 ### policy/ スクリプト一覧 (36個 — 代表例)
 
@@ -233,7 +233,6 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 | スクリプト | 役割 |
 |-----------|------|
 | `session-learner.py` | 学習データ永続化 |
-| `skill-usage-tracker.py` | スキル使用頻度追跡 |
 
 ### 共有モジュール (scripts/lib/)
 
