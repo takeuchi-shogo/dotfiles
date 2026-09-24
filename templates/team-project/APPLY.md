@@ -31,9 +31,7 @@ git commit -m "docs: initialize Claude Code harness template"
 ## シナリオ 2: 既存 project に後付け (差分適用)
 
 既に CLAUDE.md や docs/ が無い team project に template を導入する場合。
-**Claude Code の `/init-project --team --apply-to <project-dir>` に委譲するのが楽**。
-
-自動化を使わずに手動で行う場合:
+`/init-project --team --apply-to <project-dir>` による自動化は 2026-09-23 に退役したため、手動で行う:
 
 ```bash
 cd /path/to/existing-project
@@ -69,7 +67,7 @@ git diff CLAUDE.md
 
 1. **既存 CLAUDE.md を読む** — 残すべき project-specific な内容を確認
 2. **base/CLAUDE.md.tpl の構成を参考に** — Zone 定義・Verification Gate・Scope Caps などを追加
-3. **`/init-project --team --apply-to .` で gap 分析** を実行し、skill に不足分の提案をもらう
+3. **base/CLAUDE.md.tpl と既存内容を比較して gap 分析**する（旧 `/init-project --team --apply-to .` による自動 gap 分析は 2026-09-23 退役）
 4. 差分を手動 merge
 
 ## Placeholder 命名規則

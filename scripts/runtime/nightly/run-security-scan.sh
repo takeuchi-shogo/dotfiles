@@ -3,7 +3,7 @@
 # cron: 45 23 * * *  (DOW=3 水曜、catch-up 6 days)
 # Scope: ~/.claude/ のエージェント設定 (CLAUDE.md / hooks / skills / settings.json)。
 # agentshield-filter.py が `npx ecc-agentshield scan` を実行し、deny ルール等の
-# false positive を除去して再採点する (skill `/security-scan` の非対話版)。
+# false positive を除去して再採点する (旧 skill `/security-scan` の非対話版、skill 本体は 2026-09-24 退役)。
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

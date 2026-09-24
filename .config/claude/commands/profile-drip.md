@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 ## 手順
 
 1. `memory/user_*.md` を全て読む
-2. developer-onboarding スキルのカバー領域と比較してギャップを特定
+2. 既存 `user_*` メモリが扱う領域（AI 協業・開発スタイル・技術スタック・学習スタイル）と比較してギャップを特定
 3. ギャップから最も価値のある1つを選び、自然な対話として質問
 4. 回答を受けたら該当メモリファイルを更新（なければ新規作成）
 

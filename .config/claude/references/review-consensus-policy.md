@@ -363,7 +363,6 @@ Verifier 基準を書くときは「この要求を、実際にやらずに満�
 | `/absorb` Saturation Gate の `matched_prior` 3点必須（ファイル名 + 引用句 + 同等性の理由） | 「似ているから rehash」で照合せず skip する |
 | `references/web-fetch-policy.md` の trusted 外 WebFetch 禁止 | 内部 Haiku 要約された二次テキストを原文引用として使う |
 | `agents/code-reviewer.md` の「file:line と再現可能な根拠がない指摘は Non-Finding に降格」 | 根拠なしの印象論を finding として計上する |
-| `skill-creator/instructions/testing-evaluation.md` の process-adherence check | 成果物だけ整えてワークフローの実行を飛ばす |
 
 新しい Verifier / rubric を作るときは、同じ列を 1 行以上埋める。埋められないなら、その基準は「何を証拠とみなすか」がまだ決まっていない。
 

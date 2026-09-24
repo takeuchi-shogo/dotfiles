@@ -17,7 +17,7 @@ last_reviewed: 2026-08-13
 | **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
 | **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
 | **実装 (別視点)** | Grok 4.6 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.6-high`) |
-| **レビュー** | Codex `gpt-5.6-sol` | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
+| **レビュー** | Codex `gpt-5.6-sol` | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `launch-worker.sh` |
 | **抽出・変換** | Haiku 4.5 | WebFetch 生取得 (要約は呼び出し側責務)、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
 
 **役割は階層ではない**。Fable はメインの上位でも下位でもなく「設計のときに呼ぶ」。コスト順に落とすのではなく、タスクの性質で選ぶ。
@@ -39,8 +39,8 @@ last_reviewed: 2026-08-13
 
 | モデル | 得意領域 | 委譲タスク例 | 起動方法 |
 |--------|----------|-------------|----------|
-| **Codex** (`gpt-5.6-sol`) | 異視点の深い批評 | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `/dispatch` |
-| **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `/dispatch` |
+| **Codex** (`gpt-5.6-sol`) | 異視点の深い批評 | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `launch-worker.sh` |
+| **Gemini** | 1Mコンテキスト | コードベース全体分析、外部リサーチ、マルチモーダル | cmux Worker or `launch-worker.sh` |
 | **Cursor (Grok 4.6)** | 別視点の実装・マルチモデル・Cloud Agent | Sonnet が詰まった実装、モデル比較、非同期長時間タスク | `/cursor` skill |
 | **Managed Agents** | クラウド実行・スケジュール・外部連携 | 日次ブリーフ、Event-triggered PR、Slack/Teams 応答 | `/claude-api` skill + API/CLI |
 
@@ -159,7 +159,7 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 3. **Interactive Claude Code (TUI) に切替** — parallel orchestration を諦めるが subscription pool に戻る
 4. **extra usage 有効化 + API rate 受け入れ** — 上記が不可な場合のみ
 
-判断ポイント: 起動前に「subscription pool で済むか、credit 消費か」を意識する。`/research` `/autonomous` の `claude -p` 多用はヘビー枠扱い、Codex/Gemini 委譲を先に検討する。Subagent (`Agent` tool) 経由は Claude Code 内部呼び出しで subscription 扱いのため影響なし。
+判断ポイント: 起動前に「subscription pool で済むか、credit 消費か」を意識する。`/autonomous` の `claude -p` 多用はヘビー枠扱い、Codex/Gemini 委譲を先に検討する。Subagent (`Agent` tool) 経由は Claude Code 内部呼び出しで subscription 扱いのため影響なし。
 
 ## Routing 改善の方針 (ACRouter 検証, 2026-06-25)
 

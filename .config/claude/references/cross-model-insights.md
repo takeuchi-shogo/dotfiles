@@ -160,7 +160,7 @@ MTI の理論的基盤: Agent = Core (architecture + trained weights) + Shell (s
 
 - **含意**: `model-expertise-map.md` の能力スコアは Core の特性。Shell（system prompt, temperature）変更で
   行動特性が変動する可能性を考慮すべき
-- 現在の `/dispatch` や `model-expertise-map.md` は能力ベースのルーティング。気質次元は未測定だが、
+- 現在の `launch-worker.sh` や `model-expertise-map.md` は能力ベースのルーティング。気質次元は未測定だが、
   概念として認識しておく価値がある
 
 ---

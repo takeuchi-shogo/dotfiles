@@ -7,7 +7,7 @@ last_reviewed: 2026-04-23
 
 > HACRL (arXiv:2603.02604) の Exponential IS に基づく。
 > 出力分布が近いエージェントからの学習を優先する原理を、
-> `/debate` のモデル意見集約における専門分野近接重み付けに適用する。
+> cmux Worker hub-and-spoke（`launch-worker.sh` ×N、`references/cmux-ecosystem.md`）のモデル意見集約における専門分野近接重み付けに適用する。
 
 ---
 
@@ -36,7 +36,7 @@ last_reviewed: 2026-04-23
 
 ## Domain Classification Guide
 
-`/debate` の質問をどのドメインにマッピングするか:
+cmux Worker hub-and-spoke の質問をどのドメインにマッピングするか:
 
 | Domain | 対象 |
 |---|---|
@@ -71,14 +71,14 @@ last_reviewed: 2026-04-23
 ## Update Policy
 
 - `reviewer-capability-scores.md` と同様に `/improve` サイクルで段階的に更新
-- `/debate` の結果に対するユーザーの採用/不採用率をデータソースとする
+- cmux Worker hub-and-spoke の結果に対するユーザーの採用/不採用率をデータソースとする
 - 変更上限: 1回の更新で最大 2 ドメインのスコアを変更
 
 ---
 
 ## Usage
 
-`/debate` の Step 4 Synthesize で参照する。
+cmux Worker hub-and-spoke の conductor 統合ステップで参照する。
 `codex-delegation.md` / `gemini-delegation.md` からも参照される。
 
 ---

@@ -7,7 +7,8 @@ Output: advisory message when Success Criteria is added/changed in PLANS.md
         or docs/plans/active/*.md. Always exit 0 (never blocks).
 
 Classification: Semantic Advisory (ADR-0006).
-Purpose: Prompt user to /grill-interview right after defining Success Criteria,
+Purpose: Prompt user to mattpocock-skills:grilling right after defining Success
+         Criteria,
          when stress-testing the plan is highest-leverage.
 
 Origin: "How I got banned from GitHub due to my harness pipeline" (2026-04) —
@@ -83,7 +84,7 @@ def main() -> None:
 
     advisory = (
         "[advisory] Success Criteria を更新しました。\n"
-        "Plan→Implement の境界です。実装に入る前に /grill-interview で\n"
+        "Plan→Implement の境界です。実装に入る前に mattpocock-skills:grilling で\n"
         "Plan のストレステスト (前提・抜け・撤退条件) を推奨します。\n"
         "(advisory only — block しません。ADR-0006 Semantic Advisory 分類)"
     )

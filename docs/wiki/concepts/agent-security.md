@@ -40,7 +40,7 @@ confidence: established
 
 ## 実践的な適用
 
-dotfiles では `prompt-injection-detector.py`（PreToolUse）が技術的パターン検出を担い、`mcp-audit.py` が MCP サーバーの入力監査を行う。`/security-review` スキルと `security-reviewer` エージェントが OWASP Top 10 準拠の検査を実行する。`settings.json` の deny rules で危険コマンド（curl|bash・rm -rf 等）を常時ブロックし、`/careful` スキルがオプトインで追加保護を提供する。`security-scan` スキルが AgentShield 経由でエージェント固有の脆弱性を検出する。加えて、`scan-context-files.py`（SessionStart）が cwd の CLAUDE.md/AGENTS.md 等の難読化系 injection を検出し、`skill-security-scan.py --critical-only` が外部 install スキルの CRITICAL 脅威のみを gate し、`session-bom.py` が Agent-BOM-lite を per-session に記録する。GitHub Actions 上の agent-triage.yml は job-level author guard（`OWNER`/`MEMBER`/`COLLABORATOR`）でトリガー主体を制限する。
+dotfiles では `prompt-injection-detector.py`（PreToolUse）が技術的パターン検出を担い、`mcp-audit.py` が MCP サーバーの入力監査を行う。`/security-review` スキルと `security-reviewer` エージェントが OWASP Top 10 準拠の検査を実行する。`settings.json` の deny rules で危険コマンド（curl|bash・rm -rf 等）を常時ブロックし、`/careful` スキルがオプトインで追加保護を提供する。nightly `run-security-scan.sh` と `security-reviewer` エージェントが AgentShield 経由でエージェント固有の脆弱性を検出する。加えて、`scan-context-files.py`（SessionStart）が cwd の CLAUDE.md/AGENTS.md 等の難読化系 injection を検出し、`skill-security-scan.py --critical-only` が外部 install スキルの CRITICAL 脅威のみを gate し、`session-bom.py` が Agent-BOM-lite を per-session に記録する。GitHub Actions 上の agent-triage.yml は job-level author guard（`OWNER`/`MEMBER`/`COLLABORATOR`）でトリガー主体を制限する。
 
 ## 関連概念
 
