@@ -740,7 +740,7 @@ Skill（形式知）     → スキルとして形式化、再利用可能なワ
 | **max** | 高リスク判断、セキュリティレビュー、複雑なアーキテクチャ設計、デバッグの最終手段 | thinking トークン大量消費 |
 | **ultracode** | 最大規模・最高網羅性が要件のタスク限定。Dynamic Workflows (Workflow tool) の standing opt-in を兼ね、substantive task を既定で workflow 化する。routine work では使わない | 最大 1000 subagent fan-out で token 激増 |
 
-- グローバル設定は `"effortLevel": "high"`。スキル/エージェント単位で `effort` frontmatter でオーバーライド可能
+- settings.json の top-level `"effortLevel"` は **Opus 5.5 には効かない** (user settings の top-level は Opus 5・Fable 5.1 以前のみ)。Opus 5.5 の既定は `medium` で、公式ガイドも medium 起点・xhigh/max は品質向上を測れた仕事に限るよう勧めている。重い回だけ `ultrathink` か `/effort` を `s` (このセッション限り) で上げる。スキル/エージェント単位で `effort` frontmatter でオーバーライド可能 (出典: `references/debug-thinking-summary.md` 要点)
 - "max" は Opus 4.6 専用。Sonnet では効果が限定的
 - 1日の "max" 使用は 3-5 回を目安に。コスト: thinking トークンが output 単価 ($25/M for Opus) で課金される
 - `ultracode` の挙動（standing workflow opt-in / 最大 1000 subagent fan-out / token 激増）は **Workflow tool description が一次情報源**。routine work では使わず `/effort high` 相当に戻す

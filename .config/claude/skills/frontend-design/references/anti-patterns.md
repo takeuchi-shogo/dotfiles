@@ -24,6 +24,8 @@
 
 ## General
 - **NG**: "AI が作りました" 感のあるデザイン
+  - この一般的な禁止だけでは別の default に置き換わるだけ。効くのは具体パターンの名指し。初回出力が使った style を確認し、下のリストを延ばす
+- **NG (Opus 5.5 の既定 style)**: design direction が無いと次に寄る — cream / off-white 背景、見出し内のイタリック強調語、`01/02/03` の番号付きセクションラベル、monospace のラベル、pill 形のボタン (出典: platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5「Frontend design defaults」)
 - **NG**: section ごとの役割が曖昧で、同じ mood statement を繰り返す
 - **NG**: real content がないまま placeholder の勢いで組み切る
 - **OK**: 意図的で個性のあるデザイン
