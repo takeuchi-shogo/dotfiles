@@ -1254,7 +1254,7 @@ _SHELL_CMD_TOKENS = frozenset(
 )
 
 _BACKTICK_PATH_RE = re.compile(r"`([^`\n]+)`")
-_BARE_PATH_RE = re.compile(r"(?<![\w`:/])((?:/|~/)[\w./\-]+\.\w{1,8})")
+_BARE_PATH_RE = re.compile(r"(?<![\w`:/~.])((?:/|~/|\.{1,2}/)[\w./\-]+\.\w{1,8})")
 _TRANSCRIPT_TAIL_BYTES = 262144
 
 

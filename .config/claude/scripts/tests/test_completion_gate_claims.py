@@ -78,6 +78,71 @@ def test_allows_when_file_exists(tmp_path):
     assert gate._check_fabricated_claims(_data(tmp_path, tr)) is None
 
 
+def test_allows_existing_tilde_path(tmp_path, monkeypatch):
+    """
+    前提: HOME 配下に実ファイルがあり、主張は ~/ 付きで書かれている。
+    事前: バッククォート有り・無しの両方で同じパスに言及する。
+    検証: ~ の直後の / から一致した「/.claude/...」をルート直下の別パスとして
+          誤検出しないこと (2026-09-24 の誤 block の回帰)。
+    """
+    monkeypatch.setenv("HOME", str(tmp_path))
+    real = tmp_path / ".claude" / "settings.json"
+    real.parent.mkdir()
+    real.write_text("{}", encoding="utf-8")
+    text = (
+        "live の `~/.claude/settings.json` を書き換えた。\n\n"
+        "~/.claude/settings.json も確認済み。"
+    )
+    tr = _transcript(tmp_path, _assistant_text(text))
+    assert gate._check_fabricated_claims(_data(tmp_path, tr)) is None
+
+
+def test_allows_existing_dot_relative_path(tmp_path, monkeypatch):
+    """
+    前提: cwd 配下に実ファイルがあり、主張は ./ 付きで書かれている。
+    事前: バッククォート無しで言及する。
+    検証: . の直後の / から一致した「/sub/done.py」をルート直下として誤検出しないこと。
+    """
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "done.py").write_text("x", encoding="utf-8")
+    text = "./sub/done.py を作成した。"
+    tr = _transcript(tmp_path, _assistant_text(text))
+    assert gate._check_fabricated_claims(_data(tmp_path, tr)) is None
+
+
+def test_blocks_missing_dot_relative_paths(tmp_path, monkeypatch):
+    """
+    前提: cwd 配下にも親ディレクトリにも対象ファイルが存在しない。
+    事前: バッククォート無しの ./ と ../ 付きパスを「作成した」と主張する。
+    検証: 相対パスを先頭から 1 本として拾い、cwd 基準の実パスで block すること。
+    """
+    work = tmp_path / "work"
+    work.mkdir()
+    monkeypatch.chdir(work)
+    text = "./draft.py を作成した。\n\n../notes.py も作成した。"
+    tr = _transcript(tmp_path, _assistant_text(text))
+    result = gate._check_fabricated_claims(_data(tmp_path, tr))
+    assert result is not None
+    assert str(work / "draft.py") in result["reason"]
+    assert str(tmp_path / "notes.py") in result["reason"]
+
+
+def test_still_blocks_missing_tilde_path(tmp_path, monkeypatch):
+    """
+    前提: HOME 配下にファイルが存在しない。
+    事前: ~/ 付きのパスを「書いた」と主張する。
+    検証: 展開後の実パスで block し、ルート直下の偽パスは報告に出さないこと。
+    """
+    monkeypatch.setenv("HOME", str(tmp_path))
+    text = "`~/never/written.md` を書いた。"
+    tr = _transcript(tmp_path, _assistant_text(text))
+    result = gate._check_fabricated_claims(_data(tmp_path, tr))
+    assert result is not None
+    assert str(tmp_path / "never" / "written.md") in result["reason"]
+    assert "  - /never/written.md" not in result["reason"]
+
+
 def test_allows_when_write_tool_was_called(tmp_path):
     target = tmp_path / "via-write.md"
     text = f"`{target}` を作成した。"
