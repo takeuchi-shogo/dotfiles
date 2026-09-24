@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -209,6 +210,13 @@ def render(skills, agents, plugins) -> str:
 """
 
 
+_REV_RE = re.compile(r"\(rev (?:[0-9a-f]{4,64}|unknown)\)。手書き禁止")
+
+
+def _without_rev(text: str) -> str:
+    return _REV_RE.sub("(rev)。手書き禁止", text, count=1)
+
+
 def main() -> None:
     check = "--check" in sys.argv[1:]
     skills = collect_skills()
@@ -218,7 +226,7 @@ def main() -> None:
 
     if check:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-        if current != rendered:
+        if _without_rev(current) != _without_rev(rendered):
             print(
                 f"DRIFT: {OUT} is stale — run gen-harness-overview.py", file=sys.stderr
             )
