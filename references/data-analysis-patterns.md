@@ -124,4 +124,4 @@ EOF
 - **大きなファイル**: 100MB+ のファイルは先頭 1000 行で試してから全体に適用
 - **日本語データ**: `pd.read_csv('file.csv', encoding='utf-8')` を明示
 - **可視化**: matplotlib の日本語表示には `japanize-matplotlib` が必要
-- **結果の保存**: 分析結果は `/note` で Obsidian に保存、または `/digest summarize` でブリーフ化
+- **結果の保存**: 分析結果は `note-to-vault.sh` で Obsidian に保存する

@@ -32,7 +32,7 @@ confidence: established
 ## 適用
 
 - `references/agent-conflict-patterns.md` にカタログとチェックリストを定義
-- `/dispatch` 並列実行時にガードレール文言をプロンプトに注入
+- `launch-worker.sh` 並列実行時にガードレール文言をプロンプトに注入
 - `/review` の並列レビューア結果統合時にチェックリスト実行
 - `references/subagent-delegation-guide.md` の Return Contract + Re-Flooding 防止ルールで、複数エージェントの返却が親を溢れさせて矛盾を増幅するのを防ぐ
 

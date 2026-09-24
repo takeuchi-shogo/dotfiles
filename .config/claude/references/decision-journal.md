@@ -8,7 +8,6 @@ last_reviewed: 2026-04-23
 > 日常の設計・ワークフロー決定を記録し、結果を追跡する。
 > ADR（docs/adr/）はアーキテクチャ決定用。こちらは軽量な日常決定用。
 >
-> `/timekeeper review` で outcome の振り返りを促す。
 > `/improve` の Garden フェーズで outcome 未記入の古いエントリをリマインドする。
 
 ## フォーマット

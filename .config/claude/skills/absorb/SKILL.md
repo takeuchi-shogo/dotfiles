@@ -1,6 +1,6 @@
 ---
 name: absorb
-description: "外部記事・論文・リポジトリの知見を現在のセットアップに統合する。ギャップ分析→選別→統合プラン生成。記事を貼って「活かしたい」「考えて」と言われたときに使用。Triggers: '活かしたい', '取り込みたい', '考えて', 'absorb', '統合して', 'この記事', 'integrate'. Do NOT use for: 単純な記事要約（直接回答で十分）、リサーチ（use /research）、ノート保存（use /note or /digest）。"
+description: "外部記事・論文・リポジトリの知見を現在のセットアップに統合する。ギャップ分析→選別→統合プラン生成。記事を貼って「活かしたい」「考えて」と言われたときに使用。Triggers: '活かしたい', '取り込みたい', '考えて', 'absorb', '統合して', 'この記事', 'integrate'. Do NOT use for: 単純な記事要約（直接回答で十分）、リサーチ（use gemini-explore agent）、ノート保存（use note-to-vault.sh）。"
 origin: self
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch
 user-invocable: true
@@ -491,7 +491,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 - 同じ Sonnet BG agent に Wiki Log 追記も統合して委譲する（1 agent で完結）
 
 **Obsidian Bridge（承認時のみ、Opus 自身が main session で実行）:**
-- 分析レポートを `/digest` 互換の Literature Note 形式に変換
+- 分析レポートを Literature Note 形式に変換
 - **Opus が `Skill` tool で `obsidian:obsidian-markdown` または `obsidian:obsidian-cli` を直接呼び出す**
 - 保存先: Vault の `05-Literature/lit-{author}-{title-slug}.md`
 - frontmatter: created, tags (type/literature, topic/...), source (title, author, url, type)
@@ -545,7 +545,7 @@ Phase 5 の実行判断後、以下の後処理を **並列実行** する。委
 
 - **分析レポートから実装**: `/rpi docs/research/YYYY-MM-DD-{slug}-analysis.md`
 - **大規模統合**: `/epd` の Phase 1 (Spec) に分析レポートを入力
-- **深掘り調査**: 記事が不十分なら `/research` で補完調査
+- **深掘り調査**: 記事が不十分なら `gemini-explore` agent で補完調査
 - **wiki 更新**: `/compile-wiki update` で差分レポートを wiki に反映
 - **Obsidian保存**: Vault の `05-Literature/` に Literature Note として保存
 

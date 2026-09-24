@@ -4,7 +4,7 @@ description: >
   ユーザーの要件テキスト（自由文）から構造化された GitHub Issue を生成し、gh issue create で投稿する。
   タイトル・本文（背景/要件/受入基準/技術メモ）・ラベルを自動生成し、プレビュー確認後に投稿。
   Triggers: 'Issue 作りたい', 'Issue 作成', 'create issue', '要件を Issue にして', 'GitHub Issue'.
-  Do NOT use for: 既存 Issue の明確化（use /interviewing-issues）、仕様書作成（use /spec）、PR 作成（use /pull-request）。
+  Do NOT use for: 既存 Issue の明確化（use mattpocock-skills:grilling）、仕様書作成（use /spec）、PR 作成（use /pull-request）。
 origin: self
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion
 metadata:
@@ -149,7 +149,6 @@ EOF
 
 ## 関連スキル
 
-- `/interviewing-issues` — **既存** Issue を明確化するスキル。create-issue は **ゼロから** Issue を作る
 - `/spec` — 仕様書（PRD）を作成する。create-issue は GitHub Issue として投稿する
 - `/pull-request` — PR を作成する。Issue と PR は別物
 

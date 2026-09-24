@@ -246,7 +246,9 @@ setup_claude_plugins() {
 
   # Verify hash of installed external skills (best-effort; warn on mismatch).
   local verify_script="$DOTFILES_DIR/scripts/runtime/skill-hash-verify.sh"
-  if [ -x "$verify_script" ]; then
+  if [ ! -f "$DOTFILES_DIR/skills-lock.json" ]; then
+    log "Skipping skill hash verification: skills-lock.json is gitignored and not present on a fresh clone"
+  elif [ -x "$verify_script" ]; then
     log "Verifying external skill hashes..."
     if ! "$verify_script" >> "$LOG_FILE" 2>&1; then
       warn "Skill hash verification reported mismatches (see $LOG_FILE)"

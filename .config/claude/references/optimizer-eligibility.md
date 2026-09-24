@@ -16,7 +16,7 @@ last_reviewed: 2026-07-22
 | Lane | 判定基準 | 最適化方式 |
 |------|---------|-----------|
 | **objective-checkable** | 正解キーとの機械照合で pass/fail が決まる。人間の再判断なしに採点できる | `holdout_accept_gate.py` の strict gate (playbook 手動起動) |
-| **judgement** | 「良い出力」が人間嗜好・文脈適合に依存し、固定の正解キーが存在しない | human-in-loop のみ (`/promote-learnings`) |
+| **judgement** | 「良い出力」が人間嗜好・文脈適合に依存し、固定の正解キーが存在しない | human-in-loop のみ (`scripts/runtime/nightly/run-learned-promote.sh`) |
 
 **デフォルトは judgement lane。** objective-checkable と証明できたものだけを allowlist に載せる。
 
@@ -49,7 +49,7 @@ artifact を objective-checkable lane に入れるには、3 問すべて Yes �
 | golden-check hook | objective | 期待 verdict が fixture で固定可能 |
 | `/absorb` skill | judgement | 「取り込む価値があるか」に正解キーなし |
 | `/review` skill | judgement | 指摘の妥当性は文脈依存。finding「分類」は objective だが、レビュー全体の良し悪しは judgement |
-| `/think` skill | judgement | 思考の深まりは人間しか判定できない |
+| `mattpocock-skills:grilling` skill | judgement | 思考の深まりは人間しか判定できない |
 
 判断不能ケースは出なかった。今後の運用で **2 回以上「どちらの lane か判断不能」が出たら**、二分をやめて「allowlist 列挙 + デフォルト judgement」方式に縮退する (plan の撤退条件)。
 

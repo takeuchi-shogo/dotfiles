@@ -90,7 +90,6 @@ team project で最低限整備すべきもの (本 template が提供):
 
 - Template 実体: `<dotfiles>/templates/team-project/{base,variants/}`
 - 適用手順: `<dotfiles>/templates/team-project/APPLY.md`
-- 関連 skill: `/init-project --team` (`<dotfiles>/.config/claude/skills/init-project/`)
 - 設計根拠: `<dotfiles>/docs/plans/completed/2026-04-23-team-harness-template-plan.md`
 - 起点 research: `<dotfiles>/docs/research/2026-04-23-team-harness-template-analysis.md` (後日生成)
 

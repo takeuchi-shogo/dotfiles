@@ -54,18 +54,19 @@ in
     ghqr
     # 自前 derivation: AI エージェント出力のレビュー CLI (tomasz-tomczyk/crit)
     crit
+    # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
+    herdr
+  ] ++ lib.optionals (stdenv.isDarwin && stdenv.isAarch64) [
+    # prebuilt を aarch64-darwin 分しか取得していない自前 derivation 群。
+    # 共通リストに置くと WSL / Intel Mac の評価が platform 不一致で止まる。
+    # 自前 derivation: AI エージェント向けブラウザ自動操作 CLI (vercel-labs/agent-browser)
+    agent-browser
     # 自前 derivation: ターミナル内ブラウザ + agent-browser 互換 CLI (zenbu-labs)
     terminal-browser
     # 自前 derivation: ターミナル内エディタ (zenbu-labs, コマンドは tode)
     terminal-code
     # 自前 derivation: ターミナルダッシュボード (jchultarsky/mirador)
     mirador
-    # flake overlay: AI エージェント multiplexer (github:ogulcancelik/herdr)
-    herdr
-  ] ++ lib.optionals (stdenv.isDarwin && stdenv.isAarch64) [
-    # 自前 derivation: AI エージェント向けブラウザ自動操作 CLI (vercel-labs/agent-browser)。
-    # prebuilt は aarch64-darwin のみ取得しているので WSL / Intel Mac には入れない。
-    agent-browser
   ] ++ lib.optionals (!stdenv.isDarwin) [
     # Linux (WSL) 限定。Mac ではこの層を Homebrew が供給している (nix/darwin/default.nix の brews)
     # が、WSL に Homebrew は無いので nixpkgs から入れる。Mac 側は B1.5 の判断どおり brew に残す。
@@ -100,10 +101,6 @@ in
     # Superset/Orca が hook を runtime 注入する実体ファイルで、symlink 化すると
     # 注入や /model 変更が消える (memory: project_claude_settings_live_drift)。
     # 新PC bootstrap は dotfiles/.config/claude/settings.json を手動 cp する。
-    # terminal-browser 同梱の agent skill (installer が ~/.agents/skills に置くのと同じ配線を nix で再現)
-    # v0.4.9 で同梱レイアウトが skill/ → skills/<agent-variant>/<skill-name>/ に変わった。
-    # variant は tarball の skills/manifest 参照 (claude/cursor/gemini = default, codex = codex)。
-    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/libexec/terminal-browser/skills/default/terminal-browser"; };
 
     ".claude/CLAUDE.md"            = outLink ".config/claude/CLAUDE.md";
     ".claude/settings.local.json"  = outLink ".config/claude/settings.local.json";
@@ -205,6 +202,12 @@ in
     # scripts/ だけを配線する (親ごと symlink にすると Raycast の書き込み先を奪う)。
     ".config/raycast/scripts" = outLink ".config/raycast/scripts";
     "Brewfile"            = outLink "Brewfile";
+  } // lib.optionalAttrs (pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64) {
+    # terminal-browser 同梱の agent skill (installer が ~/.agents/skills に置くのと同じ配線を nix で再現)
+    # v0.4.9 で同梱レイアウトが skill/ → skills/<agent-variant>/<skill-name>/ に変わった。
+    # variant は tarball の skills/manifest 参照 (claude/cursor/gemini = default, codex = codex)。
+    # terminal-browser が aarch64-darwin 専用なので、参照するこの配線も同じ条件に置く。
+    ".agents/skills/terminal-browser" = { source = "${terminal-browser}/libexec/terminal-browser/skills/default/terminal-browser"; };
   };
 
   # Phase B2.2: skill-sharing を home-manager activation script に移植。

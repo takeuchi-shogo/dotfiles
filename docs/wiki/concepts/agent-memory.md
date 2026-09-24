@@ -58,7 +58,7 @@ Memory-as-Harness の設計:
 
 ## 実践的な適用
 
-dotfiles のメモリシステムは Short-term を `context-compaction-policy.md` と `/check-context`、Episodic を `lessons-learned.md` + `decision-journal.md` + `/eureka`、Semantic を `MEMORY.md` + `references/` + Knowledge Pyramid（Tier 0〜3）、Procedural をスキル体系 + AutoEvolve + `improve-policy.md` で実装している。MEMORY.md はサマリ＋パス参照のみに保ち、26K トークン上限を意識した軽量構造を採っている。`memory-archive.py` が 500 行超でアーカイブする仕組みは内部ハードキャップ（200 行）の発覚により 180 行閾値への修正が実施済み。`staleness-detector.py` が 30 日未更新メモリファイルを検出し、鮮度管理を自動化している。`references/memory-schema.md` には検証状態フィールド（verified/hypothesis/stale/retracted）が追加済みで、欠落時は hypothesis 扱いとする運用になっている。MEMORY.md は閾値超過時に signal density 原則（thinking ⊃ information の選別、30 秒再取得ルール）に基づき圧縮する運用も実施済み（223 行/48K → 154 行/16K の実例）。
+dotfiles のメモリシステムは Short-term を `context-compaction-policy.md` と `/context`、Episodic を `lessons-learned.md` + `decision-journal.md`、Semantic を `MEMORY.md` + `references/` + Knowledge Pyramid（Tier 0〜3）、Procedural をスキル体系 + AutoEvolve + `improve-policy.md` で実装している。MEMORY.md はサマリ＋パス参照のみに保ち、26K トークン上限を意識した軽量構造を採っている。`memory-archive.py` が 500 行超でアーカイブする仕組みは内部ハードキャップ（200 行）の発覚により 180 行閾値への修正が実施済み。`staleness-detector.py` が 30 日未更新メモリファイルを検出し、鮮度管理を自動化している。`references/memory-schema.md` には検証状態フィールド（verified/hypothesis/stale/retracted）が追加済みで、欠落時は hypothesis 扱いとする運用になっている。MEMORY.md は閾値超過時に signal density 原則（thinking ⊃ information の選別、30 秒再取得ルール）に基づき圧縮する運用も実施済み（223 行/48K → 154 行/16K の実例）。
 
 ## 関連概念
 

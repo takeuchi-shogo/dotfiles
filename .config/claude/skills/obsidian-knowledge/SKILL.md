@@ -1,12 +1,12 @@
 ---
 name: obsidian-knowledge
-description: "Obsidian Vault のナレッジ整理・検索・リンク化・MOC 自動生成・意思決定の判断材料を vault から集約。Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート', 'Vault整理', 'ナレッジ整理', '判断材料を集めて'. Do NOT use for: コンテンツ生成 (use obsidian-content)、Vault 初期化 (use obsidian-vault-setup)、Markdown syntax (defer obsidian:obsidian-markdown)、CLI (defer obsidian:obsidian-cli)、Literature Note (use /digest)、思考の壁打ち (use /think)。"
+description: "Obsidian Vault のナレッジ整理・検索・リンク化・MOC 自動生成・意思決定の判断材料を vault から集約。Triggers: 'ノート検索', 'タグ整理', 'リンク候補', 'MOC生成', 'パーマネントノート', 'Vault整理', 'ナレッジ整理', '判断材料を集めて'. Do NOT use for: コンテンツ生成 (use obsidian-content)、Markdown syntax (defer obsidian:obsidian-markdown)、CLI (defer obsidian:obsidian-cli)、思考の壁打ち (use mattpocock-skills:grilling)。"
 origin: self
 user-invocable: true
 metadata:
   pattern: tool-wrapper
   chain:
-    upstream: ["/digest (Literature Note 作成)", "/note (Inbox 保存)"]
+    upstream: ["note-to-vault.sh (Inbox 保存)"]
     downstream: ["obsidian:obsidian-cli (CLI 操作)", "obsidian:obsidian-markdown (記法)"]
 ---
 
@@ -185,7 +185,7 @@ tags:
 
 **トリガー**: 「意思決定の判断材料」「judgment material」「decision brief」「判断材料を集めて」を含む指示 + 決定内容の記述
 
-**目的**: 意思決定を「記録」する前に、その決定に関連する蓄積ノートが何を知っているかを vault 全体から surface し、support / challenge / nuance に分類して brief 化する。記録は `/decision`、思考の構造化は `/think decision` が担当し、本機能は **判断材料の収集** に特化する。
+**目的**: 意思決定を「記録」する前に、その決定に関連する蓄積ノートが何を知っているかを vault 全体から surface し、support / challenge / nuance に分類して brief 化する。記録は `~/.claude/references/decision-journal.md` への追記、思考の構造化は `mattpocock-skills:grilling` が担当し、本機能は **判断材料の収集** に特化する。
 
 **手順**:
 1. ユーザーから決定内容（例: 「ライブラリ A と B どちらを採用するか」）を受け取る
@@ -212,7 +212,7 @@ tags:
    {vault 内の情報だけを根拠にした 2-3 文}
    ```
 5. **重要な制約**: **vault 外の情報を加えない**。一般知識や推測で brief を補完しない。「蓄積ノートが何を知っているか」だけを surface する（記事 Active Decision Feeder の核心原則）。vault に関連ノートがゼロなら「該当ノートなし」と正直に報告する
-6. 必要に応じて `/decision`（記録）や `/think decision`（構造化思考）への連携を提案
+6. 必要に応じて `~/.claude/references/decision-journal.md` への記録や `mattpocock-skills:grilling`（構造化思考）への連携を提案
 
 **前提と限界**: 数十ノート以上が蓄積された vault で効果を発揮する。蓄積が薄い段階では surface できる材料が少ない。
 

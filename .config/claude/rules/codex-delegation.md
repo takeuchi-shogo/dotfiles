@@ -32,7 +32,7 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 - **トレードオフ分析**: 「AとBどちらが良いか」という比較・評価
 - **複雑なデバッグ**: 通常の debugger エージェントで原因特定が困難な場合 → cmux Worker で Codex に深掘り依頼 (上記正規パス 1)
 - **コードレビュー（セカンドオピニオン）**: S規模以上の変更で `codex-reviewer` エージェントを並列起動
-- **Debate（マルチモデル議論）**: `/debate` スキルで Gemini と並列に独立した視点を提供
+- **Debate（マルチモデル議論）**: cmux Worker hub-and-spoke（`launch-worker.sh` ×N、`references/cmux-ecosystem.md`）で Gemini と並列に独立した視点を提供
 - **リファクタリング計画**: 大規模な構造変更の計画策定
 
 ## 委譲方法
@@ -191,7 +191,7 @@ Codex (GPT系) は指示に忠実で、失敗データに対しても比較的�
 
 ## Expertise Map
 
-ドメイン別の expertise score は `references/model-expertise-map.md` を参照。`/debate` の重み付けに使用。
+ドメイン別の expertise score は `references/model-expertise-map.md` を参照。cmux Worker hub-and-spoke の重み付けに使用。
 
 ## 言語プロトコル
 

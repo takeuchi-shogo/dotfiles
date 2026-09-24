@@ -28,7 +28,7 @@ metadata:
   2. Spec Create   → なければ /spec を実行して生成
   3. Isolate       → worktree で隔離環境を作成
   4. Implement     → 最小実装（動くことが最優先）
-  5. Validate      → /validate で acceptance criteria を照合
+  5. Validate      → product-reviewer agent で acceptance criteria を照合
   6. Report        → 結果をまとめて報告
   7. Record        → Abandon の場合は失敗記録を保存
 ```
@@ -83,7 +83,7 @@ worktree を使用してメインブランチから隔離する:
 
 ## Step 5: Validate
 
-validate スキルを呼び出して acceptance criteria を検証する。
+`product-reviewer` agent を起動し、spec の acceptance criteria と照合して検証する。
 
 ## Step 6: Report
 

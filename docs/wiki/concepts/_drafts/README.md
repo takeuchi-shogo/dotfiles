@@ -1,6 +1,6 @@
 # `_drafts/` — Agent-Authored Wiki Concepts (Pre-Graduation)
 
-このディレクトリは `docs/wiki/concepts/` の **draft layer** です。エージェントが `/research` / `/absorb` 等で生成した概念記事を一時的に保持し、人間のレビュー後に正式な concepts/ に昇格させます。
+このディレクトリは `docs/wiki/concepts/` の **draft layer** です。エージェントが `/absorb` 等で生成した概念記事を一時的に保持し、人間のレビュー後に正式な concepts/ に昇格させます。
 
 ## 目的
 
@@ -14,7 +14,7 @@ Karpathy の 3 層アーキテクチャ (raw / wiki / schema) を継承しつつ
 ## Graduation Workflow
 
 ```
-agent 生成 (/research, /absorb)
+agent 生成 (/absorb)
   ↓
 _drafts/{slug}.md に配置
   ↓

@@ -22,25 +22,18 @@ last_reviewed: 2026-04-23
 
 | コマンド | 説明 | 使用例 |
 |---|---|---|
-| `/research` | 構造的なリサーチ実行 | `/research OAuth2 ベストプラクティス` |
+| `gemini-explore` agent | 構造的なリサーチ実行（外部リサーチ、または並列 `Agent` 呼び出し） | `Agent(subagent_type:'gemini-explore', ...)` |
 | `/absorb` | 外部知見をメモリ・設定に統合 | `/absorb <URL>` |
 | `/check-health` | ドキュメント鮮度・参照整合性を確認 | `/check-health` |
-| `/check-context` | コンテキストウィンドウ使用量を確認 | `/check-context` |
-
-### セッション管理
-
-| コマンド | 説明 | 使用例 |
-|---|---|---|
-| `/timekeeper` | 作業時間の管理・計測 | `/timekeeper` |
+| `/context` | コンテキストウィンドウ使用量を確認 | `/context` |
 
 ### ユーティリティ
 
 | コマンド | 説明 | 使用例 |
 |---|---|---|
-| `/onboarding` | 初期プロファイル設定 | `/onboarding` |
 | `/security-review` | セキュリティ観点のコードレビュー | `/security-review` |
 | `/autonomous` | 自律実行モード（worktree 並列） | `/autonomous タスクリスト` |
-| `/recall` | メモリから過去の知見を検索 | `/recall hook 設計` |
+| `git log`（contextual commit） | メモリから過去の知見を検索 | `git log --grep=hook設計` |
 | `/pull-request` | PR 作成 | `/pull-request` |
 
 ---
@@ -90,7 +83,7 @@ last_reviewed: 2026-04-23
 ### コマンド
 
 ```
-/check-context    # 現在の使用量・セッション状態を確認
+/context          # 現在の使用量・セッション状態を確認
 /compact          # コンテキストを圧縮
 /checkpoint       # 作業状態を手動保存
 ```
@@ -103,7 +96,7 @@ last_reviewed: 2026-04-23
 
 | タスク種別 | 推奨モデル | 理由 |
 |---|---|---|
-| 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5) | 委譲しない領域 |
+| 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5.5) | 委譲しない領域 |
 | アーキテクチャ設計・Plan 草案 | Fable 5 | `Agent(model:'fable')` |
 | 日常的なコーディング・探索 | Sonnet 5 | `Agent(model:'sonnet')`、並列実行 |
 | Sonnet が 2 回詰まった実装 | Grok 4.6 | `/cursor` skill — 別視点。既定の実装先ではない |
@@ -115,15 +108,15 @@ last_reviewed: 2026-04-23
 
 ```jsonc
 // settings.json
-"model": "claude-opus-5[1m]"  // メインモデル
-"effortLevel": "high"      // 推論努力レベル
+"model": "opus[1m]"          // メインモデル (現在 Opus 5.5 に解決)
+"effortLevel": "xhigh"     // 推論努力レベル。Opus 5.5 には効かない (既定 medium、`/effort` で per-model 保存)
 "language": "japanese"      // 応答言語
 ```
 
 ### マルチモデル委譲
 
 ```
-Claude Code (メイン: Opus 5) ── サブエージェント委譲
+Claude Code (メイン: Opus 5.5) ── サブエージェント委譲
     ├── Agent(model:'fable')   # アーキテクチャ設計・Plan 草案
     ├── Agent(model:'sonnet')  # 実装・探索 (並列 / delegate-implementation Workflow)
     ├── cursor-agent --model cursor-grok-4.6-high  # Sonnet が詰まった実装
@@ -153,7 +146,7 @@ Claude Code (メイン: Opus 5) ── サブエージェント委譲
 | 問題 | 原因 | 対処 |
 |---|---|---|
 | コンテキスト溢れ | トークン上限に接近 | `/compact` 実行。3回超なら新セッション開始 |
-| hook が発火しない | 正規表現 or パス不一致 | `/hook-debugger` で診断。日本語は `\b` ではなく `(?=[^a-zA-Z0-9]\|$)` を使用 |
+| hook が発火しない | 正規表現 or パス不一致 | 日本語は `\b` ではなく `(?=[^a-zA-Z0-9]\|$)` を使用 |
 | MCP 接続失敗 | サーバー未起動 or 設定不備 | `settings.json` の `enabledMcpjsonServers` を確認、サーバー再起動 |
 | ビルド/テストエラー | コード起因 | debugger エージェントに委譲。生ログ・スタックトレースを直接分析 |
 | 編集ループ | 同一ファイルを繰り返し修正 | `stagnation-detector` が自動検出（3編集/10分で警告） |

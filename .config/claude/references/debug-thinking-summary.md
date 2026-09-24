@@ -12,7 +12,8 @@
 - redaction は**表示**のみ、モデルの thinking spend は変わらない
 - interactive モード default: redacted (collapsed stub のみ表示)
 - non-interactive (`-p`) / SDK は常に summary 受信
-- 「思考量を減らしたい」なら effort level を下げる (`effortLevel` / `CLAUDE_CODE_EFFORT_LEVEL`)。Fable 5 系・Opus 5 は thinking 常時 ON で、fixed budget も disable も受理されない
+- 「思考量を減らしたい」なら effort level を下げる (`effortLevel` / `CLAUDE_CODE_EFFORT_LEVEL`)。Fable 5 系・Opus 5 / 5.5 は thinking 常時 ON で、fixed budget も disable も受理されない
+- **Opus 5.5 では user settings の top-level `effortLevel` が効かない**。Opus 5.5 の既定は `medium` で、変えるには `/effort` (Enter で per-model 保存 = `modelSettings`、`s` でこのセッション限り) か `CLAUDE_CODE_EFFORT_LEVEL` を使う。top-level `effortLevel` が今も効くのは Opus 5・Fable 5.1 以前のモデルと、project/local/managed settings に書いた場合だけ (公式: code.claude.com/docs/en/model-config「Adjust effort level」、2026-09-24 に v2.1.281 で確認)
 
 ## 運用方針: 常時 OFF (= 未設定)
 
@@ -54,10 +55,10 @@ settings.json に `"showThinkingSummaries": true` を**一時追加し、debug �
 
 | key/var | 関係 |
 |--------|------|
-| `effortLevel` (settings: `xhigh`) | thinking budget の上限。下げると thinking 全体が短くなる (summary も含めて) |
+| `effortLevel` (settings: `xhigh`) | thinking budget の上限。下げると thinking 全体が短くなる (summary も含めて)。**Opus 5.5 には効かない** (上記要点参照。Opus 5.5 は `modelSettings` の per-model 値か既定 `medium`) |
 | `CLAUDE_CODE_EFFORT_LEVEL` env var | 上記 settings を session override |
 | `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` (env var) | Opus 4.6 / Sonnet 4.6 専用。Opus 4.7 以降と Fable 5 系は常時 adaptive のため no-op。本 dotfiles では未設定 |
-| `MAX_THINKING_TOKENS` env var | 旧世代の fixed budget。Fable 5 / 5.1・Opus 5 では budget 指定自体が通らないので使わない (Haiku 4.5 等の旧モデル専用) |
+| `MAX_THINKING_TOKENS` env var | 旧世代の fixed budget。Fable 5 / 5.1・Opus 5 / 5.5 では budget 指定自体が通らないので使わない (Haiku 4.5 等の旧モデル専用) |
 
 ## 出典
 

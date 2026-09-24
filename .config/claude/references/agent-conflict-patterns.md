@@ -29,7 +29,7 @@ last_reviewed: 2026-04-23
 
 ## ガードレール文言
 
-`/dispatch` や Agent 並列実行時のプロンプトに以下を注入する:
+`launch-worker.sh` や Agent 並列実行時のプロンプトに以下を注入する:
 
 ```
 ## Parallel Execution Guard
@@ -46,7 +46,7 @@ last_reviewed: 2026-04-23
 
 | シナリオ | 対応 |
 |---------|------|
-| `/dispatch` で複数 Worker 起動 | ガードレール文言をプロンプトに注入 |
+| `launch-worker.sh` で複数 Worker 起動 | ガードレール文言をプロンプトに注入 |
 | Agent 並列実行（同一セッション） | worktree 分離を推奨 |
 | `/review` で複数レビューア並列 | コーディネーターが結果統合時にチェックリスト実行 |
 | サブエージェント BG 実行 | 完了通知受信後にチェックリスト実行 |

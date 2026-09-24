@@ -41,9 +41,9 @@ Anthropic は **2026-06-15** から有料 Claude プランの billing を 2 プ�
 | 箇所 | 影響 |
 |------|------|
 | Main session の対話 (Opus 4.7 等) | ✅ Subscription pool (interactive) |
-| `/research` の 8 並列 `claude -p` | ❌ Credit 消費 (最大の枯渇リスク) |
+| 旧 `/research` の 8 並列 `claude -p` (2026-09-23 retired) | ❌ Credit 消費 (最大の枯渇リスク) |
 | `/autonomous` の長時間 `claude -p` | ❌ Credit 消費 |
-| `/dispatch` の cmux Worker (claude headless 起動時) | ❌ Credit 消費 (起動形態次第) |
+| `scripts/runtime/launch-worker.sh` の cmux Worker (claude headless 起動時) | ❌ Credit 消費 (起動形態次第) |
 | `scripts/runtime/weekly-downloads-cleanup.sh` | ❌ Credit 消費 (低頻度) |
 | Subagent (Sonnet/Haiku) 経由の `Agent` tool | ✅ Subscription pool (Claude Code 内部) |
 | GitHub Actions integration | ❌ Credit 消費 (採用時) |

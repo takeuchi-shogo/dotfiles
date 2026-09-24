@@ -41,25 +41,17 @@ confidence: established
 - **テキスト world**: 要約をスキップして Gap 分析へ
 - **Already 判定 world**: 取り込みをスキップして批評のみ実行
 
-### 3. `/research` のモデル world
-
-`/research` は並列サブエージェント数をモデルに応じて調整:
-
-- **Opus world**: 深いシングルスレッド分析
-- **Sonnet world**: 並列 3 サブエージェントで速度優先
-- **Haiku world**: 軽量 WebFetch + 要約のみ
-
-### 4. モデルルーティングの World
+### 3. モデルルーティングの World
 
 `claude-hooks` (Rust, `user-prompt`) フックは呼び出しコンテキスト（タスクの複雑さ・ファイル数・エラー種別）を world として解釈し、委譲先モデルを動的に決定する。
 
-### 5. 階層 World（global / project / module）
+### 4. 階層 World（global / project / module）
 
 CLAUDE.md の3層スコープ（global / project / module）と `<important if>` 条件タグは、階層レベルという world を選択的ロードで表現するパターン。AGENTS.md 系記事の分析では、この3層構造が Progressive Disclosure の入口として機能し、下位層への委譲によってコンテキスト汚染を防ぐことが確認されている。
 
-### 6. 新規リソース検知の World
+### 5. 新規リソース検知の World
 
-新しい MCP server が `.claude.json` / `.mcp.json` に追加されたタイミングを world として検知し、`skill-creator` 起動をヒント通知する PostToolUse hook（`mcp-skill-hint.py`）。自動生成はせず、通知のみに留めてスキル品質を担保する設計。
+新しい MCP server が `.claude.json` / `.mcp.json` に追加されたタイミングを world として検知し、`skill-creator:skill-creator` 起動をヒント通知する PostToolUse hook（`mcp-skill-hint.py`）。自動生成はせず、通知のみに留めてスキル品質を担保する設計。
 
 ## 設計原則
 

@@ -119,11 +119,11 @@ metadata:
 
 | pattern | 説明 | 例 |
 |---|---|---|
-| `query` | 情報を読み取る | `/recall`, `/audit` |
-| `pipeline` | 多段パイプライン | `/absorb`, `/digest` |
-| `gate` | pass/block 判定 | `/review`, `/validate` |
+| `query` | 情報を読み取る | `/audit` |
+| `pipeline` | 多段パイプライン | `/absorb` |
+| `gate` | pass/block 判定 | `/review`, `product-reviewer` agent |
 | `tool` | 特定ツール実行 | `/commit`, `/codex`, `/gemini` |
-| `reference` | 参照情報のみ | `/react-best-practices` |
+| `reference` | 参照情報のみ | `userinterface-wiki` |
 
 ## 適用フロー (revitalization 時)
 

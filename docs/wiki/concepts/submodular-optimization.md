@@ -28,12 +28,12 @@ confidence: emerging
 
 ## 実践的な適用
 
-dotfiles ハーネスでは /research スキルの多様性保証に応用予定。3段階で統合する。
+dotfiles ハーネスでは /research スキル（2026-09-23 退役）の多様性保証に応用予定だった。3段階で統合する計画だった。
 
 | 段階 | 内容 | 実装 |
 |------|------|------|
 | Wave 1 | 症状計測 | `diversity_metrics.py`（TF-IDF + cosine）でクエリ重複を定量化 |
-| Wave 2 | 選択層追加 | `submodular_selection.py` + /research Aggregate 強化 |
+| Wave 2 | 選択層追加 | `submodular_selection.py` + /research（退役済み）Aggregate 強化 |
 | Wave 3 | 2段階パイプライン | Verbalized Sampling + submodular の組み合わせ |
 
 ## 「生成前多様化」との補完関係

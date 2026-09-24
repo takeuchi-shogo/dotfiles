@@ -81,5 +81,5 @@ variant を先にコピーしてから編集する方が書き始めの痛みが
 ## 関連
 
 - 個人 harness と team 仕組みの翻訳マップ: `~/.claude/references/team-harness-patterns.md`
-- 初期化自動化: `/init-project --team` skill
+- 初期化自動化: 旧 `/init-project --team` skill（2026-09-23 退役、現在は `../APPLY.md` の手動手順を使用）
 - このテンプレートの設計根拠: `docs/plans/completed/2026-04-23-team-harness-template-plan.md` (dotfiles 内)

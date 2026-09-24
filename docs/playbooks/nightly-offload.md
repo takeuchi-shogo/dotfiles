@@ -182,6 +182,6 @@ git rm -r scripts/runtime/nightly/
 ## 関連
 
 - **canonical morning-briefing**: `.config/claude/scripts/runtime/auto-morning-briefing.sh` (root の同名 file は scratch copy)
-- **catch-up pattern**: `.config/claude/scripts/runtime/skill-pruning-eval-reminder.sh` から派生
+- **catch-up pattern**: 旧 `skill-pruning-eval-reminder.sh` (一回限りの評価用、2026-09-25 削除) から派生
 - **status JSONL 正本**: `~/.cache/nightly/status-${DATE}.jsonl` (Q8 / Codex C3 反映、`/tmp` は廃止)
 - **既存 cron**: morning-briefing (8:30 平日) + sync-daily-report (23:00) + 各種 9:00 healthcheck

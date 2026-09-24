@@ -232,7 +232,7 @@ tasks:
       - bash scripts/lifecycle/doctor.sh hook
 
   doctor:settings:
-    desc: Check repo settings.json keys are present in live ~/.claude/settings.json (nix-unmanaged, drifts silently)
+    desc: Check repo settings.json keys are present in live ~/.claude/settings.json and permissions match (nix-unmanaged, drifts silently)
     cmds:
       - bash scripts/lifecycle/doctor.sh settings
 
@@ -308,6 +308,12 @@ tasks:
       Skills are vendored in the repo (nix symlink) and need no install step.
     cmds:
       - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh install
+
+  claude:settings:sync-permissions:
+    desc: 'Replace live ~/.claude/settings.json permissions with the repo copy (other keys untouched; shows drift and asks y/N)'
+    interactive: true
+    cmds:
+      - bash scripts/lifecycle/claude-settings-sync-permissions.sh {{.CLI_ARGS}}
 
   claude:plugins:check:
     desc: 'Read-only: report plugins declared in settings.json but not installed (exit 1 if any missing)'
