@@ -13,7 +13,6 @@ if [ -d "$INBOX_OLD" ]; then
   rmdir "$INBOX_OLD" 2>/dev/null || true
 fi
 
-bash "$HOME/.claude/scripts/runtime/probation-30day.sh" || true
 bash "$HOME/.claude/scripts/runtime/skill-usage-weekly.sh" || true
 bash "$HOME/.claude/scripts/runtime/skill-count-alert.sh" || true
 bash "$HOME/.claude/scripts/runtime/tmp-plans-cleanup.sh" || true
