@@ -107,7 +107,7 @@ case "$MODEL" in
     # (auto は safety check からプロンプトに escalation しうる research preview、
     #  bypassPermissions は全許可で worker には過剰。deny は collect-result の retry で顕在化)
     "$CMUX_CLI" send --workspace "$WS" --surface "$SURFACE" \
-      "claude --permission-mode dontAsk\n"
+      "claude --permission-mode dontAsk --append-system-prompt-file '${SCRIPT_DIR}/prompts/unattended-worker-system.md'\n"
     echo "[launch-worker] Waiting for Claude Code to start..." >&2
     # 起動完了 (バナー/モデル表示) を待つ。固定 sleep 5 では起動完了前に後続の
     # PROMPT+return が送られ、return が無視されて worker が入力待ちで停止する

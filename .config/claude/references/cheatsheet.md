@@ -96,7 +96,7 @@ last_reviewed: 2026-04-23
 
 | タスク種別 | 推奨モデル | 理由 |
 |---|---|---|
-| 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5) | 委譲しない領域 |
+| 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5.5) | 委譲しない領域 |
 | アーキテクチャ設計・Plan 草案 | Fable 5 | `Agent(model:'fable')` |
 | 日常的なコーディング・探索 | Sonnet 5 | `Agent(model:'sonnet')`、並列実行 |
 | Sonnet が 2 回詰まった実装 | Grok 4.6 | `/cursor` skill — 別視点。既定の実装先ではない |
@@ -108,15 +108,15 @@ last_reviewed: 2026-04-23
 
 ```jsonc
 // settings.json
-"model": "claude-opus-5[1m]"  // メインモデル
-"effortLevel": "high"      // 推論努力レベル
+"model": "opus[1m]"          // メインモデル (現在 Opus 5.5 に解決)
+"effortLevel": "xhigh"     // 推論努力レベル。Opus 5.5 には効かない (既定 medium、`/effort` で per-model 保存)
 "language": "japanese"      // 応答言語
 ```
 
 ### マルチモデル委譲
 
 ```
-Claude Code (メイン: Opus 5) ── サブエージェント委譲
+Claude Code (メイン: Opus 5.5) ── サブエージェント委譲
     ├── Agent(model:'fable')   # アーキテクチャ設計・Plan 草案
     ├── Agent(model:'sonnet')  # 実装・探索 (並列 / delegate-implementation Workflow)
     ├── cursor-agent --model cursor-grok-4.6-high  # Sonnet が詰まった実装

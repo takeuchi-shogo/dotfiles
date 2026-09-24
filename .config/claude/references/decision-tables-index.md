@@ -25,7 +25,7 @@ dotfiles 内に散在する決定表 (decision tables) を 1 ページから一�
 
 | Drive 主体 | パターン | 表 | 典型シナリオ |
 |---|---|---|---|
-| **Top-Down (メイン主導の委譲)** | メイン (現在: Opus 5) が判断・計画・統合し、Fable/Sonnet/Haiku/Codex/Grok に scoped task を委譲 | [`model-routing.md`](model-routing.md) + [`subagent-delegation-guide.md`](subagent-delegation-guide.md) | 探索・実装・レビューの分業、長時間タスク |
+| **Top-Down (メイン主導の委譲)** | メイン (現在: Opus 5.5) が判断・計画・統合し、Fable/Sonnet/Haiku/Codex/Grok に scoped task を委譲 | [`model-routing.md`](model-routing.md) + [`subagent-delegation-guide.md`](subagent-delegation-guide.md) | 探索・実装・レビューの分業、長時間タスク |
 | **Bottom-Up (Executor 主導の escalation)** | Sonnet/Haiku Executor が困難判断時のみ上位 advisor (Opus/Fable) に相談 | [`advisor-strategy.md`](advisor-strategy.md) | アーキテクチャ判断・セキュリティ未確実領域の単発相談 |
 
 > 出典: "Distribution vs Escalation: When to Use Subagents or Advisors" (2026-05-02) absorb / `docs/research/2026-05-04-distribution-vs-escalation-absorb-analysis.md`

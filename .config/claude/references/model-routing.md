@@ -5,7 +5,7 @@ last_reviewed: 2026-08-13
 
 # モデル別ルーティング
 
-主エージェント (メインセッションで選択された最上位 tier、現行: Opus 5 / Fable 5) は判断・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
+主エージェント (メインセッションで選択された最上位 tier、現行: Opus 5.5 / Fable 5) は判断・統合・ユーザー対話に集中。実作業はデフォルトで委譲する (委譲手段は「実装委譲の判断表」で規模に応じて選ぶ)。
 
 ## モデル役割 — source of truth
 
@@ -13,7 +13,7 @@ last_reviewed: 2026-08-13
 
 | 役割 | モデル | 担当 | 起動方法 |
 |------|--------|------|----------|
-| **メイン** | セッション最上位 tier (現行: Opus 5 / Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
+| **メイン** | セッション最上位 tier (現行: Opus 5.5 / Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
 | **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
 | **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
 | **実装 (別視点)** | Grok 4.6 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.6-high`) |
@@ -27,7 +27,7 @@ last_reviewed: 2026-08-13
 - **実装・探索は Sonnet に渡し、独立タスクは並列実行する** — 1 メッセージに複数 Agent call、複数ファイル+verify は delegate-implementation Workflow。メインが Edit/Read を連発しない
 - **実装先の既定は Sonnet、Grok は詰まったときだけ** — Sonnet は `Agent` tool の in-process で handoff コストがほぼゼロ、Grok は `cursor-agent` の別プロセスで起動コストがある。同じ実装で Sonnet が 2 回失敗した / 別アプローチを見たい、のいずれかでだけ Grok に振る
 - **表にない推論サブタスク (根本原因デバッグ、edge case 分析、レビュー統合) はメインが持つ** — 設計でも実装でもないので委譲先がない。調査の足回りだけ Sonnet に切り出す。メインと同じ Opus を並列に使いたいときは `Agent(model: "opus")` (別コンテキストなのでメインの窓を消費しない)
-- **組み込み agent (Explore / Plan / general-purpose) は `model` を必ず明示する** — 未指定はメインモデル (Opus 5) を継承し、fan-out が最高単価で走る。目安: Explore→`sonnet`、Plan→`fable`、general-purpose→タスク性質で選択
+- **組み込み agent (Explore / Plan / general-purpose) は `model` を必ず明示する** — 未指定はメインモデル (Opus 5.5) を継承し、fan-out が最高単価で走る。目安: Explore→`sonnet`、Plan→`fable`、general-purpose→タスク性質で選択
 - agents/*.md の frontmatter は役割整合済み (実装・定型レビュー系=sonnet / security-reviewer=opus / CLI driver=haiku)。設計判断が要る回だけ call-time `model: "fable"` で override する (call-time 指定が frontmatter に優先)
 - **subagent への model 指定はメインの prompt cache を壊さない** (子は別コンテキスト)。後述「Model Switch / Cache Invalidation Boundary」はメインセッション自体の model 切替の話
 
@@ -145,7 +145,7 @@ prompt cache は **model 固有**。プロンプトの prefix が変わる以下
 
 1. **Platform 側 domain safety fallback (server-side、こちらで実装するものではない)**: Fable 5 は cyber/bio/chem/distillation 領域の要求を検出すると **server 側で Opus 系に透過的に自動切替**する (billing は cache hit 扱い。2026-06 時点の観測では切替先は Opus 4.8、現行の切替先は未確認)。設計委譲先が Fable になった現在、security 関連の設計判断を `Agent(model: "fable")` に投げると実質 Opus で走りうる。挙動が想定とズレたらこの透過 fallback を疑い、明示的に `Agent(model: "opus")` を指定して切り分ける
 2. **ローカル Bash permission classifier の outage (これは別物)**: `/model claude-fable-5` で Bash auto-mode classifier がセッション全体で死亡した実績 (2026-06-10)。trivial コマンドの成功を復帰の証拠にしない。復旧は `/model` で実績モデルへ。詳細: memory `feedback_model_fable_classifier_outage.md`
-3. **reasoning-echo は refusal を誘発する (skill/prompt 監査対象)**: skill・prompt・harness 指示に `show your thinking` / `explain your reasoning` / 「思考を出力せよ」等の **reasoning echo 要求を書かない** — Fable 5 の `reasoning_extraction` refusal カテゴリを誘発し fallback を増やす (公式: platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)。構造化 thinking ブロックを読む前提で設計する。現状 grep で違反 0 = **予防ルール**
+3. **reasoning-echo は refusal を誘発する (skill/prompt 監査対象)**: skill・prompt・harness 指示に `show your thinking` / `explain your reasoning` / 「思考を出力せよ」等の **reasoning echo 要求を書かない** — Fable 5 と Opus 5.5 の `reasoning_extraction` refusal カテゴリを誘発し fallback を増やす (公式: platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5 / prompting-claude-opus-5-5)。Opus 5.5 の `reasoning_extraction` 拒否は server-side fallback でも再試行されず呼び出し側に返る。`rules/common/derivation-honesty.md` の「Show Your Work」は成果物に計算・判断の根拠を書かせるもので、内部推論の再現要求ではないので対象外。構造化 thinking ブロックを読む前提で設計する。現状 grep で違反 0 = **予防ルール**
 4. **refusal は HTTP 200 (stop_reason で判定する)**: safety classifier の拒否は `stop_reason: "refusal"` の SUCCESS レスポンスで返る (exit code は 0)。無人 `claude -p` ジョブが exit code だけで成否判定すると refusal を取りこぼす。ただし platform 側 fallback (上記 1) と、現行の無人ジョブ prompt が reasoning-echo/cyber/bio を含まないことから **発生確率は実質ゼロ → ハンドラ構築は YAGNI**。無人ジョブに reasoning-echo/cyber/bio 系 prompt を足す時だけ `stop_reason` チェックを入れる
 
 **Haiku grader 境界**: 抽出・変換役の Haiku は「非権威の cheap prefilter / 形式チェック grader」(`/goal` evaluator も Haiku) までに限定する。**permission/safety 判定・最終 verify・マージ判断には使わない** — LLM に Tool Use 権限を判定させる permission classifier は determinism boundary 違反 + prompt injection 耐性なしとして reject 済み (`docs/research/2026-05-31-cursor-auto-review-run-mode-absorb-analysis.md` #4)。最終評価の権威はメインの不可譲な責務 (上記「主エージェント (現在のメインモデル) の不可譲な責務」)。
