@@ -20,7 +20,7 @@ last_reviewed: 2026-04-23
 ### Spec-first ワークフロー
 
 ```
-Idea → /spec → Review → /spike or /rpi → /validate
+Idea → /spec → Review → /spike or /rpi → product-reviewer agent
 ```
 
 | ステップ | 何をするか | 成果物 |
@@ -29,7 +29,7 @@ Idea → /spec → Review → /spike or /rpi → /validate
 | `/spec` | 構造化プロンプト（Prompt-as-PRD）生成 | `docs/specs/{feature}.prompt.md` |
 | Review | acceptance criteria の検証可能性を確認 | spec 更新 |
 | `/spike` or `/rpi` | プロトタイプ or 本実装 | コード |
-| `/validate` | acceptance criteria との照合 | Pass/Fail |
+| `product-reviewer` agent | acceptance criteria との照合 | Pass/Fail |
 
 ### /spec の2モード
 
@@ -60,7 +60,7 @@ Deep Interview 完了後は **Session Handoff** -- 新セッションで spec �
 
 ユーザーの振る舞い期待を Given/When/Then 形式で明文化し、それを自動テストに変換する。
 
-### /interviewing-issues との連携（4段階）
+### `mattpocock-skills:grilling` との連携（4段階）
 
 ```
 PARSE → CLARIFY → CRITERIA → OUTPUT
@@ -71,7 +71,7 @@ PARSE → CLARIFY → CRITERIA → OUTPUT
 | **PARSE** | Issue 解析、曖昧箇所の特定 | `gh issue view` + コードベース確認 |
 | **CLARIFY** | 3-7 個の選択肢付き質問 | AskUserQuestion |
 | **CRITERIA** | Given/When/Then で受け入れ条件を定義 | ユーザー確認 |
-| **OUTPUT** | 構造化仕様を出力 | `/fix-issue` へチェーン可能 |
+| **OUTPUT** | 構造化仕様を出力 | 手動実装へ |
 
 ### Given/When/Then テンプレート
 
@@ -84,7 +84,7 @@ Given: [前提条件 -- システムの初期状態]
 CLARIFY での質問は **選択肢付き** を優先し、往復を最小化する。
 回答不十分な場合のみ追加質問（最大 2 ラウンド）。
 
-詳細: `skills/interviewing-issues/SKILL.md`
+詳細: `mattpocock-skills:grilling`
 
 ---
 
@@ -111,9 +111,9 @@ TDD は **設計ツール** として機能する -- テストを先に書くこ
 | 状況 | 推奨方法論 | コマンド |
 |------|-----------|---------|
 | 要件が曖昧、何を作るか不明 | SDD | `/spec` → `/spike` |
-| Issue はあるが仕様が不明確 | BDD | `/interviewing-issues` |
+| Issue はあるが仕様が不明確 | BDD | `mattpocock-skills:grilling` |
 | 仕様は明確、実装の正しさを担保したい | TDD | テスト先行で `/rpi` |
-| 大規模で不確実性が高い | SDD → BDD → TDD | `/spec` → `/interviewing-issues` → `/rpi` |
+| 大規模で不確実性が高い | SDD → BDD → TDD | `/spec` → `mattpocock-skills:grilling` → `/rpi` |
 | 仕様明確で中規模 | TDD or BDD | `/rpi` |
 | バグ修正（再現手順あり） | TDD | Red（再現テスト）→ Green（修正） |
 
@@ -129,7 +129,7 @@ TDD は **設計ツール** として機能する -- テストを先に書くこ
 
 | 不確実性 | パターン | フロー |
 |---------|---------|--------|
-| **高** | SDD → BDD → TDD | `/spec` → `/interviewing-issues` → テスト先行実装 |
+| **高** | SDD → BDD → TDD | `/spec` → `mattpocock-skills:grilling` → テスト先行実装 |
 | **中** | BDD → TDD | Given/When/Then 定義 → テスト先行実装 |
 | **低** | TDD のみ | Red → Green → Refactor |
 
@@ -138,7 +138,7 @@ TDD は **設計ツール** として機能する -- テストを先に書くこ
 SDD + BDD + TDD を順に適用:
 
 ```
-/spec(SDD) → /spike → /validate(BDD) → Decide → /rpi(TDD) → Review(3軸) → Commit
+/spec(SDD) → /spike → product-reviewer agent(BDD) → Decide → /rpi(TDD) → Review(3軸) → Commit
 ```
 
 仕様が明確な場合は `/rpi` で直接実装に入る。
@@ -163,7 +163,7 @@ SDD + BDD + TDD を順に適用:
 | リソース | パス |
 |---------|------|
 | Spec スキル | `skills/spec/SKILL.md` |
-| Interview スキル | `skills/interviewing-issues/SKILL.md` |
+| Interview スキル | `mattpocock-skills:grilling` |
 | Test スキル | `skills/test/SKILL.md` |
 | EPD ワークフロー | `references/workflow-guide.md` (EPD セクション) |
 | Precision Ceiling | `skills/spec/references/precision-ceiling.md` |

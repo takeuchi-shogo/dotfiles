@@ -2382,3 +2382,12 @@
 - 反転した判断: HANDOFF の修正案第一版 (Stop → SessionEnd) は誤り。session-load.js が SessionStart で読む設計なので SessionEnd では読まれる前に消える。正解は読み手が読了後に retire すること。Codex Review Gate が 2 度差し戻して確定 (BLOCK → BLOCK → 再レビュー)
 - Phase 2.5: Codex のみの degraded 実行。Gemini は IneligibleTierError で使用不可
 - 分析: docs/research/2026-09-05-skill-state-absorb-analysis.md
+
+## [2026-09-24] ingest | Prompting Claude Opus 5.5 (Anthropic 公式)
+
+- ソース: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5
+- 判定: Gap 1 / Partial 6 / Already 3 (うち強化可能 1) / N/A 3 / 保留 2
+- 取り込み: effort docs 訂正 / completion-gate の `(blocked:` 除外 / cmux Claude Worker に無人用 standing system prompt / reasoning_extraction を Opus 5.5 に拡張 + stale モデル名 / frontend anti-patterns に 5.5 既定 style 5 種
+- 中核の発見: settings の top-level `effortLevel` は user settings では Opus 5.5 に効かず、メインセッションは `xhigh`/`high` の設定に関わらず `medium` で動いていた (docs 3 箇所が逆のことを書いていた)
+- Phase 2.5: Codex のみ。Gemini は headless agy の `read_url` 自動 deny で未取得。codex exec の空出力は background Bash で stdin 未クローズ (`< /dev/null` で解消)
+- 分析: docs/research/2026-09-24-opus55-prompting-guide-absorb-analysis.md

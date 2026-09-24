@@ -95,14 +95,14 @@ last_reviewed: 2026-04-23
 
 パターンは合成可能。よくある組み合わせ:
 
-- **Inversion + Generator**: 要件収集 → テンプレート出力 (例: /spec, /timekeeper)
+- **Inversion + Generator**: 要件収集 → テンプレート出力 (例: /spec)
 - **Pipeline + Reviewer**: 多段処理の最終ステップで品質チェック (例: /audit)
 - **Tool Wrapper + Reviewer**: 規約ロード → 規約に基づくレビュー (例: /review + review-checklists/)
-- **Pipeline + Inversion**: 多段処理の初期ステップでインタビュー (例: /skill-creator, /init-project)
+- **Pipeline + Inversion**: 多段処理の初期ステップでインタビュー (例: `skill-creator:skill-creator`)
 
 ## Structure Quality Checklist
 
-パターン別の必須要素。skill-creator の Stage 6 (Test) で検証に使用:
+パターン別の必須要素。`skill-creator:skill-creator` のテスト工程で検証に使用:
 
 | Pattern | Required Elements |
 |---------|-------------------|

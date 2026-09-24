@@ -88,7 +88,7 @@ CC の Full Compaction は2フェーズで summary を生成する:
 
 ### 発動タイミング
 
-- **Proactive（推奨）**: autocompact 発動前に能動的に `/compact {focus}` を叩く。1M context では `/check-context` で残量確認しながら自分で判断できる
+- **Proactive（推奨）**: autocompact 発動前に能動的に `/compact {focus}` を叩く。1M context では `/context` で残量確認しながら自分で判断できる
 - **Reactive（NG）**: autocompact が発動してから steering を追加しても遅い。autocompact は「モデルが方向を予測できない状態」で発動するため、bad compact を招きやすい
 - **Forbidden**: compaction 3回超えたセッションでは、さらなる compact ではなく `/clear` を選ぶ（context-compaction-policy.md の Reset > Compaction 原則）
 
@@ -128,7 +128,7 @@ Claude Code システムプロンプト自体が ~50 指示を含むため:
 - ユーザー CLAUDE.md + agent 定義 = 合計 **100 指示以内** を目標
 - CLAUDE.md: `<important if>` 条件付きで必要な指示のみロード（現行設計で対応済み）
 - Agent 定義: 上記「粒度指針」テーブルに従い簡潔に保つ
-- 超過が疑われる場合: `/check-context` で現在の指示密度を確認
+- 超過が疑われる場合: `/context` で現在の指示密度を確認
 
 Morph の実証データ: SWE-bench でハーネス変更 22pt 変動 vs モデル交換 1pt。
 **指示の質と構造 > 指示の量**。

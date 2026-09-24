@@ -14,7 +14,7 @@ from pathlib import Path
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
 
 # Skills that contain example file paths in documentation (not real references)
-REF_CHECK_SKIP = {"skill-creator"}
+REF_CHECK_SKIP: set[str] = set()
 
 # YAML frontmatter の簡易パーサー（PyYAML 不要）
 KEBAB_CASE_RE = re.compile(r"^[a-z][a-z0-9-]*$")

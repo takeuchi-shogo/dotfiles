@@ -22,7 +22,7 @@ SCOPE_ARTIFACT_MAP = {
     "absorb": "skills/absorb / references",
     "triage": "skills/absorb / references",
     "skills": "該当 skill",
-    "skill-creation": "skills/skill-creator",
+    "skill-creation": "該当 skill / references",
 }
 
 

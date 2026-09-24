@@ -39,4 +39,3 @@ reconcile は `adopted` / `rejected` の両方を processed として ledger に
 - プラン: `tmp/plans/typed-watching-mitten.md`
 - 候補抽出: `.config/claude/scripts/learner/extract-promotion-candidates.py`
 - reconcile: `.config/claude/scripts/learner/reconcile-promoted-ledger.py`
-- 昇格 skill (対話版): `.config/claude/skills/promote-learnings/SKILL.md`

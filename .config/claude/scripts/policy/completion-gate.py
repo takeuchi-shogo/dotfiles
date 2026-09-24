@@ -505,7 +505,11 @@ def _find_incomplete_plan() -> tuple[str, list[str], str | None] | None:
             if _has_active_status(lines):
                 continue
 
-            pending = [ln.strip() for ln in lines if ln.strip().startswith("- [ ]")]
+            pending = [
+                ln.strip()
+                for ln in lines
+                if ln.strip().startswith("- [ ]") and "(blocked:" not in ln
+            ]
             if pending:
                 criteria = _extract_success_criteria(lines)
                 return (plan_name, pending, criteria)
@@ -1254,7 +1258,7 @@ _SHELL_CMD_TOKENS = frozenset(
 )
 
 _BACKTICK_PATH_RE = re.compile(r"`([^`\n]+)`")
-_BARE_PATH_RE = re.compile(r"(?<![\w`:/])((?:/|~/)[\w./\-]+\.\w{1,8})")
+_BARE_PATH_RE = re.compile(r"(?<![\w`:/~.])((?:/|~/|\.{1,2}/)[\w./\-]+\.\w{1,8})")
 _TRANSCRIPT_TAIL_BYTES = 262144
 
 
@@ -1505,7 +1509,9 @@ def main() -> None:
         ctx_parts.extend(
             [
                 "",
-                "タスクを続行してください。完了不要なら、"
+                "タスクを続行してください。user の入力なしには進められない項目は、"
+                "その行末に `(blocked: 何が塞いでいるか)` を書いてから、"
+                "それに依存しない項目を進めてください。完了不要なら、"
                 "プランを completed/ に移動してから停止してください。",
             ]
         )

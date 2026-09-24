@@ -4,11 +4,11 @@
 
 Readwise Reader で収集したハイライト・ノートを Obsidian Vault に自動同期する。
 
-## `/digest` との棲み分け
+## ソース別の使い分け
 
 | ソース | ツール | 理由 |
 |--------|--------|------|
-| YouTube 動画 | NotebookLM → `/digest` | NotebookLM の要約品質が最高 |
+| YouTube 動画 | NotebookLM（手動保存、旧 `/digest` は 2026-09-23 退役） | NotebookLM の要約品質が最高 |
 | Web 記事 | Readwise → 自動同期 | ハイライト→自動同期が便利 |
 | Kindle 本 | Readwise → 自動同期 | ハイライト自動収集の唯一手段 |
 | PDF | Claude Code 直接 | 既に読み込み可能 |

@@ -35,7 +35,7 @@ skill / ドキュメント / コードを横断点検し、整理候補をユー
 |---|---|
 | `skill-audit` | skill description 衝突、health degradation |
 | `check-health` | ドキュメント鮮度、参照整合性、コード乖離 |
-| `simplify` | 直近変更の重複・冗長・非効率 |
+| `code-simplifier:code-simplifier` agent | 直近変更の重複・冗長・非効率 |
 | `audit` | コードベース全体の品質 (security / arch / perf / tests) |
 
 各処理は read-only。書き込みは Phase D まで行わない。
@@ -46,7 +46,7 @@ skill / ドキュメント / コードを横断点検し、整理候補をユー
 
 - 重複排除 (BM25/trigram 類似度 > 0.85 で同一視)
 - 優先度付与: `high` / `medium` / `low` (各 skill の severity を引き継ぐ)
-- 各候補に **委譲先** を割当 (例: skill 修正 → `skill-creator`、参照修復 → 直接 Edit)
+- 各候補に **委譲先** を割当 (例: skill 修正 → `skill-creator:skill-creator`、参照修復 → 直接 Edit)
 - 出力フォーマット:
 
 ```
@@ -55,7 +55,7 @@ skill / ドキュメント / コードを横断点検し、整理候補をユー
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [high]
-  1. <候補要約> — 検出元: skill-audit / 委譲先: skill-creator
+  1. <候補要約> — 検出元: skill-audit / 委譲先: skill-creator:skill-creator
   2. ...
 
 [medium]
@@ -81,7 +81,7 @@ skill / ドキュメント / コードを横断点検し、整理候補をユー
 
 承認された候補を 1 件ずつ該当委譲先で実行する:
 
-- `skill-creator` に渡す場合: 「<skill 名> を <検出内容> に従って修正してください」と委任
+- `skill-creator:skill-creator` に渡す場合: 「<skill 名> を <検出内容> に従って修正してください」と委任
 - 直接 Edit する場合: 影響範囲を提示 → ユーザー確認 → Edit
 - 各実行後に成否を表示 (✓ / ✗ + 理由)
 

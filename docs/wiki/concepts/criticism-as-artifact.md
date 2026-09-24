@@ -27,7 +27,7 @@ confidence: established
 ## 主要な知見
 
 - 「批評を成果物にする」原則は CREAO AI-First 記事の absorb (2026-04-14) で Codex 批評 (Phase 2.5) が抽出した4つの抽象原理の1つとして定式化され、CLAUDE.md core_principles に明記された。対になる原理は「観測可能にする」「判断をゲート化する」「失敗を capability gap として durable artifact に変える」で、根底には no-blame improvement (バグでエンジニアを罰するのではなくレビュープロセス自体を改善する) の発想がある [EXTRACTED, conf=85]
-- 反論生成 (steelmanning) とレッドチーム (破綻シナリオの事前生成) は批評を明示的に作り出す具体的手法。`/think` Step4・`/challenge`・`/debate` adversarial・`/grill-interview` が実装として対応する [EXTRACTED, conf=75]
+- 反論生成 (steelmanning) とレッドチーム (破綻シナリオの事前生成) は批評を明示的に作り出す具体的手法。`mattpocock-skills:grilling`・cmux Worker（Codex/Gemini との hub-and-spoke、旧 `/debate` 相当）が実装として対応する [EXTRACTED, conf=75]
 - レビュー findings は「隠蔽不可能な成果物」として扱うべき — suppress した findings も structured output に残し、active output には unsuppressible な notice を残し、集約結果が無関係なリスクを隠せないようにする (suppression auditability) [EXTRACTED, conf=80]
 - レビュー結果は command / tests / findings / clean の4要素を持つ構造化レポートとして残す。批評は口頭コメントでなく監査可能な記録である [EXTRACTED, conf=70]
 - AI の沈黙は情報である — verdict=PASS かつ指摘ゼロの場合こそ、仕様書や ADR を人間が深掘りすべき「盲点シグナル」として扱う (Negative Signal Review Rule) [EXTRACTED, conf=85]

@@ -1,7 +1,7 @@
 ---
 status: reference
 last_reviewed: 2026-04-27
-related: skills/compile-wiki/, skills/research/
+related: skills/compile-wiki/
 origin: graphify absorb (2026-04-27) — GraphRAG 由来の業界標準
 ---
 
@@ -88,7 +88,6 @@ confidence 50 未満の項目は `AMBIGUOUS` に降格するか、抽出自体�
 | 場所 | 適用方法 |
 |------|---------|
 | `compile-wiki/templates/concept-article.md` | 主要な知見セクションのキーポイントに `[provenance, conf=NN]` をインライン併記 |
-| `research/SKILL.md` | citation merge 時に provenance を保持 |
 
 ## Anti-Patterns
 

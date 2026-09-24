@@ -85,7 +85,7 @@ last_reviewed: 2026-04-23
 **最適な場面:**
 
 - 設計判断・トレードオフの議論
-- 思考の壁打ち（`/think` 等）
+- 思考の壁打ち（`mattpocock-skills:grilling` 等）
 - 「箇条書きで要点だけ」では関係性が落ちる説明
 
 **非適用:** コード・コマンド・検証結果・gate finding は対象外（minimal の例外条項と同じ）。`/review` や hook/gate 通信では使わない（冗長性必須）。

@@ -52,7 +52,7 @@ Claude Code 本体が全ての意思決定権を持ち、hooks は「推奨」�
 ### 4 フェーズコーディネーションパターン
 
 CC 本体の coordinator prompt が規定する 4 フェーズは、任意のマルチエージェントワークフロー
-（/rpi, /research, /absorb）のテンプレートとして転用できる:
+（/rpi, gemini-explore agent, /absorb）のテンプレートとして転用できる:
 
 | フェーズ | 担当 | やること | やらないこと |
 |---------|------|----------|--------------|
@@ -193,10 +193,10 @@ triage-router
   └── build-fixer               ← ビルドエラー
 ```
 
-### リサーチチェーン (`/research` スキル)
+### リサーチチェーン (`gemini-explore` agent / 並列 Agent 呼び出し)
 
 ```
-/research (スキル)
+外部リサーチ (gemini-explore agent または並列 Agent 呼び出し)
   ├── claude -p (並列ヘッドレス)  ← 文献調査
   ├── gemini-explore             ← 大規模分析・外部リサーチ
   └── codex exec                 ← 設計批評・深い推論

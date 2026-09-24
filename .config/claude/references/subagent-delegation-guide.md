@@ -116,7 +116,7 @@ Google Research (2025) の実証: 逐次推論タスクにマルチエージェ�
 
 ### Context usage ベースの判断
 
-`/check-context` で親の context usage を確認しながら運用する:
+`/context` で親の context usage を確認しながら運用する:
 
 | 親 context usage | ゾーン | 並列サブエージェント起動の扱い |
 |---|---|---|
@@ -351,11 +351,10 @@ fork_context=false（Clean）で起動する場合、子エージェントには
 
 1. **Clean モード** で段階を分離する。親のコンテキストを継承せず、前段の構造化出力だけを受け取る
 2. **Handoff Packet** 形式で引き継ぐ。暗黙の前提ではなく、明示的な artifact (ファイルパス・diff・ソース付き要約) のみを渡す
-3. **Aggregator を独立タスクにする**。`/research` Step 4 Aggregate のように集約自体を 1 つの独立契約として分離し、再解釈ではなく構造化統合を行う
+3. **Aggregator を独立タスクにする**。並列調査の Aggregate ステップのように集約自体を 1 つの独立契約として分離し、再解釈ではなく構造化統合を行う
 
 **dotfiles で既に適用済みの例**:
 
-- `/research` の Step 1-5 分離（Reconnaissance → Plan → Execute → Aggregate → Polish）
 - Pattern 2 Async の self-contained report 化（親が結果を再解釈せず、ユーザー直接報告）
 - Depth-1 ルール（再帰委譲で劣化が増幅するのを防ぐ）
 
@@ -410,12 +409,12 @@ Git worktree はファイルシステムの隔離だけでなく、**ランタ�
 親がタスクを発火して即座に会話を継続。サブエージェントは独立して完了し、結果をユーザーに直接報告。
 
 **使い所**: 長時間の独立タスク
-- 並列リサーチ（`/research` で 3-8 サブタスク並列）
+- 並列リサーチ（並列 `Agent` 呼び出しで 3-8 サブタスク並列）
 - 自律実行（`/autonomous` でセッション跨ぎ）
 - バックグラウンド分析
 
 **dotfiles での実装**:
-- `claude -p`（`/research`, `/autonomous`）
+- `claude -p`（`/autonomous`）
 - Agent ツール + `run_in_background: true`
 - worktree 隔離（`/autonomous` の並列タスク）
 
@@ -636,7 +635,7 @@ spawn prompt や SendMessage でハンドオフする際は、このフォーマ
 
 | ロール | 責務 | dotfiles での対応 |
 |--------|------|------------------|
-| researcher | 文献・事例探索 | `/research`, gemini-explore |
+| researcher | 文献・事例探索 | `gemini-explore` |
 | planner | 実験キュー・優先順位 | Lead（EnterPlanMode） |
 | worker | 1仮説を worktree で実行 | `/spike` + worktree |
 | reporter | 結果収集・観測性 | session-trace-store, `/improve` |
@@ -684,7 +683,7 @@ Agent Teams の固有パターン。単一エージェントでは Context bias 
 |---|---|---|---|
 | **Prompt Chaining** | A → B → C（逐次、前の出力が次の入力） | 依存するステップ | Plan → Implement → Test → Review |
 | **Routing** | 分類器 → 専門ハンドラ | 入力で処理を振り分け | `triage-router`, `claude-hooks` (user-prompt) |
-| **Parallelization** | A, B, C を同時実行 → 統合 | 独立サブタスク | `/review` 並列起動, `/research` |
+| **Parallelization** | A, B, C を同時実行 → 統合 | 独立サブタスク | `/review` 並列起動, 並列 `Agent` 呼び出し |
 | **Orchestrator-Worker** | 親が分解 → 子に委譲 → 統合 | 動的な作業分割 | `/autonomous`, `/review` |
 | **Evaluator-Optimizer** | 生成 → 評価 → フィードバック → 再生成 | 品質が速度より重要な場合 | `completion-gate.py`, TDD ループ |
 
@@ -750,7 +749,7 @@ Generator Agent → 成果物 → Evaluator Agent → 合格? → 完了
 サブエージェント (特に Haiku) に WebFetch を委譲するときの契約:
 
 - **生取得限定**: WebFetch を委譲する場合は「生 markdown 取得まで」で止める。要約は呼び出し側 (Opus) の責務。Haiku 内部要約と委譲先要約の二重圧縮を避ける
-- **原文引用が必要なら WebFetch 禁止**: `/absorb` `/research` `/digest` 等の引用 faithfulness が要る用途では、Haiku の copyright filter (~125 字) で文意が崩れるため、`curl + defuddle` (`obsidian:defuddle` skill) / Jina Reader (`https://r.jina.ai/<url>`) / Gemini grounding に切替
+- **原文引用が必要なら WebFetch 禁止**: `/absorb` gemini-explore agent 等の引用 faithfulness が要る用途では、Haiku の copyright filter (~125 字) で文意が崩れるため、`curl + defuddle` (`obsidian:defuddle` skill) / Jina Reader (`https://r.jina.ai/<url>`) / Gemini grounding に切替
 - **trusted_domains 内かを判定**: 経路の判定基準は `references/web-fetch-policy.md` の decision table。trusted_domains 本体は `data/trusted-domains.json` (CLAUDE.md/MEMORY.md には転記しない)
 - **WebFetch 結果の subagent 転記**: 上記「External Content Contamination」の禁則は引き続き適用される (内部 Haiku 要約後の出力でも injection ペイロードが残存しうる)
 
@@ -815,7 +814,7 @@ Generator Agent → 成果物 → Evaluator Agent → 合格? → 完了
 | パターン | フレーミング | 注入先 |
 |---|---|---|
 | Sync | 簡潔に返す（親が統合） | `/review` の Dispatch ステップ |
-| Async | 自己完結的レポート（ユーザーへ直接報告） | `/research` の Execute、`/autonomous` の executor-prompt |
+| Async | 自己完結的レポート（ユーザーへ直接報告） | `gemini-explore` agent の Execute、`/autonomous` の executor-prompt |
 | Scheduled | ライブデータ優先（実行時の状態で分析） | CronCreate のプロンプト |
 
 ---
@@ -848,7 +847,7 @@ Async/Scheduled サブエージェントの成果物を追跡する軽量レジ�
 `claude-hooks` (Rust, `user-prompt` — UserPromptSubmit hook) がユーザー入力のキーワードから委譲パターンを自動推奨する。
 
 - **Scheduled キーワード**: 「あとで」「明日」「定期的」「schedule」等 → CronCreate / /loop を推奨
-- **Async キーワード**: 「調べて」「リサーチ」「バックグラウンド」「並列」等 → run_in_background / /research を推奨
+- **Async キーワード**: 「調べて」「リサーチ」「バックグラウンド」「並列」等 → run_in_background / gemini-explore agent を推奨
 - **優先順位**: Scheduled > Async（両方マッチした場合は Scheduled を優先）
 - **性質**: アドバイザリー（additionalContext で提案するのみ、強制しない）
 
@@ -886,7 +885,7 @@ Claude Code と Codex は秩序の配置場所が異なる。委譲先の選択�
 | 場面 | 現状 | Sequential 適用 |
 |---|---|---|
 | `/review` の並列起動 | 親が各レビューアーの焦点を指定 | レビューアーに変更 diff のみ渡し、焦点は自律決定させる |
-| `/research` のサブタスク | 親がサブタスクを明示分解 | テーマのみ渡し、調査範囲は自律決定させる |
+| `gemini-explore` agent のサブタスク | 親がサブタスクを明示分解 | テーマのみ渡し、調査範囲は自律決定させる |
 | EPD フロー | 各フェーズのスコープを親が指定 | フェーズ順序は固定、フェーズ内の作業分担は自律 |
 
 ### 適用しない場面
@@ -904,7 +903,7 @@ Orchestrator-Subagent から Sequential Protocol への移行は、**観測シ�
 
 | # | シグナル | 検出方法 |
 |---|---|---|
-| 1 | Coordinator context が 70% 超過を複数セッションで観測 | `/check-context` で確認、Coordinator Context Budget の Danger ゾーン |
+| 1 | Coordinator context が 70% 超過を複数セッションで観測 | `/context` で確認、Coordinator Context Budget の Danger ゾーン |
 | 2 | サブエージェント結果の情報損失が繰り返し発生 | 統合時に重要情報が落ちる、ユーザーから「先ほどの調査結果が反映されていない」指摘が繰り返される |
 | 3 | 役割固定が逆に柔軟性を損なう | 事前に定義した role に合わないタスクが頻出、サブエージェントが「自分の専門外」と棄却する頻度が増える |
 | 4 | サブエージェント数が常に 7+ で summary 層を挟んでも改善しない | Coordinator Context Budget § Summary 層パターン適用後も逼迫 |
@@ -995,7 +994,7 @@ Sequential 原則を採用する 3 ステップ:
 | 場面 | 効果 |
 |---|---|
 | `/review` の並列レビュー | 関連のないレビューアーが空の指摘を生成するのを防止 |
-| `/research` の並列調査 | 情報が見つからないサブタスクが冗長なレポートを返すのを防止 |
+| `gemini-explore` agent の並列調査 | 情報が見つからないサブタスクが冗長なレポートを返すのを防止 |
 | best-of-N | 明らかに失敗した候補が早期終了し、リソース節約 |
 
 ### 注意
@@ -1032,7 +1031,7 @@ Sequential 原則を採用する 3 ステップ:
 ### dotfiles での適用
 
 - `/review`: レビューアーの一部がタイムアウトしても、返ってきた結果で統合を完了する
-- `/research`: サブタスクの一部が失敗しても、成功分でレポートを生成し、欠落を明示する
+- `gemini-explore` agent: サブタスクの一部が失敗しても、成功分でレポートを生成し、欠落を明示する
 - best-of-N: 候補の一部が失敗しても、残りの候補で選択を行う
 
 ---

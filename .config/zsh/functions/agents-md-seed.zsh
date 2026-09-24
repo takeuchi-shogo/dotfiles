@@ -27,7 +27,7 @@ _agents_md_seed() {
 - [TBD: Add important file paths and entry points]
 TEMPLATE
 
-  echo "\033[32m✅ Seeded CLAUDE.md in ${target_dir}\033[0m (run /init-project for full setup)"
+  echo "\033[32m✅ Seeded CLAUDE.md in ${target_dir}\033[0m"
 }
 
 # --- ghq wrapper ---

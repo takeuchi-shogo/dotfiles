@@ -28,7 +28,7 @@ else:
         s = c.get("scope") or "?"
         scopes[s] = scopes.get(s, 0) + 1
     top = ", ".join(f"{k}({v})" for k, v in sorted(scopes.items(), key=lambda x: -x[1])[:3])
-    print(f"learned 昇格 pending {n} 件。top scope: {top}。/promote-learnings で処理を。")
+    print(f"learned 昇格 pending {n} 件。top scope: {top}。nightly learned-promote (run-learned-promote.sh) が非対話で処理する。")
 ')"
 
 if [[ -n "$SUMMARY" ]]; then

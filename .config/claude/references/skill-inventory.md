@@ -29,7 +29,6 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 | continuous-learning | pipeline | Workflow |
 | spec | inversion+generator | Workflow |
 | spike | pipeline | Workflow |
-| validate | reviewer | Workflow |
 | codex-review | reviewer | Workflow |
 
 ## Cross-Model / Research
@@ -40,9 +39,7 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 |-------|---------|----------|
 | codex | tool-wrapper | MCP-Enhance |
 | gemini | tool-wrapper | MCP-Enhance |
-| research | pipeline | Workflow |
 | epd | pipeline | Workflow |
-| interviewing-issues | inversion | Workflow |
 
 ## Domain / Specialist
 
@@ -53,9 +50,7 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 | senior-architect | tool-wrapper | Reference |
 | senior-backend | tool-wrapper | Reference |
 | senior-frontend | tool-wrapper | Reference |
-| react-best-practices | tool-wrapper | Reference |
 | react-expert | tool-wrapper | Reference |
-| frontend-design | generator | Workflow |
 | webapp-testing | tool-wrapper | MCP-Enhance |
 | edge-case-analysis | reviewer | Workflow |
 | ui-ux-pro-max | tool-wrapper+generator | Reference |
@@ -68,10 +63,7 @@ workflow 自体を改善するときに使う。
 |-------|---------|----------|
 | autonomous | pipeline | Workflow |
 | improve | pipeline | Workflow |
-| eureka | generator | Doc |
 | skill-audit | reviewer | Workflow |
-| skill-creator | pipeline+inversion | Workflow |
-| setup-background-agents | generator | Workflow |
 
 ## Personal Ops
 
@@ -84,9 +76,7 @@ workflow 自体を改善するときに使う。
 | capture | generator | Doc |
 | kanban | tool-wrapper | MCP-Enhance |
 | meeting-minutes | generator | Doc |
-| weekly-review | generator | Doc |
 | dev-insights | reviewer | Doc |
-| obsidian-vault-setup | generator | Workflow |
 | obsidian-knowledge | tool-wrapper | MCP-Enhance |
 | obsidian-content | generator | Doc |
 
@@ -107,9 +97,7 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 
 | Upstream | Downstream | Context |
 |----------|-----------|---------|
-| spec | validate | validate は spec の acceptance criteria を評価する |
-| spike | validate | validate は spike の実装結果を検証する |
-| spec | epd | epd は spec → spike → validate → review の統合フロー |
+| spec | epd | epd は spec → spike → product-reviewer → review の統合フロー |
 | spike | epd | epd は spike の結果をもとに proceed/pivot/abandon を判断 |
 | codex-review | review | 100行超の変更では codex-review が review に先行する |
 
@@ -120,7 +108,6 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 | Skill A | Skill B | 理由 |
 |---------|---------|------|
 | frontend-design | ui-ux-pro-max | デザイン指針が競合する可能性 |
-| react-best-practices | react-expert | React 知識の範囲が重複 |
 
 ### belong_to
 
@@ -135,7 +122,6 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 | Skill A | Skill B | 理由 |
 |---------|---------|------|
 | codex-review | review | どちらもコードレビュー。100行超では codex-review を先行 |
-| senior-frontend | react-best-practices | React 最適化は両方カバー。深度が異なる |
 
 ### compose_with
 
@@ -144,8 +130,6 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 | Source | Target | 理由 |
 |--------|--------|------|
 | spec | spike | spec で仕様定義 → spike で実験実装 |
-| research | absorb | research で調査 → absorb で統合 |
-| skill-creator | skill-audit | 作成後に品質監査 |
 
 ### ガイダンス
 
@@ -164,11 +148,11 @@ Codex 批評: atomicity は skill 層ではなく agent/capability 層に課す�
 
 | Capability | Primary Agent(s) | Supporting Skill(s) |
 |------------|-------------------|---------------------|
-| **Localization** (バグ・修正箇所の特定) | debugger, Explore | check-health, fix-issue |
+| **Localization** (バグ・修正箇所の特定) | debugger, Explore | check-health |
 | **Editing** (コード修正・生成) | （直接実装） | epd, rpi, spike, frontend-design |
-| **Testing** (テスト生成・検証) | test-engineer, test-analyzer | spike (validate), webapp-testing |
+| **Testing** (テスト生成・検証) | test-engineer, test-analyzer | spike (product-reviewer), webapp-testing |
 | **Review** (コード品質評価) | code-reviewer, codex-reviewer, golang-reviewer | review, codex-review, security-review |
-| **Reproduction** (Issue 再現・デバッグ) | debugger, cmux Worker (codex) | fix-issue, systematic-debugging |
+| **Reproduction** (Issue 再現・デバッグ) | debugger, cmux Worker (codex) | systematic-debugging |
 
 ### ガイダンス
 
@@ -177,6 +161,8 @@ Codex 批評: atomicity は skill 層ではなく agent/capability 層に課す�
 - capability カバレッジの偏りは skill-audit で検出する
 
 ## Pattern Distribution
+
+> 2026-09 の skill 退役 (PR #252 / batch 2) より前の集計。件数・例示には退役済みの skill を含む。
 
 | Pattern | Count | Example Skills |
 |---------|-------|----------------|

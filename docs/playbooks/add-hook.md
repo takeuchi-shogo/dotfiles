@@ -137,6 +137,5 @@ git commit -m "feat(hooks): add my-hook for ..."
 ## 関連
 
 - 既存 hook の一覧: `jq '.hooks' .config/claude/settings.json`
-- hook デバッグ: `/hook-debugger` skill
 - 4 層分類: `docs/adr/0001-hook-four-layer-separation.md`
 - philosophy: `docs/adr/0006-hook-philosophy.md`

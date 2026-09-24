@@ -247,7 +247,7 @@ wiki を起点にした Q&A を実行し、回答を wiki に再投入するオ�
 |------|---------------|------|
 | `quick` | Step 1-2 の候補絞り込み + 上位 3 関連ページの要約 (frontmatter + H2) のみ取得 | 速度優先、ファクトチェック |
 | `standard` (default) | Step 1-2 の候補絞り込み → 3-5 関連ページを full Read → 合成 | 通常の Q&A |
-| `deep` | standard + 各ページの sources 先 (`docs/research/*.md`) を辿る + 必要なら `/research` で補完 | 設計判断、トレードオフ分析 |
+| `deep` | standard + 各ページの sources 先 (`docs/research/*.md`) を辿る + 必要なら `gemini-explore` agent で補完 | 設計判断、トレードオフ分析 |
 
 #### 使用例
 
@@ -315,7 +315,7 @@ wiki の知見を schema 層（CLAUDE.md / references/）に昇格させる。�
 
 ### 自己改善ループとの連携
 
-(旧 `/improve` は 2026-05-03 retire。後継は learned 昇格ループ — patterns.jsonl → /promote-learnings / nightly learned-promote)
+(旧 `/improve` は 2026-05-03 retire。後継は learned 昇格ループ — patterns.jsonl → nightly learned-promote)
 learned 昇格が policy 更新を提案する際、wiki の established 概念を根拠として参照できる。
 `promote` は wiki → schema の明示的なパス、learned 昇格は session data → schema の暗黙的なパス。両者は補完関係。
 
@@ -441,15 +441,10 @@ wiki の概念記事から QA ペアを生成し、eval データや fine-tuning
 
 以下のスキルから wiki への自動フィードバックをサポートする:
 
-### /research → wiki
-`/research` 完了後、出力レポートが `docs/research/` に保存された場合:
+### リサーチレポート → wiki
+リサーチの出力レポートが `docs/research/` に保存された場合:
 - `/compile-wiki update` で差分更新を提案
 - 新しい概念が既存記事に関連する場合、関連概念セクションへのリンク追加を提案
-
-### /eureka → wiki
-`/eureka` で発見記録が `breakthroughs/` に保存された場合:
-- 関連する概念記事の「主要な知見」セクションへの追記を提案
-- 該当する概念がない場合は新規概念候補としてフラグ
 
 ### セッション Q&A → wiki
 セッション中に wiki にない重要知見が得られた場合:

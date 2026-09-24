@@ -17,7 +17,7 @@ ObsidianはMarkdownベースのナレッジベースツールで、AIエージ�
 ## 主要な知見
 
 - **単一コンテキストファイル原則** — `user.md`をVault rootに配置し毎セッション自動読み込みする設計は、dotfilesのCLAUDE.md + MEMORY.mdパターンと等価
-- **自動メモリループ** — 通話文字起こし（Fathom）→ Zapier → Vault書き戻しで複利的コンテキスト充実。手動`/digest`との対比
+- **自動メモリループ** — 通話文字起こし（Fathom）→ Zapier → Vault書き戻しで複利的コンテキスト充実
 - **Obsidian MCPサーバー** — NodeパッケージでClaude CodeにVault直接読み書きを付与。`settings.json`への`obsidian-mcp`設定が統合点
 - **Smart Connections** — バックリンクと埋め込みから知識グラフを自動構築。手動MOC生成との補完関係
 - **NotebookLM APIなし問題** — Consumer版は非公開API。自動化はGemini API / Claude Codeで代替が現実的
@@ -48,14 +48,14 @@ dotfilesでの現状と計画：
 | 知識グラフ | `/obsidian-knowledge`で手動生成 | バックグラウンド自動化は将来 |
 | 24/7アーキテクチャ | ローカルセッションのみ（Gap） | 常時稼働マシン不要のため保留 |
 | Stop hookでのVault同期 | `sync-memory-to-vault.sh`をStop hookに登録済み（Already） | セッション終了時に自動発火、cron待ちのバックログを解消 |
-| 信念の矛盾照合 | `/think`にthinking-context.md仮説欄との矛盾候補抽出ステップを追加（Already） | Vault全文スキャンは行わず狭いスコープを維持 |
-| 意思決定フィード | `obsidian-knowledge`にVaultスキャン→Supports/Challenges/Adds nuance分類機能を追加（Already） | `/decision`（記録）・`/think decision`（構造化）と責務分離 |
-| キャプチャテンプレート | `00-Inbox/_templates/capture.md`で関連ノート・想定用途を任意記入（Already） | `/note`の即時性は維持しつつ活用文脈を残す |
+| 信念の矛盾照合 | 旧`/think`（2026-09-23 退役）にthinking-context.md仮説欄との矛盾候補抽出ステップを追加していた（Already） | Vault全文スキャンは行わず狭いスコープを維持 |
+| 意思決定フィード | `obsidian-knowledge`にVaultスキャン→Supports/Challenges/Adds nuance分類機能を追加（Already） | `references/decision-journal.md`への直接記録・`mattpocock-skills:grilling`（構造化）と責務分離 |
+| キャプチャテンプレート | `00-Inbox/_templates/capture.md`で関連ノート・想定用途を任意記入（Already） | `note-to-vault.sh`の即時性は維持しつつ活用文脈を残す |
 | Vaultのsignal-density監査 | `vault-maintenance.sh`にrareタグ・命名規約違反チェックを追加（Already） | dry-run専用、自動修正はしない |
 
 `docs/wiki/concepts/obsidian-integration.md`関連のVault CLAUDE.mdには「なぜIPARAG多フォルダを選び単一フォルダ化しないか」の設計根拠を明文化済み（`templates/obsidian-vault/CLAUDE.md`）。
 
-`docs/plans/2026-03-16-obsidian-knowledge-pipeline-design.md`でナレッジパイプライン設計が進行中。`/obsidian-vault-setup`スキルによりZettelkasten + PARAハイブリッド構成を整備済み。
+`docs/plans/2026-03-16-obsidian-knowledge-pipeline-design.md`でナレッジパイプライン設計が進行中。Zettelkasten + PARAハイブリッド構成は旧`obsidian-vault-setup`スキル（2026-09-23 退役）により整備済み。
 
 ## 関連概念
 

@@ -35,7 +35,7 @@ Claude Code v2.1.126 のリバースエンジニアリング (sherry/Zenn 2026-0
 
 trusted ドメインでも、用途によって `curl + defuddle` を強制する:
 
-- **C1: 原文引用が必要** (`/absorb`, `/research`, `/digest` 等) → 引用 faithfulness のため `curl/defuddle` 強制
+- **C1: 原文引用が必要** (`/absorb`, `gemini-explore` agent 等) → 引用 faithfulness のため `curl/defuddle` 強制
 - **C2: code/table 重視** (技術ドキュメント、API リファレンス、設定例) → HTML→md lossy 回避のため `curl/defuddle` 強制
 - **C3: subagent に取得結果を転記** (External Content Contamination 対象) → `subagent-delegation-guide.md` の Raw Fetch Only Contract に従う
 

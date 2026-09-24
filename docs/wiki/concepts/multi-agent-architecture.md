@@ -38,7 +38,7 @@ confidence: established
 
 ## 実践的な適用
 
-dotfiles リポジトリでは3種のサブエージェントパターンが実装済みである。Sync は `/review` での 2〜4 エージェント並列起動・結果統合、Async は `claude -p` 子プロセス（`/research`, `/autonomous`）、Scheduled は `autoevolve-runner.sh` cron ジョブ（毎日 3:00）が対応する。Depth-1 原則はエージェント設計で厳守しており、サブエージェントは Agent ツールを持たない。マルチモデル統合（Claude + Codex + Gemini）は能力特性に基づくルーティング（`claude-hooks` Rust `user-prompt`）で実現されており、Codex はレビュー・設計相談、Gemini は 1M コンテキスト分析に役割分担している。Sequential プロトコルへの移行は現在 Gap として認識されており、Implicit Coordinator パターンからの昇格が課題である。Advisor Consultation（中間相談プロトコル）は `<agent_delegation>` のトップダウン委譲を補う形で採用済みであり、Managed Agents 相当の Hybrid Architecture（計画/推論層と実行/検証層の分離）は将来の参照設計として文書化されている。
+dotfiles リポジトリでは3種のサブエージェントパターンが実装済みである。Sync は `/review` での 2〜4 エージェント並列起動・結果統合、Async は `claude -p` 子プロセス（`/autonomous`）、Scheduled は `autoevolve-runner.sh` cron ジョブ（毎日 3:00）が対応する。Depth-1 原則はエージェント設計で厳守しており、サブエージェントは Agent ツールを持たない。マルチモデル統合（Claude + Codex + Gemini）は能力特性に基づくルーティング（`claude-hooks` Rust `user-prompt`）で実現されており、Codex はレビュー・設計相談、Gemini は 1M コンテキスト分析に役割分担している。Sequential プロトコルへの移行は現在 Gap として認識されており、Implicit Coordinator パターンからの昇格が課題である。Advisor Consultation（中間相談プロトコル）は `<agent_delegation>` のトップダウン委譲を補う形で採用済みであり、Managed Agents 相当の Hybrid Architecture（計画/推論層と実行/検証層の分離）は将来の参照設計として文書化されている。
 
 ## 関連概念
 

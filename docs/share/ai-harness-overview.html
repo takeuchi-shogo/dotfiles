@@ -33,72 +33,38 @@
 <div class="wrap">
   <h1>AI Harness Overview</h1>
   <p class="meta">.config/claude/{skills,agents} + settings.json から自動生成
-    (rev 9f7bc8f7)。手書き禁止 — 編集は SKILL.md / agent 定義側で行い再生成する。</p>
+    (rev 14b9279f)。手書き禁止 — 編集は SKILL.md / agent 定義側で行い再生成する。</p>
 
   <details open class="group">
-    <summary>Skills <span class="g-n">61</span></summary>
+    <summary>Skills <span class="g-n">27</span></summary>
     <ul class="entries">
       <li class="entry"><code>absorb</code><span>外部記事・論文・リポジトリの知見を現在のセットアップに統合する。</span></li>
       <li class="entry"><code>alphaxiv-paper-lookup</code><span>arxiv 論文を alphaxiv.org 経由で構造化レポートとして取得する。</span></li>
       <li class="entry"><code>audit</code><span>コードベース全体の品質監査 → 優先度付き QUESTIONS.md (security/arch/perf/test/quality、file:line+Answer 付き)。</span></li>
-      <li class="entry"><code>auto-triage</code><span>patterns.jsonl の learned 昇格候補を mechanical/advisory/reject/defer に無人分類し dry-run レポートを出す。</span></li>
       <li class="entry"><code>careful</code><span>Use when working near production systems or performing potentially destructive operations</span></li>
-      <li class="entry"><code>challenge</code><span>直前の変更を分析し、エレガント版の再設計・厳しいレビュー・差分実証を行う。</span></li>
-      <li class="entry"><code>check-context</code><span>Check current context window usage and session state</span></li>
       <li class="entry"><code>check-health</code><span>ドキュメント鮮度・コード乖離・参照整合性をチェックする。</span></li>
       <li class="entry"><code>checkpoint</code><span>現在の作業状態を手動で checkpoint として保存し、HANDOFF.md を生成する。</span></li>
       <li class="entry"><code>commit</code><span>conventional commit + 絵文字プレフィックスで整形されたコミットを作成する。</span></li>
       <li class="entry"><code>compile-wiki</code><span>docs/research/ の分析レポート群を概念ベースの wiki にコンパイルする。</span></li>
       <li class="entry"><code>create-issue</code><span>ユーザーの要件テキスト（自由文）から構造化された GitHub Issue を生成し、gh issue create で投稿する。</span></li>
       <li class="entry"><code>cursor</code><span>Cursor Agent CLI (ヘッドレスモード) を使ったコード分析・生成・リファクタリング。</span></li>
-      <li class="entry"><code>debate</code><span>複数AIモデル (Codex/Gemini) に同じ質問を投げ、独立した視点を収集・統合する。</span></li>
-      <li class="entry"><code>decision</code><span>設計・ワークフロー決定を構造化記録する軽量決定ジャーナル。</span></li>
-      <li class="entry"><code>deep-read</code><span>記事の深い理解を促す対話型学習スキル。</span></li>
-      <li class="entry"><code>design-md-init</code><span>プロジェクト root に DESIGN.md を 1 度だけ配置 (grilling で 8 軸の意図抽出 → awesome-design-md exemplar fetch → grilling delta 上書き…</span></li>
-      <li class="entry"><code>developer-onboarding</code><span>開発者プロファイルを対話で構築し、type:user メモリとして保存する。</span></li>
-      <li class="entry"><code>digest</code><span>NotebookLM 出力テキスト・記事・URL・PDF を構造化 Obsidian Literature Note に変換する。</span></li>
-      <li class="entry"><code>dispatch</code><span>cmux Worker Router — タスクをサブエージェント / cmux Worker (Claude/Codex/Gemini) に振り分け。</span></li>
       <li class="entry"><code>edge-case-analysis</code><span>実装前に異常系・境界値・nil パスを強制的に洗い出す。</span></li>
-      <li class="entry"><code>eureka</code><span>技術ブレイクスルーを構造化テンプレートで即座に記録する。</span></li>
-      <li class="entry"><code>excalidraw</code><span>テキスト説明から Excalidraw 互換 JSON ダイアグラムを生成し、.excalidraw ファイルとして保存する。</span></li>
-      <li class="entry"><code>fix-issue</code><span>GitHub Issue を起点にした自動修正ワークフロー。</span></li>
       <li class="entry"><code>freeze</code><span>Use when debugging or investigating — prevents accidental file modifications</span></li>
-      <li class="entry"><code>frontend-design</code><span>Build or refine frontend interfaces with distinctive design (polish/distill/critique/energize/calm)、generic AI…</span></li>
       <li class="entry"><code>gemini</code><span>Antigravity CLI (`agy`) を使った大規模分析・リサーチ・マルチモーダル処理。</span></li>
       <li class="entry"><code>github-pr</code><span>GitHub PR のセルフレビュー・レビューコメント対応・マージ判断を支援する。</span></li>
-      <li class="entry"><code>grill-interview</code><span>プラン・設計を容赦なくストレステストする事前インタビュー。</span></li>
       <li class="entry"><code>herdr</code><span>Control herdr from inside it</span></li>
-      <li class="entry"><code>hook-debugger</code><span>Hook が期待通り発火しない・エラーになる時の診断 Runbook。</span></li>
-      <li class="entry"><code>init-project</code><span>プロジェクトに最適な Claude Code 構造を初期化・適応するオーケストレータ。</span></li>
-      <li class="entry"><code>interviewing-issues</code><span>曖昧なGitHub Issueを4段階のインタビューで明確化し、構造化された仕様を出力する。</span></li>
       <li class="entry"><code>natural-japanese</code><span>仕事の日本語文書を読みやすくわかりやすく書く・直すためのスキル。</span></li>
-      <li class="entry"><code>note</code><span>セッション中の知見を Obsidian Vault の Inbox に即時保存する。</span></li>
       <li class="entry"><code>obsidian-knowledge</code><span>Obsidian Vault のナレッジ整理・検索・リンク化・MOC 自動生成・意思決定の判断材料を vault から集約。</span></li>
-      <li class="entry"><code>obsidian-vault-setup</code><span>Use when setting up a new Obsidian Vault as an &#x27;AI second brain&#x27;</span></li>
       <li class="entry"><code>orca-cli</code><span>Use the public `orca` CLI to operate Orca-managed worktrees, folder contexts, terminals, repos, automations, a…</span></li>
-      <li class="entry"><code>orchestration</code><span>Use Orca orchestration for structured multi-agent coordination: threaded messages, blocking ask/reply flows, t…</span></li>
-      <li class="entry"><code>pr-autofix-routine</code><span>自分 author の open PR を検出し、draft は自己レビュー→高信頼修正→再レビューの収束ループ（Phase1）、 ready はレビューコメントに無人対応（Phase2: Bot=修正+簡潔返信+res…</span></li>
-      <li class="entry"><code>promote-learnings</code><span>patterns.jsonl の learned (運用ログから自動抽出された知見) を durable artifact (skill/reference/CLAUDE.md rule/policy) へ昇格させる。</span></li>
-      <li class="entry"><code>react-best-practices</code><span>React/Next.js のパフォーマンスボトルネックを潰す: waterfall を切る、bundle を絞る、再レンダリングを止める (40+ rule)。</span></li>
-      <li class="entry"><code>recall</code><span>コミット履歴 (contextual commits) から開発文脈を復元する。</span></li>
-      <li class="entry"><code>research</code><span>マルチモデル並列リサーチ。</span></li>
       <li class="entry"><code>review</code><span>コード変更のレビューを実行。</span></li>
-      <li class="entry"><code>security-scan</code><span>AgentShield でエージェント設定のセキュリティ監査を実行する。</span></li>
-      <li class="entry"><code>setup-background-agents</code><span>プロジェクトにバックグラウンドエージェント基盤をセットアップする。</span></li>
-      <li class="entry"><code>simplify</code><span>Simplify changed code by removing duplication and eliminating inefficiency</span></li>
       <li class="entry"><code>skill-audit</code><span>Batch A/B benchmarking and health audit for skills</span></li>
-      <li class="entry"><code>skill-creator</code><span>Create new skills, modify and improve existing skills, and measure skill performance</span></li>
       <li class="entry"><code>spec</code><span>Prompt-as-PRD を生成する。</span></li>
       <li class="entry"><code>spike</code><span>プロトタイプファースト開発。</span></li>
       <li class="entry"><code>stop-ai-slop-jp</code><span>AIで書いた日本語を、人間が書いた文章に戻す。</span></li>
       <li class="entry"><code>taste-skill</code><span>Anti-slop frontend skill for landing pages, portfolios, and redesigns</span></li>
       <li class="entry"><code>terminal-browser</code><span>A real browser running inside the terminal</span></li>
-      <li class="entry"><code>think</code><span>思考を深める対話セッション。</span></li>
-      <li class="entry"><code>timekeeper</code><span>朝の計画と夕方の振り返りを対話形式で行い、Obsidian Vault に保存する。</span></li>
       <li class="entry"><code>ui-ux-pro-max</code><span>Use when designing or implementing UI/UX for web and mobile apps — component styling, color systems, typograph…</span></li>
-      <li class="entry"><code>validate</code><span>Product Validation ゲート。</span></li>
       <li class="entry"><code>webapp-testing</code><span>Toolkit for interacting with and testing local web applications using agent-browser CLI</span></li>
-      <li class="entry"><code>weekly-review</code><span>GTD式の週次レビュー。</span></li>
     </ul>
   </details>
 
@@ -130,7 +96,7 @@
   </details>
 
   <details open class="group">
-    <summary>Plugins <span class="g-n">18</span></summary>
+    <summary>Plugins <span class="g-n">19</span></summary>
     <ul class="entries">
       <li class="entry"><code>claude-md-management</code></li>
       <li class="entry"><code>code-simplifier</code></li>
@@ -147,6 +113,7 @@
       <li class="entry"><code>ralph-loop</code></li>
       <li class="entry"><code>rust-analyzer-lsp</code></li>
       <li class="entry"><code>show-me</code></li>
+      <li class="entry"><code>skill-creator</code></li>
       <li class="entry"><code>superpowers</code></li>
       <li class="entry"><code>typescript-lsp</code></li>
       <li class="entry"><code>warp</code></li>

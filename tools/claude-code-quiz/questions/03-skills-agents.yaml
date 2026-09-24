@@ -33,7 +33,7 @@ questions:
       c: "BDD → TDD"
       d: "方法論なしで直接実装"
     answer: b
-    explanation: "/spec(SDD) で仕様策定 → /interviewing-issues(BDD) で振る舞い定義 → テスト先行(TDD) で実装。"
+    explanation: "/spec(SDD) で仕様策定 → grilling(BDD) で振る舞い定義 → テスト先行(TDD) で実装。"
 
   - id: SA004
     difficulty: intermediate
