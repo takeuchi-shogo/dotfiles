@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-AGENTS_DIR="${HOME}/.claude/agents"
+AGENTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../agents" && pwd)"
 WARN_COUNT=0
 AGENT_COUNT=0
 

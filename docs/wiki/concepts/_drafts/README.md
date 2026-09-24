@@ -46,5 +46,4 @@ concepts/ の protected layer に昇格
 ## 関連
 
 - 分析レポート: [`docs/research/2026-04-14-karpathy-second-brain-modified-analysis.md`](../../../research/2026-04-14-karpathy-second-brain-modified-analysis.md)
-- 実装プラン: [`docs/plans/2026-04-14-karpathy-second-brain-absorb-plan.md`](../../../plans/2026-04-14-karpathy-second-brain-absorb-plan.md)
 - 親 skill: [`compile-wiki`](../../../../.config/claude/skills/compile-wiki/SKILL.md) — `promote-draft` サブコマンド

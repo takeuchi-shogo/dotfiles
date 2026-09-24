@@ -175,7 +175,7 @@ tasks:
     deps:
       - validate-agents
     cmds:
-      - ~/dotfiles/.bin/validate_configs.sh
+      - .bin/validate_configs.sh
 
   validate-agents:
     desc: Validate agent definitions (tools, permissions)
@@ -185,7 +185,7 @@ tasks:
   validate-readmes:
     desc: Validate local links in README files
     cmds:
-      - ~/dotfiles/.bin/validate_readmes.sh
+      - .bin/validate_readmes.sh
 
   validate-symlinks:
     desc: Validate key symlinks managed by dotfiles
@@ -195,12 +195,12 @@ tasks:
   docs:harness-overview:
     desc: Regenerate docs/share/ai-harness-overview.html from live skills/agents/settings
     cmds:
-      - python3 ~/dotfiles/scripts/lifecycle/gen-harness-overview.py {{.CLI_ARGS}}
+      - python3 scripts/lifecycle/gen-harness-overview.py {{.CLI_ARGS}}
 
   docs:harness-overview:check:
     desc: 'Read-only: fail if ai-harness-overview.html drifted from live sources'
     cmds:
-      - python3 ~/dotfiles/scripts/lifecycle/gen-harness-overview.py --check
+      - python3 scripts/lifecycle/gen-harness-overview.py --check
 
   doctor:
     desc: Run setup health check (binary/symlink/nix/hook/settings/brew) — see docs/specs/2026-05-13-setup-doctor.md
