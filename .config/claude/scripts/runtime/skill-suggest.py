@@ -18,23 +18,23 @@ from hook_utils import load_hook_input, run_hook  # noqa: E402
 # File extension → suggested skills mapping
 SKILL_MAP: dict[str, list[str]] = {
     # Frontend
-    ".tsx": ["/frontend-design", "/react-best-practices"],
-    ".jsx": ["/frontend-design", "/react-best-practices"],
-    ".css": ["/frontend-design"],
-    ".scss": ["/frontend-design"],
-    ".html": ["/frontend-design"],
-    ".svelte": ["/frontend-design"],
-    ".vue": ["/frontend-design"],
+    ".tsx": ["/frontend-design:frontend-design"],
+    ".jsx": ["/frontend-design:frontend-design"],
+    ".css": ["/frontend-design:frontend-design"],
+    ".scss": ["/frontend-design:frontend-design"],
+    ".html": ["/frontend-design:frontend-design"],
+    ".svelte": ["/frontend-design:frontend-design"],
+    ".vue": ["/frontend-design:frontend-design"],
     # Skill/agent definitions
-    "SKILL.md": ["/skill-creator"],
+    "SKILL.md": ["/skill-creator:skill-creator"],
     # Harness config
     "settings.json": ["/update-config"],
 }
 
 # Paths that trigger specific suggestions
 PATH_MAP: dict[str, list[str]] = {
-    ".config/claude/agents/": ["/skill-creator"],
-    ".config/claude/skills/": ["/skill-creator"],
+    ".config/claude/agents/": ["/skill-creator:skill-creator"],
+    ".config/claude/skills/": ["/skill-creator:skill-creator"],
     ".config/claude/scripts/": ["/update-config"],
     "docs/specs/": ["/spec"],
 }

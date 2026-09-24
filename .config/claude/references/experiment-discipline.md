@@ -90,7 +90,7 @@ Wave N:
 
 | ロール | 責務 | dotfiles での対応 |
 |--------|------|------------------|
-| **researcher** | 文献・事例探索、新しい仮説の種を見つける | `/research` スキル、gemini-explore |
+| **researcher** | 文献・事例探索、新しい仮説の種を見つける | `gemini-explore` agent |
 | **planner** | 実験キュー管理、仮説の優先順位付け | Lead エージェント（EnterPlanMode） |
 | **worker** | 1仮説を worktree で実行 | `/spike` + worktree 隔離 |
 | **reporter** | 結果収集・観測性・fleet サマリー | session-trace-store + `/improve` |

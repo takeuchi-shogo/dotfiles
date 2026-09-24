@@ -5,7 +5,7 @@ description: >
   コード変更後の Review 段階で使用、または /review で手動起動。
   言語固有チェックリストを code-reviewer のプロンプトに注入して使用（配置場所は本文 Step 2 の表）。
   Triggers: 'レビューして', 'review', 'コードレビュー', 'セルフレビュー', 'check my code'.
-  Do NOT use for: 直近の差分確認のみ（use git diff）、100行超の Codex レビュー（use /codex-review）、Product 観点の検証（use /validate）。
+  Do NOT use for: 直近の差分確認のみ（use git diff）、100行超の Codex レビュー（use /codex-review）、Product 観点の検証（use product-reviewer agent）。
 origin: self
 allowed-tools: Read, Bash, Grep, Glob, Agent
 hooks:

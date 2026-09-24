@@ -130,7 +130,7 @@ C1 でハードコードした言語固有ロジックが C2, C5 で cascading r
 | /spec | 拡張性評価: 「将来の仕様追加で cascading rewrite が起きないか」 |
 | /spike | プロトタイプの設計判断が後続に与える影響を意識 |
 | /review | CC-9 Iterative Slop Detection チェック |
-| /simplify | God function 化パターンの検出 |
+| `code-simplifier:code-simplifier` agent | God function 化パターンの検出 |
 
 ## 出典
 

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""MCP skill hint — suggest /skill-creator when a new MCP server is registered.
+"""MCP skill hint — suggest skill-creator:skill-creator on new MCP server registration.
 
 Triggered by: hooks.PostToolUse (Edit|Write)
 Input: JSON with tool_name, tool_input (file_path + new_string/content) on stdin
 Output: JSON with additionalContext hint when MCP config files are edited
 
 Purpose: 記事 "Hermes as a personal analyst" (2026-04-14 /absorb) の知見から、
-新規 MCP 接続時に skill-creator の起動を促すヒント通知を行う。自動生成はしない。
+新規 MCP 接続時に skill-creator:skill-creator の起動を促すヒント通知を行う。
+自動生成はしない。
 """
 
 from __future__ import annotations
@@ -29,10 +30,10 @@ MCP_CONFIG_BASENAMES = (".claude.json", ".mcp.json", "mcp.json")
 
 HINT_MESSAGE = (
     "[mcp-skill-hint] MCP 設定が変更されました。\n"
-    "新しい MCP server を追加した場合、`/skill-creator` で既存ツールと"
+    "新しい MCP server を追加した場合、`skill-creator:skill-creator` で既存ツールと"
     "組み合わせたタスク固有スキルを生成することを検討してください\n"
     "(例: 朝ブリーフィングに DefiLlama を統合する skill、"
-    "research スキルに Dune を統合する skill 等)。\n"
+    "Dune を統合した分析 skill 等)。\n"
     "MCP を skill 抽象層に引き上げることで、"
     "低レベル tool 直接呼びより安定した運用ができます。\n"
     "参考: `.config/claude/references/mcp-toolshed.md`"

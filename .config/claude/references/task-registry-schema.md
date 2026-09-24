@@ -77,11 +77,10 @@ Agent 呼び出し自体の観測（誰がどの subagent を呼んだか・モ�
 | 経路 | 書き先 | トリガー |
 |---|---|---|
 | `skills/autonomous/scripts/run-session.sh` | task-registry.jsonl | autonomous セッションの開始/完了 |
-| `skills/research/SKILL.md` workflow | task-registry.jsonl | `/research` 起動時に `register()`、subagent dispatch 時は `metadata={"parent_id": ...}` で紐付け |
 | `skills/loop/SKILL.md` workflow | task-registry.jsonl | `/loop` 起動時に `register()`、各 iteration 完了時に `update_status()` の metadata 更新 |
 | `scripts/runtime/agent-invocation-logger.py` | agent-invocations.jsonl | PostToolUse:Agent hook（全 Agent 呼び出し） |
 
-> **Empirical state (2026-04-12 時点)**: `~/.claude/agent-memory/task-registry.jsonl` の実ファイルは未生成の場合がある。これは「実装空白」ではなく、autonomous セッションが未起動である状態を指す。`task_registry.register()` 自体は `skills/autonomous/scripts/run-session.sh` から呼び出される実装が完成しており、autonomous 起動時に生成される。`/research`, `/loop` 等の他 async ランナーから register したい場合は、各ランナーの起動時点で `task_registry.register()` を**明示的に呼ぶ**実装追加が必要（PostToolUse hook で代替してはいけない — 上記「重複させない原則」参照）。
+> **Empirical state (2026-04-12 時点)**: `~/.claude/agent-memory/task-registry.jsonl` の実ファイルは未生成の場合がある。これは「実装空白」ではなく、autonomous セッションが未起動である状態を指す。`task_registry.register()` 自体は `skills/autonomous/scripts/run-session.sh` から呼び出される実装が完成しており、autonomous 起動時に生成される。`/loop` 等の他 async ランナーから register したい場合は、各ランナーの起動時点で `task_registry.register()` を**明示的に呼ぶ**実装追加が必要（PostToolUse hook で代替してはいけない — 上記「重複させない原則」参照）。
 
 ### 関連ドキュメント
 

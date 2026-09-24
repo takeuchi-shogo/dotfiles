@@ -216,15 +216,14 @@ cmux (~/.../cmux.sock)
 - 2本指左右スワイプ: ペイン切り替え
 - 認証はネットワーク層（Tailscale P2P）に委ねる
 
-## dispatch (Worker Router)
+## Worker 起動 (旧 dispatch)
 
-サブエージェントと cmux Worker を自動振り分けする `/dispatch` スキル。
+サブエージェントと cmux Worker の振り分けは `/dispatch` スキル (2026-09-23 retired) が担っていたが、現在は `scripts/runtime/launch-worker.sh` を直接呼ぶ。
 
 ### コンポーネント
 
 | ファイル | 役割 |
 |---------|------|
-| `skills/dispatch/SKILL.md` | Worker Router スキル（判定ロジック） |
 | `scripts/runtime/launch-worker.sh` | Worker 起動（cmux ワークスペース作成 + モデル別 CLI 起動） |
 | `scripts/runtime/collect-result.sh` | 結果回収（ポーリング + 完了検出 + リトライ） |
 | `scripts/runtime/dispatch-log.sh` | 通信ログ閲覧（show / filter / summary） |

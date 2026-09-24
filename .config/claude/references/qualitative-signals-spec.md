@@ -122,7 +122,6 @@ last_reviewed: 2026-04-23
 
 ## 関連
 
-- `.config/claude/skills/skill-creator/scripts/aggregate.py` — 集計実装
-- `.config/claude/skills/skill-creator/instructions/testing-evaluation.md` — 記録フロー
+- `.config/claude/skills/skill-audit/scripts/aggregate.py` — 集計実装
 - `.config/claude/skills/improve/SKILL.md` — Convergence Check
 - `.config/claude/references/improve-policy.md` — Rule 47 (holdout) / Rule 48 (evaluator drift)

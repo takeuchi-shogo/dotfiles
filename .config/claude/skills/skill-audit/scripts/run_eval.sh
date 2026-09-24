@@ -54,7 +54,8 @@ fi
 # Resolve skill path
 ##############################################################################
 
-SKILL_DIR="${HOME}/.claude/skills/${SKILL_NAME}"
+# EVAL_SKILL_DIR で skill の場所を差し替えられる (3-arm の対照群など、~/.claude/skills に置かない一時 skill 用)
+SKILL_DIR="${EVAL_SKILL_DIR:-${HOME}/.claude/skills/${SKILL_NAME}}"
 
 if [[ ! -d "$SKILL_DIR" ]]; then
   echo "ERROR: Skill directory not found: ${SKILL_DIR}" >&2

@@ -70,7 +70,7 @@ family は Phase 1.5 で判定。agentic-instruction-following のキーワー�
 | P2 | `scripts/policy/completion-gate.py` + test 3 件 | `(blocked:` 項目を pending から除外、差し戻し文に blocker の書き方を追加。上限 7 は据え置き |
 | P3 | `scripts/runtime/launch-worker.sh` + `scripts/runtime/prompts/unattended-worker-system.md` | cmux Claude Worker にガイドの段落を system prompt として付与。herdr 版は `--dangerously-skip-permissions` で確認手順が無いため対象外 |
 | P4 | `references/model-routing.md`, `advisor-strategy.md`, `decision-tables-index.md`, `cheatsheet.md` | reasoning_extraction を Opus 5.5 に拡張、「現行: Opus 5」→ 5.5 |
-| P5 | `skills/frontend-design/references/anti-patterns.md` | 5.5 の既定 style 5 種を名指し |
+| P5 | ~~`skills/frontend-design/references/anti-patterns.md`~~ | 取り下げ。5.5 の既定 style 5 種を名指しする追記だったが、#259 で frontend-design skill ごと退役 (同名プラグインに一本化) したため追記先が無い |
 
 ## 検証
 

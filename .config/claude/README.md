@@ -50,7 +50,7 @@ graph TB
             direction LR
             SK_CORE["Core Workflow<br><small>/review, /rpi, /epd</small>"]
             SK_DOMAIN["Domain<br><small>frontend, backend, architect</small>"]
-            SK_EXT["External Model<br><small>/codex, /gemini, /research</small>"]
+            SK_EXT["External Model<br><small>/codex, /gemini</small>"]
             SK_OPS["DevOps<br><small>/morning, /kanban, /capture</small>"]
         end
 
@@ -274,9 +274,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `spec` | Prompt-as-PRD 仕様書生成 |
 | `spike` | Worktree 隔離プロトタイプ検証 |
-| `validate` | 受入基準検証 |
 | `edge-case-analysis` | 異常系・境界値洗い出し |
-| `interviewing-issues` | Issue 明確化インタビュー |
 | `audit` | コードベース品質監査 |
 
 ### Domain Specialist (専門知識)
@@ -286,9 +284,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `senior-architect` | システムアーキテクチャ設計 |
 | `senior-backend` | API/DB 設計 |
 | `senior-frontend` | React/Next.js アーキテクチャ |
-| `react-best-practices` | React パフォーマンス最適化 (40+ ルール) |
 | `react-expert` | React API リサーチ |
-| `frontend-design` | 高品質 UI デザイン生成 |
 | `ui-ux-pro-max` | UI/UX 最適化 (10 スタック対応) |
 
 ### External Model (外部モデル連携)
@@ -298,8 +294,6 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `codex` | Codex CLI (gpt-5.6-terra) 実行 |
 | `codex-review` | Codex AI コードレビュー・CHANGELOG 生成 |
 | `gemini` | Antigravity CLI (`agy`) 大規模分析 |
-| `research` | マルチエージェント並列リサーチ |
-| `debate` | 複数 AI モデルによるセカンドオピニオン |
 
 ### Automation
 
@@ -307,7 +301,6 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `autonomous` | マルチセッション自律実行 |
 | `github-pr` | PR セルフレビュー・マージ判断 |
-| `setup-background-agents` | バックグラウンドエージェント基盤セットアップ |
 | `absorb` | 外部記事・論文の知見統合 |
 
 ### DevOps (日々の運用)
@@ -317,27 +310,20 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 | `morning` | 朝の開発計画生成 |
 | `kanban` | カンバンボード操作 |
 | `capture` | GTD 即時キャプチャ |
-| `weekly-review` | GTD 式週次レビュー |
 | `dev-insights` | 開発データ分析 |
-| `timekeeper` | 朝の計画・夕方の振り返り |
 
 ### Knowledge (知識管理)
 
 | スキル | 説明 |
 |--------|------|
-| `obsidian-vault-setup` | Vault セットアップ |
 | `obsidian-knowledge` | ナレッジ検索・整理 |
 | `obsidian-content` | コンテンツ生成 |
-| `digest` | NotebookLM → Literature Note 変換 |
-| `eureka` | 技術ブレイクスルー記録 |
 
 ### Meta (スキル・プロジェクト管理)
 
 | スキル | 説明 |
 |--------|------|
-| `skill-creator` | スキル作成・編集・ベンチマーク |
 | `skill-audit` | スキル品質監査・A/B テスト |
-| `init-project` | プロジェクト初期化 |
 | `prompt-review` | プロンプトレビュー |
 
 ### Safety & Debug
@@ -346,13 +332,11 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `careful` | 本番環境操作ガード |
 | `freeze` | 編集禁止モード (デバッグ用) |
-| `hook-debugger` | Hook 診断 Runbook |
 | `webapp-testing` | agent-browser による Web アプリテスト |
 | `upload-image-to-pr` | 画像を PR に埋め込み |
 | `nano-banana` | AI 画像生成 (Gemini 3.1 Flash) |
 | `meeting-minutes` | 議事録生成 |
 | `dev-ops-setup` | DevOps セットアップ |
-| `developer-onboarding` | 開発者オンボーディング |
 
 ### スキル間の依存関係
 
@@ -361,16 +345,15 @@ flowchart TB
     epd["/epd"]
     spec["/spec"]
     spike["/spike"]
-    validate["/validate"]
+    productReviewer["product-reviewer agent"]
     rpi["/rpi"]
     review["/review"]
     commit["/commit"]
-    research["/research"]
     autonomous["/autonomous"]
 
     epd -->|"Phase 1"| spec
     epd -->|"Phase 2"| spike
-    spike -->|"内部呼出"| validate
+    spike -->|"内部呼出"| productReviewer
     spike -->|"spec未存在時"| spec
     epd -->|"Phase 3: Decide"| decision{proceed?}
     decision -->|"yes"| rpi
@@ -378,7 +361,6 @@ flowchart TB
     epd -->|"Phase 5"| review
     review -->|"完了後"| commit
 
-    research -->|"並列実行"| claudeP["claude -p 子プロセス"]
     autonomous -->|"並列実行"| claudeP2["claude -p (worktree隔離)"]
 
     style epd fill:#e94560,stroke:#16213e,color:#ffffff
@@ -484,7 +466,7 @@ flowchart TB
     subgraph phase2["Phase 2: Spike"]
         worktree["Worktree 隔離<br>spike/{feature}"]
         proto["最小実装<br>(テスト/lint 不要)"]
-        validate_spike["/validate<br>受入基準チェック"]
+        validate_spike["product-reviewer agent<br>受入基準チェック"]
         worktree --> proto --> validate_spike
     end
 
@@ -657,25 +639,14 @@ flowchart TB
 | `/epd` | Full EPD: Spec → Spike → Validate → Decide → Build | L |
 | `/spec` | Prompt-as-PRD 仕様書生成 | M |
 | `/spike` | Worktree 隔離プロトタイプ検証 | M |
-| `/validate` | spec の受入基準に対する検証 | S |
-| `/research` | マルチエージェント並列リサーチ | M-L |
 | `/autonomous` | マルチセッション自律実行 | L |
-| `/fix-issue` | GitHub Issue を起点にした自動修正 | M-L |
 | `/security-review` | OWASP Top 10 セキュリティレビュー | M |
-| `/security-scan` | AgentShield セキュリティ監査 | M |
-| `/challenge` | 直前の変更を分析し、エレガント版再設計 | M |
-| `/eureka` | 技術ブレイクスルーの構造化記録 | S |
 | `/checkpoint` | セッション状態の手動チェックポイント | S |
-| `/check-context` | コンテキストウィンドウ使用率確認 | S |
 | `/memory-status` | メモリシステム状態サマリー | S |
 | `/absorb` | 外部記事・論文の知見統合 | M-L |
 | `/interview` | spec のための深いインタビュー | M |
-| `/recall` | コミット履歴からコンテキスト復元 | S |
-| `/onboarding` | 開発者プロファイル構築 | M |
 | `/profile-drip` | プロファイル 1日1問漸進構築 | S |
 | `/persona` | 口調切り替え (ギャル/妹/メスガキ/お姉さん) | S |
-| `/timekeeper` | 朝の計画・夕方の振り返り | M |
-| `/init-project` | プロジェクト初期化 | L |
 
 ---
 

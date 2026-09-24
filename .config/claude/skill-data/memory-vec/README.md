@@ -3,7 +3,7 @@
 agent-memory + Obsidian Vault 記事を埋め込みインデックス化し、意味検索でオンデマンド参照するためのランタイム。
 
 - `reindex.ts` — `index.db` をフル再構築（DROP→CREATE→全 md を redact→embed）。stop-hook が `index.db` の mtime < ソース md の mtime のとき background 起動する。
-- `query.ts` — クエリを embed して KNN 検索。`recall` skill / SessionStart hint hook が呼ぶ。
+- `query.ts` — クエリを embed して KNN 検索。SessionStart hint hook が呼ぶ。
 - `lib/memory_redactor.py` — embed 前に秘匿情報を redact（`.config/claude/scripts/lib/redactor.py` と重複の疑いあり。統合は別タスク）。
 
 呼び出し元は `~/.claude/scripts/runtime/memory-vec-{stop,hint}-hook.py`（`node <path>` を直接実行。`pnpm run` は経由しない）。

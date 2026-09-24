@@ -25,7 +25,7 @@
 - `tmp/plans/` の plan: Goal / Decision Log / Surprises をコミットメッセージの body に畳んで、ファイルを削除する (`/commit` が実行)
 - `docs/plans/` の plan: `Outcome` を埋めて `docs/plans/completed/` に移す
 
-git 履歴が plan の最終的な置き場。`/recall` が commit body から文脈を復元する。
+git 履歴が plan の最終的な置き場。`git log` で contextual-commit の action 行を辿り文脈を復元する。
 
 → 詳細: [resume anchor contract](.config/claude/references/resume-anchor-contract.md) (Plan / HANDOFF / RUNNING_BRIEF の wiring)
 

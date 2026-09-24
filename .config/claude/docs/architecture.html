@@ -388,11 +388,11 @@
     <table>
       <thead><tr><th>Capability</th><th>主担当 Agent</th><th>支援 Skill</th></tr></thead>
       <tbody>
-        <tr><td><b>Localization</b> 箇所特定</td><td>debugger, Explore</td><td>check-health, fix-issue</td></tr>
-        <tr><td><b>Editing</b> 修正・生成</td><td>（直接実装）</td><td>epd, rpi, spike, frontend-design</td></tr>
-        <tr><td><b>Testing</b> テスト</td><td>test-engineer, test-analyzer</td><td>spike(validate), webapp-testing</td></tr>
+        <tr><td><b>Localization</b> 箇所特定</td><td>debugger, Explore</td><td>check-health</td></tr>
+        <tr><td><b>Editing</b> 修正・生成</td><td>（直接実装）</td><td>epd, rpi, spike</td></tr>
+        <tr><td><b>Testing</b> テスト</td><td>test-engineer, test-analyzer</td><td>spike(product-reviewer), webapp-testing</td></tr>
         <tr><td><b>Review</b> 品質評価</td><td>code-reviewer, codex-reviewer, golang-reviewer, typescript-reviewer</td><td>review, codex-review, security-review</td></tr>
-        <tr><td><b>Reproduction</b> 再現</td><td>debugger, cmux Worker(codex)</td><td>fix-issue, systematic-debugging</td></tr>
+        <tr><td><b>Reproduction</b> 再現</td><td>debugger, cmux Worker(codex)</td><td>systematic-debugging</td></tr>
       </tbody>
     </table>
   </div>
@@ -423,7 +423,7 @@
         <li><b>review</b> — レビューアー自動選択・並列起動</li>
         <li><b>epd</b> — Spec→Spike→Validate→Build→Review</li>
         <li><b>rpi</b> — Research→Plan→Implement</li>
-        <li><b>spec / spike / validate</b> — 仕様・試作・受入検証</li>
+        <li><b>spec / spike</b> — 仕様・試作・受入検証</li>
         <li><b>check-health</b> — ドキュメント鮮度・乖離</li>
         <li><b>commit</b> — conventional commit + 絵文字</li>
       </ul>
@@ -434,42 +434,31 @@
       <ul class="clean">
         <li><b>codex</b> — Codex CLI 深い推論 <span class="tag">MCP-Enhance</span></li>
         <li><b>gemini</b> — 1M ctx 大規模分析 <span class="tag">MCP-Enhance</span></li>
-        <li><b>research</b> — マルチエージェント並列リサーチ</li>
-        <li><b>debate</b> — 複数 AI セカンドオピニオン</li>
         <li><b>absorb</b> — 外部記事・論文の知見統合</li>
-        <li><b>dispatch</b> — cmux Worker ルーター</li>
       </ul>
     </div>
     <div class="card accent-blue">
       <h4>🧩 Domain / Specialist</h4>
       <p class="muted">技術領域が明確なとき</p>
       <ul class="clean">
-        <li><b>frontend-design / ui-ux-pro-max</b> — UI 生成</li>
-        <li><b>react-best-practices</b> — React 最適化</li>
+        <li><b>ui-ux-pro-max</b> — UI 生成</li>
         <li><b>edge-case-analysis</b> — 異常系・境界値</li>
         <li><b>webapp-testing</b> — agent-browser テスト</li>
-        <li><b>security-scan</b> — 監査</li>
       </ul>
     </div>
     <div class="card accent-amber">
       <h4>🔧 Automation / Meta</h4>
       <p class="muted">ワークフロー自体を改善</p>
       <ul class="clean">
-        <li><b>skill-creator / skill-audit</b> — skill 作成・監査</li>
-        <li><b>promote-learnings / auto-triage</b> — 学習昇格</li>
-        <li><b>eureka</b> — ブレイクスルー記録</li>
+        <li><b>skill-audit</b> — skill 監査</li>
       </ul>
     </div>
     <div class="card accent-green">
       <h4>📓 Personal Ops</h4>
       <p class="muted">GTD・知識管理（coding の前提にしない）</p>
       <ul class="clean">
-        <li><b>weekly-review</b> — 振り返り</li>
-        <li><b>timekeeper</b> — 朝計画</li>
-        <li><b>obsidian-knowledge / digest</b> — ナレッジ整理</li>
-        <li><b>note / decision</b> — 即時記録</li>
-        <li><b>think / challenge</b> — 思考の壁打ち</li>
-        <li><b>recall / checkpoint</b> — 文脈復元・保存</li>
+        <li><b>obsidian-knowledge</b> — ナレッジ整理</li>
+        <li><b>checkpoint</b> — 文脈保存</li>
       </ul>
     </div>
     <div class="card accent-purple">
@@ -485,8 +474,8 @@
 
   <div class="callout">
     <b>スキル間の関係（SkillNet）:</b>
-    <code>depend_on</code>（spec→validate）・<code>conflicts_with</code>（frontend-design ⇔ ui-ux-pro-max は同時有効化禁止）・
-    <code>compose_with</code>（research→absorb）・<code>similar_to</code>（codex-review ⇔ review）を形式的に定義し、skill-audit が衝突を検出する。
+    <code>depend_on</code>（spec→spike）・<code>conflicts_with</code>（frontend-design ⇔ ui-ux-pro-max は同時有効化禁止）・
+    <code>compose_with</code>（gemini→absorb）・<code>similar_to</code>（codex-review ⇔ review）を形式的に定義し、skill-audit が衝突を検出する。
   </div>
 </section>
 
@@ -631,7 +620,6 @@
       <p>OpenAI Codex（gpt-5.6-terra）。<code>config.toml</code> + <code>rules/default.rules</code>。Claude のサブエージェントとしても起動。</p>
       <ul class="clean">
         <li><b>役割</b> 深い推論・Spec/Plan ゲート・Review ゲート</li>
-        <li><b>skills</b> hook-debugger</li>
       </ul>
     </div>
     <div class="card accent-blue">
@@ -683,7 +671,7 @@
       <h4>🟣 Obsidian — 知識橋渡し</h4>
       <p>セッションの知見を Obsidian Vault（<code>~/Documents/Obsidian Vault</code>）へ <b>memory→Vault の単方向同期</b>するスナップショット連携。Vault は AI の reasoning input ではなく、人間の第二の脳。</p>
       <ul class="clean">
-        <li><b>skills</b> obsidian-knowledge / digest / note / obsidian-content / obsidian-vault-setup</li>
+        <li><b>skills</b> obsidian-knowledge / obsidian-content</li>
         <li><b>plugin</b> obsidian@obsidian-skills（obsidian-markdown / obsidian-cli / defuddle / json-canvas / bases）</li>
         <li><b>hooks</b> sync-memory-to-vault.sh（Stop）/ save-briefing-to-vault.sh（PostToolUse）</li>
         <li><b>原則</b> 現行コードと矛盾したら現状を優先（Vault は過去スナップショット）</li>
@@ -714,7 +702,7 @@
       <p>Ghostty + cmux 上で <b>別ペインに Worker を起動</b>し、Claude/Codex/Gemini を並列に走らせる。改善・設計判断・セカンドオピニオンの正規パス。</p>
       <ul class="clean">
         <li><b>launch-worker.sh</b> — <code>--model codex/gemini</code> で Worker 起動（1-hop observable）</li>
-        <li><b>dispatch</b> skill — self-improve preset で各軸 skill を並列 fan-out</li>
+        <li><b>self-improve preset</b> — <code>launch-worker.sh</code> を各軸で複数回起動し並列 fan-out</li>
         <li><b>参照</b> references/cmux-ecosystem.md（CLI・surface 解決）</li>
         <li><b>注意</b> Bash tool → codex は到達不能（TTY 不在）。cmux Worker が正規パス</li>
       </ul>
@@ -756,7 +744,7 @@
         <tr><td>不確実なアイデアを形にしたい</td><td><code>/epd</code>（フル 6 フェーズ）</td></tr>
         <tr><td>仕様は明確、実装に入りたい</td><td><code>/rpi</code>（Research→Plan→Implement）</td></tr>
         <tr><td>素早く実現可能性を検証したい</td><td><code>/spike</code>（worktree 隔離・テスト/lint 不要）</td></tr>
-        <tr><td>設計判断・トレードオフ比較</td><td><code>/debate</code> または cmux Worker（Codex）</td></tr>
+        <tr><td>設計判断・トレードオフ比較</td><td>cmux Worker hub-and-spoke（<code>launch-worker.sh</code> ×N）</td></tr>
         <tr><td>大規模コードベースを分析</td><td><code>/gemini</code>（1M ctx）</td></tr>
         <tr><td>外部記事の知見を取り込みたい</td><td><code>/absorb</code></td></tr>
         <tr><td>コード変更のレビュー</td><td><code>/review</code>（規模に応じ自動スケール）</td></tr>
@@ -806,8 +794,8 @@
   <div class="grid g4">
     <div class="card accent-pink"><h4>セッション</h4><p>Stop/SessionEnd hook が errors / quality 指摘を jsonl に自動記録</p></div>
     <div class="card accent-blue"><h4>日次</h4><p>nightly <code>run-daily-report.sh</code> の活動サマリで振り返り</p></div>
-    <div class="card accent-amber"><h4>バックグラウンド</h4><p>launchd cron で深夜に分析、朝レビュー（auto-triage dry-run）</p></div>
-    <div class="card accent-green"><h4>昇格</h4><p>patterns.jsonl → <code>/promote-learnings</code> で skill/rule 化</p></div>
+    <div class="card accent-amber"><h4>バックグラウンド</h4><p>launchd cron で深夜に分析、朝レビュー</p></div>
+    <div class="card accent-green"><h4>昇格</h4><p>patterns.jsonl → nightly <code>run-learned-promote.sh</code> で skill/rule 化</p></div>
   </div>
 
   <h3>夜間 launchd cron（自律運用）</h3>

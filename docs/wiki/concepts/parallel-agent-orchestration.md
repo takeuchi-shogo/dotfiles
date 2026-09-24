@@ -33,7 +33,7 @@ confidence: established
 
 ## 実践的な適用
 
-このリポジトリでは `superpowers:dispatching-parallel-agents` と `/dispatch` が並列エージェント起動の基盤を提供する。`/autonomous` スキルが Orchestrator 役を担い、個別の Agent ツール呼び出しが Subagent に対応する。Awareness Summary プロトコルは `references/subagent-delegation-guide.md` に定義されており、fork_context=false 時の最小入力セット（タスク・パス・Awareness Summary）も同ファイルに明記されている。Pre-Merge Conflict Detection は `/autonomous` の Step 4.3 として実装され、全 worktree 完了後にファイル重複を検出する。Narrow Context Principle は既存の `fork_context` ポリシーと合致しており、追加の実装は不要。`CLAUDE_CODE_FORK_SUBAGENT=1` によるコンテキスト全継承は `references/subagent-delegation-guide.md` で意図的不採用として明記されている。
+このリポジトリでは `superpowers:dispatching-parallel-agents` と `launch-worker.sh` が並列エージェント起動の基盤を提供する。`/autonomous` スキルが Orchestrator 役を担い、個別の Agent ツール呼び出しが Subagent に対応する。Awareness Summary プロトコルは `references/subagent-delegation-guide.md` に定義されており、fork_context=false 時の最小入力セット（タスク・パス・Awareness Summary）も同ファイルに明記されている。Pre-Merge Conflict Detection は `/autonomous` の Step 4.3 として実装され、全 worktree 完了後にファイル重複を検出する。Narrow Context Principle は既存の `fork_context` ポリシーと合致しており、追加の実装は不要。`CLAUDE_CODE_FORK_SUBAGENT=1` によるコンテキスト全継承は `references/subagent-delegation-guide.md` で意図的不採用として明記されている。
 
 ## 関連概念
 

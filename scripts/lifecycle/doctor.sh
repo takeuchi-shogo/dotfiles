@@ -233,6 +233,83 @@ check_settings() {
   if [[ -n "$extra" ]]; then
     emit settings OK "live-only keys (runtime-injected, expected): $(tr '\n' ' ' <<< "$extra")"
   fi
+  check_settings_permissions "$repo_settings"
+}
+
+# permissions is the one repo-owned key whose VALUES are safe to compare:
+# runtime never writes it ("don't ask again" lands in the per-repo
+# settings.local.json), and Superset/Orca inject hooks only. So any value
+# difference is an unsynced edit — e.g. live missing ask rules that fence an
+# allow like `pnpm *`, which lets `pnpm add` run unprompted.
+check_settings_permissions() {
+  local repo_settings="$1"
+  if ! jq -e 'has("permissions")' "$repo_settings" >/dev/null 2>&1; then
+    emit settings FAIL "repo settings has no permissions block" "$repo_settings"
+    return
+  fi
+  jq -e 'has("permissions")' "$SETTINGS_FILE" >/dev/null 2>&1 || return
+  local f side ptype
+  for side in repo live; do
+    f="$repo_settings"; [[ $side == live ]] && f="$SETTINGS_FILE"
+    ptype=$(jq -r '.permissions | type' "$f")
+    if [[ "$ptype" != "object" ]]; then
+      emit settings FAIL "permissions is not an object in $side settings ($ptype)" \
+        "task claude:settings:sync-permissions"
+      return
+    fi
+  done
+  # Validate rule tiers per side, not by comparison: two identical malformed
+  # values (ask: null on both) would otherwise compare equal and pass.
+  local bad tier ttype malformed=0
+  for side in repo live; do
+    f="$repo_settings"; [[ $side == live ]] && f="$SETTINGS_FILE"
+    bad=$(jq -r '.permissions | to_entries[]
+      | select(.key | IN("allow", "ask", "deny", "additionalDirectories"))
+      | select(.value | type != "array") | "\(.key)\t\(.value | type)"' "$f")
+    while IFS=$'\t' read -r tier ttype; do
+      [[ -z "$tier" ]] && continue
+      emit settings FAIL "permissions.$tier is not an array in $side settings ($ttype)" \
+        "task claude:settings:sync-permissions"
+      malformed=1
+    done <<< "$bad"
+  done
+  [[ $malformed -eq 1 ]] && return
+  # An absent key and an empty array mean the same rule set (explicit null does
+  # not: Claude Code may reject it); any other type
+  # difference (string vs array) is reported as-is rather than fed to `-`,
+  # which would error and leave $drift empty — i.e. a false "match".
+  local drift jq_err key repo_side live_side
+  if ! drift=$(jq -rn --slurpfile r "$repo_settings" --slurpfile l "$SETTINGS_FILE" '
+    ($r[0].permissions) as $rp | ($l[0].permissions) as $lp
+    | ([$rp, $lp] | map(keys) | add | unique)[] as $k
+    | ($rp | has($k)) as $ha | ($lp | has($k)) as $hb
+    | $rp[$k] as $a | $lp[$k] as $b
+    | (if ($ha | not) and ($b | type) == "array" then [] else $a end) as $a
+    | (if ($hb | not) and ($a | type) == "array" then [] else $b end) as $b
+    | if $ha != $hb and ($a | type) != "array" and ($b | type) != "array" then
+        [$k, "repo: \(if $ha then $a | tojson else "absent" end)",
+             "live: \(if $hb then $b | tojson else "absent" end)"] | join("\t")
+      elif ($a | type) != ($b | type) and (($a | type) == "array" or ($b | type) == "array") then
+        [$k, "repo: \($a | type)", "live: \($b | type)"] | join("\t")
+      elif ($a | type) == "array" then
+        ($a - $b) as $miss | ($b - $a) as $more
+        | select(($miss | length) > 0 or ($more | length) > 0)
+        | [$k, "repo-only: \(if ($miss | length) > 0 then $miss | map(tostring) | join(", ") else "-" end)",
+               "live-only: \(if ($more | length) > 0 then $more | map(tostring) | join(", ") else "-" end)"]
+          | join("\t")
+      elif $a != $b then [$k, "repo: \($a | tojson)", "live: \($b | tojson)"] | join("\t")
+      else empty end' 2>&1); then
+    emit settings FAIL "permissions could not be compared" "${drift%%$'\n'*}"
+    return
+  fi
+  if [[ -z "$drift" ]]; then
+    emit settings OK "permissions match repo ($(jq -r '.permissions | "allow=\(.allow // [] | length) ask=\(.ask // [] | length) deny=\(.deny // [] | length)"' "$repo_settings"))"
+    return
+  fi
+  while IFS=$'\t' read -r key repo_side live_side; do
+    emit settings FAIL "permissions.$key drifted from repo ($repo_side; $live_side)" \
+      "task claude:settings:sync-permissions"
+  done <<< "$drift"
 }
 
 check_brew() {

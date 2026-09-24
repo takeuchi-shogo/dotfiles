@@ -16,11 +16,11 @@ last_reviewed: 2026-04-23
 
 | cwd 種類 | 判定ヒント | 読む rules | 読む skills (優先) | 避ける skills |
 |---|---|---|---|---|
-| **dotfiles root** | `~/dotfiles` or `$CLAUDE_CONFIG_DIR` の親 | 全 common/ + 言語別（編集対象に応じ） | harness 系（skill-creator, update-config, hook-debugger, improve）、メタ系（autoevolve-core） | Obsidian 系（vault 固有）、sprint-task-sync |
-| **Obsidian Vault root** | `~/Documents/Obsidian Vault` 系列、`.obsidian/` が存在 | common/overconfidence-prevention, common/language-choice のみ | obsidian-content, obsidian-knowledge, obsidian-vault-setup, note, digest, obsidian:* | harness 系（skill-creator, update-config）、言語別 rules |
+| **dotfiles root** | `~/dotfiles` or `$CLAUDE_CONFIG_DIR` の親 | 全 common/ + 言語別（編集対象に応じ） | harness 系（skill-creator:skill-creator, update-config, improve）、メタ系（autoevolve-core） | Obsidian 系（vault 固有）、sprint-task-sync |
+| **Obsidian Vault root** | `~/Documents/Obsidian Vault` 系列、`.obsidian/` が存在 | common/overconfidence-prevention, common/language-choice のみ | obsidian-content, obsidian-knowledge, obsidian:* | harness 系（skill-creator:skill-creator, update-config）、言語別 rules |
 | **外部 repo (Go)** | `go.mod` 存在、`~/dotfiles` 外 | common/* + go.md | review, commit, golang-reviewer | dotfiles 固有 hooks 改修系、Obsidian 系 |
-| **外部 repo (TS/React)** | `package.json` + tsx, `~/dotfiles` 外 | common/* + typescript.md + react.md | review, commit, frontend-design, react-best-practices | dotfiles 固有系、Obsidian 系 |
-| **その他 (unknown cwd)** | 上記いずれにも該当しない | common/code-quality, common/security の 2 つのみ | 汎用 (review, commit, debate, gemini, codex) | 環境固有スキル全般 |
+| **外部 repo (TS/React)** | `package.json` + tsx, `~/dotfiles` 外 | common/* + typescript.md + react.md | review, commit, frontend-design:frontend-design | dotfiles 固有系、Obsidian 系 |
+| **その他 (unknown cwd)** | 上記いずれにも該当しない | common/code-quality, common/security の 2 つのみ | 汎用 (review, commit, gemini, codex) | 環境固有スキル全般 |
 
 ## 判定フロー
 

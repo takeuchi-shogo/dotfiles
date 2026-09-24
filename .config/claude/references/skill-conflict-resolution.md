@@ -67,7 +67,7 @@ task 規模に対して skill が過大な場合は起動しない:
 | task 規模 | 適用可能 skill | 適用不可 skill |
 |----------|---------------|--------------|
 | S (typo, 1 行) | 直接 Edit, `/commit` | `/spike`, `/rpi` |
-| M (関数追加, バグ修正) | `/rpi`, `/review`, `/fix-issue` | L 規模 skill (過剰) |
+| M (関数追加, バグ修正) | `/rpi`, `/review` | L 規模 skill (過剰) |
 | L (新機能, リファクタ) | `/spec` → `/rpi` | — |
 
 ## Anti-Patterns
@@ -82,7 +82,7 @@ task 規模に対して skill が過大な場合は起動しない:
 
 ## 適用タイミング
 
-- skill-creator が新 skill 作成時に既存 skill との description 衝突を検証
+- `skill-creator:skill-creator` が新 skill 作成時に既存 skill との description 衝突を検証
 - user request が曖昧なときの第一判断ポイント
 - session 中に同じ skill が連続 invoke されたときの confirmation
 - `/review` の reviewer 選択時

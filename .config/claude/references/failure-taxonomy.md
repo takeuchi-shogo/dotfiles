@@ -326,11 +326,11 @@ hooks (`session_events.py`) と review agents が共通で参照する。
 - **検出パターン**: `settings.json` の matcher regex とツール名の不一致、hook スクリプトの実行権限なし、条件式の論理エラー
 - **判定**: 定義された hook が対象イベントで発火するか (pass/fail)
 - **不変条件**: hook を追加・変更したら対象イベントでの発火を検証する
-- **レビューアー**: `/hook-debugger`, `code-reviewer`
+- **レビューアー**: `code-reviewer`
 - **recoveryType**: user-fixable
 - **controllability**: `environment`
 - **autoFixable**: false
-- **suggestedFix**: "regex 検証 + 手動発火テスト（/hook-debugger 参照）"
+- **suggestedFix**: "regex 検証 + 手動発火テスト"
 
 ### HFM-002: Script Crash
 

@@ -180,10 +180,6 @@ GitHub ラベルをトリガーに、Agent 間が自動的にバトンを渡し�
 | | auto-merge-agent | CI通過後の自動マージ |
 | | unused-code-agent | 週次の不要コード検知 |
 
-### setup-background-agents との接続
-
-`/setup-background-agents` スキルでプロジェクトに適用する際、上記カタログから必要な Agent を選択し、テンプレートを生成する。
-
 ## 4. Closed Loop Chain — ステップ間状態ファイル連鎖
 
 個別の cron / スキル / hook を「チェーン」として接続し、各ステップが前ステップの出力を確認してから実行するパターン。

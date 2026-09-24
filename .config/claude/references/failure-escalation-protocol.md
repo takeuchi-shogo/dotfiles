@@ -25,7 +25,7 @@ failure に遭遇した時、以下のトリガー表で判定する。**Yes が
 | トリガー | 判定基準 | 例 |
 |---|---|---|
 | **再現性** | 同じ操作で同じ failure を 2 回以上観測した | Codex Bash-tool unreachable (TTY 不在 + silent exit) |
-| **将来 block** | 今後の workflow (/absorb, /debate, /improve, /spike 等) を継続的に妨げる | Phase 2.5 Codex 批評が常時実行不能 |
+| **将来 block** | 今後の workflow (/absorb, cmux Worker hub-and-spoke, /improve, /spike 等) を継続的に妨げる | Phase 2.5 Codex 批評が常時実行不能 |
 | **修正候補あり** | 不確実でも仮説ベースの修正経路が 1 つ以上見える | pty wrapper / `script` コマンド / launch-worker headless mode |
 | **harness の欠陥** | hook, script, settings.json, agent definition の bug / 設計不整合 | golden-check hook の false positive、agent ルーティング誤り |
 
@@ -61,7 +61,7 @@ failure に遭遇した時、以下のトリガー表で判定する。**Yes が
 
 ## 影響範囲
 
-- block されるワークフロー: </absorb Phase 2.5, /debate, ...>
+- block されるワークフロー: </absorb Phase 2.5, cmux Worker hub-and-spoke, ...>
 - 頻度: <observed N times>
 - 回避策: <現状のワークアラウンド (例: Gemini fallback)>
 

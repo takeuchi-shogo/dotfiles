@@ -12,7 +12,7 @@ last_reviewed: 2026-04-23
 Agent harness を育てていくと、同じ下位 tool に対して複数の層の wrapper が積まれていく傾向がある:
 
 ```
-Opus → /dispatch → cmux Worker (launch-worker.sh --model codex) → codex CLI → (本当にやりたかったこと)
+Opus → launch-worker.sh --model codex → codex CLI → (本当にやりたかったこと)
 Opus → /gemini    → gemini-explore → agy CLI → (同上)
 Opus → /codex     → codex skill → codex CLI → (同上)
 ```
@@ -43,7 +43,7 @@ wrapper を作るのが正しいのは、**以下のいずれかに明確に該�
 | **Safety gate** | 危険な操作の事前検証が必要か？ | `git push --force`, `rm -rf`, prod DB 書き込みの確認 |
 | **Taste encoding** | 「良い使い方」を毎回再発見するのは非効率か？ | `/commit` (conventional commit 規則)、`/review` (レビュー観点) |
 | **Token economy** | raw CLI のヘルプ/マニュアルが大きすぎて毎回ロードが割に合わないか？ | `codex` の 20+ オプションから必要な 3 つだけ露出 |
-| **Cross-tool orchestration** | 複数の下位 tool を協調実行する必要があるか？ | `/research` (複数 model への fan-out + 集約) |
+| **Cross-tool orchestration** | 複数の下位 tool を協調実行する必要があるか？ | 並列 `Agent` 呼び出し (複数 model への fan-out + 集約) |
 
 **上記のどれにも該当しないなら、wrapper は作らない。raw tool を直接使うべき。**
 
@@ -73,7 +73,6 @@ PostHog の例: 4 つの別 tool (`projects-get`, `insight-get`, `insight-query`
 
 | Wrapper | 下位 tool | 主な理由 | 備考 |
 |---------|-----------|---------|------|
-| `/dispatch` | cmux Worker / Subagent | Cross-tool orchestration, Taste encoding | ルーティング判断を集約 |
 | `/codex` skill | `codex` CLI | Token economy, Taste encoding | 20+ option のうち推奨 3 つだけ露出 |
 | `/gemini` skill | `agy` CLI | Taste encoding (巨大 context の使い所) | 適用条件の絞り込み |
 | `/commit` skill | `git commit` | Taste encoding (conventional commit 規則) | regex+emoji を固定化 |
@@ -115,5 +114,4 @@ PostHog の原則 1 ("Let agents do everything users can") は、プロダクト
 
 **関連**:
 - `subagent-delegation-guide.md` — Capability Restriction Policy
-- `skills/skill-creator/instructions/skill-writing-guide.md` — "What NOT to write" セクション
 - `docs/research/2026-04-11-posthog-agent-first-rules-analysis.md` — 出典と分析

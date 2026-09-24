@@ -77,7 +77,7 @@ warning logic: `data-requires` chain を traverse、prereq が off なら赤表�
 - 仕様書 / spec を HTML で書く → markdown (`docs/specs/`)
 - code review / PR を HTML で書く → markdown + `difit --comment`
 - design system reference を HTML で persist → `ui-ux-pro-max` の MASTER.md
-- diagram 1 つだけ欲しい → Mermaid 埋込 markdown または `excalidraw` skill
+- diagram 1 つだけ欲しい → Mermaid 埋込 markdown
 - 後続 agent (subagent / vector index) が読む artifact → markdown
 
 詳細: [`output-format-decision-table.md`](output-format-decision-table.md)
