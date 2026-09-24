@@ -52,7 +52,7 @@ Turn 2: 前の回答とは根本的に異なるアプローチで回答してく
 Turn 3: 上記2つのどちらでもない第三のアプローチで回答してください。
 ```
 
-**適用場面**: best-of-n の候補生成、ブレインストーミング、`/debate`
+**適用場面**: best-of-n の候補生成、ブレインストーミング、cmux Worker hub-and-spoke
 
 ## 使い分け
 
@@ -74,7 +74,7 @@ Turn 3: 上記2つのどちらでもない第三のアプローチで回答し�
 
 SSD 研究の知見: 選ばれなかったサンプルにも学習価値がある。
 
-VS-Multi や `/debate` で生成した候補のうち、採用されなかった案も session-trace に記録する:
+VS-Multi や cmux Worker hub-and-spoke で生成した候補のうち、採用されなかった案も session-trace に記録する:
 - 不採用理由を 1 行で添える（「テスト不合格」「パフォーマンス劣後」「スコープ外」等）
 - contrastive-trace-analyzer の入力として、採用/不採用の対比分析に使用可能（⚠ contrastive-trace-analyzer は 2026-06-05 退役。decommission-log.md 参照）
 - 特に難易度の高いタスクでは、不採用案の部分的アプローチが後続タスクで再利用できることがある
@@ -98,8 +98,8 @@ VS は**生成前**の多様化（プロンプトレベル）。submodular selec
 VS / マルチモデル / temperature で多様な候補を生成する。
 
 - VS-Multi で N 個の異なる視点からの回答を生成
-- /research のマルチモデル並列実行で異なるモデルの出力を収集
-- /debate で Codex / Gemini の独立見解を取得
+- `gemini-explore` agent や並列 `Agent` 呼び出しのマルチモデル並列実行で異なるモデルの出力を収集
+- cmux Worker hub-and-spoke で Codex / Gemini の独立見解を取得
 
 ### Stage 2: 生成後多様化（submodular selection）
 

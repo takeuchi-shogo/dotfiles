@@ -124,7 +124,7 @@ agent-browser diff snapshot --baseline /tmp/before.txt
 
 ## UX Diff Scoring（iteration 間の定量比較）
 
-`/validate` から「UX スコアゲート」として呼ばれた場合、iteration 前後のスクリーンショット + snapshot を比較し、カテゴリ別スコア（0-10）と差分を算出する。呼び出し側の契約は `skills/validate/SKILL.md` の "UX Score Gate" セクションを参照。
+呼び出し側から「UX スコアゲート」として呼ばれた場合、iteration 前後のスクリーンショット + snapshot を比較し、カテゴリ別スコア（0-10）と差分を算出する。
 
 ### 引数の受け取り
 
@@ -212,7 +212,7 @@ agent-browser snapshot -c > "$BASELINE_DIR/baseline.txt"
 - 具体案: submit 後に aria-live="polite" でステータスを通知
 ```
 
-`Feedback for Next Iteration` セクションは `/validate` の "Feedback Loop (閉ループ)" ステップ (`skills/validate/SKILL.md`) が消費し、次 iteration の spec プロンプトに注入する。ui-observer 側は「次の修正候補」を列挙するだけでよく、注入自体は呼び出し側の責務。
+`Feedback for Next Iteration` セクションは呼び出し側が消費し、次 iteration の spec プロンプトに注入する。ui-observer 側は「次の修正候補」を列挙するだけでよく、注入自体は呼び出し側の責務。
 
 ## Output Format
 

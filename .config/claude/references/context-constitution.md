@@ -83,7 +83,7 @@ PreCompact で key decisions を memory/ にフラッシュし、PostCompact で
 
 **運用上の帰結:**
 
-- `/check-context` が Edit 数 (20/30/50) で間接的に監視している閾値は、上記の multi-hop 帯域 (~300-400k) に対応する経験則
+- 組み込み `/context` が Edit 数 (20/30/50) で間接的に監視している閾値は、上記の multi-hop 帯域 (~300-400k) に対応する経験則
 - Debug / refactor / architecture 判断のような multi-hop タスクは 300k 超で品質が落ちる前提で設計する
 - 単純な情報抽出（grep 結果の分類、ドキュメント要約）は 1M 近くまで使い切ってよい
 - **タスクの複雑度を測らずに「1M あるから大丈夫」と判断しない**

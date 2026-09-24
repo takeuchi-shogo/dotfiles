@@ -50,18 +50,18 @@ Step 2 [生成後]: Submodular / DPP で最大カバレッジの部分集合を�
 
 ## 実践的な適用
 
-dotfiles ハーネスでは /research スキルの Aggregate フェーズに組み込み予定。
+dotfiles ハーネスでは /research スキル（2026-09-23 退役）の Aggregate フェーズに組み込み予定だった。
 
 - Wave 1: `diversity_metrics.py` で重複率の基準値を計測
 - Wave 2: `submodular_selection.py` を Aggregate に統合、λ パラメータで関連性-多様性を調整
-- Wave 3: VS + submodular の2段階パイプラインを /research Step 1 に統合
-- 昇格ループ（`/promote-learnings`）: echo chamber 対策として多様性チェック heuristic を Step 3 に追加済み。watch 条件（同一 scope の learned が 3 連続バッチ占有 / 矛盾 learned の恒常 reject）を満たしたら `submodular_selection.py` の本配線を検討
+- Wave 3: VS + submodular の2段階パイプラインを /research（退役済み）Step 1 に統合
+- 昇格ループ（nightly `run-learned-promote.sh`）: echo chamber 対策として多様性チェック heuristic を Step 3 に追加済み。watch 条件（同一 scope の learned が 3 連続バッチ占有 / 矛盾 learned の恒常 reject）を満たしたら `submodular_selection.py` の本配線を検討
 
 ## 関連概念
 
 - [サブモジュラー最適化](submodular-optimization.md) — 多様性選択の主要アルゴリズム
 - [RLHFアライメント](rlhf-alignment.md) — Verbalized Sampling（生成前多様化・補完関係）
-- [ワークフロー最適化](workflow-optimization.md) — /research スキルのパイプライン設計
+- [ワークフロー最適化](workflow-optimization.md) — 旧 /research スキル（2026-09-23 退役）のパイプライン設計
 
 ## ソース
 

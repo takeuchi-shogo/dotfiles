@@ -46,7 +46,7 @@ START
   │    └─ ローカル必須: CronCreate（OS cron）
   │
   ├─ 「人間への通知だけで OK（副作用なし）」
-  │    └─→ /timekeeper の朝/夕リマインダー、または OS notification
+  │    └─→ OS notification
   │
   └─ 「複数セッション・長時間・自走」
        └─→ /autonomous
@@ -59,7 +59,7 @@ START
 | `/loop 5m` を 24h 走らせる | cache miss + token tax 累積 | `/schedule` で別セッション生成 |
 | `ScheduleWakeup(3600)` を多用 | 5min cache TTL 超で cache miss | `/loop dynamic` か `/schedule` |
 | polling のために `time.sleep()` で 5 分ブロック | bash timeout (120s) に当たる | `Monitor` か `ScheduleWakeup` |
-| cron job をローカル UI 通知の代替にする | OS依存・通知パイプライン無し | `/timekeeper` か OS notification |
+| cron job をローカル UI 通知の代替にする | OS依存・通知パイプライン無し | OS notification |
 | 1 回限りの remind を `/loop` で組む | 撤退条件曖昧 | `/schedule once at <time>` |
 
 ## Step 5: クラウド vs オンデバイスの線引き
@@ -68,7 +68,7 @@ Warp の `scheduler` skill は **明示的にクラウド agent scheduling を�
 
 | 性質 | オンデバイス推奨 | クラウド推奨 |
 |------|---------------|------------|
-| 機密情報を扱う | ✅ CronCreate / `/timekeeper` | — |
+| 機密情報を扱う | ✅ CronCreate | — |
 | マシン off でも実行必須 | — | ✅ `/schedule` (Managed Agent) |
 | 副作用が PR/issue/Slack 投稿 | どちらでも可 | ✅ Managed Agent (token 永続) |
 | 人間への通知のみ | ✅ オンデバイス | — |

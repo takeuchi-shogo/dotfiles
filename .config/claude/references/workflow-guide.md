@@ -114,7 +114,7 @@ select → generate → edit
 
 - **M/L タスク**: Plan 作成前に `/check-health` を実行し、関連ドキュメントの矛盾・陳腐化を検出する。矛盾情報は Plan に伝播し、下流の全実装を汚染する（OpenForage: "Pre-Task Contradiction Check"）
 - **harness / architecture / workflow 変更時**: `docs/adr/README.md` から該当 ADR を照合し、過去の設計判断と矛盾しないか確認する。矛盾・関連があれば Plan の Constraints / Decision Log に反映する（Zenn dk_ dev-flow: 実装前 ADR 確認の配線。全タスクでの強制はしない — reversible-decisions / pre-mortem との重複を避ける）
-- **L タスク — 複数プラン生成（任意）**: 不確実性が高い場合、N=3 の異なるアプローチを列挙し、保守性・拡張性・シンプルさの 3 軸で比較して選択する。`/debate` を活用してもよい
+- **L タスク — 複数プラン生成（任意）**: 不確実性が高い場合、N=3 の異なるアプローチを列挙し、保守性・拡張性・シンプルさの 3 軸で比較して選択する。cmux Worker hub-and-spoke を活用してもよい
 
 ### Plan 実行中の中間検証（L 規模）
 
@@ -261,7 +261,7 @@ Plan 実行中に方針変更が必要になった場合、以下のパターン
 - `search-first` スキル — 実装前に既存の解決策を検索する
 - brainstorming スキルでアイデアを設計に落とす
 - writing-plans スキルで実装計画を策定する
-- **Best-of-N プランニング（L 規模で推奨）**: 複数モデルに独立してプラン草案を出させ、最良の要素を統合する。手順: (1) Claude / Codex / Gemini にそれぞれ独立にプラン草案を生成させる（`/debate` または個別委譲）、(2) 各プランの強み・弱みを比較表にまとめる、(3) 最良の要素を統合した最終プランを作成する。全モデルが一致する部分は信頼度が高く、分岐する部分はリスク要因として Decision Log に記録する
+- **Best-of-N プランニング（L 規模で推奨）**: 複数モデルに独立してプラン草案を出させ、最良の要素を統合する。手順: (1) Claude / Codex / Gemini にそれぞれ独立にプラン草案を生成させる（cmux Worker hub-and-spoke または個別委譲）、(2) 各プランの強み・弱みを比較表にまとめる、(3) 最良の要素を統合した最終プランを作成する。全モデルが一致する部分は信頼度が高く、分岐する部分はリスク要因として Decision Log に記録する
 - **Plan レビュー（M/L 必須）**: Plan 作成後、ユーザーに提示する**前に** `plan-document-reviewer` サブエージェントを dispatch してレビューを実施する。Issues Found なら修正して再レビュー、Approved ならユーザーへ提示する（writing-plans スキルの Plan Review Loop に従う。最大3イテレーション）
 - **L規模のみ**: チェックポイントコミットを作成してから着手する（`git add -A && git commit -m "checkpoint: before {task description}"`）
 
@@ -351,7 +351,7 @@ Spec/Plan 作成後、実装前に Codex(gpt-5.6-terra) で批評するゲート
    - **迷う**もの（トレードオフ・複数の選択肢・確信なし）→ ユーザーに選択肢を提示 → ユーザーが判断
 3. ユーザー承認で Implement に進む
 
-**grill-interview（任意ステップ・ユーザー起動）**: ADR 追加・workflow 変更・不可逆判断を含む高不確実性プランで、1.4 の 3 問で足りないときは `/grill-interview` の実行をユーザーに促す（`disable-model-invocation: true` のため Claude からは起動できない。促すだけで、自分で呼ぼうとしない）。superpowers:brainstorming（要件の探索）とは役割が異なり、grill-interview は確定済みプランの決定木の各分岐を尋問して潰す。全 M/L への必須化はしない（Gate 遅延を避ける）。
+**mattpocock-skills:grilling（任意ステップ）**: ADR 追加・workflow 変更・不可逆判断を含む高不確実性プランで、1.4 の 3 問で足りないときは `mattpocock-skills:grilling` の実行を検討する。superpowers:brainstorming（要件の探索）とは役割が異なり、grilling は確定済みプランの決定木の各分岐を尋問して潰す。全 M/L への必須化はしない（Gate 遅延を避ける）。
 
 ### 2. Implement（実装）
 
@@ -556,9 +556,8 @@ S/M/L はデフォルトの深度を決めるが、個別ステージの深度�
 | Codex デバッグ           | cmux Worker (`launch-worker.sh --model codex`) | Codex による深いエラー分析・根本原因特定 (`/codex:rescue` は使わない、memory `feedback_codex_casual_use.md` 参照) |
 | ドキュメントメンテナンス | `doc-gardener`               | 陳腐化ドキュメント検出・修正                            |
 | UI 観察                  | `ui-observer`                | agent-browser による UI 状態確認（サブエージェント限定）   |
-| 並列リサーチ             | `/research` スキル           | マルチエージェント並列調査、レポート生成                |
+| 並列リサーチ             | 並列 `Agent` 呼び出し         | マルチエージェント並列調査、レポート生成                |
 | 自律実行                 | `/autonomous` スキル         | 長時間タスクのセッション跨ぎ自律実行                    |
-| ブレイクスルー記録       | `/eureka` スキル             | 技術的発見の構造化記録、INDEX 管理                      |
 | Cursor Agent             | `/cursor` スキル             | マルチモデル比較、Cloud Agent 非同期タスク              |
 
 ### ハンドオフフォーマット
@@ -602,7 +601,7 @@ S/M/L はデフォルトの深度を決めるが、個別ステージの深度�
 #### 回復手順
 
 1. **失敗パターンを診断**: 何の知識が不足して膠着したかを特定（例: 座標変換の数式、ネットワーク同期の制約）
-2. **専門エージェントを作成**: `skill-creator` スキルでブートストラップ。以下をエージェント定義に埋め込む:
+2. **専門エージェントを作成**: `skill-creator:skill-creator` でブートストラップ。以下をエージェント定義に埋め込む:
    - ドメイン固有の Symptom-Cause-Fix テーブル（今回のデバッグで判明した内容）
    - コードパターンとアンチパターン（ファイルパス、関数名付き）
    - 既知の failure modes（再発防止）
@@ -779,7 +778,7 @@ LLM は長いコンテキストの中間部分を見落としやすい（Lost-in
 - 調査タスクは Explore エージェントに委譲（メインコンテキストを汚さない）
 - 長い出力を返すコマンドは `head` や `tail` でフィルタ
 - 独立したタスクはサブエージェントに並列委譲
-- `/check-context` でセッション状態を確認できる
+- `/context` でセッション状態を確認できる
 - `python3 scripts/runtime/token-audit.py` でファイル別トークン消費量を分析し、犯人を特定できる
 
 ### セッション分離
@@ -851,7 +850,7 @@ Claude のターンが終わった直後はコンテキスト分岐点。惰性�
 | リサーチ → 実装 | **新セッション推奨** | リサーチの探索ノイズを持ち込まない（workflow-guide.md § "リサーチは広範だが実装は狭い"と整合）|
 | 実装 → 別モジュールの実装 | **新セッション** | モジュール境界で区切る、shared assumptions は MEMORY や Plan で明示 |
 
-判断に迷ったら: `/check-context` で残容量確認 → 残量に余裕なら継続、逼迫なら新セッション。
+判断に迷ったら: `/context` で残容量確認 → 残量に余裕なら継続、逼迫なら新セッション。
 
 ### Loop Monitoring（Build-QA ラウンド監視）
 
@@ -909,7 +908,7 @@ nogataka「3回ルール」: 同一違反が3セッションで再発したら�
 2. **Expertise Map 更新**: `references/model-expertise-map.md` にドメイン別スコアを追加
 3. **エージェント作成**（任意）: 専用エージェントが必要なら `agents/{model-name}-*.md` を作成
 4. **claude-hooks (user_prompt.rs) 更新**: 自動委譲 hook のルーティング条件にモデルを追加
-5. **`/debate` 対応**: `skills/debate/SKILL.md` のモデルリストに追加
+5. **cmux Worker hub-and-spoke 対応**: `scripts/runtime/launch-worker.sh` の対応モデルリストに追加
 
 > 既存の `rules/codex-delegation.md` と `rules/gemini-delegation.md` を参考にする。
 > 各ファイルの構造を揃えることで、モデル間の比較・選択が容易になる。
@@ -927,7 +926,7 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 | ----------- | ------------------------------------------------------ |
 | `/spec`     | Prompt-as-PRD 生成（構造化プロンプトとして仕様を記述） |
 | `/spike`    | プロトタイプファースト開発（worktree 隔離 → validate） |
-| `/validate` | Product Validation（acceptance criteria 照合）         |
+| `product-reviewer` agent | Product Validation（acceptance criteria 照合）         |
 
 ### レビュー3軸
 
@@ -941,11 +940,11 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 
 | シナリオ                 | 推奨コマンド         |
 | ------------------------ | -------------------- |
-| 不確実なアイデアの検証   | `/spike` → `/validate` → `/rpi` |
+| 不確実なアイデアの検証   | `/spike` → `product-reviewer` agent → `/rpi` |
 | 仕様が明確な機能開発     | `/rpi`               |
 | 素早いプロトタイプだけ   | `/spike`             |
 | 仕様書だけ作りたい       | `/spec`              |
-| 実装後の仕様適合チェック | `/validate`          |
+| 実装後の仕様適合チェック | `product-reviewer` agent          |
 
 ---
 
@@ -959,7 +958,7 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 |---|---|---|---|
 | **Static** | lint + type check | 言語固有ツール（`tsc`, `go vet` 等） | PASS/FAIL |
 | **Dynamic** | unit test + E2E | `test-engineer` agent, `webapp-testing` | PASS/FAIL |
-| **Semantic** | code review + product validation | `/review`, `/validate` | PASS/NEEDS_FIX/BLOCK |
+| **Semantic** | code review + product validation | `/review`, `product-reviewer` agent | PASS/NEEDS_FIX/BLOCK |
 
 ### 統合判定基準
 
@@ -977,7 +976,7 @@ Harrison Chase "How Coding Agents Are Reshaping EPD" に基づく拡張ワーク
 
 - **Static**: `completion-gate.py` が lint/type check を自動実行
 - **Dynamic**: カバレッジレポートを入力に `test-engineer` agent (AUTOCOVER Mode) がテスト生成、`webapp-testing` が E2E
-- **Semantic**: `/review` が並列レビュー、`/validate` が仕様整合性
+- **Semantic**: `/review` が並列レビュー、`product-reviewer` agent が仕様整合性
 
 ワークフローの Verify 段階で、3層すべてが PASS であることを確認してからタスク完了とする。
 

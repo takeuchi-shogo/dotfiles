@@ -4,7 +4,7 @@
 
 Vault 全体から live で読み出す single note。
 **手動更新しない** — 更新は元ノートで行う。  
-Dataview plugin が必要。詳細: `.claude/skills/obsidian-vault-setup/references/dashboard-template.md`
+Dataview plugin が必要。
 
 ---
 
@@ -30,7 +30,7 @@ LIMIT 10
 ## Carryover
 
 昨日の Daily Note の `## Review` 内「明日に持ち越し」セクションから自動拾い上げ。  
-timekeeper review で記録 → 翌日 dashboard で表示。
+Daily Note の Review で記録 → 翌日 dashboard で表示（記録元だった timekeeper は 2026-09-23 退役）。
 
 ```dataview
 LIST
@@ -63,5 +63,3 @@ LIMIT 15
 
 - このダッシュボードは **Dataview** に依存している (2026 maintenance mode)
 - 中長期: 公式 **Bases** プラグインへの移行を検討
-- 取り扱い・スキーマ詳細は dotfiles 側 reference を参照:
-  `dotfiles/.config/claude/skills/obsidian-vault-setup/references/dashboard-template.md`

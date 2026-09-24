@@ -4,7 +4,7 @@ description: >
   Batch A/B benchmarking and health audit for skills. Runs A/B tests across multiple skills,
   detects description conflicts, and generates audit reports.
   Triggers: 'audit skills', 'benchmark skills', 'skill health check', 'retire unused skills', 'check skill quality', 'スキル監査'.
-  Do NOT use for: creating or editing individual skills (use skill-creator instead), コードベース監査（use /audit）。
+  Do NOT use for: creating or editing individual skills (use skill-creator:skill-creator instead), コードベース監査（use /audit）。
 origin: self
 metadata:
   pattern: reviewer
@@ -27,17 +27,13 @@ Use this skill when you want to:
 
 Skills whose domains overlap heavily with the base model's knowledge. These are most likely to show marginal or negative delta vs baseline:
 
-- `react-best-practices`
-- `security-scan`
-- `frontend-design`
 - `ui-ux-pro-max`
 
 ### Batch 2 — Competing Pairs (trigger conflicts)
 
 Skill pairs whose descriptions may cause incorrect or ambiguous triggering:
 
-- `frontend-design` vs `ui-ux-pro-max`
-- `security-scan` vs `security-review`
+- `frontend-design:frontend-design` (plugin) vs `ui-ux-pro-max`
 
 The user can override these defaults with a custom skill list.
 
@@ -177,30 +173,29 @@ For each skill, generate 3 test prompts in `evals.json` format:
 
 Save each skill's prompts to `.skill-eval/{skill-name}/evals/evals.json`:
 
+`run_eval.sh` はトップレベルの配列として読む (`jq '.[$i]'`)。`{"evals": [...]}` のようなオブジェクトで包むと `Cannot index object with number` で落ちる。
+
 ```json
-{
-  "skill_name": "{skill-name}",
-  "evals": [
-    {
-      "id": 1,
-      "name": "clear-trigger",
-      "prompt": "...",
-      "expected_output": "..."
-    },
-    {
-      "id": 2,
-      "name": "borderline",
-      "prompt": "...",
-      "expected_output": "..."
-    },
-    {
-      "id": 3,
-      "name": "domain-depth",
-      "prompt": "...",
-      "expected_output": "..."
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "clear-trigger",
+    "prompt": "...",
+    "expected_output": "..."
+  },
+  {
+    "id": 2,
+    "name": "borderline",
+    "prompt": "...",
+    "expected_output": "..."
+  },
+  {
+    "id": 3,
+    "name": "domain-depth",
+    "prompt": "...",
+    "expected_output": "..."
+  }
+]
 ```
 
 ### Step 3: Run A/B benchmark
@@ -208,7 +203,7 @@ Save each skill's prompts to `.skill-eval/{skill-name}/evals/evals.json`:
 For each skill, run the eval harness. This launches `claude -p` with and without the skill for each prompt:
 
 ```bash
-bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json"
+bash ~/.claude/skills/skill-audit/scripts/run_eval.sh "{skill-name}" ".skill-eval/{skill-name}/evals/evals.json"
 ```
 
 #### Optional: 3-arm evaluation（terse-control）
@@ -239,14 +234,17 @@ bash ~/.claude/skills/skill-creator/scripts/run_eval.sh "{skill-name}" ".skill-e
 SKILL_NAME=example-skill
 EVALS=.skill-eval/${SKILL_NAME}/evals/evals.json
 WORK=.skill-eval/${SKILL_NAME}
-SC=~/.claude/skills/skill-creator/scripts
+SC=~/.claude/skills/skill-audit/scripts
 
 # 1. arm A (baseline = without_skill) と arm C (with_skill) を取得
 bash "${SC}/run_eval.sh" "${SKILL_NAME}" "${EVALS}" "${WORK}/arm-ac"
 python3 "${SC}/aggregate.py" "${WORK}/arm-ac/iteration-1" --skill-name "${SKILL_NAME}"
 
 # 2. arm B (terse-control 専用 skill: "Answer concisely. No preamble, no summary." のみ)
-bash "${SC}/run_eval.sh" terse-control "${EVALS}" "${WORK}/arm-b"
+#    対照群の skill は ~/.claude/skills (実体は dotfiles 内) に置かず、ワークスペース配下に作って EVAL_SKILL_DIR で渡す
+TC="${WORK}/terse-control" && mkdir -p "$TC"
+printf -- '---\nname: terse-control\ndescription: skill-audit 3-arm eval の対照群 (一時)\n---\n\nAnswer concisely. No preamble, no summary.\n' > "$TC/SKILL.md"
+EVAL_SKILL_DIR="$TC" bash "${SC}/run_eval.sh" terse-control "${EVALS}" "${WORK}/arm-b"
 python3 "${SC}/aggregate.py" "${WORK}/arm-b/iteration-1" --skill-name terse-control
 
 # 3. 各 arm を単一 configuration の JSON に抽出 (aggregate.py --three-arm の入力形式)
@@ -271,7 +269,7 @@ python3 "${SC}/aggregate.py" --three-arm "${WORK}/arm_a.json" "${WORK}/arm_b.jso
 For each eval directory produced by step 3, run blind A/B comparison:
 
 ```bash
-bash ~/.claude/skills/skill-creator/scripts/compare.sh ".skill-eval/{skill-name}/iteration-N/eval-{name}"
+bash ~/.claude/skills/skill-audit/scripts/compare.sh ".skill-eval/{skill-name}/iteration-N/eval-{name}"
 ```
 
 Run this for every `eval-*` subdirectory within the iteration.
@@ -281,7 +279,7 @@ Run this for every `eval-*` subdirectory within the iteration.
 Aggregate all grading data into a benchmark summary:
 
 ```bash
-python3 ~/.claude/skills/skill-creator/scripts/aggregate.py ".skill-eval/{skill-name}/iteration-N" --skill-name "{skill-name}"
+python3 ~/.claude/skills/skill-audit/scripts/aggregate.py ".skill-eval/{skill-name}/iteration-N" --skill-name "{skill-name}"
 ```
 
 This produces `benchmark.json` and `benchmark.md` in the iteration directory.
@@ -291,7 +289,7 @@ This produces `benchmark.json` and `benchmark.md` in the iteration directory.
 Record the benchmark data in the AutoEvolve learning system:
 
 ```bash
-python3 ~/.claude/skills/skill-creator/scripts/emit_benchmark.py ".skill-eval/{skill-name}/iteration-N/benchmark.json"
+python3 ~/.claude/skills/skill-audit/scripts/emit_benchmark.py ".skill-eval/{skill-name}/iteration-N/benchmark.json"
 ```
 
 This appends results to `~/.claude/agent-memory/learnings/skill-benchmarks.jsonl`.
@@ -322,7 +320,7 @@ For Batch 2 skills, perform additional conflict detection after the standard ben
    - 5 that should trigger Skill B but not Skill A
 3. **Test triggering** — For each query, run `claude -p` and check which skill actually triggers
 4. **Measure overlap** — Calculate the percentage of queries that triggered the wrong skill or both skills
-5. **Recommend action** — If overlap exceeds 40%, recommend description rewrite via `skill-creator` description optimization flow
+5. **Recommend action** — If overlap exceeds 40%, recommend description rewrite via `skill-creator:skill-creator` description optimization flow
 
 Include conflict analysis results in the audit report under "Description Conflicts Detected".
 

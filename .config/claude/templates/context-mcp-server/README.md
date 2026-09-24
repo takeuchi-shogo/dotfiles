@@ -14,7 +14,7 @@ Codified Context 論文 (Vasilopoulos, 2026, arXiv:2602.20478v1) に基づくプ
 
 ## セットアップ
 
-1. `/init-project` の L 規模セットアップで自動コピーされる
+1. このテンプレートを手動でプロジェクトにコピーする（旧 `/init-project` の L 規模セットアップによる自動コピーは 2026-09-23 に退役）
 2. `KNOWLEDGE_DIRS` をプロジェクトのドキュメントディレクトリに合わせて編集
 3. `.claude/settings.json` の `mcpServers` に登録
 

@@ -63,7 +63,7 @@ Harrison Chase は AI エージェントの継続的学習が3層で起きるこ
 |---|------|---------|---------------------|
 | **Model** | モデル重み | SFT, RL (GRPO) | 外部（Anthropic/OpenAI が提供） |
 | **Harness** | エージェントコード + 常時付随する指示・ツール | Meta-Harness: トレース→評価→コード改善提案 | AutoEvolve `/improve` + `session-learner.py` |
-| **Context** | 設定可能な指示・スキル・メモリ | offline "dreaming" / hot-path 実行中更新 | offline: AutoEvolve bg loop / hot-path: `/eureka`, memory hooks |
+| **Context** | 設定可能な指示・スキル・メモリ | offline "dreaming" / hot-path 実行中更新 | offline: AutoEvolve bg loop / hot-path: memory hooks |
 
 **トレースが全層の学習を駆動する統一基盤**である点が重要。モデル学習（SFT データ）、ハーネス改善（Meta-Harness の FS ベース履歴）、コンテキスト更新（dreaming のトレース分析）のいずれもトレースを入力とする。当セットアップでは `session-trace-store.py` → `contrastive-trace-analyzer.py` → `findings-to-autoevolve.py` のパイプラインがこの統一基盤に相当する。
 

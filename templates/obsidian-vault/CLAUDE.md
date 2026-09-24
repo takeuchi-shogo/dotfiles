@@ -2,7 +2,7 @@
 
 ## Identity
 
-<!-- ここにあなたの情報を記入（/obsidian-vault-setup スキルで自動カスタマイズ可能） -->
+<!-- ここにあなたの情報を記入（手動でカスタマイズ。旧 /obsidian-vault-setup スキルは 2026-09-23 退役） -->
 - 名前: takeuchishougo
 - 役割: ソフトウェアエンジニア
 - 関心分野: AI エージェント設計、Claude Code ハーネスエンジニアリング、Go、開発者生産性
@@ -32,7 +32,7 @@ flat 単一フォルダ設計 (例: cyrilXBT "One-Folder Life System") を採用
 | 04-Galaxy | Zettelkasten パーマネントノート。自分の言葉で書いた知識の原子 |
 | 05-Literature | 読書・動画・記事のノート。ソースからの抽出 |
 | 06-Archive | 完了・非アクティブ項目 |
-| 07-Daily | 統合 daily note。morning briefing (自動生成)・timekeeper の plan/review が `YYYY-MM-DD.md` に、日報が `YYYY-MM-DD-report.md` に集約される |
+| 07-Daily | 統合 daily note。morning briefing (自動生成) が `YYYY-MM-DD.md` に、日報が `YYYY-MM-DD-report.md` に集約される（旧 timekeeper の plan/review 記録は 2026-09-23 退役） |
 | 08-Agent-Memory | Claude Code の memory が自動同期される。エージェントの蓄積知識 |
 
 ## Naming Conventions

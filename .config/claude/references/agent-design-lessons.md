@@ -251,7 +251,7 @@ Claude Code の機能ではなく、外部のオーケストレーション層�
 
 - `code-reviewer.md` の COMPLETION CONTRACT (Findings/Scores/Verdict 3 セクション必須) は self-reject 系の先例
 - High-stakes 4 体 (`code-reviewer` / `security-reviewer` / `codex-reviewer` / `codex-plan-reviewer`) には `## Requires Escalation` rubric を導入済 (2026-05-17、後述の Rubric Specification 参照)
-- 他 29 subagent の大半には体系化されていない (escalation rubric も同様。30 日後 friction 評価で Tier 2 候補 `debugger` / `test-engineer` / `simplify` skill の追加導入を検討)
+- 他 29 subagent の大半には体系化されていない (escalation rubric も同様。30 日後 friction 評価で Tier 2 候補 `debugger` / `test-engineer` / `code-simplifier:code-simplifier` agent の追加導入を検討)
 
 ### 適用ガイドライン
 
@@ -309,8 +309,8 @@ agent.md / SKILL.md の 3 種の境界記述は完全に直交する。重複さ
 
 ### 適用ガイドライン
 
-- **新規 high-stakes agent 設計時**: 「BLOCK verdict / Critical 検出 / Capability gap」のいずれかを出力する設計なら `## Requires Escalation` rubric を必須化 (skill-creator/SKILL.md の Workflow Spec Checklist 参照)
-- **既存非対象 agent**: Tier 2 候補 (`debugger` / `test-engineer` / `simplify` skill / archived `golden-cleanup`) は 30 日後 friction-events 評価で導入判断
+- **新規 high-stakes agent 設計時**: 「BLOCK verdict / Critical 検出 / Capability gap」のいずれかを出力する設計なら `## Requires Escalation` rubric を必須化 (`skill-creator:skill-creator` 参照)
+- **既存非対象 agent**: Tier 2 候補 (`debugger` / `test-engineer` / `code-simplifier:code-simplifier` agent / archived `golden-cleanup`) は 30 日後 friction-events 評価で導入判断
 - **Static-checkable rules は外に出す**: `Detector` が `regex` / `command exit/log` / `file pattern` のみで構成される rubric は将来 `scripts/policy/agent-rubric-check.py` 等の lint hook に昇格可能。`semantic-with-required-evidence` は prompt 内に残す
 - **重複防止**: `Reject rule` (Do NOT use for) と `Escalation` 条件が論理的に重複していないか Step 3 verify で確認
 - **Hand-off prerequisites の明記**: 各 agent の rubric 下に `user (即時)` / `caller agent` / `self (再実行)` ターゲット別の事前条件 (output 完成度、添付物、再実行回数制限) を記述
@@ -330,7 +330,7 @@ agent.md / SKILL.md の 3 種の境界記述は完全に直交する。重複さ
 | event_type | 用途 | 記録タイミング | 紐づく撤退条件 |
 |---|---|---|---|
 | `escalation_missed_in_scope_agent` | 4 agent で rubric 条件に該当した事案が rubric を発火せず通り抜けた | post-hoc audit (review 後) で発見時、手動 append | Prompt-only enforcement → 静的 lint hook 起票 |
-| `escalation_needed_out_of_scope` | rubric 対象外 agent (Tier 2 候補 `debugger` / `test-engineer` / `simplify` 等) で escalation すべき事案発生 | 該当事案発見時、手動 append | 4 agent 限定 → Tier 2 拡大 |
+| `escalation_needed_out_of_scope` | rubric 対象外 agent (Tier 2 候補 `debugger` / `test-engineer` / `code-simplifier:code-simplifier` 等) で escalation すべき事案発生 | 該当事案発見時、手動 append | 4 agent 限定 → Tier 2 拡大 |
 | `rubric_format_friction` | Markdown table の機械処理が必要になったケース (lint hook 試作時等) | hook 実装時に append | Markdown vs YAML format |
 
 **append schema** (1 行 1 event):
@@ -343,12 +343,12 @@ agent.md / SKILL.md の 3 種の境界記述は完全に直交する。重複さ
 
 1. `friction-weekly-digest.sh` 出力 + `git log -p -- .config/claude/agents/*-reviewer.md | grep -E '\[BIAS_DETECTED\]|BLOCK|Codex CLI silent stall'` で rubric 関連発火履歴を grep (`-p` で diff content を含めることでファイル内のタグ文字列を検索可能)
 2. 発火履歴 0 件 + 手動 review session ログ確認で 1+ 件発見 → `escalation_missed_in_scope_agent` を post-hoc append
-3. Tier 2 候補 (`debugger` / `test-engineer` / `simplify`) の review session ログを 30 日分 grep し、rubric 適用すべき事案がなかったか確認 → 該当時 `escalation_needed_out_of_scope` を append
+3. Tier 2 候補 (`debugger` / `test-engineer` / `code-simplifier:code-simplifier`) の review session ログを 30 日分 grep し、rubric 適用すべき事案がなかったか確認 → 該当時 `escalation_needed_out_of_scope` を append
 4. 各撤退条件の閾値 (1 件以上) を `friction-events.jsonl` 集計で評価 → 超過時は Chain 副次 plan を起票
 
 ### Archived Agents への適用
 
-`docs/archive/agents/` の migration-guard / golden-cleanup / triage-router 等は再有効化時に本 rubric specification を適用する。退避済みエージェントは起動できないため、`references/` の推奨列から名指ししない（2026-08-16 に DB Migration 系 4 箇所を cross-file-reviewer へ付け替え済み）。再有効化判断は `references/harness-stability.md` の 30 日評価プロセスに従う。Tier 2 候補 (`debugger` / `test-engineer` / `simplify`) の escalation rubric 導入判定は 2026-06-16 friction-events 評価 (前述の Friction Events Schema 参照) で別途実施する。
+`docs/archive/agents/` の migration-guard / golden-cleanup / triage-router 等は再有効化時に本 rubric specification を適用する。退避済みエージェントは起動できないため、`references/` の推奨列から名指ししない（2026-08-16 に DB Migration 系 4 箇所を cross-file-reviewer へ付け替え済み）。再有効化判断は `references/harness-stability.md` の 30 日評価プロセスに従う。Tier 2 候補 (`debugger` / `test-engineer` / `code-simplifier:code-simplifier`) の escalation rubric 導入判定は 2026-06-16 friction-events 評価 (前述の Friction Events Schema 参照) で別途実施する。
 
 ---
 

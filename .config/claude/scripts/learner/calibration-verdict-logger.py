@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """auto-triage calibration の人間裁定を記録する判断 frontier ロガー.
 
-auto-triage skill は learned 昇格候補を mechanical/advisory/reject/defer に
+auto-triage skill (2026-09-24 退役) は learned 昇格候補を
+mechanical/advisory/reject/defer に
 **無人分類** する (dry-run)。calibration phase では人間が日次 .triage レポートを
 見てその分類の正否を裁定する。本ロガーはその裁定を記録し、2 つの価値を生む:
 

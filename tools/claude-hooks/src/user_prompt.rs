@@ -162,7 +162,7 @@ pub fn run(raw: &str, data: &serde_json::Value) -> Result<(), String> {
         crate::io::context(
             "UserPromptSubmit",
             "Async パターン推奨: このタスクは独立して実行できます。\
-             Agent(run_in_background=true) または /research スキルで\
+             Agent(run_in_background=true) または gemini-explore エージェントで\
              メインコンテキストを圧迫せず並列実行できます。",
         );
         return Ok(());

@@ -4,6 +4,7 @@
 Usage:
     python3 .config/claude/scripts/test_skills.py
 """
+
 from __future__ import annotations
 
 import re
@@ -13,7 +14,7 @@ from pathlib import Path
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
 
 # Skills that contain example file paths in documentation (not real references)
-REF_CHECK_SKIP = {"skill-creator"}
+REF_CHECK_SKIP: set[str] = set()
 
 # YAML frontmatter の簡易パーサー（PyYAML 不要）
 KEBAB_CASE_RE = re.compile(r"^[a-z][a-z0-9-]*$")
@@ -104,8 +105,11 @@ def test_references(skill_path: Path) -> list[str]:
     # references/ と scripts/ への参照を検出
     # Also strip lines that are clearly examples (contain "Example" or "例")
     lines = [
-        line for line in cleaned.split("\n")
-        if not re.search(r"(?:Example|例|When to include|Benefits)", line, re.IGNORECASE)
+        line
+        for line in cleaned.split("\n")
+        if not re.search(
+            r"(?:Example|例|When to include|Benefits)", line, re.IGNORECASE
+        )
     ]
     cleaned = "\n".join(lines)
     refs = re.findall(r"`((?:references|scripts|assets)/[^`]+)`", cleaned)
@@ -144,7 +148,7 @@ def main() -> None:
             passed += 1
             print(f"✅ {skill_path.name}")
 
-    print(f"\n{'='*40}")
+    print(f"\n{'=' * 40}")
     print(f"Results: {passed} passed, {failed} failed, {passed + failed} total")
 
     sys.exit(exit_code)

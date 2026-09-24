@@ -9,7 +9,7 @@ Gemini CLI は 1M コンテキストの大規模分析、Google Search grounding
 - **マルチモーダル処理**: PDF、動画（mp4/mov/avi）、音声（mp3/wav）、画像の読み取り・分析
 - **ドキュメント分析**: 大量のドキュメントの横断的な検索・要約
 - **3-way レビュー**: ~200行以上の変更でセキュリティ・エコシステム視点のレビュー → `gemini-explore` エージェントを他レビューアーと並列起動
-- **Debate（マルチモデル議論）**: `/debate` スキルで Codex と並列に独立した視点を提供
+- **Debate（マルチモデル議論）**: cmux Worker hub-and-spoke（`launch-worker.sh` ×N、`references/cmux-ecosystem.md`）で Codex と並列に独立した視点を提供
 
 ## 自動トリガー
 
@@ -41,7 +41,7 @@ Gemini は分析結果に対して過度に楽観的・興奮的になる傾向�
 
 ## Expertise Map
 
-ドメイン別の expertise score は `references/model-expertise-map.md` を参照。`/debate` の重み付けに使用。
+ドメイン別の expertise score は `references/model-expertise-map.md` を参照。cmux Worker hub-and-spoke の重み付けに使用。
 
 ## 言語プロトコル
 

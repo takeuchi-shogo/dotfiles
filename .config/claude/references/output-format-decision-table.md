@@ -5,7 +5,7 @@ last_reviewed: 2026-05-21
 
 # Output Format Decision Table
 
-「この出力は markdown / HTML / Mermaid 埋込 / playground / excalidraw のどれで作るべきか」を 1 表で決める。
+「この出力は markdown / HTML / Mermaid 埋込 / playground のどれで作るべきか」を 1 表で決める。
 
 「HTML をデフォルトにすべき」という主張 (Thariq Shihipar "The Unreasonable Effectiveness of HTML", 2026-05) を absorb した結果、当 dotfiles では **markdown を引き続き default**、HTML は限定条件下で採用と判定。本表はその選択基準。
 
@@ -19,8 +19,7 @@ last_reviewed: 2026-05-21
 | design system reference (`ui-ux-pro-max` の MASTER.md) | **markdown** | (HTML 不採用) | version control + memory 連携 |
 | 探索的に複数 design / option を比較 | **playground (HTML)** | markdown grid | live preview、双方向性、copy-as-prompt |
 | feature flag / config 編集 UI | **playground (HTML)** | markdown table | drag-drop、prerequisite warning、copy diff |
-| 単体の diagram (system flow / state / sequence) | **Mermaid 埋込 markdown** | excalidraw JSON | markdown grep 互換、GitHub render |
-| 編集可能性が必要な diagram | **excalidraw skill** | (HTML 不採用) | Obsidian 編集互換、JSON pure |
+| 単体の diagram (system flow / state / sequence) | **Mermaid 埋込 markdown** | — | markdown grep 互換、GitHub render |
 | live data dashboard / interactive 解析 | **playground (HTML)** | (markdown 不可) | live preview 必須 |
 | 1 度しか作らない throwaway visualization | **playground (HTML)** | markdown grid | 双方向性が本質、再 ingest 不要 |
 
@@ -63,7 +62,6 @@ GitHub / VSCode / Obsidian 全てが Mermaid native render をサポート。
 - [`html-artifact-recipes.md`](html-artifact-recipes.md) — 記事の use case のうち playground 既存 6 templates でカバー外の 2 recipe
 - [`decision-tables-index.md`](decision-tables-index.md) — 全決定表の索引
 - `playground` skill — 6 templates (design / data-explorer / concept-map / document-critique / diff-review / code-map)
-- `excalidraw` skill — diagram → JSON
 - `frontend-design` skill — UI artifact 用 HTML/CSS/JS 生成
 
 ## 出典

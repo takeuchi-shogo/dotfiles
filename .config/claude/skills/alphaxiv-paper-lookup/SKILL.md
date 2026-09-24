@@ -3,7 +3,7 @@ name: alphaxiv-paper-lookup
 description: >
   arxiv 論文を alphaxiv.org 経由で構造化レポートとして取得する。PDF を読むより高速・高精度。
   Triggers: arxiv URL, 論文 ID (2401.12345), alphaxiv URL, '論文を読んで', 'paper lookup'.
-  Do NOT use for non-arxiv content — use WebFetch or /research instead.
+  Do NOT use for non-arxiv content — use WebFetch or the gemini-explore agent instead.
 origin: self
 allowed-tools: WebFetch, Bash, Read
 disable-model-invocation: true
@@ -19,7 +19,6 @@ arxiv 論文の構造化レポートを alphaxiv.org から取得する。
 
 - ユーザーが arxiv URL / 論文 ID / alphaxiv URL を共有した
 - 論文の要約・分析・統合を依頼された
-- `/research` のサブタスクとして論文内容が必要な場合
 
 ## Step 1: Paper ID の抽出
 

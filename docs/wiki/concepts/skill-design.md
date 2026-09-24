@@ -37,7 +37,7 @@ confidence: established
 
 ## 実践的な適用
 
-dotfiles リポジトリでは 60+ スキルを `.config/claude/skills/` 以下に管理している。`skill-writing-guide.md` と `skill-writing-principles.md` がスキル作成の規範を定義し、`description-optimization.md` が eval 駆動のトリガー最適化ループを定義している。`/skill-audit` コマンドで全スキルの横断監査（Trigger conflict scan 含む）を実行でき、`skill-suggest.py` フックが実行時にスキルの推薦を行う。skills.sh 経由で 16 の外部スキルもインストール済みである。Invert Test は `skill-writing-principles.md` 原則1の小節として、Judgment vs Computation の境界は `determinism_boundary.md` と DBS Rubric として、negative routing は `skill-conflict-resolution.md` として実装済み。3-arm eval は `skill-creator/scripts/run_eval.sh` と `aggregate.py --three-arm` に、description の字数バジェットは `skill-audit/SKILL.md` の Description Token Tax チェックに組み込まれている。
+dotfiles リポジトリでは 60+ スキルを `.config/claude/skills/` 以下に管理している。スキル作成の規範 (`skill-writing-guide.md` / `skill-writing-principles.md` / `description-optimization.md`) はローカル版 skill-creator に置いていたが、2026-09-24 にプラグイン版 `skill-creator:skill-creator` へ一本化したため消えた。`/skill-audit` コマンドで全スキルの横断監査（Trigger conflict scan 含む）を実行でき、`skill-suggest.py` フックが実行時にスキルの推薦を行う。skills.sh 経由で 16 の外部スキルもインストール済みである。Invert Test は `skill-writing-principles.md` 原則1の小節として、Judgment vs Computation の境界は `determinism_boundary.md` と DBS Rubric として、negative routing は `skill-conflict-resolution.md` として実装済み。3-arm eval は `skill-audit/scripts/run_eval.sh` と `aggregate.py --three-arm` に、description の字数バジェットは `skill-audit/SKILL.md` の Description Token Tax チェックに組み込まれている。
 
 ## 関連概念
 
