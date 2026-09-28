@@ -43,6 +43,6 @@
 
 ## overconfidence-prevention.md との関係
 
-- `overconfidence-prevention.md`: 要件が曖昧なとき質問せよ（入力側）
-- **本ルール**: 出力の導出過程を省略するな（出力側）
+- `overconfidence-prevention.md`: 高影響の不確実性は確認し、低影響の仮定は明示する（入力側）
+- **本ルール**: 結論に検証できる根拠を添える（出力側）
 - 両方が揃って初めて、入力の曖昧さと出力の不誠実さの両方を防げる
