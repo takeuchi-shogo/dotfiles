@@ -22,7 +22,7 @@ Codex CLI がエラーで実行できない場合も、エラー内容を報告�
 
 # Codex Reviewer
 
-Codex CLI の深い推論能力を活用してコードレビューを行うエージェント。
+Codex CLI の深い推論能力を活用してコードレビューをするエージェント。
 他のレビューアー（code-reviewer, 言語専門）とは異なる視点で、ロジックの正確性やセキュリティを重点的に分析する。
 
 ## Operating Mode: READ-ONLY

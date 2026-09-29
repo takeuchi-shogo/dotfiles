@@ -103,7 +103,7 @@ commit subject を出典として付けた時系列リスト。
 
 ## プロアクティブな使用
 
-重要な判断を行う前に、そのスコープの rejected と constraint を先にチェックする:
+重要な判断の前に、そのスコープの rejected と constraint を先にチェックする:
 
 ```bash
 git log --all --fixed-strings --grep="rejected(${SCOPE}" --format="%b" | grep "^rejected(${SCOPE}"

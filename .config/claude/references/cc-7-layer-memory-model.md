@@ -56,7 +56,7 @@ Layer 7 で複数エージェントが同一の永続ストアに書き込む場
 
 | リスク | 発生条件 | 現状の影響度 |
 |---|---|---|
-| **Last-Write-Wins**: `agent-memory/<agent>/` 配下への複数エージェント同時書き込みで前の書き込みが上書きされる | 並列度 N=2 以上で同じファイルに append しない write を行う | 低 — 各 agent が自身の subdirectory に partition されているため通常は衝突しない |
+| **Last-Write-Wins**: `agent-memory/<agent>/` 配下への複数エージェント同時書き込みで前の書き込みが上書きされる | 並列度 N=2 以上で同じファイルに append ではなく上書きで書き込む | 低 — 各 agent が自身の subdirectory に partition されているため通常は衝突しない |
 | **Append 競合**: `task-registry.jsonl` への並列 append | 並列度 N=2 以上で同じ jsonl に書く | 低 — 現状は `/autonomous` の単一ランナーのみが書き込む。複数 async 起動で発火させる場合は file lock が必要 |
 | **Obsidian Vault 同期ドリフト**: `sync-memory-to-vault.sh` の実行中に source 側が書き換わる | sync 中に並列で memory 書き込み | 低 — 単方向・非同期同期でデフォルトは race window が短い |
 
