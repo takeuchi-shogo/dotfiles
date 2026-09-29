@@ -15,9 +15,9 @@ Agent の記憶を機能別に4分類し、それぞれの保存先と管理方�
 | 分類 | 説明 | 保存先 | ライフサイクル |
 |------|------|--------|---------------|
 | **作業記憶** (Working) | 現タスクの最小情報 | messages[] (コンテキスト窓) | セッション終了で消滅 |
-| **手続き記憶** (Procedural) | 操作手順・ドメイン規範 | Skills (.md), references/ | 永続。按需ロード |
+| **手続き記憶** (Procedural) | 操作手順・ドメイン規範 | Skills (.md), references/ | 永続。必要時にロード |
 | **エピソード記憶** (Episodic) | 何が起きたかの記録 | learnings/*.jsonl, session-state/ | TTL ベースでローテーション |
-| **意味記憶** (Semantic) | 安定した事実・決定 | MEMORY.md, memory/*.md | Agent が主動で管理 |
+| **意味記憶** (Semantic) | 安定した事実・決定 | MEMORY.md, memory/*.md | Agent が自律的に管理 |
 
 ### 分類の判断基準
 
@@ -246,7 +246,7 @@ user > feedback > project > reference
 
 ### 「Before recommending from memory」チェック
 
-project/reference メモリからの推奨を行う前に、以下を検証する:
+project/reference メモリから推奨する前に、以下を検証する:
 
 1. メモリがファイルパス / 関数名を含む場合 → 実ファイルの存在を確認する
 2. メモリがコマンド / フラグを含む場合 → `--help` などで現存を確認する

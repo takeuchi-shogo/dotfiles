@@ -140,7 +140,7 @@ Google eng-practices `standard.md` "Principles" 由来。**style guide / project
 
 #### Caveat: "A clean local review only proves there is no local patch"
 
-`local` mode で「指摘ゼロ」が出ても、それは **unstaged/staged 変更が無い (or 軽微)** を示すだけで、push 済 / PR で merge 待ちの差分は対象外。**committed / pushed / PR 作業を対象にする場合は `branch` か `commit` mode に切り替える** こと。helper の docs が "dirty work first" と書いてあるからといって `local` を強制してはならない。
+`local` mode で「指摘ゼロ」が出ても、確認できたのは **unstaged/staged 変更が無い (or 軽微)** ことだけで、push 済 / PR で merge 待ちの差分は対象外のまま。**committed / pushed / PR 作業を対象にする場合は `branch` か `commit` mode に切り替える** こと。helper の docs が "dirty work first" と書いてあるからといって `local` を強制してはならない。
 
 > 出典: openclaw/agent-skills `autoreview` SKILL "Use this only when the patch is actually unstaged/staged/untracked in the current checkout. For committed, pushed, or PR work, point the helper at the commit or branch diff instead; do not force `--mode local` / `--uncommitted` just because the helper docs mention dirty work first. A clean local review only proves there is no local patch"
 
