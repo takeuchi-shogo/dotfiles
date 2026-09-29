@@ -143,7 +143,7 @@ const pt = { ...base, x: 1 };
 
 ### Discriminated Union
 
-タグ付きユニオンで型安全な分岐を行う。string/boolean による条件分岐より優先する:
+タグ付きユニオンで型安全に分岐する。string/boolean による条件分岐より優先する:
 
 ```typescript
 type Result<T> =
