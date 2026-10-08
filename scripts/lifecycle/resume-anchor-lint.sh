@@ -65,9 +65,11 @@ section_is_hollow() {
     }
     found { print }
   ' "$file")
-  # strip placeholders like [...], quote lines, list markers, blank lines
+  # strip placeholders like [...], template hints like （なければ「特になし」）,
+  # quote lines, list markers, blank lines
   body=$(printf '%s\n' "$body" \
-    | sed -e 's/\[[^]]*\]//g' -e 's/{[^}]*}//g' -e 's/^[[:space:]]*>.*$//' \
+    | sed -e 's/\[[^]]*\]//g' -e 's/{[^}]*}//g' -e 's/（なければ「特になし」）//g' \
+          -e 's/^[[:space:]]*>.*$//' \
           -e 's/^[[:space:]]*- \[[ xX]\][[:space:]]*//' \
           -e 's/^[[:space:]]*[-*][[:space:]]*//' \
           -e 's/^[[:space:]]*[0-9][0-9]*[.)][[:space:]]*//' \
