@@ -43,16 +43,21 @@
 
 ## Progress
 
-- [ ] PR1: CLAUDE.md, rules/, output-styles/
-- [ ] PR2: agents/, commands/
-- [ ] PR3: skills/
-- [ ] PR4〜6: references/
+- [x] PR1: CLAUDE.md, rules/, output-styles/ → #265
+- [x] PR2〜6: agents/, commands/, skills/, references/ → #266 にまとめた
+- [x] templates/: 直す箇所なし（この計画を閉じる PR で確認）
 
 ## Decision Log
 
 - 2026-09-28: 範囲はユーザーが「.config/claude 全体」を選択
 - 2026-09-28: vendor skill は対象外。上流更新時の差分衝突を避ける
+- 2026-09-29: PR2〜6 は実差分が合計 40 行程度だったため 1 本 (#266) にまとめた
+- 2026-09-29: 「政体」は日本語の通常語なので残し、「運行時」「控制面」は「実行時」「制御面」に揃えた。docs/research の過去メモは書かれた時点の記録なので書き換えない
 
 ## Outcome
 
-（完了時に記入）
+自作の約 280 ファイルを読み、直したのは 16 ファイル・約 50 行。直す価値があったのは、ほぼ harness-books から持ち込んだ 3 ファイル (`rules/codex-delegation.md`、`references/harness-polity-comparison.md`、`references/harness-10-principles-checklist.md`) に残っていた中国語の語 (拼装、纪律、截断、按需、主動など) だった。手書きの部分はもともと `japanese-ai-prose.md` の基準で書かれていて、「〜を行う」を動詞に戻す程度で済んだ。
+
+学んだこと: 渡した語のリストだけでは中国語由来の語を網羅できず、subagent は「按需」「角色」「工程システム」を見落とした。中国語の常用語に広げたパターンで全体を再走査して拾えた。外部の中国語資料を /absorb するときは、取り込み時点でこの走査をかけると後から直す手間が要らない。
+
+残したもの: `rules/typescript.md` の「ペリメータ」(Effective TypeScript 邦訳の表記を未確認)、`skills/obsidian-knowledge/SKILL.md` の「thoughtful な人」(出典の概念名の可能性)。
