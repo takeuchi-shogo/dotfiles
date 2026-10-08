@@ -54,7 +54,7 @@ def _extract_json(text: str) -> dict:
 
 def evaluate(question: str, report: str) -> dict:
     """4軸スコア + overall（grounding 最重視の加重平均）を返す。"""
-    llm = make_llm(temperature=0.0)
+    llm = make_llm()
     resp = llm.invoke(
         [
             SystemMessage(content=_JUDGE_SYS),
@@ -75,7 +75,7 @@ def evaluate(question: str, report: str) -> dict:
 
 def reflect(question: str, report: str, scores: dict) -> str:
     """低評価の原因と次の改善を自然言語 reflection として返す。"""
-    llm = make_llm(temperature=0.3)
+    llm = make_llm()
     resp = llm.invoke(
         [
             SystemMessage(content=_REFLECT_SYS),

@@ -22,7 +22,7 @@ MEMORY_VEC_REINDEX = MEMORY_VEC_DIR / "reindex.ts"
 EXPERIENCE_SOURCE = "research-experience"
 
 # LLM（ChatAnthropic。差し替えは llm.py で隔離）
-MODEL = os.environ.get("RESEARCH_AGENT_MODEL", "claude-sonnet-4-6")
+MODEL = os.environ.get("RESEARCH_AGENT_MODEL", "claude-sonnet-5-5")
 MAX_TOKENS = 4096
 
 # ループ / 品質ガード

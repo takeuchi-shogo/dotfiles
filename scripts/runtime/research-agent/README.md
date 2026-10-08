@@ -35,7 +35,7 @@ LLM 認証（ChatAnthropic）: `ANTHROPIC_API_KEY` を環境変数で渡す。�
 しないこと（local スコープ）。例: `~/.config/research-agent/.env` に置き、起動前に
 `export $(grep -v '^#' ~/.config/research-agent/.env | xargs)` で読む、または direnv。
 
-モデルは既定 `claude-sonnet-4-6`（`RESEARCH_AGENT_MODEL` で上書き可）。
+モデルは既定 `claude-sonnet-5-5`（`RESEARCH_AGENT_MODEL` で上書き可）。
 
 ## 使い方
 

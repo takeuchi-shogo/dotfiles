@@ -17,7 +17,7 @@ def test_persist_writes_frontmatter(tmp_path, monkeypatch):
         question="RL とは",
         approach="search → read → synth",
         score=0.85,
-        model="claude-sonnet-4-6",
+        model="claude-sonnet-5-5",
         reflections=["公開日を確認する"],
         sources=[{"url": "http://arxiv.org/abs/1", "grounding": "abstract"}],
     )
@@ -25,7 +25,7 @@ def test_persist_writes_frontmatter(tmp_path, monkeypatch):
     text = path.read_text(encoding="utf-8")
     assert "question: RL とは" in text
     assert "score: 0.85" in text
-    assert "model: claude-sonnet-4-6" in text
+    assert "model: claude-sonnet-5-5" in text
     assert "http://arxiv.org/abs/1" in text
     assert "## Approach (what worked)" in text
     assert path.parent == tmp_path / "exp"
