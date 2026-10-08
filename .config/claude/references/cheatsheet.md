@@ -98,9 +98,9 @@ last_reviewed: 2026-04-23
 |---|---|---|
 | 統合判断・ユーザー対話・最終 verify | メインセッション (Opus 5.5) | 委譲しない領域 |
 | アーキテクチャ設計・Plan 草案 | Fable 5 | `Agent(model:'fable')` |
-| 日常的なコーディング・探索 | Sonnet 5 | `Agent(model:'sonnet')`、並列実行 |
+| 日常的なコーディング・探索 | Sonnet 5.5 | `Agent(model:'sonnet')`、並列実行 |
 | Sonnet が 2 回詰まった実装 | Grok 4.6 | `/cursor` skill — 別視点。既定の実装先ではない |
-| 簡単な抽出・変換 | Haiku 4.5 | 高速・低コスト |
+| 簡単な抽出・変換 | Haiku 5.5 | 高速・低コスト |
 | 大規模コードベース分析 | Gemini CLI | 1M コンテキスト (外部) |
 | レビュー・リスク分析 | Codex CLI | 深い批評 (reasoning effort: high/xhigh) (外部) |
 

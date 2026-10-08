@@ -15,10 +15,10 @@ last_reviewed: 2026-08-13
 |------|--------|------|----------|
 | **メイン** | セッション最上位 tier (現行: Opus 5.5 / Fable 5) | ユーザー対話、統合判断、最終 verify/マージ判断、仕様の曖昧さ解消 | (本体) |
 | **全体設計** | Fable 5 | アーキテクチャ設計、Plan 草案、大規模リファクタの構造判断 | `Agent(model: "fable")` |
-| **実装** | Sonnet 5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
+| **実装** | Sonnet 5.5 | コード実装、ファイル探索、テスト作成、定型レビュー、doc 整備 | `Agent(model: "sonnet")`、複数ファイル+verify は `Workflow({name:'delegate-implementation'})` |
 | **実装 (別視点)** | Grok 4.6 | Sonnet が 2 回詰まった実装、別アプローチが要る実装 | `/cursor` skill (`cursor-agent --model cursor-grok-4.6-high`) |
 | **レビュー** | Codex `gpt-5.6-sol` | Review Gate、Spec/Plan Gate、リスク分析、セカンドオピニオン | cmux Worker or `launch-worker.sh` |
-| **抽出・変換** | Haiku 4.5 | WebFetch 生取得 (要約は呼び出し側責務)、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
+| **抽出・変換** | Haiku 5.5 | WebFetch 生取得 (要約は呼び出し側責務)、フォーマット変換、非権威の cheap grader/prefilter (境界は後述「Model Safety Boundary」) | `Agent(model: "haiku")` |
 
 **役割は階層ではない**。Fable はメインの上位でも下位でもなく「設計のときに呼ぶ」。コスト順に落とすのではなく、タスクの性質で選ぶ。
 

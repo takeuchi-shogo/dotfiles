@@ -21,7 +21,7 @@ metadata:
    - `--force`: ファイル変更を許可（デフォルトは read-only）
    - `--mode=plan`: 計画のみ（変更なし）
    - `--mode=ask`: Q&A（読み取り専用）
-   - `--model <model>`: モデル指定（デフォルト: `composer-2.5-fast`、他: `composer-2.5` (current quality), `claude-opus-4-7-thinking-max`, `claude-4.6-sonnet-medium-thinking`, `gpt-5.3-codex-xhigh` 等）
+   - `--model <model>`: モデル指定（デフォルト: `composer-2.5-fast`、他: `composer-2.5` (current quality), `claude-opus-4-7-thinking-max`, `claude-sonnet-5-5-medium`, `gpt-5.3-codex-xhigh` 等）
    - `--output-format <text|json|stream-json>`: 出力形式
 4. コマンドを組み立てて実行する
 
