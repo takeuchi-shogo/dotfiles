@@ -34,9 +34,12 @@ User CLAUDE.md covers KISS/YAGNI/DRY, search-first, and harness rules. This file
 ## 知識ベースの境界
 
 `docs/wiki/` は **harness/セットアップ固有の運用知識**（hook・skill・自分の設定への適用）に限る。
-一般 IT 技術知識（技術の事実・パターン・比較）は `~/dev-app/project/llm-wiki/` の領分 —
-索引は `~/dev-app/project/llm-wiki/index.md`。取り込むときは `/absorb` 経由で、
-知識の流れは llm-wiki → dotfiles の一方向。llm-wiki 側は dotfiles に依存させない。
+一般 IT 技術知識（技術の事実・パターン・比較）は `$LLM_WIKI_DIR` の領分 — 索引は
+`$LLM_WIKI_DIR/index.md`。実パスはマシンごとに違うので `.config/zsh/local.zsh` で定義する。
+Read など変数を展開しないツールに渡す前に、Bash の `echo "$LLM_WIKI_DIR"` で絶対パスに解決する
+（空のときだけ未設定。そのマシンに llm-wiki は無いものとして扱い、推測でパスを探さない）。
+取り込むときは `/absorb` 経由で、知識の流れは llm-wiki → dotfiles の一方向。
+llm-wiki 側は dotfiles に依存させない。
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
