@@ -2399,3 +2399,11 @@
 - 取り込み: `references/subagent-delegation-guide.md` に 2 点 (+11 行)。Parallelizability Gate 表の下に「並列コード書き込みの危険性」「Shared File Detection Rule」への導線 (DB migration・共有 state・lockfile を順次必須と明記) / Handoff Packet の後に「報告を受け取る側の検証」(exists / not_found に使った file:line を自分で開く。not_found は探した root・query・除外範囲が無ければ Unconfirmed)
 - 中核の発見: family multi-agent-orchestration は N=20 で飽和気味。収穫は新機構でなく受け手側の規律だった。Pass 1 の Sonnet Explore が M11 を not_found と誤報告した (未読ファイルあり) のが、採用したルールの実例になった。引用元の収益化記事は採用根拠に使わず、一次ソースを直接検証した
 - 分析: docs/research/2026-10-09-osmani-agent-team-prompt-absorb-analysis.md
+
+## [2026-10-09] ingest | 24/7 Quant Desk 長時間タスクプロンプト (@quantprimate、Karpathy 名義は誤帰属)
+
+- ソース: https://x.com/leopardracer/status/2108142806451507542
+- 判定: Partial 4 / Already 8 (うち T3/T4 は Codex 指摘で N/A → Already) / 採用 1
+- 取り込み: checkpoint HANDOFF スキーマに `## Unresolved` 節 (escalation スキーマ 3.7 に対応)
+- 副産物: resume-anchor-lint の hollow 判定がテンプレート注記を中身扱いしていた既存バグを修正
+- 分析: docs/research/2026-10-09-quant-longrun-prompt-absorb-analysis.md
