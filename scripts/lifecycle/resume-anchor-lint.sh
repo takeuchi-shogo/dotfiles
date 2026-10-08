@@ -36,6 +36,7 @@ CHECKPOINT_SECTIONS=(
   "Progress|^#+ *Progress"
   "What Worked|^#+ *What Worked"
   "What Didn't Work|^#+ *What Didn.t Work"
+  "Unresolved|^#+ *Unresolved"
   "Next Steps|^#+ *Next Steps"
   "Context Files|^#+ *Context Files"
 )

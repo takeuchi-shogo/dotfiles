@@ -66,12 +66,13 @@ HANDOFF.md は `loadHandoff()` が読まずに `continue` するため retire �
 
 | スキーマ | 定義元 | 節 | 用途 |
 |---------|-------|-----|------|
-| checkpoint | `skills/checkpoint/SKILL.md` | Goal / Progress / What Worked / What Didn't Work / Next Steps / Context Files | `/checkpoint` が実際に書くのはこちら |
+| checkpoint | `skills/checkpoint/SKILL.md` | Goal / Progress / What Worked / What Didn't Work / Unresolved / Next Steps / Context Files | `/checkpoint` が実際に書くのはこちら |
 | escalation | `references/handoff-template.md` | 1. コンテキスト 〜 5. 再開ガイド (3.5 Dead Ends, 3.7 検証済み事実を含む) | エージェントから人間へのエスカレーション |
 
-重点は checkpoint 側の `What Didn't Work`、escalation 側の 3.5 / 3.7。git は branch と
-diff は知っているが、試して捨てた approach は知らない。ここが空だと次セッションが
-同じ dead end を踏み直す。
+重点は checkpoint 側の `What Didn't Work` / `Unresolved`、escalation 側の 3.5 / 3.7
+(`Unresolved` は 3.7 の未検証仮説に対応する)。git は branch と diff は知っているが、
+試して捨てた approach も、まだ確かめていない事項も知らない。ここが空だと次セッションが
+同じ dead end を踏み直すか、未確認の事項を確認済みとして引き継ぐ。
 
 ただし lint の pass は「形が揃っている」であって「再開できる」ではない。観測時に
 重要と気づかず書き落とした事実があるかは、ファイルからは決定できない。

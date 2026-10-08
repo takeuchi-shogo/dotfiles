@@ -64,6 +64,10 @@ print(f'Checkpoint saved: {path}')
 
 - {試して失敗したこと・避けるべきこと}（なければ「特になし」）
 
+## Unresolved
+
+- {検証できていない事実・判断がついていない点。値が取れなかったものは推測で埋めず「未確認」と書く}（なければ「特になし」）
+
 ## Next Steps
 
 1. {次にやるべきこと}
@@ -76,8 +80,9 @@ print(f'Checkpoint saved: {path}')
 
 5. `task resume-anchor-lint` を実行し、生成した HANDOFF.md を検査する
 
-   MISSING / HOLLOW が出たら、その節を埋めてから報告する。特に `## What Didn't Work` は
-   git が知らない情報が入る唯一の節で、空だと次セッションが同じ dead end を踏み直す。
+   MISSING / HOLLOW が出たら、その節を埋めてから報告する。特に `## What Didn't Work` と
+   `## Unresolved` は git が知らない情報が入る節で、前者が空だと次セッションが同じ dead end を
+   踏み直し、後者が空だと未確認の事項を確認済みとして引き継ぐ。
    pass は「形が揃っている」であって「再開できる」ではないので、pass を根拠に
    内容の薄さを見逃さないこと。
 
