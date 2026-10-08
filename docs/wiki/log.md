@@ -2391,3 +2391,11 @@
 - 中核の発見: settings の top-level `effortLevel` は user settings では Opus 5.5 に効かず、メインセッションは `xhigh`/`high` の設定に関わらず `medium` で動いていた (docs 3 箇所が逆のことを書いていた)
 - Phase 2.5: Codex のみ。Gemini は headless agy の `read_url` 自動 deny で未取得。codex exec の空出力は background Bash で stdin 未クローズ (`< /dev/null` で解消)
 - 分析: docs/research/2026-09-24-opus55-prompting-guide-absorb-analysis.md
+
+## [2026-10-09] ingest | Osmani agent team prompt (X @0xCodila)
+
+- ソース: https://x.com/0xCodila/status/2107956794320355681 (一次: https://claude.dev/blog/getting-the-most-out-of-opus-5-5/ , https://addyosmani.com/blog/claude-code-agent-teams/)
+- 判定: Already 9 (M1-M4, M6, M8, M9, M11 + M5 は強化可能) / Partial 1 (M7+M10) / N/A 1 (M12) / 棄却 1 (M13)。Phase 2.5 の Codex 批評で M11・M5・M13 の 3 件を訂正
+- 取り込み: `references/subagent-delegation-guide.md` に 2 点 (+11 行)。Parallelizability Gate 表の下に「並列コード書き込みの危険性」「Shared File Detection Rule」への導線 (DB migration・共有 state・lockfile を順次必須と明記) / Handoff Packet の後に「報告を受け取る側の検証」(exists / not_found に使った file:line を自分で開く。not_found は探した root・query・除外範囲が無ければ Unconfirmed)
+- 中核の発見: family multi-agent-orchestration は N=20 で飽和気味。収穫は新機構でなく受け手側の規律だった。Pass 1 の Sonnet Explore が M11 を not_found と誤報告した (未読ファイルあり) のが、採用したルールの実例になった。引用元の収益化記事は採用根拠に使わず、一次ソースを直接検証した
+- 分析: docs/research/2026-10-09-osmani-agent-team-prompt-absorb-analysis.md

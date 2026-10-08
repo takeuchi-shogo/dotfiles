@@ -66,6 +66,8 @@ Google Research (2025) の実証: 逐次推論タスクにマルチエージェ�
 | **逐次推論** | デバッグ（原因→仮説→検証の連鎖）、段階的リファクタリング、依存のある設計判断 | Prompt Chaining / シングルエージェント |
 | **混合** | API設計（並列調査）→ 実装（逐次） | フェーズごとに戦略を切り替え |
 
+この表は推論の依存だけを見ている。書き込みを伴う並列は、表で「並列可能」でも [並列コード書き込みの危険性](#並列コード書き込みの危険性) と [Shared File Detection Rule](#shared-file-detection-rule) を先に通す。DB migration・共有 state・lockfile の変更は直列にし、API 契約を共有する機能は契約を先に決めてから並列にする。
+
 > **出典**: Google Research "Towards a Science of Scaling Agent Systems" — Finance-Agent (並列可能) で +81%、PlanCraft (逐次推論) で -70%。
 
 ---
@@ -627,6 +629,15 @@ worktree で隔離されたエージェント（worker）は **main checkout へ
 ```
 
 spawn prompt や SendMessage でハンドオフする際は、このフォーマットに沿って情報を構造化する。暗黙の前提に依存しない。
+
+### 報告を受け取る側の検証
+
+subagent の報告は、証拠を確かめてから結論に使う。
+
+- 判断に使う exists / not_found ごとに、引用された `file:line` を自分で開いて確かめる
+- not_found には、探した root・query やコマンド・除外した範囲を添えさせる。添えられていなければ Unconfirmed のまま扱い、結論に昇格させない
+
+not_found は「探した範囲に無かった」以上のことを言えない。範囲が分からない not_found は、存在しない証拠にならない。
 
 ### ラボ型ロール定義
 
