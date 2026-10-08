@@ -50,7 +50,7 @@ def retrieve_experience_node(state: ResearchState) -> dict:
 
 
 def research_node(state: ResearchState) -> dict:
-    llm = make_llm(0.0).bind_tools([search, fetch])
+    llm = make_llm().bind_tools([search, fetch])
     msgs = [SystemMessage(content=_build_system_prompt(state)), *state["messages"]]
     resp = llm.invoke(msgs)
     return {
@@ -75,7 +75,7 @@ def after_tools(state: ResearchState) -> str:
 
 
 def synthesize_node(state: ResearchState) -> dict:
-    llm = make_llm(0.0)
+    llm = make_llm()
     prompt = _SYNTH.format(q=state["research_question"])
     resp = llm.invoke([*state["messages"], HumanMessage(content=prompt)])
     return {"draft_report": text(resp), "status": "synthesizing"}
@@ -118,7 +118,7 @@ def _extract_sources(messages: list) -> list[dict]:
 
 
 def _summarize_approach(state: ResearchState) -> str:
-    llm = make_llm(0.0)
+    llm = make_llm()
     resp = llm.invoke(
         [
             SystemMessage(content=_APPROACH_SYS),
