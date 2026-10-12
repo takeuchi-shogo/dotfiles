@@ -12,10 +12,10 @@ platforms: [agents, codex]
 
 1. 変更対象に最も近い validation を選ぶ。
 2. review-ready report や複数領域変更では、必要なら built-in subagent への review 委譲を先に走らせる。
-3. build / test / lint / typecheck / diff のうち必要なものだけ実行する。
+3. build / test / lint / typecheck / diff / `cccc`（ソース変更時、`task validate-cccc`）のうち必要なものだけ実行する。
 4. exit code と要点を確認する。
 5. 失敗があれば修正し、同じコマンドを再実行する。
-6. 実行できない場合は、その理由を明示して完了扱いにしない。
+6. 実行できない場合は、その理由を明示して完了扱いにしない（`cccc` 未導入は skip 可だが、導入可能な環境では入れる）。
 
 ## Minimum Evidence
 
@@ -30,6 +30,7 @@ platforms: [agents, codex]
 - config / script 変更: `task validate-configs`
 - README / doc 変更: `task validate-readmes`
 - symlink / `.codex` / `.claude` 変更: `task validate-symlinks`
+- ソース変更の複雑度: `task validate-cccc`（`cccc` 未導入時は skip）
 - 複数領域変更: `task validate`
 - validation 選定に迷う場合: built-in subagent に探索を委譲するか、`Taskfile.yml` と `.bin/validate_*.sh` を直接読む
 

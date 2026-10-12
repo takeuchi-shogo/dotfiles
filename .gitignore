@@ -113,6 +113,9 @@ codex-best-practice
 tmp/
 .dmux/
 
+# cccc results cache (https://github.com/moznion/cccc)
+.cccc.cache
+
 # Playwright MCP runtime artifacts (console logs, page snapshots)
 .playwright-mcp/
 

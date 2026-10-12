@@ -17,7 +17,9 @@ platforms: [agents, codex]
 - `task validate-symlinks`
   - `~/.claude`、`~/.codex`、`~/.config` への managed symlink
 - `task validate`
-  - 上記 3 つをまとめて確認したいとき
+  - 上記 3 つ + `validate-cccc` をまとめて確認したいとき
+- `task validate-cccc`
+  - 変更ソースの cognitive / cyclomatic 複雑度（`cccc.toml` 閾値）。`cccc` 未導入時は skip
 
 ## Selection Rules
 

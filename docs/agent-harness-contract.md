@@ -134,6 +134,7 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
 | `completion-gate.py` | MAX_RETRIES=2 | テスト失敗を2回まで差し戻し |
 | `completion-gate.py` | MAX_RALPH_ITERATIONS=7 | 未完了プランがある間は別カウンタで7回まで差し戻し。Stop hook は8回連続 block でランタイムに上書きされるため8未満に置く |
 | `completion-gate.py` | 10編集以上 | Review Gate: `/review` 実行を提案（アドバイザリー） |
+| `cccc-complexity-gate.py` | max-cognitive=40 / max-cyclomatic=40（`cccc.toml`）；MAX_RETRIES=2 | diff で触った関数のみ複雑度超過で Stop を block。未導入・crash は fail-open |
 | `pre-commit-check.js` | パターンマッチ | `sk-`, `ghp_`, `AKIA` 等のシークレットをブロック |
 | `protect-linter-config.py` | ファイル名一致 | `.eslintrc*`, `biome.json` 等の変更をブロック |
 | `check_gp_blocking` (Rust) | パターンマッチ | GP-004 (空catch) / GP-005 (any型) の編集をブロック |

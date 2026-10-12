@@ -169,6 +169,14 @@ tasks:
       - task: validate-configs
       - task: validate-readmes
       - task: validate-symlinks
+      - task: validate-cccc
+
+  validate-cccc:
+    desc: Run cccc complexity gate on changed functions (skips if cccc unavailable)
+    cmds:
+      # Shared logic with Stop hook (extensions / excludes / changed-lines / retries).
+      # Avoids bash-only <<< and keeps Taskfile aligned with the gate script.
+      - python3 .config/claude/scripts/policy/cccc-complexity-gate.py --check
 
   validate-configs:
     desc: Validate syntax for config and script files
