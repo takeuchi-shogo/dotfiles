@@ -80,7 +80,6 @@ last_reviewed: 2026-04-23
 | **Pre-commit** (s) | lefthook biome/oxlint/ruff/gofmt | 1,4,7 |
 | **Pre-commit** (s) | check-claudemd-lines.sh | 7 (Documentation) |
 | **Stop** (s) | completion-gate.py | 5 (Testability — テスト実行) |
-| **Stop** (s) | cccc-complexity-gate.py | Maintainability — cognitive/cyclomatic 閾値 |
 | **Human Review** (h) | /review スキル | 1-7 全カテゴリ |
 
 ## 新カテゴリの拡張候補

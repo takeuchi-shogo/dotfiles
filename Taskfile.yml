@@ -172,47 +172,11 @@ tasks:
       - task: validate-cccc
 
   validate-cccc:
-    desc: Run cccc complexity gate on changed sources (skips if cccc unavailable)
+    desc: Run cccc complexity gate on changed functions (skips if cccc unavailable)
     cmds:
-      - |
-        set -euo pipefail
-        if ! command -v cccc >/dev/null 2>&1; then
-          echo "[validate-cccc] skip: cccc not found (https://github.com/moznion/cccc)"
-          exit 0
-        fi
-        # Dirty tree first; clean tree falls back to merge-base…HEAD so
-        # post-commit / CI still sees this branch's source edits.
-        list_paths() {
-          {
-            git diff --name-only HEAD
-            git diff --name-only --cached
-            git ls-files --others --exclude-standard
-          } | awk 'NF' | sort -u
-        }
-        paths="$(list_paths || true)"
-        if [ -z "$paths" ]; then
-          base="$(git merge-base HEAD origin/master 2>/dev/null \
-            || git merge-base HEAD master 2>/dev/null \
-            || true)"
-          if [ -n "${base:-}" ]; then
-            paths="$(git diff --name-only "$base"...HEAD | awk 'NF' | sort -u || true)"
-          fi
-        fi
-        existing=()
-        while IFS= read -r f; do
-          [ -n "$f" ] || continue
-          [ -f "$f" ] || continue
-          case "$f" in
-            *.py|*.ts|*.tsx|*.js|*.jsx|*.go|*.rs|*.swift|*.rb|*.php|*.java|*.kt|*.c|*.h|*.cpp|*.cc|*.cs|*.zig)
-              existing+=("$f")
-              ;;
-          esac
-        done <<< "$paths"
-        if [ "${#existing[@]}" -eq 0 ]; then
-          echo "[validate-cccc] no supported source files in diff"
-          exit 0
-        fi
-        cccc "${existing[@]}"
+      # Shared logic with Stop hook (extensions / excludes / changed-lines / retries).
+      # Avoids bash-only <<< and keeps Taskfile aligned with the gate script.
+      - python3 .config/claude/scripts/policy/cccc-complexity-gate.py --check
 
   validate-configs:
     desc: Validate syntax for config and script files

@@ -8,7 +8,12 @@
 - スコープが曖昧、または複数ステップの変更は、実装前に plan を作る。
 - 依存追加・新規 script・新規 utility・新規抽象化の前に、まず既存の設定・script・skill・MCP を探す。
 - 変更後は、変更範囲に最も近い validation を実行してから完了を宣言する。
-- ソース変更の完了前に `cccc` 複雑度ゲートを通過させる（`task validate-cccc`、または Stop hook `cccc-complexity-gate.py`）。閾値は repo 直下 `cccc.toml`（max-cognitive / max-cyclomatic = 40）。`cccc` 未導入時は skip されるが、導入可能な環境では GitHub Release か `cargo install cccc-cli` で入れる。
+- ソース変更の完了前に `cccc` 複雑度ゲートを通過させる
+  （`task validate-cccc` / Stop hook `cccc-complexity-gate.py`）。
+  閾値は `cccc.toml`（max-cognitive / max-cyclomatic = 40）。
+  対象は **diff で触った関数のみ**。`cccc` 未導入時は skip。
+  導入: GitHub Release または `cargo install cccc-cli`
+  （https://github.com/moznion/cccc）。
 - diff が自明でない場合は `codex review --uncommitted` を使ってから報告する。
 
 ## Plan Contract

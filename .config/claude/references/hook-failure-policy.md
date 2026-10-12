@@ -35,7 +35,7 @@ last_reviewed: 2026-05-30
 | gaming-detector | **True** | policy-gate | **呼び出し元なし (2026-08-02 監査)** — settings.json 未登録、lefthook / Taskfile / CI / Rust いずれからも呼ばれない |
 | rationalization-scanner | **True** | policy-gate | PostToolUse |
 | approval-fatigue-guard | False | policy-advisory | PostToolUse |
-| cccc-complexity-gate | False | policy-gate (block via JSON; crash fail-open / missing binary skip) | Stop |
+| cccc-complexity-gate | False | stop-gate (JSON decision block; crash/missing-binary fail-open) | Stop |
 | diff-coverage-gate | False | policy-advisory | Stop |
 | file-proliferation-guard | False | policy-advisory | PostToolUse |
 | impact-scan | False | policy-advisory | PostToolUse |

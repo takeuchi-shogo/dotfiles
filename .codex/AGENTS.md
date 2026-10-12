@@ -5,7 +5,10 @@
 - 実装前に `rg` / `rg --files` で既存コード・設定・ドキュメントを確認する。
 - 曖昧、または複数ステップのタスクは plan を作ってから編集する。
 - 完了を宣言する前に、変更範囲に最も近い build/test/lint/validation を実行する。
-- ソース変更では `cccc` 複雑度チェックを通過させる（`task validate-cccc`）。閾値は `cccc.toml` の max-cognitive / max-cyclomatic = 40。`cccc` が PATH に無い環境では skip される（導入: https://github.com/moznion/cccc ）。
+- ソース変更では `cccc` 複雑度チェックを通過させる（`task validate-cccc`）。
+  閾値は `cccc.toml` の max-cognitive / max-cyclomatic = 40。
+  対象は diff で触った関数のみ。`cccc` 未導入時は skip
+  （導入: https://github.com/moznion/cccc）。
 - diff が自明でない場合は `codex review --uncommitted` を使って追加確認する。
 - 非自明なコード変更では repo root の `CLAUDE.md` に定義された Karpathy 4 原則 (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) に従う。Claude 固有の hook / slash command / plugin 前提はそのまま実行せず、原則本文だけ採用する。
 
