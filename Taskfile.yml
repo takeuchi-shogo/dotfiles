@@ -180,6 +180,24 @@ tasks:
           echo "[validate-cccc] skip: cccc not found (https://github.com/moznion/cccc)"
           exit 0
         fi
+        # Dirty tree first; clean tree falls back to merge-base…HEAD so
+        # post-commit / CI still sees this branch's source edits.
+        list_paths() {
+          {
+            git diff --name-only HEAD
+            git diff --name-only --cached
+            git ls-files --others --exclude-standard
+          } | awk 'NF' | sort -u
+        }
+        paths="$(list_paths || true)"
+        if [ -z "$paths" ]; then
+          base="$(git merge-base HEAD origin/master 2>/dev/null \
+            || git merge-base HEAD master 2>/dev/null \
+            || true)"
+          if [ -n "${base:-}" ]; then
+            paths="$(git diff --name-only "$base"...HEAD | awk 'NF' | sort -u || true)"
+          fi
+        fi
         existing=()
         while IFS= read -r f; do
           [ -n "$f" ] || continue
@@ -189,13 +207,7 @@ tasks:
               existing+=("$f")
               ;;
           esac
-        done < <(
-          {
-            git diff --name-only HEAD
-            git diff --name-only --cached
-            git ls-files --others --exclude-standard
-          } | awk 'NF' | sort -u
-        )
+        done <<< "$paths"
         if [ "${#existing[@]}" -eq 0 ]; then
           echo "[validate-cccc] no supported source files in diff"
           exit 0
