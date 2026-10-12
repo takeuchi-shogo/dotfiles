@@ -19,7 +19,7 @@
 - **関心分離**: state と logic、UI と domain、I/O と pure function を分ける
 - **契約層 strict / 実装層 regenerable**: API・型・schema は厳密に定義、実装は再生成可能に保つ
 - **Static-checkable rules は mechanism に寄せる**: linter / ast-grep / hook / test で表現できるルールはプロンプトに書かない
-- **Skill scope 判断**: project 固有 → `<repo>/.claude/skills/`、汎用 → `~/.claude/skills/`、判断不能 → ユーザーに確認
+- **Skill scope 判断**: project 固有 → `<repo>/.claude/skills/`、汎用 (dotfiles 以外の repo でも成り立つ) → `~/.claude/skills/`、dotfiles を操作対象にする個人 skill (例: `/absorb`) → `~/.claude/skills/` に置き、対象 root を本文で絶対パス指定する、判断不能 → ユーザーに確認
 
 <important if="you are starting a non-trivial task or planning implementation">
 
