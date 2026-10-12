@@ -15,6 +15,7 @@ alwaysApply: true
 - **関数**: 50行以内、ネスト4段以内
 - **ファイル**: 400行目安、800行上限。超過時は分割を検討
 - **認知的複雑度**: 新規関数は低複雑度を維持。条件分岐のネストより早期リターンを使う
+- **cccc ゲート**: 変更ソースは `cccc`（`cccc.toml`: max-cognitive / max-cyclomatic = 40）を通過させる。Stop hook `cccc-complexity-gate.py` / `task validate-cccc`。未導入環境では skip
 
 ## Static Analysis
 

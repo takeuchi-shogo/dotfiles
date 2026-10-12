@@ -24,7 +24,7 @@ last_reviewed: 2026-05-30
    そもそも block しないので、クラッシュ時に素通りさせる方が開発体験を阻害しない。
 3. 迷ったら「この hook が**何も検査しなかった**ら危険か？」で判断する。危険なら True。
 
-## カタログ (30 callers: True 6 / 明示 False 12 / 省略=False 12)
+## カタログ (31 callers: True 6 / 明示 False 13 / 省略=False 12)
 
 | hook | fail_closed | 分類 | event |
 |------|-------------|------|-------|
@@ -35,6 +35,7 @@ last_reviewed: 2026-05-30
 | gaming-detector | **True** | policy-gate | **呼び出し元なし (2026-08-02 監査)** — settings.json 未登録、lefthook / Taskfile / CI / Rust いずれからも呼ばれない |
 | rationalization-scanner | **True** | policy-gate | PostToolUse |
 | approval-fatigue-guard | False | policy-advisory | PostToolUse |
+| cccc-complexity-gate | False | policy-gate (block via JSON; crash fail-open / missing binary skip) | Stop |
 | diff-coverage-gate | False | policy-advisory | Stop |
 | file-proliferation-guard | False | policy-advisory | PostToolUse |
 | impact-scan | False | policy-advisory | PostToolUse |

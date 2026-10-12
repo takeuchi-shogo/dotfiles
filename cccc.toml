@@ -1,0 +1,29 @@
+# cccc complexity gate — https://github.com/moznion/cccc
+# Thresholds follow https://x.com/andrestaltz/status/2107716212071485875
+# Agent harness Stop hook: .config/claude/scripts/policy/cccc-complexity-gate.py
+
+max-cognitive = 40
+max-cyclomatic = 40
+
+# Keep noise down: generated trees + common test naming conventions.
+exclude = [
+  "node_modules/**",
+  "vendor/**",
+  "dist/**",
+  "build/**",
+  "target/**",
+  "**/*.test.ts",
+  "**/*.test.tsx",
+  "**/*.test.js",
+  "**/*.test.jsx",
+  "**/*.spec.ts",
+  "**/*.spec.tsx",
+  "**/*_test.go",
+  "**/test_*.py",
+  "**/*_test.py",
+  "**/testdata/**",
+  "**/__tests__/**",
+]
+
+cache = true
+cache-file = ".cccc.cache"

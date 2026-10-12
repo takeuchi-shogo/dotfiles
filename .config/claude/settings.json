@@ -327,6 +327,12 @@
           },
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/cccc-complexity-gate.py",
+            "timeout": 45,
+            "statusMessage": "cccc complexity gate..."
+          },
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/scripts/policy/diff-coverage-gate.py",
             "timeout": 10,
             "statusMessage": "Diff coverage check..."

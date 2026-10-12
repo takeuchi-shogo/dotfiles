@@ -5,6 +5,7 @@
 - 実装前に `rg` / `rg --files` で既存コード・設定・ドキュメントを確認する。
 - 曖昧、または複数ステップのタスクは plan を作ってから編集する。
 - 完了を宣言する前に、変更範囲に最も近い build/test/lint/validation を実行する。
+- ソース変更では `cccc` 複雑度チェックを通過させる（`task validate-cccc`）。閾値は `cccc.toml` の max-cognitive / max-cyclomatic = 40。`cccc` が PATH に無い環境では skip される（導入: https://github.com/moznion/cccc ）。
 - diff が自明でない場合は `codex review --uncommitted` を使って追加確認する。
 - 非自明なコード変更では repo root の `CLAUDE.md` に定義された Karpathy 4 原則 (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) に従う。Claude 固有の hook / slash command / plugin 前提はそのまま実行せず、原則本文だけ採用する。
 
@@ -93,7 +94,7 @@
 ## Harness Rules
 - リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
 - `git commit --no-verify` 禁止。pre-commit フックをバイパスしない。
-- タスク完了前にテスト・lint を実行して通過を確認する。
+- タスク完了前にテスト・lint・`cccc`（導入済みなら）を実行して通過を確認する。
 - sandbox 外 command の反復承認を durable にしたい場合は `.codex/rules/*.rules` に昇格し、`AGENTS.md` には自然言語の方針だけを残す。
 - `Rules` は最小権限で始め、broad allowlist は作らない。追加前に `codex execpolicy check --pretty --rules <file> -- <command>` で検証する。
 - repo 共通 contract は `docs/agent-harness-contract.md` を参照する。

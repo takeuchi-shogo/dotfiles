@@ -169,6 +169,38 @@ tasks:
       - task: validate-configs
       - task: validate-readmes
       - task: validate-symlinks
+      - task: validate-cccc
+
+  validate-cccc:
+    desc: Run cccc complexity gate on changed sources (skips if cccc unavailable)
+    cmds:
+      - |
+        set -euo pipefail
+        if ! command -v cccc >/dev/null 2>&1; then
+          echo "[validate-cccc] skip: cccc not found (https://github.com/moznion/cccc)"
+          exit 0
+        fi
+        existing=()
+        while IFS= read -r f; do
+          [ -n "$f" ] || continue
+          [ -f "$f" ] || continue
+          case "$f" in
+            *.py|*.ts|*.tsx|*.js|*.jsx|*.go|*.rs|*.swift|*.rb|*.php|*.java|*.kt|*.c|*.h|*.cpp|*.cc|*.cs|*.zig)
+              existing+=("$f")
+              ;;
+          esac
+        done < <(
+          {
+            git diff --name-only HEAD
+            git diff --name-only --cached
+            git ls-files --others --exclude-standard
+          } | awk 'NF' | sort -u
+        )
+        if [ "${#existing[@]}" -eq 0 ]; then
+          echo "[validate-cccc] no supported source files in diff"
+          exit 0
+        fi
+        cccc "${existing[@]}"
 
   validate-configs:
     desc: Validate syntax for config and script files
