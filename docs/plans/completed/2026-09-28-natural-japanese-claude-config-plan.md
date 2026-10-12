@@ -43,16 +43,17 @@
 
 ## Progress
 
-- [ ] PR1: CLAUDE.md, rules/, output-styles/
-- [ ] PR2: agents/, commands/
-- [ ] PR3: skills/
-- [ ] PR4〜6: references/
+- [x] PR1: CLAUDE.md, rules/, output-styles/ (#265)
+- [x] PR2: agents/, commands/ (#266)
+- [x] PR3: skills/ (#266)
+- [x] PR4〜6: references/ (#266)
 
 ## Decision Log
 
 - 2026-09-28: 範囲はユーザーが「.config/claude 全体」を選択
 - 2026-09-28: vendor skill は対象外。上流更新時の差分衝突を避ける
+- PR2〜6 は実差分が合計 40 行程度だったため #266 の 1 本にまとめた
 
 ## Outcome
 
-（完了時に記入）
+#265 (CLAUDE.md・rules/・output-styles/) と #266 (agents/・commands/・自作 skills・references/) で全層を見直した。直す必要があったのは中国語由来の語が残る数ファイルだけで、他は既に `japanese-ai-prose.md` の基準で書かれていた。
