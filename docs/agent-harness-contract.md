@@ -177,6 +177,29 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
   - Chronicle memory は画面由来の hint として扱い、判断前に一次情報を読む
   - `~/.codex/memories_extensions/chronicle/` は未暗号化 state なので、共有・同期・バックアップ前に内容を確認する
 
+## Merge Criteria (No proof, no merge)
+
+> 出典（読めた範囲）: [@distortgeekin 2109637916922159360](https://x.com/distortgeekin/status/2109637916922159360) 添付画像 "Lauren Tan's 12 Rules"
+> — Rule 02「Attach proof to every PR… **No proof, no merge.**」
+> Caveat: 投稿本文は要約のみ。12 条全文は画像依存。本節は画像から読めた Rule 02 / 10 / 11 のみを正とする。
+
+エージェントまたは人間が PR を merge 可能と宣言する前に、次を満たすこと:
+
+| 基準 | 必須証拠 | 不合格時 |
+|------|----------|----------|
+| **No proof, no merge** | 変更に対応する screenshot / trace / 通過した check（`task validate-*`・pytest・CI）のいずれか | merge しない。証拠が取れないなら「未検証」と明示して停止 |
+| **検証不能なら停止** | 実行不能理由（環境欠如・権限・外部依存）を PR/報告に書く | 推測で「完了」としない（Rule 03） |
+| **失敗の再発防止** | 同一失敗が再発しない durable artifact（skill / hook / lint / test）への経路がある、または「今回は一度きり」と記録 | 同じ失敗を prompt 注意だけで閉じない（Rule 10） |
+
+「テストが緑」だけを proof 扱いにしない。変更面に最も近い validation（`dotfiles-config-validation` skill）を選ぶ。
+
+## Failure → Skill Loop
+
+計測された失敗を skill 候補へ落とす手順の正本は
+`.config/claude/skills/skill-audit/references/failure-to-skill-loop.md`。
+入力は `failure-taxonomy.md`（FM 定義）と `edit-failure-tracker.py`（Edit/Write 失敗の session_events）など。
+出力は skill 草案 + eval 計画。**証拠なしの skill 新設はしない**（上記 merge 基準と同じ）。
+
 ## Rules
 
 - agent 固有の保証を repo 共通 contract に混ぜない
@@ -184,3 +207,4 @@ Actions 上の Claude の guard は workflow YAML 側だけにある:
 - exec policy は broad allow より minimal adoption を優先し、read-only prefix から始める
 - validation は tool 不在だけで hard fail させない。必要なら skip を明示する
 - 同じ friction を 2 回経験したら durable memory か skill へ昇格を検討する
+- PR merge は **No proof, no merge**（本ファイル Merge Criteria）を満たすまで行わない
