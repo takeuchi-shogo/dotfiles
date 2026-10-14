@@ -33,13 +33,14 @@
 <div class="wrap">
   <h1>AI Harness Overview</h1>
   <p class="meta">.config/claude/{skills,agents} + settings.json から自動生成
-    (rev 14b9279f)。手書き禁止 — 編集は SKILL.md / agent 定義側で行い再生成する。</p>
+    (rev ccf77ba6)。手書き禁止 — 編集は SKILL.md / agent 定義側で行い再生成する。</p>
 
   <details open class="group">
-    <summary>Skills <span class="g-n">27</span></summary>
+    <summary>Skills <span class="g-n">28</span></summary>
     <ul class="entries">
       <li class="entry"><code>absorb</code><span>外部記事・論文・リポジトリの知見を現在のセットアップに統合する。</span></li>
       <li class="entry"><code>alphaxiv-paper-lookup</code><span>arxiv 論文を alphaxiv.org 経由で構造化レポートとして取得する。</span></li>
+      <li class="entry"><code>architecture-map</code><span>リポジトリを読み、C4 モデルで Level1→2→3 の動的アーキテクチャ図（ドリルダウン HTML + ユースケース再生）を段階的に作る。</span></li>
       <li class="entry"><code>audit</code><span>コードベース全体の品質監査 → 優先度付き QUESTIONS.md (security/arch/perf/test/quality、file:line+Answer 付き)。</span></li>
       <li class="entry"><code>careful</code><span>Use when working near production systems or performing potentially destructive operations</span></li>
       <li class="entry"><code>check-health</code><span>ドキュメント鮮度・コード乖離・参照整合性をチェックする。</span></li>
@@ -96,9 +97,10 @@
   </details>
 
   <details open class="group">
-    <summary>Plugins <span class="g-n">19</span></summary>
+    <summary>Plugins <span class="g-n">20</span></summary>
     <ul class="entries">
       <li class="entry"><code>claude-md-management</code></li>
+      <li class="entry"><code>code-modernization</code></li>
       <li class="entry"><code>code-simplifier</code></li>
       <li class="entry"><code>codex</code></li>
       <li class="entry"><code>datadog</code></li>

@@ -836,6 +836,7 @@
     "superpowers@claude-plugins-official": true,
     "frontend-design@claude-code-plugins": true,
     "code-simplifier@claude-plugins-official": true,
+    "code-modernization@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "playground@claude-plugins-official": true,
     "pr-review-toolkit@claude-code-plugins": true,
