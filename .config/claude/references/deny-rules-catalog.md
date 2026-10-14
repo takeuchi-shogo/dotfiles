@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-07-16
+last_reviewed: 2026-10-13
 ---
 
 # Deny Rules Catalog (settings.json permissions auditability)
@@ -13,6 +13,45 @@ last_reviewed: 2026-07-16
 > (auditability 用)。`## DENY (N)` / `## ALLOW (N)` / `## ASK (N)` ヘッダの件数は `task validate-configs`
 > (`.bin/validate_configs.sh`) が settings.json と自動照合し、drift すると CI が fail する。
 > 手動同期に頼らず、件数が変わったらヘッダ・合計・カテゴリを直すこと。
+
+## Premise: agent runs with the user's privileges by default
+
+> 出典（読めた範囲）:
+> - [@dkfj 2109473604069195827](https://x.com/dkfj/status/2109473604069195827)
+>   「何もしなければ、AIエージェントは自分と同じ権限で動きます」
+> - [Speaker Deck: 生成AI時代のクレデンシャルとパーミッション設計](https://speakerdeck.com/nrinetcom/seisei-ai-jidai-no-to-pa-misshon-sekkei)
+>   (NRI Netcom / 佐々木拓郎, Developers Summit 2026 KANSAI)
+>
+> Caveat: スライド転写は Speaker Deck transcript 経由。口頭補足・質疑は未取得。
+> 本節は transcript に明示された設計軸だけを採る。
+
+既定ではエージェントは **操作者本人と同じ権限** で動く（読めるファイル・打てるコマンドが同じ）。
+任せる範囲を広げるほど事故面も広がるため、台帳と `permission-audit.py` は次の 3 軸で読む:
+
+| 軸 | 問い | この repo での主な制御面 |
+|----|------|-------------------------|
+| **できること** | 何を許可/禁止するか | `permissions.deny` / `allow` / `ask` + hooks |
+| **届く範囲** | どこまで触れられるか | sandbox / worktree / container（設定ファイルの「触るな」だけでは境界にならない） |
+| **鍵の渡し方** | 値をどう渡すか（渡さないか） | deny で直読み遮断 + **agent-dedicated credentials** + 代理実行 |
+
+### Least privilege / agent-dedicated credentials（監査観点）
+
+Speaker Deck が明示する鍵の渡し方 4 段階（下ほど安全）:
+
+1. 直読み（`.env` / `~/.aws` 等を AI が読む）
+2. 平文の外部注入（環境変数）
+3. ストア経由の注入（取り出しは AI の外）
+4. 代理実行（値そのものを渡さず、許可した操作だけ実行させる）
+
+本台帳の deny（秘密ファイル/ディレクトリ Read・Edit、環境変数 dump）は主に **段階 1 の遮断**。
+audit では加えて次を見る（自動修正はしない）:
+
+- **ユーザー個人の長期鍵を agent と共有していないか**（agent-dedicated / short-lived を推奨）
+- **allow が least privilege を超えて広がっていないか**（Bash wildcard・過大 allow）
+- **指示書（CLAUDE.md）だけで権限を守ろうとしていないか**（強制力は settings/hooks 側）
+
+機械チェックの実装: `scripts/lifecycle/permission-audit.py`
+（`--agent-credentials` で上記観点のシグナルを出す）。
 
 ## DENY (88)
 

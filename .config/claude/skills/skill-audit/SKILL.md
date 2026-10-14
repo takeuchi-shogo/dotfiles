@@ -447,6 +447,19 @@ lessons-learned.md の 1 行 Gotcha をスキルの `## Gotchas` に昇格させ
 
 > **原則**: lessons-learned = 全体台帳、`## Gotchas` = スキル固有の実行時ガイド。両方に残して良い（単一責任ではなく、視点違いの冗長）
 
+## Failure → Skill Loop
+
+`failure-taxonomy.md` と `edit-failure-tracker.py` で失敗は計測できるが、
+skill 候補化の手順は別に必要。audit の Promotion Backlog と並行して次を行う:
+
+1. session_events / CI から証拠付き失敗を集める（証拠なしは候補にしない）
+2. FM / `failure_pattern` でクラスタする
+3. architecture → lint/hook/test → skill の順で durable artifact を選ぶ
+4. 候補カードを書き、`/skill-audit` A/B または fixture で eval する
+5. **No proof, no merge**（`docs/agent-harness-contract.md` Merge Criteria）
+
+詳細手順・出典・caveat: [`references/failure-to-skill-loop.md`](references/failure-to-skill-loop.md)
+
 ## Audit Report Format
 
 Generate the report at `docs/benchmarks/YYYY-MM-DD-audit.md` using this template:
