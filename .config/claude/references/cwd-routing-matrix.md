@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-04-23
+last_reviewed: 2026-10-13
 ---
 
 # cwd/path Routing Matrix
@@ -8,7 +8,7 @@ last_reviewed: 2026-04-23
 **目的**: cwd（カレントワーキングディレクトリ）の種類に応じて、どの rules/skills/agents を読む or 読まないかを明示する。記事「Obsidian × Claude Code」(akira_papa_AI, 2026-03) の「パススコープ限定ルール」概念を dotfiles 環境に適合させた運用ガイド。
 
 **前提**:
-- `rules/*.md` は自動ロードされない（下記「rules/*.md との関係」）。ファイルパターン条件ロードは未実装
+- 言語別 `rules/*.md` は Claude Code ネイティブの `paths:` frontmatter で条件ロードされる（下記「rules/*.md との関係」）
 - このドキュメントは **cwd レベル** の上位 routing を定義（ファイルパターンより粒度が粗い）
 - 違反は hook で detect、block はしない（Soft guidance）
 
@@ -37,14 +37,11 @@ cwd を取得
 
 この matrix は「cwd レベル」で、その cwd でそもそも関連しうる rules/skills 群を絞る。
 
-`rules/*.md` は**自動ロードされない**。かつて `paths:` frontmatter（`**/*.go` 等）を持ち「編集対象のファイルパターンでロードされる」と書いていたが、それを消費する実装は hook にも script にも存在せず、`~/.claude/rules/` 自体が存在しない。2026-08-02 に 8 ファイルから frontmatter を削除した。
+言語別 rules（go / typescript / react / rust / python / proto / test）と `config.md` は `paths:` frontmatter を持ち、該当パターンのファイルに触れたときだけ Claude Code 本体がロードする。`common/*.md` は `paths:` を持たず常時ロードされる。
 
-実際の到達経路は名指しの参照だけ:
+経緯: 2026-08-03 (#207) に一度 `paths:` を削除した。当時は `~/.claude/rules/` が存在せず誰も読んでいなかったため。#235 (2026-08-29) で nix の symlink が足されて前提が反転し、#245 (2026-09-07) で `paths:` を戻した。キーは `paths` であって `globs` ではない（`globs:` と書くと無条件ロードになる）。実配線は InstructionsLoaded hook の `load_reason=path_glob_match` で観測できる。
 
-- `references/go-idioms-checklist.md` が「`rules/go.md` の基本ルールを前提とし」と冒頭で指す
-- レビュー時は `references/review-checklists/{lang}.md` が `code-reviewer` のプロンプトに注入される（こちらは実配線）
-
-ファイルパターンで rules を自動提示したくなったら、`tools/claude-hooks` の file-pattern-router に拡張子 → rules のルーティングを足すのが実装場所になる。
+レビュー時はこれとは別経路で、`references/review-checklists/{lang}.md` が `code-reviewer` のプロンプトに注入される。
 
 ## 運用ポリシー
 

@@ -112,9 +112,9 @@ in
     ".claude/workflows"            = outLink ".config/claude/workflows";
     ".claude/references"           = outLink ".config/claude/references";
     ".claude/output-styles"        = outLink ".config/claude/output-styles";
-    # rules は自動ロードされない (PR #207 で paths: frontmatter を削除済)。
-    # typescript-reviewer が明示 Read する `rules/typescript.md` を dotfiles 以外の
-    # リポジトリからも解決させるためだけの symlink。ルーティング機構は足さない。
+    # 言語別 rules は paths: frontmatter で Claude Code 本体が条件ロードする (PR #245)。
+    # typescript-reviewer が明示 Read する `rules/typescript.md` も、この symlink で
+    # dotfiles 以外のリポジトリから解決できる。
     ".claude/rules"                = outLink ".config/claude/rules";
 
     # block 2b: memory-vec indexer source (個別ファイル symlink)。

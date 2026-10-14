@@ -2407,3 +2407,9 @@
 - 取り込み: checkpoint HANDOFF スキーマに `## Unresolved` 節 (escalation スキーマ 3.7 に対応)
 - 副産物: resume-anchor-lint の hollow 判定がテンプレート注記を中身扱いしていた既存バグを修正
 - 分析: docs/research/2026-10-09-quant-longrun-prompt-absorb-analysis.md
+
+## [2026-10-13] ingest | エブリー Android チーム「ハーネスの一元管理」
+
+- ソース: https://tech.every.tv/entry/2026/10/08/121837
+- 判定: Gap 0個, Partial 2個, Already 1個, N/A 2個 (family なし)
+- 取り込み: Skill scope 第3分類 / stale 修正2件 (MEMORY init-project, cwd-routing-matrix) / capability gate は plan 化
