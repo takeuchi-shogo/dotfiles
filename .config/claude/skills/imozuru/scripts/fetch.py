@@ -63,9 +63,20 @@ def ensure_http_url(url: str) -> None:
         )
 
 
-def _coerce_captured(value, *, text_mode: bool, encoding: str, default):
-    """TimeoutExpired の stdout/stderr を CompletedProcess の型に合わせる。"""
-    if value is None:
+def _coerce_captured(
+    value,
+    *,
+    text_mode: bool,
+    encoding: str,
+    default,
+    empty_as_default: bool = False,
+):
+    """TimeoutExpired の stdout/stderr を CompletedProcess の型に合わせる。
+
+    empty_as_default=True のとき、None / 空 bytes / 空 str は default に寄せる
+    （timeout 時の stderr は「空または timeout 文言」の docstring に合わせる）。
+    """
+    if value is None or (empty_as_default and value in (b"", "")):
         return default
     if text_mode and isinstance(value, (bytes, bytearray)):
         return bytes(value).decode(encoding, errors="replace")
@@ -78,7 +89,7 @@ def run_subprocess(cmd: list[str], *, timeout: int = SUBPROCESS_TIMEOUT, **kwarg
     """subprocess.run に timeout を必須化し、TimeoutExpired を完了オブジェクトに畳む。
 
     呼び手は returncode / stdout を見るだけなので、タイムアウト時は returncode=124、
-    stdout/stderr を空（または timeout 文言）にして通常経路へ戻す。
+    stdout は空、stderr は空相当なら timeout 文言にして通常経路へ戻す。
     """
     text_mode = bool(kwargs.get("encoding") or kwargs.get("text"))
     encoding = kwargs.get("encoding") or "utf-8"
@@ -91,7 +102,11 @@ def run_subprocess(cmd: list[str], *, timeout: int = SUBPROCESS_TIMEOUT, **kwarg
             exc.stdout, text_mode=text_mode, encoding=encoding, default=empty
         )
         stderr = _coerce_captured(
-            exc.stderr, text_mode=text_mode, encoding=encoding, default=timeout_msg
+            exc.stderr,
+            text_mode=text_mode,
+            encoding=encoding,
+            default=timeout_msg,
+            empty_as_default=True,
         )
         return subprocess.CompletedProcess(
             cmd, 124, stdout=stdout, stderr=stderr
@@ -202,13 +217,15 @@ def ocr_pdf(pdf: Path) -> tuple[str, str | None]:
     tmp.mkdir(exist_ok=True)
     started = time.monotonic()
     cut_reason: str | None = None
+    # 上限ちょうど（40頁）と超過（41頁以上）を区別するため、1頁余分にラスタライズする
+    probe_last = OCR_MAX_PAGES + 1
     ppm = run_subprocess(
         [
             "pdftoppm",
             "-r",
             "200",
             "-l",
-            str(OCR_MAX_PAGES),
+            str(probe_last),
             "-png",
             str(pdf),
             str(tmp / "p"),
@@ -220,10 +237,14 @@ def ocr_pdf(pdf: Path) -> tuple[str, str | None]:
     if ppm.returncode == 124:
         shutil.rmtree(tmp, ignore_errors=True)
         return "", "pdftoppm タイムアウト"
-    images = sorted(tmp.glob("p-*.png"))
-    # -l で上限まで出た場合、それ以降のページが残っている可能性がある
-    if len(images) >= OCR_MAX_PAGES:
+    all_images = sorted(tmp.glob("p-*.png"))
+    if len(all_images) > OCR_MAX_PAGES:
         cut_reason = f"ページ上限 {OCR_MAX_PAGES}"
+        for extra in all_images[OCR_MAX_PAGES:]:
+            extra.unlink(missing_ok=True)
+        images = all_images[:OCR_MAX_PAGES]
+    else:
+        images = all_images
     pages = []
     for img in images:
         if time.monotonic() - started >= OCR_TOTAL_TIMEOUT:

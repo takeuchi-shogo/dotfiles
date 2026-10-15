@@ -105,6 +105,27 @@ def test_run_subprocess_decodes_timeout_stdout_bytes() -> None:
     assert result.stderr == "err"
 
 
+def test_run_subprocess_empty_stderr_bytes_becomes_timeout() -> None:
+    """exc.stderr が空 bytes のときも docstring どおり timeout 文言にする。"""
+    with patch(
+        "subprocess.run",
+        side_effect=subprocess.TimeoutExpired(
+            cmd=["cmd"],
+            timeout=1,
+            output=None,
+            stderr=b"",
+        ),
+    ):
+        result = fetch.run_subprocess(
+            ["cmd"],
+            timeout=1,
+            capture_output=True,
+            encoding="utf-8",
+        )
+    assert result.returncode == 124
+    assert result.stderr == "timeout"
+
+
 def test_fetch_source_fails_on_bad_scheme(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -121,21 +142,53 @@ def test_fetch_source_fails_on_bad_scheme(
     assert list(sources.iterdir()) == []
 
 
-def test_ocr_pdf_marks_page_cap_truncation(tmp_path: Path) -> None:
-    """pdftoppm が上限ページ数を返したら打ち切りを先頭に書き、理由を返す。"""
-    pdf = tmp_path / "long.pdf"
+def test_ocr_pdf_exact_max_pages_is_complete(tmp_path: Path) -> None:
+    """ちょうど OCR_MAX_PAGES 頁は打ち切りにしない（41 頁目が無い）。"""
+    pdf = tmp_path / "exact40.pdf"
     pdf.write_bytes(b"%PDF-1.4")
-    tmp = tmp_path / ".long-ocr"
+    tmp = tmp_path / ".exact40-ocr"
+    tesseract_calls = {"n": 0}
 
     def fake_run(cmd, **kwargs):
         if cmd[0] == "pdftoppm":
             tmp.mkdir(exist_ok=True)
+            assert cmd[cmd.index("-l") + 1] == str(fetch.OCR_MAX_PAGES + 1)
             for i in range(1, fetch.OCR_MAX_PAGES + 1):
                 (tmp / f"p-{i}.png").write_bytes(b"img")
-            assert "-l" in cmd
-            assert str(fetch.OCR_MAX_PAGES) in cmd
             return subprocess.CompletedProcess(cmd, 0)
         if cmd[0] == "tesseract":
+            tesseract_calls["n"] += 1
+            return subprocess.CompletedProcess(cmd, 0, stdout="page text\n", stderr="")
+        raise AssertionError(cmd)
+
+    with (
+        patch.object(fetch, "missing", return_value=[]),
+        patch.object(fetch, "run_subprocess", side_effect=fake_run),
+    ):
+        text, reason = fetch.ocr_pdf(pdf)
+
+    assert reason is None
+    assert not text.startswith("（OCR 打ち切り:")
+    assert tesseract_calls["n"] == fetch.OCR_MAX_PAGES
+    assert "OCR で起こした本文" in text.splitlines()[0]
+
+
+def test_ocr_pdf_marks_page_cap_when_over_max(tmp_path: Path) -> None:
+    """41 頁目が出たらページ上限打ち切り。OCR するのは 40 頁まで。"""
+    pdf = tmp_path / "long41.pdf"
+    pdf.write_bytes(b"%PDF-1.4")
+    tmp = tmp_path / ".long41-ocr"
+    tesseract_calls = {"n": 0}
+
+    def fake_run(cmd, **kwargs):
+        if cmd[0] == "pdftoppm":
+            tmp.mkdir(exist_ok=True)
+            assert cmd[cmd.index("-l") + 1] == str(fetch.OCR_MAX_PAGES + 1)
+            for i in range(1, fetch.OCR_MAX_PAGES + 2):
+                (tmp / f"p-{i}.png").write_bytes(b"img")
+            return subprocess.CompletedProcess(cmd, 0)
+        if cmd[0] == "tesseract":
+            tesseract_calls["n"] += 1
             return subprocess.CompletedProcess(cmd, 0, stdout="page text\n", stderr="")
         raise AssertionError(cmd)
 
@@ -148,6 +201,8 @@ def test_ocr_pdf_marks_page_cap_truncation(tmp_path: Path) -> None:
     assert reason == f"ページ上限 {fetch.OCR_MAX_PAGES}"
     assert text.startswith("（OCR 打ち切り:")
     assert "部分結果" in text.splitlines()[0]
+    assert tesseract_calls["n"] == fetch.OCR_MAX_PAGES
+    assert not (tmp / f"p-{fetch.OCR_MAX_PAGES + 1}.png").exists()
     assert pdf.with_suffix(".txt").read_text(encoding="utf-8").startswith(
         "（OCR 打ち切り:"
     )
