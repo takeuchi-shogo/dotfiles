@@ -93,10 +93,6 @@ def run_subprocess(cmd: list[str], *, timeout: int = SUBPROCESS_TIMEOUT, **kwarg
         stderr = _coerce_captured(
             exc.stderr, text_mode=text_mode, encoding=encoding, default=timeout_msg
         )
-        if text_mode and not stderr:
-            stderr = "timeout"
-        if not text_mode and not stderr:
-            stderr = b"timeout"
         return subprocess.CompletedProcess(
             cmd, 124, stdout=stdout, stderr=stderr
         )
@@ -187,32 +183,51 @@ def pdf_to_text(pdf: Path) -> str:
     return out.read_text(encoding="utf-8", errors="replace") if out.exists() else ""
 
 
-def ocr_pdf(pdf: Path) -> str:
-    """文字の層が無い PDF（紙を読み取った画像だけの古い論文）を、手元の tesseract で文字にする。
+def ocr_pdf(pdf: Path) -> tuple[str, str | None]:
+    """文字の層が無い PDF を tesseract で文字にする。
+
+    Returns:
+        (本文, 打ち切り理由)。打ち切り理由が None でなければ部分結果。
+        呼び手は部分結果を完全な原文として OK にしないこと。
 
     Spencer ら 1995 の PDF は取れたのに pdftotext が1文字しか返さなかった（2026-10-10）。
     英語だけ（入っている言語データが eng のみ）。1ページずつ 200dpi の画像にして読む。
     OCR の誤りは残るので、.txt の先頭に OCR だと書いて、読む人が原本と照らせるようにする。
-    pdftoppm か tesseract が無ければ何もせず空を返す（呼び手が FAIL に無いコマンドを書く）。
-    長大 PDF で止まらないよう OCR_MAX_PAGES / OCR_TOTAL_TIMEOUT で打ち切る。
+    pdftoppm か tesseract が無ければ ("", None) を返す（呼び手が FAIL に無いコマンドを書く）。
+    長大 PDF は pdftoppm -l と OCR_TOTAL_TIMEOUT で打ち切る。
     """
     if missing("pdftoppm", "tesseract"):
-        return ""
+        return "", None
     tmp = pdf.parent / f".{pdf.stem}-ocr"
     tmp.mkdir(exist_ok=True)
     started = time.monotonic()
+    cut_reason: str | None = None
     ppm = run_subprocess(
-        ["pdftoppm", "-r", "200", "-png", str(pdf), str(tmp / "p")],
+        [
+            "pdftoppm",
+            "-r",
+            "200",
+            "-l",
+            str(OCR_MAX_PAGES),
+            "-png",
+            str(pdf),
+            str(tmp / "p"),
+        ],
         check=False,
         stderr=subprocess.DEVNULL,
         timeout=min(SUBPROCESS_TIMEOUT, OCR_TOTAL_TIMEOUT),
     )
     if ppm.returncode == 124:
         shutil.rmtree(tmp, ignore_errors=True)
-        return ""
+        return "", "pdftoppm タイムアウト"
+    images = sorted(tmp.glob("p-*.png"))
+    # -l で上限まで出た場合、それ以降のページが残っている可能性がある
+    if len(images) >= OCR_MAX_PAGES:
+        cut_reason = f"ページ上限 {OCR_MAX_PAGES}"
     pages = []
-    for img in sorted(tmp.glob("p-*.png"))[:OCR_MAX_PAGES]:
+    for img in images:
         if time.monotonic() - started >= OCR_TOTAL_TIMEOUT:
+            cut_reason = cut_reason or "総時間上限"
             img.unlink(missing_ok=True)
             break
         remaining = max(1, int(OCR_TOTAL_TIMEOUT - (time.monotonic() - started)))
@@ -224,19 +239,24 @@ def ocr_pdf(pdf: Path) -> str:
             timeout=min(SUBPROCESS_TIMEOUT, remaining),
         )
         if res.returncode == 124:
+            cut_reason = cut_reason or "ページ OCR タイムアウト"
             img.unlink(missing_ok=True)
             break
         pages.append(f"=== page {img.stem.split('-')[-1]} ===\n{res.stdout}")
         img.unlink()
-    # 上限超過で残ったページ画像を掃除
     for leftover in tmp.glob("p-*.png"):
         leftover.unlink(missing_ok=True)
     shutil.rmtree(tmp, ignore_errors=True)
     text = "\n".join(pages)
+    header_lines = []
+    if cut_reason:
+        header_lines.append(f"（OCR 打ち切り: {cut_reason}。部分結果であり完全な原文ではない）")
+    header_lines.append(
+        "（OCR で起こした本文。誤りが残るので、引用は原本の PDF で確かめる）"
+    )
     out = pdf.with_suffix(".txt")
-    out.write_text("（OCR で起こした本文。誤りが残るので、引用は原本の PDF で確かめる）\n\n" + text,
-                   encoding="utf-8")
-    return text
+    out.write_text("\n".join(header_lines) + "\n\n" + text, encoding="utf-8")
+    return out.read_text(encoding="utf-8"), cut_reason
 
 
 HAS_AX = shutil.which("ax") is not None
@@ -498,7 +518,13 @@ def fetch_source(sources: Path, name: str, url: str, destination: Path) -> int:
         text = pdf_to_text(saved)
         kept = saved.with_suffix(".txt")
         if len(text.strip()) < 200 and not re.search(r"arxiv\.org", url):
-            text = ocr_pdf(saved)  # 文字の層が無い PDF。arXiv は下で HTML 版に切り替える
+            # 文字の層が無い PDF。arXiv は下で HTML 版に切り替える
+            text, ocr_cut = ocr_pdf(saved)
+            if ocr_cut:
+                for p in (saved, kept):
+                    p.unlink(missing_ok=True)
+                print(f"FAIL\t{name}\tOCR 打ち切り（{ocr_cut}）。部分結果を完全な原文として扱わない")
+                return 1
     elif ctype.startswith(("text/plain", "text/markdown", "application/json", "text/csv")):
         # GitHub の README やデータ（raw.githubusercontent.com）はこの形で来る
         # （和田三造の配色のデータで FAIL した・2026-10-10）。中身をそのまま残す。
@@ -520,7 +546,15 @@ def fetch_source(sources: Path, name: str, url: str, destination: Path) -> int:
                 text = pdf_to_text(saved)
                 kept = saved.with_suffix(".txt")
                 if len(text.strip()) < 200:
-                    text = ocr_pdf(saved)
+                    text, ocr_cut = ocr_pdf(saved)
+                    if ocr_cut:
+                        for p in (saved, kept):
+                            p.unlink(missing_ok=True)
+                        print(
+                            f"FAIL\t{name}\tOCR 打ち切り（{ocr_cut}）。"
+                            "部分結果を完全な原文として扱わない"
+                        )
+                        return 1
             else:
                 saved.unlink(missing_ok=True)
                 print(f"FAIL\t{name}\t転送先の PDF を保存できなかった")
