@@ -46,7 +46,7 @@ graph TB
             H_LR["Learner (17)<br><small>session-learner</small>"]
         end
 
-        subgraph skills_box["Skills (121)"]
+        subgraph skills_box["Skills (122)"]
             direction LR
             SK_CORE["Core Workflow<br><small>/review, /rpi, /epd</small>"]
             SK_DOMAIN["Domain<br><small>frontend, backend, architect</small>"]
@@ -119,7 +119,7 @@ graph TB
 │
 ├── agents/                       # サブエージェント定義 (22個 + _archived 10)
 ├── commands/                     # カスタムコマンド (31個)
-├── skills/                       # 再利用可能なスキル (121個: native ~57 + installed 64)
+├── skills/                       # 再利用可能なスキル (122個: native ~58 + installed 64)
 ├── rules/                        # 言語・ドメイン別ルール (11個)
 │   └── common/                   # 共通ルール (品質・セキュリティ・テスト)
 ├── references/                   # 参照ドキュメント (162個)
@@ -251,7 +251,7 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 
 ---
 
-## Skills カテゴリマップ (121個: native ~57 + installed 64)
+## Skills カテゴリマップ (122個: native ~58 + installed 64)
 
 Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill名`)で呼び出すか、エージェントが内部で参照する。
 運用上は [references/skill-inventory.md](references/skill-inventory.md) の tier を優先する。
@@ -300,7 +300,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `autonomous` | マルチセッション自律実行 |
 | `github-pr` | PR セルフレビュー・マージ判断 |
-| `absorb` | 外部記事・論文の知見統合 |
+| `absorb` | 外部記事・論文の知見統合（セットアップへの取り込み。原文掘りは `/imozuru`） |
 
 ### DevOps (日々の運用)
 
@@ -317,6 +317,7 @@ Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill�
 |--------|------|
 | `obsidian-knowledge` | ナレッジ検索・整理 |
 | `obsidian-content` | コンテンツ生成 |
+| `imozuru` | 芋づる式の原文リサーチ（引用連鎖・要約なし。MIT: MaryCache/imozuru） |
 
 ### Meta (スキル・プロジェクト管理)
 

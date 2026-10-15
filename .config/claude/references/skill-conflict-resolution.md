@@ -30,6 +30,7 @@ CLAUDE.md の `<important if>` タグは「いつ何を読むか」の positive 
 | 3 | 過剰 skill 起動 | typo 修正に `/rpi` | skill なしで直接 Edit |
 | 4 | session 中の repeat invoke | 同じ skill を 5 分以内に再実行 | 前回結果を参照、再実行は確認してから |
 | 5 | skill の declared scope 外 | frontend skill に backend API 設計を依頼 | 対応する別 skill を提案 |
+| 6 | 調査系の取り違え | 「調べて」だけで `/absorb` や `$deep-research` に流す | 原文ドロップ→`/imozuru`、洞察レポート→`$deep-research`、harness 統合→`/absorb` |
 
 ## Conflict Resolution — 衝突時の優先度
 
