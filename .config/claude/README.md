@@ -54,7 +54,7 @@ graph TB
             SK_OPS["DevOps<br><small>/morning, /kanban, /capture</small>"]
         end
 
-        subgraph agents_box["Agents (22)"]
+        subgraph agents_box["Agents (23)"]
             direction LR
             AG_REV["Review<br><small>code-reviewer, codex-reviewer</small>"]
             AG_IMPL["Implement<br><small>debugger</small>"]
@@ -118,7 +118,7 @@ graph TB
 ├── settings.local.json           # ローカルオーバーライド
 ├── statusline.sh                 # ステータスライン表示
 │
-├── agents/                       # サブエージェント定義 (22個 + _archived 10)
+├── agents/                       # サブエージェント定義 (23個 + _archived 10)
 ├── commands/                     # カスタムコマンド (31個)
 ├── skills/                       # 再利用可能なスキル (122個: native ~57 + installed 65)
 ├── rules/                        # 言語・ドメイン別ルール (11個)

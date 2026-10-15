@@ -3,7 +3,7 @@ name: imozuru
 description: "未知分野を用語・人・場の地図から引用連鎖で掘り、要約せず原文を ~/research/<話題>/sources/ に落とす。要る主張に原文が付くか飽和したら止める。Triggers: '芋づる式に調べて', 'imozuru', '原文で落として', '界隈の用語と人から掘って', 'literature dive', 'canonical papers', '/imozuru', '/imozuru watch'. Do NOT use for: 事実1つの確認、手元ファイル検索、要約・解説の作成、並列レポート仕上げ（use $deep-research）、セットアップへの知見統合（use /absorb）。"
 license: MIT
 origin: external
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch, WebSearch
 user-invocable: true
 argument-hint: "[watch] <話題や問い>"
 metadata:
@@ -83,9 +83,9 @@ watch/      … 見張りの結果。<日付>.md
 
 0周目と各周の探索は、**検索役**に任せる（以下「検索役」）。
 
-- **設定で write を封じる**: `Agent(subagent_type: "imozuru-search")` を使う。`imozuru-search` は `disallowedTools: Edit, Write, NotebookEdit` によりファイル書き込み不可（プロンプトだけの禁止にしない）
-- 読み取り・Web 検索・報告のみ。ダウンロードと `map.md` 更新は親の仕事
-- サブエージェントを使えない環境では、親が同じ頼み方の中身を順に検索する（親は Write を持つが、検索フェーズではファイルを書かない）
+- **設定で write / shell を封じる**: `Agent(subagent_type: "imozuru-search")` を使う。`imozuru-search` は `disallowedTools: Edit, Write, NotebookEdit, Bash`（プロンプトだけの禁止にしない）
+- 読み取り・WebSearch / WebFetch・報告のみ。ダウンロードと `map.md` 更新は親の仕事
+- サブエージェントを使えない環境では、親が同じ頼み方の中身を順に検索する（親は `WebSearch` を持つ。Write は検索フェーズでは使わない）
 
 ## 流れ
 

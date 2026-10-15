@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,7 @@ from unittest.mock import patch
 import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
+FETCH_PY = SCRIPTS / "fetch.py"
 sys.path.insert(0, str(SCRIPTS))
 
 import fetch  # noqa: E402
@@ -74,8 +76,82 @@ def test_run_subprocess_handles_timeout_expired() -> None:
     assert "timeout" in result.stderr
 
 
-def test_fetch_source_fails_on_bad_scheme(tmp_path: Path) -> None:
+def test_run_subprocess_decodes_timeout_stdout_bytes() -> None:
+    """TimeoutExpired.stdout が bytes のとき、text mode では str に直す。"""
+    with patch(
+        "subprocess.run",
+        side_effect=subprocess.TimeoutExpired(
+            cmd=["cmd"],
+            timeout=1,
+            output=b"partial-\xe3\x81\x82",
+            stderr=b"err",
+        ),
+    ):
+        result = fetch.run_subprocess(
+            ["cmd"],
+            timeout=1,
+            capture_output=True,
+            encoding="utf-8",
+        )
+    assert result.returncode == 124
+    assert isinstance(result.stdout, str)
+    assert "partial-" in result.stdout
+    assert isinstance(result.stderr, str)
+    assert result.stderr == "err"
+
+
+def test_fetch_source_fails_on_bad_scheme(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     sources = tmp_path / "sources"
     sources.mkdir()
-    code = fetch.fetch_source(sources, "bad", "file:///etc/passwd", sources)
+    with patch.object(fetch, "_OPENER") as opener:
+        code = fetch.fetch_source(sources, "bad", "file:///etc/passwd", sources)
+        opener.open.assert_not_called()
     assert code == 1
+    out = capsys.readouterr().out
+    assert out.startswith("FAIL\tbad\t")
+    assert "unsupported URL scheme" in out
+    assert "file" in out
+    assert list(sources.iterdir()) == []
+
+
+def test_all_subprocess_run_calls_go_through_run_subprocess() -> None:
+    """AST: subprocess.run の直接呼び出しは run_subprocess 内だけ。"""
+    tree = ast.parse(FETCH_PY.read_text(encoding="utf-8"))
+    direct: list[tuple[int, str]] = []
+
+    class Visitor(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.stack: list[str] = []
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            self.stack.append(node.name)
+            self.generic_visit(node)
+            self.stack.pop()
+
+        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+            self.stack.append(node.name)
+            self.generic_visit(node)
+            self.stack.pop()
+
+        def visit_Call(self, node: ast.Call) -> None:
+            func = node.func
+            is_run = (
+                isinstance(func, ast.Attribute)
+                and func.attr == "run"
+                and isinstance(func.value, ast.Name)
+                and func.value.id == "subprocess"
+            )
+            if is_run:
+                owner = self.stack[-1] if self.stack else "<module>"
+                if owner != "run_subprocess":
+                    direct.append((node.lineno, owner))
+            self.generic_visit(node)
+
+    Visitor().visit(tree)
+    assert direct == [], f"subprocess.run outside run_subprocess: {direct}"
+
+
+def test_run_subprocess_is_used_in_source() -> None:
+    src = FETCH_PY.read_text(encoding="utf-8")
+    assert "def run_subprocess(" in src
+    assert src.count("run_subprocess(") >= 5

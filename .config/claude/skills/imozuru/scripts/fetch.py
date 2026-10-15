@@ -22,6 +22,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -37,6 +38,8 @@ ALLOWED_URL_SCHEMES = frozenset({"http", "https"})
 # 外部コマンドの既定上限。OCR・字幕取得はページ/動画単位で長くなりうるので別値。
 SUBPROCESS_TIMEOUT = 120
 YT_DLP_TIMEOUT = 300
+OCR_MAX_PAGES = 40
+OCR_TOTAL_TIMEOUT = 600
 # 本文ではなく壁に当たったと分かる言い回し。小文字で照合する。
 WALL_PATTERNS = (
     "404 not found",
@@ -60,21 +63,40 @@ def ensure_http_url(url: str) -> None:
         )
 
 
+def _coerce_captured(value, *, text_mode: bool, encoding: str, default):
+    """TimeoutExpired の stdout/stderr を CompletedProcess の型に合わせる。"""
+    if value is None:
+        return default
+    if text_mode and isinstance(value, (bytes, bytearray)):
+        return bytes(value).decode(encoding, errors="replace")
+    if not text_mode and isinstance(value, str):
+        return value.encode(encoding, errors="replace")
+    return value
+
+
 def run_subprocess(cmd: list[str], *, timeout: int = SUBPROCESS_TIMEOUT, **kwargs):
     """subprocess.run に timeout を必須化し、TimeoutExpired を完了オブジェクトに畳む。
 
     呼び手は returncode / stdout を見るだけなので、タイムアウト時は returncode=124、
     stdout/stderr を空（または timeout 文言）にして通常経路へ戻す。
     """
+    text_mode = bool(kwargs.get("encoding") or kwargs.get("text"))
+    encoding = kwargs.get("encoding") or "utf-8"
     try:
         return subprocess.run(cmd, timeout=timeout, **kwargs)
     except subprocess.TimeoutExpired as exc:
-        stdout = getattr(exc, "stdout", None) or (
-            "" if kwargs.get("encoding") or kwargs.get("text") else b""
+        empty = "" if text_mode else b""
+        timeout_msg = "timeout" if text_mode else b"timeout"
+        stdout = _coerce_captured(
+            exc.stdout, text_mode=text_mode, encoding=encoding, default=empty
         )
-        stderr = getattr(exc, "stderr", None) or (
-            "timeout" if kwargs.get("encoding") or kwargs.get("text") else b"timeout"
+        stderr = _coerce_captured(
+            exc.stderr, text_mode=text_mode, encoding=encoding, default=timeout_msg
         )
+        if text_mode and not stderr:
+            stderr = "timeout"
+        if not text_mode and not stderr:
+            stderr = b"timeout"
         return subprocess.CompletedProcess(
             cmd, 124, stdout=stdout, stderr=stderr
         )
@@ -172,32 +194,43 @@ def ocr_pdf(pdf: Path) -> str:
     英語だけ（入っている言語データが eng のみ）。1ページずつ 200dpi の画像にして読む。
     OCR の誤りは残るので、.txt の先頭に OCR だと書いて、読む人が原本と照らせるようにする。
     pdftoppm か tesseract が無ければ何もせず空を返す（呼び手が FAIL に無いコマンドを書く）。
+    長大 PDF で止まらないよう OCR_MAX_PAGES / OCR_TOTAL_TIMEOUT で打ち切る。
     """
     if missing("pdftoppm", "tesseract"):
         return ""
     tmp = pdf.parent / f".{pdf.stem}-ocr"
     tmp.mkdir(exist_ok=True)
+    started = time.monotonic()
     ppm = run_subprocess(
         ["pdftoppm", "-r", "200", "-png", str(pdf), str(tmp / "p")],
         check=False,
         stderr=subprocess.DEVNULL,
+        timeout=min(SUBPROCESS_TIMEOUT, OCR_TOTAL_TIMEOUT),
     )
     if ppm.returncode == 124:
         shutil.rmtree(tmp, ignore_errors=True)
         return ""
     pages = []
-    for img in sorted(tmp.glob("p-*.png")):
+    for img in sorted(tmp.glob("p-*.png"))[:OCR_MAX_PAGES]:
+        if time.monotonic() - started >= OCR_TOTAL_TIMEOUT:
+            img.unlink(missing_ok=True)
+            break
+        remaining = max(1, int(OCR_TOTAL_TIMEOUT - (time.monotonic() - started)))
         res = run_subprocess(
             ["tesseract", str(img), "-", "-l", "eng"],
             capture_output=True,
             encoding="utf-8",
             errors="replace",
+            timeout=min(SUBPROCESS_TIMEOUT, remaining),
         )
         if res.returncode == 124:
             img.unlink(missing_ok=True)
-            continue
+            break
         pages.append(f"=== page {img.stem.split('-')[-1]} ===\n{res.stdout}")
         img.unlink()
+    # 上限超過で残ったページ画像を掃除
+    for leftover in tmp.glob("p-*.png"):
+        leftover.unlink(missing_ok=True)
     shutil.rmtree(tmp, ignore_errors=True)
     text = "\n".join(pages)
     out = pdf.with_suffix(".txt")
