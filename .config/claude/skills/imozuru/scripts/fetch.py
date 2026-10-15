@@ -33,6 +33,10 @@ from pathlib import Path
 MIN_TEXT_CHARS = 3000
 MIN_HTML_CHARS = 1000
 MAX_BYTES = 40_000_000
+ALLOWED_URL_SCHEMES = frozenset({"http", "https"})
+# 外部コマンドの既定上限。OCR・字幕取得はページ/動画単位で長くなりうるので別値。
+SUBPROCESS_TIMEOUT = 120
+YT_DLP_TIMEOUT = 300
 # 本文ではなく壁に当たったと分かる言い回し。小文字で照合する。
 WALL_PATTERNS = (
     "404 not found",
@@ -45,6 +49,35 @@ WALL_PATTERNS = (
     "are you a robot",
     "captcha",
 )
+
+
+def ensure_http_url(url: str) -> None:
+    """http/https 以外のスキームを拒否する（file:// や javascript: の SSRF 回避）。"""
+    scheme = urllib.parse.urlparse(url).scheme.lower()
+    if scheme not in ALLOWED_URL_SCHEMES:
+        raise ValueError(
+            f"unsupported URL scheme: {scheme or '(empty)'} (http/https only)"
+        )
+
+
+def run_subprocess(cmd: list[str], *, timeout: int = SUBPROCESS_TIMEOUT, **kwargs):
+    """subprocess.run に timeout を必須化し、TimeoutExpired を完了オブジェクトに畳む。
+
+    呼び手は returncode / stdout を見るだけなので、タイムアウト時は returncode=124、
+    stdout/stderr を空（または timeout 文言）にして通常経路へ戻す。
+    """
+    try:
+        return subprocess.run(cmd, timeout=timeout, **kwargs)
+    except subprocess.TimeoutExpired as exc:
+        stdout = getattr(exc, "stdout", None) or (
+            "" if kwargs.get("encoding") or kwargs.get("text") else b""
+        )
+        stderr = getattr(exc, "stderr", None) or (
+            "timeout" if kwargs.get("encoding") or kwargs.get("text") else b"timeout"
+        )
+        return subprocess.CompletedProcess(
+            cmd, 124, stdout=stdout, stderr=stderr
+        )
 
 
 class _Redirect308(urllib.request.HTTPRedirectHandler):
@@ -65,7 +98,8 @@ _OPENER = urllib.request.build_opener(_Redirect308)
 
 
 def download(url: str) -> tuple[bytes, str]:
-    """URL を取りに行き、本体と Content-Type を返す。"""
+    """URL を取りに行き、本体と Content-Type を返す。http/https 以外は拒否する。"""
+    ensure_http_url(url)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 imozuru"})
     with _OPENER.open(req, timeout=90) as res:
         return res.read(MAX_BYTES), res.headers.get("Content-Type", "")
@@ -123,8 +157,11 @@ def pdf_to_text(pdf: Path) -> str:
     if missing("pdftotext"):
         return ""
     out = pdf.with_suffix(".txt")
-    subprocess.run(["pdftotext", "-layout", "-enc", "UTF-8", str(pdf), str(out)], check=False,
-                   stderr=subprocess.DEVNULL)
+    run_subprocess(
+        ["pdftotext", "-layout", "-enc", "UTF-8", str(pdf), str(out)],
+        check=False,
+        stderr=subprocess.DEVNULL,
+    )
     return out.read_text(encoding="utf-8", errors="replace") if out.exists() else ""
 
 
@@ -140,15 +177,28 @@ def ocr_pdf(pdf: Path) -> str:
         return ""
     tmp = pdf.parent / f".{pdf.stem}-ocr"
     tmp.mkdir(exist_ok=True)
-    subprocess.run(["pdftoppm", "-r", "200", "-png", str(pdf), str(tmp / "p")],
-                   check=False, stderr=subprocess.DEVNULL)
+    ppm = run_subprocess(
+        ["pdftoppm", "-r", "200", "-png", str(pdf), str(tmp / "p")],
+        check=False,
+        stderr=subprocess.DEVNULL,
+    )
+    if ppm.returncode == 124:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return ""
     pages = []
     for img in sorted(tmp.glob("p-*.png")):
-        res = subprocess.run(["tesseract", str(img), "-", "-l", "eng"],
-                             capture_output=True, encoding="utf-8", errors="replace")
+        res = run_subprocess(
+            ["tesseract", str(img), "-", "-l", "eng"],
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if res.returncode == 124:
+            img.unlink(missing_ok=True)
+            continue
         pages.append(f"=== page {img.stem.split('-')[-1]} ===\n{res.stdout}")
         img.unlink()
-    tmp.rmdir()
+    shutil.rmtree(tmp, ignore_errors=True)
     text = "\n".join(pages)
     out = pdf.with_suffix(".txt")
     out.write_text("（OCR で起こした本文。誤りが残るので、引用は原本の PDF で確かめる）\n\n" + text,
@@ -244,10 +294,15 @@ def html_to_md(url: str, out: Path, body: bytes | None = None, ctype: str = "") 
     body を渡されたら取り直さずにそれを使う（ax が無いときの二重の取得を避ける）。
     ctype は body の Content-Type。文字コードの名乗りを読むのに使う。
     """
+    ensure_http_url(url)
     if HAS_AX:
-        res = subprocess.run(["ax", url, "--md", "--all"], capture_output=True,
-                             encoding="utf-8", errors="replace")
-        text = res.stdout
+        res = run_subprocess(
+            ["ax", url, "--md", "--all"],
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        text = "" if res.returncode == 124 else res.stdout
     else:
         if body is None:
             body, ctype = download(url)
@@ -269,8 +324,11 @@ def ax_save(url: str, out: Path) -> bool:
     そのとき html_to_md は PDF の中身を文字として .md に書いてしまうので、ここで丸ごと取り直す。
     ax が無いときは urllib で取り直す。
     """
+    ensure_http_url(url)
     if HAS_AX:
-        subprocess.run(["ax", url, "-o", str(out)], capture_output=True)
+        res = run_subprocess(["ax", url, "-o", str(out)], capture_output=True)
+        if res.returncode == 124:
+            return False
     else:
         try:
             out.write_bytes(download(url)[0])
@@ -296,16 +354,26 @@ def youtube_to_md(url: str, out: Path) -> str:
     同じファイル名で出てくるので、まず手動だけで取り、無いときだけ自動で取り直す。
     題名の出力は --encoding で UTF-8 に決める。Windows でパイプに出すと、決めない限り cp932 になる。
     """
+    ensure_http_url(url)
     tmp = out.parent / f".{out.stem}-subs"
     tmp.mkdir(exist_ok=True)
     kind = "手動"
+    meta = subprocess.CompletedProcess([], 1, stdout="", stderr="")
     for flag in ("--write-subs", "--write-auto-subs"):
-        meta = subprocess.run(
+        meta = run_subprocess(
             ["yt-dlp", "--no-update", "--skip-download", flag, "--encoding", "utf-8",
              "--sub-langs", "ja,en", "--sub-format", "vtt", "--no-simulate",
              "--print", "%(title)s\t%(uploader)s\t%(upload_date)s",
              "-o", str(tmp / "v.%(ext)s"), url],
-            capture_output=True, encoding="utf-8", errors="replace")
+            timeout=YT_DLP_TIMEOUT,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if meta.returncode == 124:
+            shutil.rmtree(tmp, ignore_errors=True)
+            out.write_text(f"# (timeout)\n\n{url}\n\n", encoding="utf-8")
+            return ""
         if any(tmp.glob("*.vtt")):
             break
         kind = "自動（誤変換あり・引用は動画で確かめる）"
@@ -356,6 +424,12 @@ def save_verified(saved: Path, kept: Path, destination: Path) -> Path:
 
 def fetch_source(sources: Path, name: str, url: str, destination: Path) -> int:
     """sources は今回の取得専用の一時置き場。取得・変換・検査中は保存済みの原文に触れない。"""
+
+    try:
+        ensure_http_url(url)
+    except ValueError as e:
+        print(f"FAIL\t{name}\t{e}")
+        return 1
 
     if X_POST.match(url):
         print(f"FAIL\t{name}\tX はログインの壁で本文が取れない（URL を map.md に残す）")

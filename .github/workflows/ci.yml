@@ -23,5 +23,7 @@ jobs:
       - name: Claude scripts tests
         working-directory: .config/claude/scripts
         run: uvx pytest tests/ -q
+      - name: imozuru skill script tests
+        run: uvx pytest .config/claude/skills/imozuru/scripts/tests/ -q
       - name: Root harness tests
         run: uvx pytest tests/ -q

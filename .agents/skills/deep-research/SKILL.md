@@ -1,14 +1,14 @@
 ---
 platforms: [agents, codex]
 name: deep-research
-description: '深度调研的多实例（多 Agent）编排工作流：把一个调研目标拆成可并行子目标，用 Codex CLI（`codex exec`）在默认 `workspace-write` 沙箱内运行子进程；联网与采集优先使用已安装的 skills，其次使用 MCP 工具；用脚本聚合子结果并分章精修，最终交付“成品报告文件路径 + 关键结论/建议摘要”。用于：系统性网页/资料调研、竞品/行业分析、批量链接/数据集分片检索、长文写作与证据整合，或用户提及“深度调研/Deep Research/Wide Research/多 Agent 并行调研/多进程调研”等场景。Do NOT use for: 芋づる式の原文ドロップのみ（use /imozuru）、セットアップへの知見統合（use /absorb）。'
+description: "調査目標を並列の子目標に分解し、Codex CLI（`codex exec`）を既定の workspace-write サンドボックスで走らせる多 Agent 深掘りワークフロー。ネット取得は installed skills 優先、次に MCP。子結果を集約・章立て精修し、成果物ファイルのパスと結論要約を渡す。Triggers: '深度调研', 'Deep Research', 'Wide Research', '多 Agent 並列調査', '多プロセス調査'. Do NOT use for: 要約なしの原文ドロップ専用、個人 harness への知見統合専用フロー。"
 ---
 
 # Deep Research（深度调研编排工作流）
 
 把“深度调研”当作一个可复用、可并行的生产流程来执行：主控负责澄清目标、拆解子目标、调度子进程、聚合与精修；子进程负责采集/抽取/局部分析并输出结构化 Markdown 素材；最终交付物必须是独立成品文件而不是聊天贴文。
 
-**边界（本仓库）**: 只要「原文を要約せず芋づる式に落とす」なら Claude の `/imozuru`。insights 付きレポートを並列調査で仕上げるのが本 skill。セットアップへ取り込むなら `/absorb`。
+**境界（本リポジトリ）**: 本 skill は洞察付きレポートの並列仕上げ。要約せず原文だけを手元に落とす調査や、個人 harness への統合フローは対象外（Claude Code 専用 skill へ振り分けない。Codex からは使えないため）。
 
 **关键约束（必须遵守）**
 

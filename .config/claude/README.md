@@ -59,6 +59,7 @@ graph TB
             AG_REV["Review<br><small>code-reviewer, codex-reviewer</small>"]
             AG_IMPL["Implement<br><small>debugger</small>"]
             AG_MAINT["Maintenance<br><small>doc-gardener</small>"]
+            AG_RESEARCH["Research<br><small>imozuru-search, gemini-explore</small>"]
             AG_EVOLVE["AutoEvolve<br><small>autoevolve-core</small>"]
         end
 
@@ -119,7 +120,7 @@ graph TB
 │
 ├── agents/                       # サブエージェント定義 (22個 + _archived 10)
 ├── commands/                     # カスタムコマンド (31個)
-├── skills/                       # 再利用可能なスキル (122個: native ~58 + installed 64)
+├── skills/                       # 再利用可能なスキル (122個: native ~57 + installed 65)
 ├── rules/                        # 言語・ドメイン別ルール (11個)
 │   └── common/                   # 共通ルール (品質・セキュリティ・テスト)
 ├── references/                   # 参照ドキュメント (162個)
@@ -251,7 +252,7 @@ Hooks は Claude Code のライフサイクルイベントに対して自動的�
 
 ---
 
-## Skills カテゴリマップ (122個: native ~58 + installed 64)
+## Skills カテゴリマップ (122個: native ~57 + installed 65)
 
 Skills は**知識ベース + ワークフロー定義**。コマンド(`/skill名`)で呼び出すか、エージェントが内部で参照する。
 運用上は [references/skill-inventory.md](references/skill-inventory.md) の tier を優先する。
@@ -423,11 +424,12 @@ Agents は**専門実行コンテキスト**。Skills が知識を提供し、Ag
 | `test-engineer` | テスト戦略・カバレッジ |
 | `edge-case-hunter` | 境界値・異常系検出 |
 
-### Routing & Infra (1)
+### Routing & Infra (2)
 
 | エージェント | 役割 |
 |-------------|------|
 | `gemini-explore` | Gemini 1M 分析 |
+| `imozuru-search` | `/imozuru` 検索役（Write/Edit 禁止・URL 掃き出しのみ） |
 
 ### AutoEvolve (1)
 

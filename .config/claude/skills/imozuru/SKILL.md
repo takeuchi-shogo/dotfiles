@@ -1,16 +1,15 @@
 ---
 name: imozuru
-description: "未知分野を用語・人・場の地図から引用連鎖で掘り、要約せず原文を ~/research/<話題>/sources/ に落とす。要る主張に原文が付くか飽和したら止める。Triggers: '芋づる式', 'imozuru', 'キャッチアップ', '原文で落として', '界隈の用語', 'literature dive', 'canonical papers', '掘ってほしい', '/imozuru', '新着見て'. Do NOT use for: 事実1つの確認、手元ファイル検索、要約・解説の作成、並列レポート仕上げ（use $deep-research）、セットアップへの知見統合（use /absorb）。"
+description: "未知分野を用語・人・場の地図から引用連鎖で掘り、要約せず原文を ~/research/<話題>/sources/ に落とす。要る主張に原文が付くか飽和したら止める。Triggers: '芋づる式に調べて', 'imozuru', '原文で落として', '界隈の用語と人から掘って', 'literature dive', 'canonical papers', '/imozuru', '/imozuru watch'. Do NOT use for: 事実1つの確認、手元ファイル検索、要約・解説の作成、並列レポート仕上げ（use $deep-research）、セットアップへの知見統合（use /absorb）。"
 license: MIT
 origin: external
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch
 user-invocable: true
 argument-hint: "[watch] <話題や問い>"
 metadata:
   pattern: pipeline
   category: research
   source: "https://github.com/MaryCache/imozuru"
-  inspired-by: MaryCache/imozuru
   chain:
     upstream: []
     downstream: ["/absorb (原文を読んだあと harness へ取り込むとき)", "obsidian-knowledge (Vault に残すとき)"]
@@ -46,7 +45,7 @@ metadata:
 - **未知分野のキャッチアップ**: 「全然わからないから流れを掘って」「界隈の呼び方と人から」
 - **原典・定番資料が欲しい**: 「論文とか先行研究を漁って」「元ネタを原文で」
 - **論文の無い実践知**: MIX・塗り方など、個人ブログや動画を引用連鎖でたどる
-- **見張り**: 「〇〇の新着見て」「/imozuru watch <話題>」
+- **見張り**: 「/imozuru watch <話題>」「この話題の場の新着を RSS で」
 
 ## Chain
 
@@ -82,7 +81,11 @@ watch/      … 見張りの結果。<日付>.md
 
 ## 検索役のサブエージェント
 
-0周目と各周の探索は、**検索役のサブエージェント**に任せる（以下「検索役」）。広く掃く探索は途中で判断が要らないので、軽いモデル（Haiku など）で足りる。読み取りと Web 検索だけ使える定義があればそれを使う。サブエージェントを使えない環境では、エージェントが自分で同じ頼み方の中身を順に検索する。
+0周目と各周の探索は、**検索役**に任せる（以下「検索役」）。
+
+- **設定で write を封じる**: `Agent(subagent_type: "imozuru-search")` を使う。`imozuru-search` は `disallowedTools: Edit, Write, NotebookEdit` によりファイル書き込み不可（プロンプトだけの禁止にしない）
+- 読み取り・Web 検索・報告のみ。ダウンロードと `map.md` 更新は親の仕事
+- サブエージェントを使えない環境では、親が同じ頼み方の中身を順に検索する（親は Write を持つが、検索フェーズではファイルを書かない）
 
 ## 流れ
 
@@ -195,7 +198,7 @@ map.md を下の書式で作り、**問い**と、答えるのに要る**主張*
 
 ## 見張る（watch モード）
 
-掘ったあとの地図の「場」を、新着を追う先にする（Ellis の monitoring）。「〇〇の新着見て」「今週の〇〇まとめて」「/imozuru watch <話題>」で入る。**ユーザーが頼んだときだけ回す**。定期に自動で回すかは、何回か思いどおりに動いてから決める。
+掘ったあとの地図の「場」を、新着を追う先にする（Ellis の monitoring）。「/imozuru watch <話題>」や「この話題の場の新着を RSS で」で入る。**ユーザーが頼んだときだけ回す**。定期に自動で回すかは、何回か思いどおりに動いてから決める。
 
 1. **地図があるか見る**。`~/research/<話題>/map.md` が無いとき（いきなり「React の新着」と頼まれたとき）は、2つの入り方がある
    - **急ぐとき（既定）**: 定番の場所をそのまま足して先に見張る。公式のブログ・GitHub の releases、Qiita のタグ、Zenn のトピック、名前の知れた個人ブログ。地図は最小（問い・場・人だけ）で作り、あとで育てる。React の試しでは 0周目の検索役2本に約2分かかり、結果は定番を直接足したのとほぼ同じだった

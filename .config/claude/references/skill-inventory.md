@@ -87,6 +87,7 @@ workflow 自体を改善するときに使う。
 - domain skill は task が明確に一致したときだけ使う
 - `Personal Ops` は coding task の default にしない
 - 新しい skill を増やす前に、既存 tier のどこへ入るかを決める
+- **件数カウント**: `origin: external`（例: imozuru）は native ではなく installed 側。現状の目安は native ~57 + installed 65 = 122
 - **Category 偏りチェック**: 1 tier に Reference / Doc / MCP-Enhance のいずれかが集中していたら抽象階層を見直す
 
 ## Relationships (SkillNet)
