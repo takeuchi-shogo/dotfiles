@@ -82,7 +82,7 @@ task validate           # 全 dotfiles の検証 (config, README, symlink)
 ├── CLAUDE.md              # グローバル指示 (Progressive Disclosure)
 ├── settings.json          # hooks, permissions, env
 ├── agents/                # 23 専門エージェント + _archived 10 (code-reviewer, debugger, etc.)
-├── skills/                # 121 スキル (native ~57 + installed 64: review, commit, spec, epd, etc.)
+├── skills/                # 122 スキル (native ~57 + installed 65: review, commit, spec, epd, imozuru, etc.)
 ├── commands/              # 31 スラッシュコマンド (/review, /spec, /rpi, etc.)
 ├── scripts/
 │   ├── policy/            # ガードレール hooks (golden-check, protect-linter-config, etc.)

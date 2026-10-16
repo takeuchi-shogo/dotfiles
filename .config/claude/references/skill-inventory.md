@@ -40,6 +40,7 @@ Claude Code の skill を、常用すべき core と必要時だけ使う option
 | codex | tool-wrapper | MCP-Enhance |
 | gemini | tool-wrapper | MCP-Enhance |
 | epd | pipeline | Workflow |
+| imozuru | pipeline | Workflow |
 
 ## Domain / Specialist
 
@@ -86,6 +87,7 @@ workflow 自体を改善するときに使う。
 - domain skill は task が明確に一致したときだけ使う
 - `Personal Ops` は coding task の default にしない
 - 新しい skill を増やす前に、既存 tier のどこへ入るかを決める
+- **件数カウント**: `origin: external`（例: imozuru）は native ではなく installed 側。現状の目安は native ~57 + installed 65 = 122
 - **Category 偏りチェック**: 1 tier に Reference / Doc / MCP-Enhance のいずれかが集中していたら抽象階層を見直す
 
 ## Relationships (SkillNet)
@@ -123,6 +125,15 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 |---------|---------|------|
 | codex-review | review | どちらもコードレビュー。100行超では codex-review を先行 |
 
+### related_but_distinct
+
+一見似るが成果物と止めどきが違い、置換しない。ルーティング用。
+
+| Skill A | Skill B | 違い |
+|---------|---------|------|
+| imozuru | absorb | imozuru は原文を要約せず落とす。absorb は外部知見をセットアップへ統合する |
+| imozuru | deep-research (`.agents/skills/`) | imozuru は引用連鎖で原典を集める。deep-research は並列調査から洞察レポートを仕上げる |
+
 ### compose_with
 
 独立だが頻繁に連携。出力→入力の関係。
@@ -130,6 +141,7 @@ skill-audit の conflict 検出と triage-router のスキル選択に使用。
 | Source | Target | 理由 |
 |--------|--------|------|
 | spec | spike | spec で仕様定義 → spike で実験実装 |
+| imozuru | absorb | 原文を掘ったあと、harness に取り込むなら absorb へ渡す |
 
 ### ガイダンス
 
