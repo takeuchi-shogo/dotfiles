@@ -14,6 +14,7 @@ effort: high
 
 1. Codex CLI の出力（Findings + Review Scores）
 2. `## Verdict` — PASS / NEEDS_FIX / BLOCK のいずれか
+3. `## Filtered` — 再現性基準で落とした候補 (`[FILTERED reviewer-not-reproducible] file:line - 要約 — reason: ...`)。0 件でも省略せず `(none)`
 
 Codex CLI がエラーで実行できない場合も、エラー内容を報告し Verdict を出力すること。
 **Verdict なしでの終了は許されない。**
@@ -81,6 +82,7 @@ Before reporting any MUST or CONSIDER finding, verify it meets ALL of the follow
 - **Not a style preference**: Is this an actual defect, not a taste-based suggestion?
 
 If a finding fails any of these checks, downgrade it to ASK (with the question explicit) or remove it. Do NOT pad the report with unverified suspicions — the goal is high-signal review, not exhaustive nitpicking.
+Findings you remove must be listed under a `## Filtered` section, one per line: `[FILTERED reviewer-not-reproducible] file:line - description — reason: ...`; write `(none)` if nothing was removed. Findings downgraded to ASK are not listed there.
 
 Output format — one line per finding:
 [MUST/CONSIDER/NIT/ASK/FYI/PLAN] file:line - description

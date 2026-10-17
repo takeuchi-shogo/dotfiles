@@ -70,7 +70,7 @@
 
 ### coding — コーディング
 
-- [自動コードレビュー](concepts/automated-code-review.md) — 自動コードレビューは、AI エージェントとハーネスを組み合わせて、コード品質・可読性・仕様準拠を自動検証するプロセスである。 | sources: 17 | established
+- [自動コードレビュー](concepts/automated-code-review.md) — 自動コードレビューは、AI エージェントとハーネスを組み合わせて、コード品質・可読性・仕様準拠を自動検証するプロセスである。 | sources: 19 | established
 - [仕様駆動開発](concepts/spec-driven-development.md) — 仕様駆動開発（Spec-Driven Development）は、AI エージェントへの実装委譲前に仕様書を人間がレビューし、コードではなく意図・制約・受け入れ基準を合意するアプローチである。 | sources: 10 | established
 - [サージカルチェンジ](concepts/surgical-changes.md) — サージカルチェンジは、Andrej Karpathy が提唱する LLM コーディング原則の一つで、タスクに無関係な改善・フォーマット変更・スコープ外の編集を行わないという規律である。 | sources: 2 | emerging
 

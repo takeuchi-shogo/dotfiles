@@ -2,9 +2,9 @@
 title: 自動コードレビュー
 topics: [coding, evaluation]
 sources: [2026-03-26-findy-code-review-readability-analysis.md, 2026-03-26-harness-engineering-human-review-analysis.md, 2026-03-30-code-review-graph-analysis.md, 2026-04-01-spec-and-verify-analysis.md]
-updated: 2026-08-06
+updated: 2026-10-17
 last_validated: 2026-08-06
-source_count: 18
+source_count: 19
 confidence: established
 ---
 
@@ -36,6 +36,7 @@ confidence: established
 - **finding 出力契約は消費側が要求する一箇所に置く**: レビュー agent が N 個いて severity 語彙をそれぞれ独自に定義すると、統合側 (Synthesis) が全語彙を知らないまま集計することになる。canonical severity は Critical / Important / Watch の 3 値とし、各 agent の表記（MUST / 🔴 / 必須 / CRITICAL 等）は対応表で変換する `[EXTRACTED, conf=75]`
 - **confidence は 1 種類ではない**: 自己申告の subjective confidence（0-100）と、証拠充足で決まる evidence confidence（security-reviewer 系）を `confidence_kind` で区別しないと、本来 subjective 型にのみ効かせるべき数値フィルタが evidence 型にも適用されてしまう `[EXTRACTED, conf=70]`
 - **レビュアーの完走判定は終端マーカーで行う**: ログの `exit_status` フィールドは tool_response の有無だけで決まる実装だと、途中で切れた応答も completed と記録される silent success になり得る。出力末尾に終端マーカー（例: `Coverage:` 行）を必須化し、欠落を未完走の判定材料にする設計のほうが頑健 `[EXTRACTED, conf=70]`
+- **reviewer の除外は「評価される側の黒塗り」に当たる**: 合成者が評価される側と同一だと、除外された指摘の痕跡が消える。そこで事前定義カテゴリ (`FILTER_RULES`) に当たる除外に限り、`review-output.md` の `**除外**:` 行と `review/filtered.jsonl` に痕跡を残す。保存先を `learnings/` の外に置くのは、`learnings/*.jsonl` を glob する集計 3 本に混ざらないため。unknown (`## Filtered` 節が無く件数が分からない状態) は、契約に `## Filtered` 節を持つ code-reviewer / codex-reviewer の欠落に限る。分析: [An update on independent evaluators](../../research/2026-10-17-anthropic-independent-evaluators-absorb-analysis.md) `[EXTRACTED, conf=75]`
 
 ## 実践的な適用
 
@@ -67,3 +68,4 @@ dotfiles リポジトリでは `/review` スキルが Codex Review Gate（codex-
 - [nrslib サーヴァントエンジニアリング — レビュー速度改善](../../research/2026-06-12-servant-engineering-absorb-analysis.md) — 計測基盤・アサーション検出等8件を統合プラン化
 - [Agentic Code Review essay (Sean Goedecke系)](../../research/2026-06-17-agentic-code-review-absorb-analysis.md) — テスト改変挙動ドリフト検出ルールをtest-analyzerに追加
 - [How to Review AI-Generated Code Like a Senior Developer (Mari)](../../research/2026-06-20-review-ai-code-mari-absorb-analysis.md) — 実データ性能観点のrouting漏れのみ採用
+- [An update on independent evaluators (Anthropic)](../../research/2026-10-17-anthropic-independent-evaluators-absorb-analysis.md) — 評価者の公表の自由と黒塗り検証を、/review の除外記録に翻訳

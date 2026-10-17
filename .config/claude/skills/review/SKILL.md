@@ -427,6 +427,7 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 15. **Codex 指摘の必須対応**: codex-reviewer の Critical/Important 指摘は個別に対応を明記すること。「他レビューアーが指摘していない」「外れ値に見える」は無視の理由にならない。Codex の deep reasoning による指摘は verdict 計算から除外してはならない（`[DEEP_REASONING]` タグで常時保持）。詳細: `references/review-consensus-policy.md` Section 4
 16. **Synthesis Output Verbosity Constraint (MoA verbosity guard)**: マルチレビューア合成レポートは MoA (Mixture of Agents) パターンの既知の failure mode として**冗長化**しやすい (Wang et al. ICLR 2025 — failure mode #2)。以下を守る: (a) 各 finding の finding フィールドは 2 文以内、(b) 同じ根本原因の指摘は 1 件に集約し「他 N 件も同様指摘」と注記、(c) Watch 指摘は 5 件を超えたら「上位 5 件のみ表示、残りは review-findings.jsonl で参照」に切り詰める、(d) 合成レポート全体が 400 行を超える場合は「Critical のみ詳細、Important は 1 行要約」に圧縮する。verbosity は Signal 低下を意味し、ユーザー体験を損なう。詳細: `references/review-consensus-policy.md` Section 5
 17. **ペルソナレビューアーの統合**: reviewer-ma/mu の指摘は `[PERSONA]` タグを付与する。verdict 計算には含めるが、外れ値検出（ルール13）の対象外とする。ペルソナ指摘が汎用レビューアーと重複する場合、ペルソナ側の具体的な修正案（suggestion ブロック、リファクタリングコード）を統合レポートに採用する
+18. **除外した指摘の記録**: ルール 7/9 で落とした指摘と reviewer の `## Filtered` 節の行は `emit_filtered_findings` で `review/filtered.jsonl` に保存し、`templates/review-output.md` の `**除外**:` 行に件数を出す。出力契約に `## Filtered` 節を持つ reviewer (code-reviewer / codex-reviewer) が節を出さなかったら `unknown` と書き、0 に寄せない。手順: `references/findings-and-feedback.md` Step 6
 
 ### Layer 0 優先ルール（Trust Verification Policy）
 
@@ -678,6 +679,8 @@ git commit 時に `claude-hooks` post-bash (review-feedback 機能) が指摘の
 - 保存スクリプト (Python + emit_review_finding)
 - ID 生成ルール `rf-YYYY-MM-DD-NNN`
 - failure_mode マッピング (FM-XXX、`references/failure-taxonomy.md` 参照)
+
+除外した指摘の保存手順 (`emit_filtered_findings`) も同ファイルの Step 6 にある。
 
 詳細フロー: [`references/findings-and-feedback.md`](references/findings-and-feedback.md) の Step 6 セクション。
 

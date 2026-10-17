@@ -11,6 +11,7 @@
 
 **変更概要**: {変更行数}行 / {ファイル数}ファイル / {言語リスト}
 **レビューアー**: {起動したレビューアーのリスト}
+**除外**: {n} 件 (low-confidence {a} / linter-duplicate {c} / reviewer {k}) / unknown: {reviewer 名 or none}
 
 ### Critical（修正必須）
 
@@ -71,6 +72,12 @@
 > **ASK/FYI の扱い**: `ASK`（設計意図の質問）と `FYI`（参考情報）は修正を要求しないため、
 > スコアに関わらず **Watch** にマッピングする。判定（PASS/NEEDS_FIX/BLOCK）には影響しない。
 
+### 除外の集計
+
+`**除外**:` 行は 0 件でも省略しない。`## Filtered` 節を出力契約に持つ reviewer (code-reviewer / codex-reviewer) ごとに、
+節に行あり → その件数、`(none)` → 0、節なし → `unknown` に名前を出す。unknown を 0 に寄せない。
+契約に節を持たない reviewer は数えず、unknown にも載せない。中身の保存は `references/findings-and-feedback.md` Step 6。
+
 ### 指摘がない場合
 
 ```markdown
@@ -78,6 +85,7 @@
 
 **変更概要**: {変更行数}行 / {ファイル数}ファイル / {言語リスト}
 **レビューアー**: {起動したレビューアーのリスト}
+**除外**: {n} 件 (low-confidence {a} / linter-duplicate {c} / reviewer {k}) / unknown: {reviewer 名 or none}
 
 指摘なし。
 

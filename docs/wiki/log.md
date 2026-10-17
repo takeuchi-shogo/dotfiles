@@ -2422,3 +2422,10 @@
 - 棚卸し: monotaro absorb (2026-08-06) を partially-superseded に。T3/T5 は #259 の skill 退役で消えていた。plan を completed へ
 - follow-up: #281 (pre_tool.rs の回避経路) / #282 (untracked のみの変更で gate 不発)
 - 分析: docs/research/2026-10-17-anthropic-solving-code-review-absorb-analysis.md
+
+## [2026-10-17] ingest | Anthropic「An update on independent evaluators」
+
+- ソース: https://www.anthropic.com/news/an-update-on-independent-evaluators
+- 判定: Gap 0個, Partial 1個, Already 3個, N/A 2個 (family なし)
+- 取り込み: /review の除外記録 (`emit_filtered_findings()` → `review/filtered.jsonl`、`review-output.md` の `**除外**:` 行、reviewer 出力契約の `## Filtered` 節)。drift 2 件は Issue #280
+- 分析: docs/research/2026-10-17-anthropic-independent-evaluators-absorb-analysis.md
