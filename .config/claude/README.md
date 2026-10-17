@@ -63,7 +63,7 @@ graph TB
             AG_EVOLVE["AutoEvolve<br><small>autoevolve-core</small>"]
         end
 
-        PLUGINS["Plugins (16)<br><small>superpowers, pr-review-toolkit, etc.</small>"]
+        PLUGINS["Plugins (20)<br><small>superpowers, pr-review-toolkit, etc.</small>"]
     end
 
     subgraph external["External CLI Tools"]
@@ -652,7 +652,7 @@ flowchart TB
 
 ---
 
-## Plugins (16個)
+## Plugins (20個)
 
 | プラグイン | 提供元 | 機能 |
 |-----------|--------|------|
@@ -660,15 +660,19 @@ flowchart TB
 | `pr-review-toolkit` | claude-code-plugins | PR レビュー用の専門エージェント群 |
 | `frontend-design` | claude-code-plugins | 高品質 UI デザイン生成 |
 | `code-simplifier` | claude-plugins-official | コードの簡素化・リファクタリング |
+| `code-modernization` | claude-plugins-official | レガシーコード近代化（評価・計画・実装・挙動証明） |
+| `skill-creator` | claude-plugins-official | スキル作成パイプライン |
 | `playground` | claude-plugins-official | インタラクティブ HTML プレイグラウンド |
 | `claude-md-management` | claude-plugins-official | CLAUDE.md 管理 |
 | `ralph-loop` | claude-plugins-official | Ralph Loop（反復自律実行） |
 | `codex` | openai-codex | Codex 連携 plugin |
 | `obsidian` | obsidian-skills | Obsidian 連携 skill 群 |
-| `mattpocock-skills` | mattpocock-skills | TDD/triage/prototype 等の skill 群 |
-| `terraform-skill` | antonbabenko-terraform | Terraform 支援 |
+| `mattpocock-skills` | mattpocock | TDD/triage/prototype 等の skill 群 |
 | `warp` | claude-code-warp | Warp 連携 |
 | `datadog` | kw-marketplace | Datadog 連携 |
+| `ponytail` | ponytail | PonyTail 連携 |
+| `show-me` | skills | 可視化・図解サポート |
+| `document-skills` | anthropic-agent-skills | ドキュメント作成 skill 群 |
 | `gopls-lsp` / `rust-analyzer-lsp` / `typescript-lsp` | claude-plugins-official | 言語 LSP サポート |
 
 ---
