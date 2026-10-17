@@ -87,6 +87,12 @@ PR 作成前に以下のいずれかが未実行と判断したら **実行を�
 
 ## Test plan
 - [ ] テスト項目のチェックリスト
+
+## Risk
+- 壊れうる挙動と影響範囲（なければ「なし」と書く）
+
+## How to revert
+- 戻し方（例: `git revert <sha>`、設定反映が要るなら `task nix:switch` など）
 ```
 
 ## Guidelines

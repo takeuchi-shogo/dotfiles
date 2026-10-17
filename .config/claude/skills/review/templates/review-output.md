@@ -66,7 +66,7 @@
 | MUST, Critical, CRITICAL, 90-100         | **Critical**   | ≥90        |
 | CONSIDER, Important, HIGH, 80-89         | **Important**  | ≥80        |
 | NIT, ASK, FYI, Watch, MEDIUM, 60-79     | **Watch**      | ≥60        |
-| （60未満はフィルタ済みのため出力しない） | —              | <60 除外   |
+| （subjective の 60 未満はフィルタ済み。evidence 型は数値で除外しない） | — | <60 除外 (subjective のみ) |
 
 > **ASK/FYI の扱い**: `ASK`（設計意図の質問）と `FYI`（参考情報）は修正を要求しないため、
 > スコアに関わらず **Watch** にマッピングする。判定（PASS/NEEDS_FIX/BLOCK）には影響しない。

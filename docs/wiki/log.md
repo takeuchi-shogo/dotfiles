@@ -2340,7 +2340,7 @@
 - 取り込み: T1 finding 出力契約の fail-fast 検証 / T2 終端マーカーによる完走判定 / T3 ラウンド間 ledger / T4 hook の一括 add false positive / T5 投稿前の file:line 照合
 - 実測: review-findings.jsonl 157 件のうち severity 欠落 121 件 (77%)、残り 36 件が 15 値に散在
 - 分析: docs/research/2026-08-06-monotaro-makasetaro-review-harness-absorb-analysis.md
-- プラン: docs/plans/active/2026-08-06-review-finding-contract-plan.md
+- プラン: docs/plans/completed/2026-08-06-review-finding-contract-plan.md
 
 ## [2026-08-16] ingest | Coding Agent の「All tests passed」を信用する前に確認したい5項目
 
@@ -2413,3 +2413,12 @@
 - ソース: https://tech.every.tv/entry/2026/10/08/121837
 - 判定: Gap 0個, Partial 2個, Already 1個, N/A 2個 (family なし)
 - 取り込み: Skill scope 第3分類 / stale 修正2件 (MEMORY init-project, cwd-routing-matrix) / capability gate は plan 化
+
+## [2026-10-17] ingest | Anthropic「Solving code review at Anthropic」
+
+- ソース: https://claude.dev/blog/solving-code-review-at-anthropic/
+- 判定: Gap 2 / Partial 7 / Already 4 / N/A 2 (family code-review-best-practices, N=13, PASS warning)。Phase 2.5 の Codex 批評で #3・#7 を Already に、#13・#16 を Partial に訂正
+- 取り込み: harness review PASS フラグをコンテンツ fingerprint に束縛 (+ retry 安全弁の bypass 修正) / /review に findings ledger と `[OUT-OF-DIFF]` / reviewer eval に clean 対照 6 件 / PR テンプレに Risk・How to revert
+- 棚卸し: monotaro absorb (2026-08-06) を partially-superseded に。T3/T5 は #259 の skill 退役で消えていた。plan を completed へ
+- follow-up: #281 (pre_tool.rs の回避経路) / #282 (untracked のみの変更で gate 不発)
+- 分析: docs/research/2026-10-17-anthropic-solving-code-review-absorb-analysis.md
