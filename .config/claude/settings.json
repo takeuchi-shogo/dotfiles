@@ -339,6 +339,12 @@
           },
           {
             "type": "command",
+            "command": "python3 $HOME/.claude/scripts/policy/review-persistence-gate.py",
+            "timeout": 10,
+            "statusMessage": "Review persistence check..."
+          },
+          {
+            "type": "command",
             "command": "/opt/homebrew/bin/node $HOME/.claude/scripts/runtime/session-save.js",
             "timeout": 15
           },
