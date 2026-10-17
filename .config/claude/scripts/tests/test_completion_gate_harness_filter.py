@@ -9,6 +9,7 @@ session_id は hook の stdin payload から来るので、引数で受け取れ
 import importlib.util
 import io
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -84,7 +85,11 @@ def test_preexisting_changes_excluded_but_new_ones_kept(tmp_path, monkeypatch):
 
     class _Result:
         returncode = 0
-        stdout = "CLAUDE.md\n.config/claude/settings.json\nREADME.md\n"
+        stdout = (
+            chr(0)
+            .join(["CLAUDE.md", ".config/claude/settings.json", "README.md", ""])
+            .encode()
+        )
 
     monkeypatch.setattr(mod.subprocess, "run", lambda *a, **k: _Result())
 
@@ -145,24 +150,33 @@ def test_gate_finds_the_pass_flag_review_actually_writes(tmp_path, monkeypatch):
     harness_review_flag.py は session_id を持たず常に未フィルタの全 harness diff を
     鍵にする。gate 側が session-filtered な部分集合で鍵を作ると、セッション開始時から
     dirty なツリーでは両者のハッシュが一致しない。正当な PASS を取っても永久に
-    block し続ける。
+    block し続ける。実 git repo で fingerprint まで通す。
     """
+    repo = tmp_path / "repo"
+    new_file = ".config/claude/scripts/runtime/session-load.js"
+    (repo / ".config/claude/scripts/runtime").mkdir(parents=True)
+    (repo / "CLAUDE.md").write_text("a\n")
+    (repo / new_file).write_text("a\n")
+    for cmd in (
+        ["init", "-q"],
+        ["config", "user.email", "t@example.com"],
+        ["config", "user.name", "t"],
+        ["add", "."],
+        ["commit", "-qm", "init"],
+    ):
+        subprocess.run(["git", *cmd], cwd=repo, check=True, capture_output=True)
+    (repo / "CLAUDE.md").write_text("b\n")
+    (repo / new_file).write_text("b\n")
+
     _write_snapshot(tmp_path, "sid-1", ["CLAUDE.md"])
     state_dir = tmp_path / ".claude" / "session-state"
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("CLAUDE_SESSION_STATE_DIR", str(state_dir))
     monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
-
-    new_file = ".config/claude/scripts/runtime/session-load.js"
-
-    class _Result:
-        returncode = 0
-        stdout = f"CLAUDE.md\n{new_file}\nREADME.md\n"
+    monkeypatch.chdir(repo)
 
     mod = _load()
     lib = _load_flag_lib()
-    monkeypatch.setattr(mod.subprocess, "run", lambda *a, **k: _Result())
-    monkeypatch.setattr(lib.subprocess, "run", lambda *a, **k: _Result())
 
     # 開始後に変わったのは 1 件だけ → block 判定はその集合で行う
     assert mod._get_changed_harness_files("sid-1") == [new_file]

@@ -16,6 +16,7 @@ Output: JSON with additionalContext on stdout (if tests fail)
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import pathlib
@@ -26,6 +27,22 @@ import subprocess
 import sys
 import tempfile
 import time
+
+# Single implementation of the review-flag key lives in lib/ (shared with /review).
+# Resolved from __file__ here because the sys.path insert further down runs too late.
+_FLAG_LIB_PATH = (
+    pathlib.Path(__file__).resolve().parent.parent / "lib" / "harness_review_flag.py"
+)
+_flag_lib_error = ""
+try:
+    _spec = importlib.util.spec_from_file_location(
+        "harness_review_flag", _FLAG_LIB_PATH
+    )
+    _flag_lib = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_flag_lib)
+except Exception as exc:  # noqa: BLE001
+    _flag_lib = None
+    _flag_lib_error = f"{_FLAG_LIB_PATH}: {type(exc).__name__}: {exc}"
 
 MAX_RETRIES = 2
 
@@ -50,32 +67,7 @@ COMPLETION_PROMISE = os.environ.get("COMPLETION_PROMISE", "")
 # Max iterations before Ralph Loop allows stop (prevents infinite loops)
 MAX_RALPH_ITERATIONS = int(os.environ.get("MAX_RALPH_ITERATIONS", "7"))
 
-# Harness Review Gate — mandatory review for harness file changes
-# Path markers that identify harness files (matched against git diff output)
-# NOTE: "claude/settings" scopes to Claude Code settings only
-# (.config/claude/settings.json, .claude/settings.json, .claude/settings.local.json)
-# and avoids false positives on .config/zed/settings.json, .vscode/settings.json etc.
-HARNESS_PATH_MARKERS = [
-    "scripts/policy/",
-    "scripts/runtime/",
-    "claude/settings",
-    "CLAUDE.md",
-    "/agents/",
-]
-# NOTE: Must NOT use tempfile.gettempdir(). The flag is written by
-# harness_review_flag.py (run via /review's sandboxed Bash, TMPDIR=/tmp/claude-*)
-# but read here in the unsandboxed Stop hook (macOS default /var/folders/.../T).
-# Those resolve to different dirs, so a tempfile-keyed flag is never found and the
-# gate blocks forever after a legitimate PASS. Key it to the stable session-state
-# dir (same pattern as EDIT_COUNTER_FILE) so both contexts agree.
-# Must stay in sync with harness_review_flag.py:FLAG_DIR.
-HARNESS_REVIEW_FLAG_DIR = os.path.join(
-    os.environ.get(
-        "CLAUDE_SESSION_STATE_DIR",
-        os.path.join(os.environ.get("HOME", ""), ".claude", "session-state"),
-    ),
-    "harness-review",
-)
+# Harness Review Gate — path markers and flag dir live in lib/harness_review_flag.py
 
 # Review Gate — edit count threshold for review reminder
 REVIEW_EDIT_THRESHOLD = 10
@@ -608,23 +600,7 @@ def _get_changed_harness_files(session_id: str = "") -> list[str]:
     (parallel session edits). Without filter, multi-session workflow triggers
     false-positive Harness Review Gate warnings on each session.
     """
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            cwd=os.getcwd(),
-        )
-        if result.returncode != 0:
-            return []
-        all_changed = [
-            f.strip()
-            for f in result.stdout.splitlines()
-            if f.strip() and any(m in f for m in HARNESS_PATH_MARKERS)
-        ]
-    except (subprocess.TimeoutExpired, OSError):
-        return []
+    all_changed = _flag_lib.get_changed_harness_files()
 
     # Session-aware filter: exclude files that were already modified at session start
     initial = _get_session_initial_harness(session_id)
@@ -633,30 +609,34 @@ def _get_changed_harness_files(session_id: str = "") -> list[str]:
     return all_changed
 
 
-def _harness_review_flag_path(harness_files: list[str]) -> str:
-    """Flag file path keyed by changed harness file set."""
-    import hashlib
-
-    os.makedirs(HARNESS_REVIEW_FLAG_DIR, exist_ok=True)
-    content = "\n".join(sorted(harness_files))
-    h = hashlib.md5(content.encode()).hexdigest()[:12]
-    return os.path.join(HARNESS_REVIEW_FLAG_DIR, f"pass-{h}")
-
-
 def _check_harness_review_gate(session_id: str = "") -> dict | None:
     """Mandatory review gate for harness file changes.
 
     Blocks stop if harness files changed without /review PASS.
-    The flag is keyed by the exact set of changed files, so
-    additional edits after review invalidate the flag.
+    The flag is keyed by a content fingerprint (harness_review_flag.fingerprint),
+    so any edit after review invalidates it. A fingerprint failure blocks (fail
+    closed). The fingerprint covers the unfiltered changed set, as /review writes.
     """
+    if _flag_lib is None:
+        return {
+            "decision": "block",
+            "reason": (
+                "[Harness Review Gate] review flag ライブラリを読み込めません:\n"
+                f"  {_flag_lib_error}\n\n"
+                "lib/harness_review_flag.py を直すまで停止できません (fail closed)。"
+            ),
+        }
+
     harness_files = _get_changed_harness_files(session_id)
     if not harness_files:
         return None
 
-    flag = _harness_review_flag_path(_get_changed_harness_files())
-    if os.path.exists(flag):
-        return None
+    try:
+        flag = _flag_lib.flag_path(_flag_lib.get_changed_harness_files())
+        if os.path.exists(flag):
+            return None
+    except (RuntimeError, OSError) as exc:
+        print(f"[Harness Review Gate] {exc}", file=sys.stderr)
 
     flist = "\n".join(f"  - {f}" for f in harness_files[:10])
     extra = ""
@@ -1454,6 +1434,10 @@ def main() -> None:
 
     # Safety valve: if we've hit max retries, allow stop (or handback)
     if retries >= MAX_RETRIES and not incomplete:
+        harness_block = _check_harness_review_gate(session_id)
+        if harness_block:
+            json.dump(harness_block, sys.stdout)
+            return
         _reset_retries()
         if COMPLETION_MODE == "graduated":
             report = _generate_handback_report()
@@ -1527,7 +1511,6 @@ def main() -> None:
     # --- Harness Review Gate (mandatory) ---
     harness_block = _check_harness_review_gate(session_id)
     if harness_block:
-        _set_retry_count(retries + 1)
         json.dump(harness_block, sys.stdout)
         return
 

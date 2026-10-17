@@ -1,5 +1,5 @@
 {
-	"description": "レビューエージェント評価用の Synthetic Tuples。各タプルは意図的にバグを含むコードと、検出すべきレビューアー・failure_mode を定義する。",
+	"description": "レビューエージェント評価用の Synthetic Tuples。各タプルは意図的にバグを含むコードと、検出すべきレビューアー・failure_mode を定義する。 case_kind=\"clean\" のタプルは欠陥を含まない known-clean 対照 (expected_findings=0, failure_mode=NONE) で、レビューアーの false positive 測定用。case_kind 未指定または \"defect\" は従来どおり欠陥入りタプル。",
 	"tuples": [
 		{
 			"id": "eval-001",
@@ -270,6 +270,72 @@
 			"expected_reviewer": "security-reviewer",
 			"description": "Command injection via subprocess",
 			"code": "import subprocess\ndef run_lint(filename: str) -> str:\n    result = subprocess.run(f'eslint {filename}', shell=True, capture_output=True, text=True)\n    return result.stdout"
+		},
+		{
+			"id": "eval-031",
+			"language": "typescript",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: API error logged and rethrown, response status checked (near-miss of eval-001)",
+			"code": "async function fetchUser(id: string) {\n  try {\n    const res = await fetch(`/api/users/${id}`);\n    if (!res.ok) {\n      throw new Error(`fetchUser ${id} failed: HTTP ${res.status}`);\n    }\n    return await res.json();\n  } catch (e) {\n    logger.error(\"fetchUser failed\", { id, error: e });\n    throw e;\n  }\n}"
+		},
+		{
+			"id": "eval-032",
+			"language": "typescript",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: parallel fetches with all failures surfaced via Promise.all",
+			"code": "async function loadDashboard(userId: string) {\n  const [profile, orders] = await Promise.all([\n    fetchProfile(userId),\n    fetchOrders(userId),\n  ]);\n  return { profile, orders };\n}"
+		},
+		{
+			"id": "eval-033",
+			"language": "go",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: nil guard before dereference (near-miss of eval-002)",
+			"code": "func GetUserName(u *User) (string, error) {\n\tif u == nil {\n\t\treturn \"\", errors.New(\"user is nil\")\n\t}\n\treturn u.Name, nil\n}"
+		},
+		{
+			"id": "eval-034",
+			"language": "go",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: write error returned with wrapping (near-miss of eval-006)",
+			"code": "func SaveConfig(path string, data []byte) error {\n\tif err := os.WriteFile(path, data, 0o644); err != nil {\n\t\treturn fmt.Errorf(\"save config %s: %w\", path, err)\n\t}\n\treturn nil\n}"
+		},
+		{
+			"id": "eval-035",
+			"language": "python",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: parameterized SQL query (near-miss of eval-004)",
+			"code": "def get_user(name: str) -> dict | None:\n    query = \"SELECT * FROM users WHERE name = ?\"\n    return db.execute(query, (name,)).fetchone()"
+		},
+		{
+			"id": "eval-036",
+			"language": "python",
+			"case_kind": "clean",
+			"failure_mode": "NONE",
+			"severity": "none",
+			"expected_reviewer": null,
+			"expected_findings": 0,
+			"description": "Clean: subprocess with argument list, no shell (near-miss of eval-030)",
+			"code": "import subprocess\ndef run_lint(filename: str) -> str:\n    result = subprocess.run(['eslint', '--', filename], capture_output=True, text=True, check=False)\n    return result.stdout"
 		}
 	]
 }
