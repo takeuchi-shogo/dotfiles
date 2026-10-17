@@ -209,7 +209,8 @@
     "x-docs"
   ],
   "skillOverrides": {
-    "stop-ai-slop-jp": "user-invocable-only"
+    "stop-ai-slop-jp": "user-invocable-only",
+    "natural-japanese": "user-invocable-only"
   },
   "hooks": {
     "SessionStart": [
@@ -857,7 +858,8 @@
     "mattpocock-skills@mattpocock": true,
     "ponytail@ponytail": true,
     "show-me@skills": true,
-    "document-skills@anthropic-agent-skills": true
+    "document-skills@anthropic-agent-skills": true,
+    "yomiyasu@yomiyasu": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -900,6 +902,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/skills"
+      }
+    },
+    "yomiyasu": {
+      "source": {
+        "source": "github",
+        "repo": "nanaism/yomiyasu"
       }
     }
   },

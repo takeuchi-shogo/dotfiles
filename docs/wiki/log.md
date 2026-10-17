@@ -2429,3 +2429,9 @@
 - 判定: Gap 0個, Partial 1個, Already 3個, N/A 2個 (family なし)
 - 取り込み: /review の除外記録 (`emit_filtered_findings()` → `review/filtered.jsonl`、`review-output.md` の `**除外**:` 行、reviewer 出力契約の `## Filtered` 節)。drift 2 件は Issue #280
 - 分析: docs/research/2026-10-17-anthropic-independent-evaluators-absorb-analysis.md
+
+## [2026-10-17] ingest | nanaism/yomiyasu (AI 生成日本語の推敲 Agent Skill)
+
+- ソース: https://github.com/nanaism/yomiyasu (v2.0.1, commit 1bc21f9c)
+- 判定: Gap 5, Partial 3, Already 1 (強化案は取り下げ), N/A 0
+- 取り込み: yomiyasu を plugin で導入 / natural-japanese を user-invocable-only / japanese-ai-prose.md に「書き換えで意味を変えない」節。Codex 批評は usage limit で未取得
