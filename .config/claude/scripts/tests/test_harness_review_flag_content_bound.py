@@ -7,6 +7,7 @@
 """
 
 import importlib.util
+import json
 import subprocess
 from pathlib import Path
 
@@ -27,6 +28,14 @@ def _git(repo, *args):
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
 
 
+def _write_metrics(tmp_path, entries):
+    d = tmp_path / "data" / "learnings"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "review-metrics.jsonl").write_text(
+        "".join(json.dumps(e) + "\n" for e in entries)
+    )
+
+
 @pytest.fixture
 def env(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
@@ -41,6 +50,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.chdir(repo)
     monkeypatch.setenv("CLAUDE_SESSION_STATE_DIR", str(tmp_path / "state"))
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("AUTOEVOLVE_DATA_DIR", str(tmp_path / "data"))
     monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
     return repo, _load("hrf", "lib/harness_review_flag.py")
 
@@ -83,7 +93,9 @@ def test_binary_change_detected(env):
     assert lib.check_flag() is False
 
 
-def test_fingerprint_failure_blocks_and_write_exits_nonzero(env, monkeypatch, capsys):
+def test_fingerprint_failure_blocks_and_write_exits_nonzero(
+    env, monkeypatch, capsys, tmp_path
+):
     _, lib = env
     lib.write_flag()
 
@@ -92,7 +104,8 @@ def test_fingerprint_failure_blocks_and_write_exits_nonzero(env, monkeypatch, ca
 
     monkeypatch.setattr(lib, "_git", boom)
     assert lib.check_flag() is False
-    monkeypatch.setattr("sys.argv", ["x", "write"])
+    _write_metrics(tmp_path, [{"run_id": "rv-1", "verdict": "PASS"}])
+    monkeypatch.setattr("sys.argv", ["x", "write", "--run-id", "rv-1"])
     with pytest.raises(SystemExit) as e:
         lib.main()
     assert e.value.code == 1
