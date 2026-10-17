@@ -65,6 +65,47 @@ FINDINGS_JSON
 **failure_mode マッピング**: `references/failure-taxonomy.md` を参照し、指摘内容に最も近い FM-XXX を付与する。
 マッチしない場合は空文字列。
 
+### 除外した指摘の保存
+
+Step 4 ルール 7/8/9 と reviewer の `## Filtered` 節で落とした指摘は、最終レポートに載らないぶん別に残す。
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '$HOME/.claude/scripts/lib')
+from session_events import emit_filtered_findings
+import json
+
+items = json.loads(sys.stdin.read())
+emit_filtered_findings(items)
+print(f'{len(items)} filtered saved')
+" <<'FILTERED_JSON'
+[
+  {
+    "id": "rff-{date}-{seq:03d}",
+    "reviewer": "{reviewer_agent_name}",
+    "file": "{file_path}",
+    "line": {line_number},
+    "finding": "{落とした指摘の要約}",
+    "filter_rule": "synthesis-low-confidence",
+    "reason": "{なぜ当たると判断したか}",
+    "run_id": "rv-{date}-{seq:03d}"
+  }
+]
+FILTERED_JSON
+```
+
+| field | 必須 | 内容 |
+|---|---|---|
+| `id` | ○ | `rff-YYYY-MM-DD-NNN` |
+| `reviewer` / `file` / `finding` | ○ | 非空 str |
+| `filter_rule` | ○ | 下記のいずれか |
+| `line` | - | int (bool 不可)。行番号が無ければキーごと省く |
+| `reason` / `run_id` | - | 非空 str。`run_id` は review-metrics との join キー |
+
+`filter_rule`: `synthesis-low-confidence` (ルール 7) / `synthesis-outside-diff` (8) / `synthesis-linter-duplicate` (9) / `reviewer-false-positive` / `reviewer-not-reproducible`
+
+保存先は `review/filtered.jsonl`。`learnings/` に置くと `review-findings.jsonl` の pending 判定や `learnings/*.jsonl` を全件読む集計 3 本に混ざるため分けている。0 件なら呼ばなくてよい。
+
 ---
 
 ## Step 6.5: Explicit Feedback Collection（指摘精度の明示的フィードバック）

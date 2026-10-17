@@ -16,6 +16,7 @@ from session_events import (
     compute_importance,
     compute_skill_score,
     emit_event,
+    emit_filtered_findings,
     emit_review_feedback,
     emit_review_finding,
     emit_review_findings,
@@ -920,3 +921,108 @@ class TestReviewGateRound2:
             }
         )
         assert (tmp_path / "learnings" / "review-metrics.jsonl").exists()
+
+
+# --- 除外された指摘 (review/filtered.jsonl) テスト ---
+
+
+def _filtered(**overrides) -> dict:
+    """契約を満たす最小の除外記録。契約: findings-and-feedback.md Step 6。"""
+    base = {
+        "id": "rff-2026-10-17-001",
+        "reviewer": "cr",
+        "file": "api.go",
+        "finding": "x",
+        "filter_rule": "synthesis-low-confidence",
+    }
+    base.update(overrides)
+    return base
+
+
+class TestEmitFilteredFindings:
+    """除外記録の保存。
+
+    前提: AUTOEVOLVE_DATA_DIR は tmp_path。
+    検証: review/filtered.jsonl にだけ書かれ、learnings/ と pending 判定を汚さない。
+    """
+
+    def test_valid_batch_lands_outside_learnings(self, tmp_path):
+        emit_filtered_findings(
+            [_filtered(), _filtered(id="rff-2026-10-17-002", line=3)]
+        )
+        lines = (tmp_path / "review" / "filtered.jsonl").read_text().splitlines()
+        assert [json.loads(row)["id"] for row in lines] == [
+            "rff-2026-10-17-001",
+            "rff-2026-10-17-002",
+        ]
+        assert "timestamp" in json.loads(lines[0])
+        assert not (tmp_path / "learnings").exists()
+
+    def test_secret_in_value_is_redacted_on_disk(self, tmp_path):
+        secret = "AKIA" + "IOSFODNN7EXAMPLE"
+        emit_filtered_findings([_filtered(reason=f"token {secret}")])
+        text = (tmp_path / "review" / "filtered.jsonl").read_text()
+        assert secret not in text
+
+    def test_unknown_key_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="unexpected"):
+            emit_filtered_findings([_filtered(extra="x")])
+
+    @pytest.mark.parametrize(
+        "bad_id", ["rff-x", "rff-2026-10-17-1", "rff-2026-1-17-001"]
+    )
+    def test_malformed_id_rejected(self, tmp_path, bad_id):
+        with pytest.raises(ValueError, match="id"):
+            emit_filtered_findings([_filtered(id=bad_id)])
+
+    def test_pending_findings_unchanged(self, tmp_path):
+        emit_review_finding(_finding(id="rf-keep"))
+        before = read_pending_findings()
+        emit_filtered_findings([_filtered()])
+        assert read_pending_findings() == before
+
+    def test_unknown_filter_rule_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="filter_rule"):
+            emit_filtered_findings([_filtered(filter_rule="made-up")])
+
+    @pytest.mark.parametrize("field", ["finding", "file", "reviewer"])
+    @pytest.mark.parametrize("bad", ["missing", ""])
+    def test_required_text_fields_rejected(self, tmp_path, field, bad):
+        item = _filtered()
+        if bad == "missing":
+            del item[field]
+        else:
+            item[field] = bad
+        with pytest.raises(ValueError, match=field):
+            emit_filtered_findings([item])
+
+    def test_id_without_prefix_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="id"):
+            emit_filtered_findings([_filtered(id="rf-2026-10-17-001")])
+
+    def test_bool_line_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="line"):
+            emit_filtered_findings([_filtered(line=True)])
+
+    @pytest.mark.parametrize("field", ["reason", "run_id"])
+    def test_empty_optional_strings_rejected(self, tmp_path, field):
+        with pytest.raises(ValueError, match=field):
+            emit_filtered_findings([_filtered(**{field: ""})])
+
+    def test_one_bad_item_appends_nothing(self, tmp_path):
+        emit_filtered_findings([_filtered()])
+        path = tmp_path / "review" / "filtered.jsonl"
+        before = path.read_text()
+        with pytest.raises(ValueError, match=r"\[1\]"):
+            emit_filtered_findings(
+                [_filtered(id="rff-2026-10-17-002"), _filtered(file="")]
+            )
+        assert path.read_text() == before
+
+    def test_empty_list_creates_no_file(self, tmp_path):
+        emit_filtered_findings([])
+        assert not (tmp_path / "review").exists()
+
+    def test_non_list_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="list"):
+            emit_filtered_findings(_filtered())

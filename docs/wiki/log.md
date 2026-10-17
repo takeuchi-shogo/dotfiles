@@ -2413,3 +2413,10 @@
 - ソース: https://tech.every.tv/entry/2026/10/08/121837
 - 判定: Gap 0個, Partial 2個, Already 1個, N/A 2個 (family なし)
 - 取り込み: Skill scope 第3分類 / stale 修正2件 (MEMORY init-project, cwd-routing-matrix) / capability gate は plan 化
+
+## [2026-10-17] ingest | Anthropic「An update on independent evaluators」
+
+- ソース: https://www.anthropic.com/news/an-update-on-independent-evaluators
+- 判定: Gap 0個, Partial 1個, Already 3個, N/A 2個 (family なし)
+- 取り込み: /review の除外記録 (`emit_filtered_findings()` → `review/filtered.jsonl`、`review-output.md` の `**除外**:` 行、reviewer 出力契約の `## Filtered` 節)。drift 2 件は Issue #280
+- 分析: docs/research/2026-10-17-anthropic-independent-evaluators-absorb-analysis.md

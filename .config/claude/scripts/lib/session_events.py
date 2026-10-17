@@ -485,6 +485,96 @@ def emit_review_findings(findings: list[dict]) -> None:
         append_to_learnings("review-findings", finding)
 
 
+FILTER_RULES = (
+    "synthesis-low-confidence",  # SKILL.md Step 4 ルール 7
+    "synthesis-outside-diff",  # ルール 8
+    "synthesis-linter-duplicate",  # ルール 9
+    "reviewer-false-positive",  # code-reviewer Pass 2
+    "reviewer-not-reproducible",  # code-reviewer / codex-reviewer の再現性基準
+)
+_FILTERED_FIELDS = frozenset(
+    {"id", "reviewer", "file", "line", "finding", "filter_rule", "reason", "run_id"}
+)
+_FILTERED_ID_RE = re.compile(r"rff-\d{4}-\d{2}-\d{2}-\d{3}")
+
+
+def validate_filtered_finding(item: dict) -> None:
+    """除外記録が契約を満たすか検証し、違反なら ValueError を投げる。
+
+    契約: skills/review/references/findings-and-feedback.md Step 6
+    の除外記録スキーマ。正規化はしない。
+    """
+    if not isinstance(item, dict):
+        raise ValueError(f"filtered finding must be a dict, got {type(item).__name__}")
+
+    unexpected = set(item) - _FILTERED_FIELDS
+    if unexpected:
+        raise ValueError(
+            f"filtered に unexpected なキー {sorted(unexpected)}。"
+            f" 許可: {sorted(_FILTERED_FIELDS)}"
+        )
+
+    item_id = item.get("id")
+    if not isinstance(item_id, str) or not _FILTERED_ID_RE.fullmatch(item_id):
+        raise ValueError(f"filtered.id must match rff-YYYY-MM-DD-NNN, got {item_id!r}")
+
+    for field in ("reviewer", "file", "finding"):
+        value = item.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"filtered.{field} must be a non-empty str, got {value!r}")
+
+    line = item.get("line")
+    if line is not None and (isinstance(line, bool) or not isinstance(line, int)):
+        raise ValueError(f"filtered.line must be int when present, got {line!r}")
+
+    rule = item.get("filter_rule")
+    if rule not in FILTER_RULES:
+        raise ValueError(
+            f"filtered.filter_rule must be one of {FILTER_RULES}, got {rule!r}"
+        )
+
+    for field in ("reason", "run_id"):
+        if field in item and (
+            not isinstance(item[field], str) or not item[field].strip()
+        ):
+            raise ValueError(
+                f"filtered.{field} must be a non-empty str when present,"
+                f" got {item[field]!r}"
+            )
+
+
+def emit_filtered_findings(items: list[dict]) -> None:
+    """除外された指摘を review/filtered.jsonl に保存する (全件検証してから書く)。
+
+    learnings/ には置かない: learnings/*.jsonl は trace_sampler / evaluator_metrics /
+    sync-tacit-knowledge が全件 glob で読むため、除外記録が混ざる。
+    append_to_learnings と違い I/O エラーは握り潰さず送出する (記録の欠落を隠さない)。
+    空リストは正常系 (0 件の除外) で、何も書かずファイルも作らない。
+    """
+    if not isinstance(items, list):
+        raise ValueError(f"items must be a list, got {type(items).__name__}")
+    for index, item in enumerate(items):
+        try:
+            validate_filtered_finding(item)
+        except ValueError as exc:
+            raise ValueError(f"items[{index}] が契約違反: {exc}") from exc
+    if not items:
+        return
+    session_id = _resolve_session_id()
+    lines = [
+        json.dumps(
+            redact_obj({"timestamp": _now_iso(), **item, "session_id": session_id}),
+            ensure_ascii=False,
+        )
+        + "\n"
+        for item in items
+    ]
+    path = _get_data_dir() / "review" / "filtered.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write("".join(lines))
+
+
 def emit_review_metrics(metrics: dict) -> None:
     """レビュー run 単位の計測を review-metrics.jsonl に保存する。
 

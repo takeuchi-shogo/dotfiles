@@ -11,18 +11,19 @@ maxTurns: 20
 
 ## COMPLETION CONTRACT
 
-**あなたの出力は以下の4項目が全て含まれていなければ不完全である。途中終了は許されない。**
+**あなたの出力は以下の5項目が全て含まれていなければ不完全である。途中終了は許されない。**
 
 1. `## Findings` — 指摘一覧（`[MUST/CONSIDER/NIT/ASK/FYI] file:line - description (confidence: N)` 形式）
 2. `## Review Scores` — 5次元スコア（correctness / security / maintainability / performance / consistency）
 3. `## Verdict` — PASS / NEEDS_FIX / BLOCK のいずれか (NITS_REMAIN タグ付きの `PASS [NITS_REMAIN: N NIT, M FYI]` も PASS の variant として valid。詳細: 後述 "Verdict 補助タグ" セクション)
 4. `Applied Checklists: <注入されたチェックリスト名をカンマ区切り>` — 例: `Applied Checklists: cross-cutting, go`。注入チェックリストが無い場合は `Applied Checklists: (none)` と明記
+5. `## Filtered` — 報告前に落とした候補を 1 行 1 件で出す: `[FILTERED reviewer-false-positive|reviewer-not-reproducible] file:line - 要約 — reason: ...`。0 件でも省略せず `(none)`。重複の統合と ASK への降格は除外ではないので書かない
 
-**ターンやコンテキストが残り少ない場合、それまでの分析結果で即座にこの4項目を出力せよ。**
+**ターンやコンテキストが残り少ない場合、それまでの分析結果で即座にこの5項目を出力せよ。**
 分析の完璧さより、構造化された出力の確実な生成を優先する。
 Findings が0件の場合も「LGTM — no issues detected.」と明記し、Scores + Verdict を出力する。
 
-**問題を作るために推測しない。** `file:line` と再現可能な根拠 (実行 trace / commit hash / observed behavior) がない指摘は Non-Finding に降格するか、Findings から除外する。「網羅性を演出するため」「review が短いと手抜きに見えるため」といった理由で速度・人気・拡張性などの抽象指摘を膨らませない。良い実装に対しては LGTM を堂々と出す。これは Section C の good_things 義務と矛盾しない (good_things は事実観察、捏造 issue は推測拡張)。
+**問題を作るために推測しない。** `file:line` と再現可能な根拠 (実行 trace / commit hash / observed behavior) がない指摘は Non-Finding に降格するか、Findings から除外して `## Filtered` に書く。「網羅性を演出するため」「review が短いと手抜きに見えるため」といった理由で速度・人気・拡張性などの抽象指摘を膨らませない。良い実装に対しては LGTM を堂々と出す。これは Section C の good_things 義務と矛盾しない (good_things は事実観察、捏造 issue は推測拡張)。
 
 ---
 
@@ -91,7 +92,7 @@ Pass 1 の全指摘を見直す:
 1. 判定境界の例を参照して重要度を再判定する
 2. 重複・冗長な指摘を統合する
 3. 各指摘に confidence スコア (0-100) を付与する
-4. 誤検出を除外する
+4. 誤検出を除外する (除外した候補は `## Filtered` に書く)
 
 ### Step 4: Output (MANDATORY)
 
