@@ -104,4 +104,4 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ## 未解決
 
-- 並行 worktree `worktrees/nj-tpl`(branch `docs/natural-japanese-templates`)が natural-japanese の自動発火を前提にしている可能性がある。マージ前に確認する。
+- なし。並行 worktree `worktrees/nj-tpl`(branch `docs/natural-japanese-templates`)を確認した (2026-10-18)。差分は完了済み計画 `docs/plans/completed/2026-09-28-natural-japanese-claude-config-plan.md` を閉じる 1 ファイルだけで、natural-japanese の自動発火は前提にしていない。
