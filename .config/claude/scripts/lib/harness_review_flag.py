@@ -6,16 +6,23 @@ Used by:
   - completion-gate.py: checks flag existence (via shared constants)
 
 Usage:
-  python3 harness_review_flag.py write   # write PASS flag
+  python3 harness_review_flag.py write --run-id <run_id>   # write PASS flag
+      (requires a verdict=PASS entry for run_id in review-metrics.jsonl)
   python3 harness_review_flag.py check   # exit 0 if flag exists, 1 otherwise
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from storage import get_data_dir  # stdlib-only; same resolution as session_events
 
 # Single source: completion-gate.py imports these markers and the flag key.
 # "claude/settings" scopes to Claude Code settings only and avoids false
@@ -136,6 +143,28 @@ def flag_path(files: list[str]) -> str:
     return os.path.join(FLAG_DIR, f"pass-{fingerprint(files)}")
 
 
+def has_pass_metrics(run_id: str, fp: str) -> bool:
+    """True if review-metrics.jsonl has a PASS entry for run_id reviewing content fp."""
+    path = Path(get_data_dir()) / "learnings" / "review-metrics.jsonl"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    for line in lines:
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if (
+            isinstance(entry, dict)
+            and entry.get("run_id") == run_id
+            and entry.get("verdict") == "PASS"
+            and entry.get("harness_fingerprint") == fp
+        ):
+            return True
+    return False
+
+
 def write_flag() -> bool:
     """Write PASS flag for current harness changes. Returns True if written."""
     files = get_changed_harness_files()
@@ -160,20 +189,55 @@ def check_flag() -> bool:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        print("Usage: harness_review_flag.py [write|check]")
+        print("Usage: harness_review_flag.py [write --run-id <id>|check|fingerprint]")
         sys.exit(1)
 
     cmd = sys.argv[1]
     if cmd == "write":
+        args = sys.argv[2:]
+        run_id = args[1] if len(args) == 2 and args[0] == "--run-id" else ""
+        if not run_id:
+            print(
+                "[Harness Review Flag] write requires --run-id <run_id>.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        files = get_changed_harness_files()
+        if not files:
+            print("[Harness Review Flag] No harness changes.")
+            return
         try:
-            written = write_flag()
-        except (RuntimeError, OSError) as exc:
+            fp = fingerprint(files)
+        except RuntimeError as exc:
             print(f"[Harness Review Flag] write failed: {exc}", file=sys.stderr)
             sys.exit(1)
-        if written:
-            print("[Harness Review Flag] PASS flag written.")
-        else:
-            print("[Harness Review Flag] No harness changes.")
+        if not has_pass_metrics(run_id, fp):
+            print(
+                f"[Harness Review Flag] review-metrics.jsonl has no verdict=PASS"
+                f" entry for run_id={run_id} with harness_fingerprint={fp}."
+                " Record Run Metrics for the current content first"
+                " (emit_review_metrics, see skills/review/SKILL.md Run Metrics).",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        try:
+            os.makedirs(FLAG_DIR, exist_ok=True)
+            with open(os.path.join(FLAG_DIR, f"pass-{fp}"), "w") as f:
+                f.write("PASS")
+        except OSError as exc:
+            print(f"[Harness Review Flag] write failed: {exc}", file=sys.stderr)
+            sys.exit(1)
+        print("[Harness Review Flag] PASS flag written.")
+    elif cmd == "fingerprint":
+        files = get_changed_harness_files()
+        if not files:
+            print("[Harness Review Flag] No harness changes.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            print(fingerprint(files))
+        except RuntimeError as exc:
+            print(f"[Harness Review Flag] {exc}", file=sys.stderr)
+            sys.exit(1)
     elif cmd == "check":
         sys.exit(0 if check_flag() else 1)
     else:
