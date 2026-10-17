@@ -537,7 +537,7 @@ Synthesis 完了後、main agent が run 単位の計測を 1 行記録する（
 
 - Step 3 dispatch 前後の `date +%s` から wall-clock duration を概算
 - 各 reviewer の findings 数・confidence 分布を集計
-- `emit_review_metrics()` で `review-metrics.jsonl` に append
+- `emit_review_metrics()` で `review-metrics.jsonl` に append（`run_id` は必須。`rv-YYYY-MM-DD-NNN`。ハーネス変更を含む run は `harness_fingerprint` に `python3 "$HOME/.claude/scripts/lib/harness_review_flag.py" fingerprint` の出力も入れる。Harness Review Flag の write はこの 2 つが現在の内容と一致する PASS 記録を要求する）
 - light tier の run も `reviewers: []` で記録する（light 発火率の計測）
 
 スキーマと記録コマンドの詳細: `references/findings-and-feedback.md` の「Run Metrics」セクション。
@@ -664,10 +664,10 @@ Re-Review は「新たな問題があるか？」を問うが、Validate は「�
 PASS 後、ハーネスファイル（scripts/, settings.json, CLAUDE.md, agents/）が変更対象に含まれていた場合、completion-gate の mandatory review gate を解除するためにフラグを書き出す:
 
 ```bash
-python3 "$HOME/.claude/scripts/lib/harness_review_flag.py" write
+python3 "$HOME/.claude/scripts/lib/harness_review_flag.py" write --run-id <run_id>
 ```
 
-このフラグは変更ファイルセットのハッシュで管理されるため、フラグ書き出し後に追加編集があると自動的に無効化される。
+`review-metrics.jsonl` に同じ `run_id` で、現在の内容と同じ `harness_fingerprint` を持つ `verdict=PASS` 記録が無いと write は失敗する（先に Run Metrics を記録する。過去の PASS の run_id は使い回せない）。このフラグはレビューした内容に束縛されており、write 後に 1 byte でも編集すると無効になる。
 
 ## Step 6: Findings Persistence（フィードバックループ）
 
