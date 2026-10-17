@@ -48,9 +48,9 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 - **Codex**: 未取得。`codex exec` が 2 回失敗した。再試行時の stderr は `ERROR: You've hit your usage limit ... try again at 9:46 PM.`。1 回目の stderr は捨ててしまったため、原因は 2 回目で確認した。
 - **Gemini (agy)**: 1 回目は `--mode plan` で終了コード 0 の空出力(原因は未確認)。plan モードなしの再試行は成功した。結論は「O3(インストールせず cherry-pick)」。
-  - 退けた部分: Zenn の引用が `https://zenn.dev/` というドメインだけで検証できない。「コンテキストの 20% を常時消費する」は誤り(skill は呼び出し時にロードされる)。
+  - 退けた部分: Zenn の引用が `https://zenn.dev/` というドメインだけで検証できない。「コンテキストの 20% を常時消費する」は誤り。SKILL.md 本体は呼び出し時にロードされる。ただし有効な plugin の skill 名と description は毎セッションの skill 一覧に載るので、その分の固定コストはかかる。
   - 受け入れた部分: vendored の lint は patch しない。
-- Codex Review Gate はレート制限の解除まで保留。
+- Codex Review Gate (制限解除後に実行): `VERDICT: BLOCK`。指摘は「repo の settings.json は live に反映されないので provisioning も override も効かない」で、`nix/home/default.nix` の「settings.json は意図的に非管理」と照合して正しいと確認した。反映手順を下の Task 1/2 に明記して対応した。
 
 ## Integration Decisions
 
@@ -74,7 +74,7 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ユーザーは yomiyasu を自動で発火させたい。natural-japanese を常時オンにするつもりはなく、導入形態は plugin を希望した。これを受けた決定は次のとおり。
 
-- yomiyasu を plugin として入れる。`settings.json` の `extraKnownMarketplaces` と `enabledPlugins` に書き、`task claude:plugins` で provisioning する。
+- yomiyasu を plugin として入れる。repo の `settings.json` には新 PC の雛形として書き、この PC の live 設定には CLI で入れる (Task 1)。
 - natural-japanese は `skillOverrides` で `user-invocable-only` にする。トリガーの衝突を止めるため、PR #247 の stop-ai-slop-jp と同じ扱い。
 - 役割分担: yomiyasu は書き上がった下書きの書き直し(自動)。natural-japanese は新規執筆・採点・文体プロファイル(`/natural-japanese` で明示起動)。
 - 採用しないもの: vendoring、hook、検査記録のワークフローを harness に組み込むこと。
@@ -83,12 +83,12 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ### Task 1: yomiyasu を plugin として導入
 - **Files**: `.config/claude/settings.json`(`extraKnownMarketplaces` / `enabledPlugins`)
-- **Changes**: marketplace と plugin を追加。`task claude:plugins` で provisioning する
+- **Changes**: marketplace と plugin を追加。live の `~/.claude/settings.json` は意図的に非管理 (`nix/home/default.nix`) で、repo の値は新 PC で手動 cp するときの雛形にしかならない。この PC には `claude plugin marketplace add nanaism/yomiyasu` と `claude plugin install yomiyasu@yomiyasu --scope user` で入れる
 - **Size**: S
 
 ### Task 2: natural-japanese を user-invocable-only に
 - **Files**: `.config/claude/settings.json`(`skillOverrides`)
-- **Changes**: natural-japanese に `user-invocable-only` を設定
+- **Changes**: natural-japanese に `user-invocable-only` を設定。live にも同じキーを jq で足す (repo から live へ同期されるのは `permissions` だけ)
 - **Size**: S
 
 ### Task 3: 意味を変えない書き換え節の追加
@@ -104,6 +104,4 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ## 未解決
 
-- Codex Review Gate は、usage limit の解除待ち。
-- live の `~/.claude/settings.json` は symlink でなく実ファイル。dotfiles の変更が反映される手順は別途必要(どの手順かは未確認)。
 - 並行 worktree `worktrees/nj-tpl`(branch `docs/natural-japanese-templates`)が natural-japanese の自動発火を前提にしている可能性がある。マージ前に確認する。
