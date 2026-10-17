@@ -1,6 +1,6 @@
 ---
 date: 2026-08-06
-status: active
+status: completed
 source: docs/research/2026-08-06-monotaro-makasetaro-review-harness-absorb-analysis.md
 scale: L
 ---
@@ -114,7 +114,7 @@ review/SKILL.md Step 6 保存
 - [x] Step 6 hook false positive — **当初の目的 (誤検知解消) は達成せず、方針を fail-closed に転換**。Codex が 5 ラウンドで回避経路を出し続けたため「引用文か実行か」の判別を破棄。引用文も block する代わりに bypass を塞ぐ形にした。副産物で `io.rs` の deny 経路 panic (UTF-8 バイト境界 slice) を修正
 - [x] Step 7 投稿前照合 — pr-autofix 2.6 に stale finding チェック（`/review` の表示経路には入れない: Codex 判断）
 - [x] Step 8 tool_response 観測 — `response_keys` を記録（判定には使わない）
-- [ ] Step 9 検証 + Review Gate — `pytest` 81 passed / `task validate-configs` exit 0 / `task validate-symlinks` exit 0。`cargo test` と Codex Gate 未取得
+- [x] Step 9 検証 + Review Gate — `pytest` 81 passed / `task validate-configs` exit 0 / `task validate-symlinks` exit 0。2026-10-17 に残りを取得: `cargo test` は `test result: ok. 58 passed; 0 failed`。`pre_tool.rs` の現状に対する Codex Gate は `VERDICT: BLOCK`（既知の残存 2 件に加え、未文書化の回避 `--renormalize` / `-Af` / `:(glob)` / `--pathspec-from-file`）。T4 は未完のまま別 Issue に切り出した
 
 ## Surprises & Discoveries
 

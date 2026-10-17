@@ -144,6 +144,7 @@ def test_plan_scan_error_falls_back_to_the_test_gate_ceiling(monkeypatch, capsys
     monkeypatch.setattr(gate, "_get_retry_count", lambda: gate.MAX_RETRIES)
     monkeypatch.setattr(gate, "_reset_retries", lambda: None)
     monkeypatch.setattr(gate, "_reset_ralph", lambda: None)
+    monkeypatch.setattr(gate, "_check_harness_review_gate", lambda session_id="": None)
     monkeypatch.delenv("CLAUDE_SKIP_TEST_GATE", raising=False)
     monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
 
@@ -183,3 +184,37 @@ def test_ralph_block_clears_a_stale_test_failure_count(monkeypatch, capsys):
 def test_counters_are_separate_files():
     """Guard the premise: one shared file would make these tests vacuous."""
     assert gate.RALPH_COUNTER_FILE != gate.COUNTER_FILE
+
+
+def test_retry_safety_valve_does_not_bypass_the_harness_review_gate(
+    monkeypatch, capsys
+):
+    """前提: plan なし、retry カウンタが上限、未レビューのハーネス変更あり。
+    検証: 安全弁は harness gate を飛ばさず block し、カウンタもリセットしない。
+    """
+    result = _run(
+        monkeypatch,
+        capsys,
+        retries=gate.MAX_RETRIES,
+        incomplete=None,
+        harness_block={"decision": "block", "reason": "harness review required"},
+    )
+
+    assert result["payload"]["decision"] == "block"
+    assert result.get("retry_reset") is not True
+
+
+def test_harness_block_does_not_consume_the_test_retry_budget(monkeypatch, capsys):
+    """前提: retry カウンタ 0、未レビューのハーネス変更あり。
+    検証: harness block はテスト用 retry カウンタを増やさない。
+    (増やすと PASS 直後の Stop が安全弁に入りテスト gate を飛ばす)
+    """
+    result = _run(
+        monkeypatch,
+        capsys,
+        retries=0,
+        harness_block={"decision": "block", "reason": "harness review required"},
+    )
+
+    assert result["payload"]["decision"] == "block"
+    assert "retry_set" not in result

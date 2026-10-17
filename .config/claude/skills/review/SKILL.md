@@ -417,7 +417,7 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 5. **アクション明示**: 各指摘に対して「修正必須」「検討推奨」「要注意」を付与
 6. **判定**: Critical が1件以上 → BLOCK。Important が3件以上 → NEEDS_FIX。それ以外 → PASS。Watch は判定に影響しない。ただし **レビューアーが `NEEDS_HUMAN_REVIEW` を宣言した場合、finding 件数に関わらず verdict を `NEEDS_HUMAN_REVIEW` に倒す** — severity を付けずに保留した項目 (security-reviewer の `needs follow-up` 等) は件数計算に乗らないため、宣言を拾わないと緑で閉じてしまう
 7. **信頼度フィルタ**: `confidence_kind = subjective` の指摘のみ confidence < 60 で除外する。`evidence` 型（security-reviewer の証拠充足型）は数値で落とさない。confidence 欠落は `[UNSCORED]` を付けて残し、verdict 計算と自動修正の入力から除外する。詳細: `references/review-consensus-policy.md` Section 0
-8. **既存コード除外**: diff の追加行以外への指摘を除外
+8. **diff 外指摘の保持**: diff の追加行以外への指摘は捨てず `[OUT-OF-DIFF]` を付けてレポートに残し、verdict 計算と自動修正の入力から除外する（`pre-existing` とは呼ばない: base に存在した証明がないため）
 9. **linter 重複除外**: フォーマッター・linter が検出すべき問題を除外
 10. **戦略的整合性**: spec file 存在時、product-reviewer の「spec 不整合」指摘は Critical として扱う
 11. **合意率メトリクス**: `agreement_rate = 1 - (conflict_count / total_findings)`。conflict_count は同一ファイル+-5行で矛盾する指摘の組数。レポートの Agreement Rate フィールドに記入する。算出は全レビュー構成で実施（3-way に限定しない）
@@ -427,7 +427,7 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 15. **Codex 指摘の必須対応**: codex-reviewer の Critical/Important 指摘は個別に対応を明記すること。「他レビューアーが指摘していない」「外れ値に見える」は無視の理由にならない。Codex の deep reasoning による指摘は verdict 計算から除外してはならない（`[DEEP_REASONING]` タグで常時保持）。詳細: `references/review-consensus-policy.md` Section 4
 16. **Synthesis Output Verbosity Constraint (MoA verbosity guard)**: マルチレビューア合成レポートは MoA (Mixture of Agents) パターンの既知の failure mode として**冗長化**しやすい (Wang et al. ICLR 2025 — failure mode #2)。以下を守る: (a) 各 finding の finding フィールドは 2 文以内、(b) 同じ根本原因の指摘は 1 件に集約し「他 N 件も同様指摘」と注記、(c) Watch 指摘は 5 件を超えたら「上位 5 件のみ表示、残りは review-findings.jsonl で参照」に切り詰める、(d) 合成レポート全体が 400 行を超える場合は「Critical のみ詳細、Important は 1 行要約」に圧縮する。verbosity は Signal 低下を意味し、ユーザー体験を損なう。詳細: `references/review-consensus-policy.md` Section 5
 17. **ペルソナレビューアーの統合**: reviewer-ma/mu の指摘は `[PERSONA]` タグを付与する。verdict 計算には含めるが、外れ値検出（ルール13）の対象外とする。ペルソナ指摘が汎用レビューアーと重複する場合、ペルソナ側の具体的な修正案（suggestion ブロック、リファクタリングコード）を統合レポートに採用する
-18. **除外した指摘の記録**: ルール 7/8/9 で落とした指摘と reviewer の `## Filtered` 節の行は `emit_filtered_findings` で `review/filtered.jsonl` に保存し、`templates/review-output.md` の `**除外**:` 行に件数を出す。出力契約に `## Filtered` 節を持つ reviewer (code-reviewer / codex-reviewer) が節を出さなかったら `unknown` と書き、0 に寄せない。手順: `references/findings-and-feedback.md` Step 6
+18. **除外した指摘の記録**: ルール 7/9 で落とした指摘と reviewer の `## Filtered` 節の行は `emit_filtered_findings` で `review/filtered.jsonl` に保存し、`templates/review-output.md` の `**除外**:` 行に件数を出す。出力契約に `## Filtered` 節を持つ reviewer (code-reviewer / codex-reviewer) が節を出さなかったら `unknown` と書き、0 に寄せない。手順: `references/findings-and-feedback.md` Step 6
 
 ### Layer 0 優先ルール（Trust Verification Policy）
 
@@ -642,13 +642,14 @@ Re-Review は「新たな問題があるか？」を問うが、Validate は「�
 
 0. **Scope Governor**: finding を修正する前と各再レビューの前に `references/scope-governor.md` を適用する。finding を in-scope blocker / follow-up / stop-and-escalate に分類し、diff が `max(2 × 初期非テスト LOC, 初期非テスト LOC + 50)` を超えたら scope 破綻として報告する。2 サイクル未収束なら全 finding を再分類し、3 回目は再分類後も in-scope blocker のものだけを対象にする
 1. **PASS**: 修正不要。Step 6 に進み、完了をユーザーに報告する
-2. **NEEDS_FIX**: Important 指摘を修正後、**Fix-Validate ゲート**を通し、**修正差分のみ**を対象に再レビューする（レビューアー構成は修正行数で再スケーリング。ただし codex-reviewer は初回起動時は再スケーリングに関わらず必ず再起動する）
+2. **NEEDS_FIX**: Important 指摘を修正後、**Fix-Validate ゲート**を通し、**修正差分のみ**を対象に再レビューする（レビューアー構成は修正行数で再スケーリング。ただし codex-reviewer は初回起動時は再スケーリングに関わらず必ず再起動する）。再レビューには生の前回レビュー文ではなく **findings ledger** を渡す（ledger の定義は下記ルール 9）
 3. **BLOCK**: Critical 指摘を修正後、**Fix-Validate ゲート**を通し、**全変更**を対象にフルレビューを再実行する（codex-reviewer を必ず含める）
 4. **NEEDS_HUMAN_REVIEW**: レビュー結果をユーザーに提示し、判断を委ねる
 5. **最大サイクル数**: 3回。3回で PASS にならない場合はユーザーにエスカレーションする
-6. **修正なし判定**: 再レビューで新規指摘がゼロなら PASS に昇格する
+6. **修正なし判定**: 再レビューで新規指摘がゼロ **かつ** ledger に in-scope（Scope Governor 分類）の `open` が残っていなければ PASS に昇格する
 7. **コード振り子検出**: 2回目以降の再レビュー時、前回修正との diff を取り revert パターン（A→B→A）を検出する。検出時は `[CODE OSCILLATION]` フラグ + directive pinning を適用する。詳細: `references/review-consensus-policy.md` §3.1
 8. **Fix → focused test rerun + review rerun の二重 rerun**: review-triggered fix がコードを変更したら、(a) **focused test rerun** (影響を受けるテストのみ、全テスト不要) を行い、(b) そのうえで structured review を rerun する。**fix 後に test 未実行のまま PASS にしてはならない** (Layer 0 Trust Verification の延長)。focused 範囲は fix で変更したファイル + Step 1.3 Impact Pre-scan の caller 関連テストに絞る。出典: openclaw/agent-skills `autoreview` SKILL "If a review-triggered fix changes code, rerun focused tests and rerun the structured review helper"
+9. **findings ledger**: サイクルをまたぐ指摘の台帳。key = ファイル + failure_mode、保持項目 = 元の evidence と status（`open` / `fixed` / `dismissed:<理由>`）。新ファイルは作らず、セッション内（合成レポート）で持ち回る。再レビューは ledger の key を新しい evidence なしに再指摘できず、無根拠の再指摘は repeat として破棄する。指摘にはバグのクラスを名指しさせ、1 行だけでなく同クラスの全インスタンスを直す（出典: Anthropic "Solving code review at Anthropic" — 再指摘の約 59% は初回レビュー時点から存在したコード）
 
 ### 完了報告
 

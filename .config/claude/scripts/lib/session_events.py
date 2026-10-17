@@ -487,7 +487,6 @@ def emit_review_findings(findings: list[dict]) -> None:
 
 FILTER_RULES = (
     "synthesis-low-confidence",  # SKILL.md Step 4 ルール 7
-    "synthesis-outside-diff",  # ルール 8
     "synthesis-linter-duplicate",  # ルール 9
     "reviewer-false-positive",  # code-reviewer Pass 2
     "reviewer-not-reproducible",  # code-reviewer / codex-reviewer の再現性基準

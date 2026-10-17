@@ -7,10 +7,10 @@ source:
   url: https://tech-blog.monotaro.com/entry/2026/08/05/090000
   type: blog-post
   fetched: defuddle (全文取得成功)
-status: planned
+status: partially-superseded
 family: code-review-best-practices
 saturation: "PASS (warning) — N=11、採用ありが7件で採用率64%、閾値20%を超過"
-plan: docs/plans/active/2026-08-06-review-finding-contract-plan.md
+plan: docs/plans/completed/2026-08-06-review-finding-contract-plan.md
 adopted: 5
 validation-only: 4
 ---
@@ -106,7 +106,7 @@ Codex が指した実ファイル3件（`session_events.py:378` の `emit_review
 | T4 | `pre_tool.rs` の一括 add 判定の false positive 修正 + WHY/FIX の追記 |
 | T5 | 投稿・自動修正の直前に file/line/snippet を照合 |
 
-見送りは M4（ReportFindings）。却下は Actioned 指標・コメント数上限・リアクション比・コスト分布ダッシュボード・M9のプロンプト内反復追加。プランは `docs/plans/active/2026-08-06-review-finding-contract-plan.md`（L規模、9 Steps）。
+見送りは M4（ReportFindings）。却下は Actioned 指標・コメント数上限・リアクション比・コスト分布ダッシュボード・M9のプロンプト内反復追加。プランは `docs/plans/completed/2026-08-06-review-finding-contract-plan.md`（L規模、9 Steps）。
 
 ## Validation-only Follow-up（採用件数に数えない）
 
@@ -155,3 +155,19 @@ Codex 5 ラウンドの最新 verdict は BLOCK (上記 2 件が残存)。`/revi
 `code-reviewer` の MUST は round-1/2 時点のコード (`is_command_start` / `runs_through_wrapper`) に対する指摘で、fail-closed 転換で該当関数ごと消えている。挙げられた 6 経路 (`sudo` / `env` / `time` / `nohup ... &` / `command` / `find -exec`) と、同レビューが「旧実装でも未検出」とした `git add "."` は、いずれも現在のバイナリで block することを実測した。指摘どおりテストは空白だったので埋めた (58 passed)。
 
 **ここに 1 つ運用上の教訓がある**: 遅れて返ってきたレビューは、レビュー対象が既に変わっている可能性がある。指摘を棄却するにも採用するにも、まず現在のバイナリ/コードで再現を取る。今回は「stale だから無視」でも「レビュアーが言うから直す」でもなく、実測してから 1 件 (テスト空白) だけ採用した。
+
+## 棚卸し (2026-10-17, Stale-Plan Audit)
+
+`status: planned` のまま 72 日残っていたので、Anthropic "Solving code review at Anthropic" の absorb の Phase 1.5 Step 7 で実態を確認した。判定は narrowed (`partially-superseded`)。
+
+| タスク | 実態 |
+|---|---|
+| T1 finding 契約 | 有効。2026-08-07 以降の `review-findings.jsonl` 8 行は severity 欠落 0、値は `Important` / `Watch` のみ (absorb 時は欠落 77%) |
+| T2 完走判定 | 有効。`review-metrics.jsonl` に `terminal_status` が入っている |
+| T3 ledger 引き継ぎ | 消失。実装先の `pr-autofix-routine/SKILL.md` が #259 (90 日未使用 skill の退役) で削除された。`/review` 本体のサイクルルール 9 (findings ledger) として回収 → docs/research/2026-10-17-anthropic-solving-code-review-absorb-analysis.md |
+| T4 一括 add hook | 未完。`cargo test` 58 passed だが、Codex Gate は `VERDICT: BLOCK` (未文書化の回避 4 経路)。別 Issue に切り出した |
+| T5 投稿前照合 | 消失。T3 と同じく `pr-autofix-routine` ごと削除 |
+
+plan は Step 9 を取得したうえで `docs/plans/completed/` へ移した。
+
+もう 1 点、`review-findings.jsonl` の最終書き込みは 2026-08-31 で、以後 47 日間記録がない。`/review` を使っていないだけか、記録経路が壊れているかは未確認。

@@ -94,6 +94,8 @@ jetski: no output produced — a tool required the "command" permission that hea
 
 件数行も一度置き場所を誤った。最初は `synthesis-report.md` に足したが、2 回目の Plan Gate (`VERDICT: NEEDS_FIX`) の指摘で、Step 4 が実際に使う出力形式は `review-output.md` だとわかった (`SKILL.md:35, 409`)。同じ指摘のうち「集約を決定的なヘルパー関数にする」案は採らなかった。入力が LLM の読む reviewer 出力の自然文で、パーサを呼ぶかどうかも同じプロンプト遵守に依存するため。
 
+master マージ時の調整: 同日マージの #283 がルール 8 を「diff 外指摘は `[OUT-OF-DIFF]` を付けてレポートに残す」に変えた。ルール 8 はもう指摘を落とさないので、`FILTER_RULES` から `synthesis-outside-diff` を外し、除外記録の対象をルール 7/9 と reviewer 内部の除外に絞った。
+
 ## Validation-only Follow-up
 
 記事起点の採用ではないが、分析中に見つかった drift。Issue #280 に切り出した。
