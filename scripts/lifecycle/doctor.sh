@@ -234,6 +234,45 @@ check_settings() {
     emit settings OK "live-only keys (runtime-injected, expected): $(tr '\n' ' ' <<< "$extra")"
   fi
   check_settings_permissions "$repo_settings"
+  check_settings_merge_keys "$repo_settings"
+}
+
+# Keys that both the repo and the claude CLI write: `claude plugin install`
+# adds to enabledPlugins/extraKnownMarketplaces in live. So compare only the
+# repo's entries (each must reach live with the same value) and report
+# live-only entries without failing — they may be CLI installs worth keeping.
+# Keep in sync with MERGE_KEYS in claude-settings-sync.sh.
+check_settings_merge_keys() {
+  local repo_settings="$1" k side f ktype drift live_only entry repo_v live_v
+  for k in enabledPlugins extraKnownMarketplaces skillOverrides; do
+    for side in repo live; do
+      f="$repo_settings"; [[ $side == live ]] && f="$SETTINGS_FILE"
+      ktype=$(jq -r --arg k "$k" 'if has($k) then .[$k] | type else "absent" end' "$f")
+      if [[ "$ktype" != object && "$ktype" != absent ]]; then
+        emit settings FAIL "$k is not an object in $side settings ($ktype)" "fix by hand; sync refuses"
+        continue 2
+      fi
+    done
+    # Fail on a jq error: an empty $drift would otherwise read as "match".
+    if ! drift=$(jq -rn --slurpfile r "$repo_settings" --slurpfile l "$SETTINGS_FILE" --arg k "$k" '
+      ($r[0][$k] // {}) as $a | ($l[0][$k] // {}) as $b
+      | $a | to_entries[] | . as $e | select(($b | has($e.key) | not) or $b[$e.key] != $e.value)
+      | "\($e.key)\t\($e.value | tojson)\t\(if $b | has($e.key) then $b[$e.key] | tojson else "absent" end)"' 2>&1); then
+      emit settings FAIL "$k could not be compared" "${drift%%$'\n'*}"
+      continue
+    fi
+    if [[ -z "$drift" ]]; then
+      emit settings OK "$k: all $(jq -r --arg k "$k" '.[$k] // {} | length' "$repo_settings") repo entries match live"
+    else
+      while IFS=$'\t' read -r entry repo_v live_v; do
+        emit settings FAIL "$k.$entry drifted from repo (repo: $repo_v; live: $live_v)" \
+          "task claude:settings:sync"
+      done <<< "$drift"
+    fi
+    live_only=$(jq -rn --slurpfile r "$repo_settings" --slurpfile l "$SETTINGS_FILE" --arg k "$k" '
+      (($l[0][$k] // {}) | keys) - (($r[0][$k] // {}) | keys) | join(" ")')
+    [[ -n "$live_only" ]] && emit settings OK "$k live-only (not in repo, kept by sync): $live_only"
+  done
 }
 
 # permissions is the one repo-owned key whose VALUES are safe to compare:
@@ -254,7 +293,7 @@ check_settings_permissions() {
     ptype=$(jq -r '.permissions | type' "$f")
     if [[ "$ptype" != "object" ]]; then
       emit settings FAIL "permissions is not an object in $side settings ($ptype)" \
-        "task claude:settings:sync-permissions"
+        "task claude:settings:sync"
       return
     fi
   done
@@ -269,7 +308,7 @@ check_settings_permissions() {
     while IFS=$'\t' read -r tier ttype; do
       [[ -z "$tier" ]] && continue
       emit settings FAIL "permissions.$tier is not an array in $side settings ($ttype)" \
-        "task claude:settings:sync-permissions"
+        "task claude:settings:sync"
       malformed=1
     done <<< "$bad"
   done
@@ -308,7 +347,7 @@ check_settings_permissions() {
   fi
   while IFS=$'\t' read -r key repo_side live_side; do
     emit settings FAIL "permissions.$key drifted from repo ($repo_side; $live_side)" \
-      "task claude:settings:sync-permissions"
+      "task claude:settings:sync"
   done <<< "$drift"
 }
 

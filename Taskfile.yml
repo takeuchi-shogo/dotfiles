@@ -317,11 +317,11 @@ tasks:
     cmds:
       - bash ~/dotfiles/scripts/lifecycle/claude-plugins-sync.sh install
 
-  claude:settings:sync-permissions:
-    desc: 'Replace live ~/.claude/settings.json permissions with the repo copy (other keys untouched; shows drift and asks y/N)'
+  claude:settings:sync:
+    desc: 'Push repo settings into live ~/.claude/settings.json: permissions replaced, enabledPlugins/extraKnownMarketplaces/skillOverrides merged (repo wins, live-only kept); other keys untouched; shows drift and asks y/N'
     interactive: true
     cmds:
-      - bash scripts/lifecycle/claude-settings-sync-permissions.sh {{.CLI_ARGS}}
+      - bash scripts/lifecycle/claude-settings-sync.sh {{.CLI_ARGS}}
 
   claude:plugins:check:
     desc: 'Read-only: report plugins declared in settings.json but not installed (exit 1 if any missing)'

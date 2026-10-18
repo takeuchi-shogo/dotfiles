@@ -158,7 +158,7 @@ assert_contains "11-perm-order-insensitive" "$out" '\[settings\] OK: permissions
 assert_contains "11b-perm-no-false-fail" "$out" 'Summary: FAIL=0'
 
 # ----- Scenario 12: sync replaces permissions only, keeps injected hooks -----
-SYNC="bash scripts/lifecycle/claude-settings-sync-permissions.sh"
+SYNC="bash scripts/lifecycle/claude-settings-sync.sh"
 cat > "$TMP/live-sync.json" <<'JSON'
 { "permissions": { "allow": ["Bash(gemini *)"] },
   "hooks": { "Stop": [{ "hooks": [{ "type": "command", "command": "orca-hook.sh" }] }] },
@@ -200,7 +200,7 @@ out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-perm.json" \
 assert_contains "15b-perm-null-block" "$out" '\[settings\] FAIL: permissions is not an object in live settings \(null\)'
 out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-perm.json" CLAUDE_SETTINGS_LIVE="$TMP/live-perm-null.json" \
       $SYNC --yes 2>&1; echo "exit=$?")
-assert_contains "15c-sync-repairs-null" "$out" 'synced permissions'
+assert_contains "15c-sync-repairs-null" "$out" 'synced settings'
 out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-perm.json" \
       SETUP_DOCTOR_SETTINGS="$TMP/live-perm-null.json" $DOCTOR settings 2>&1 || true)
 assert_contains "15d-null-repaired" "$out" '\[settings\] OK: permissions match repo'
@@ -252,6 +252,77 @@ out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-perm-null.json" CLAUDE_SETTINGS_LIVE="$TMP
 assert_contains "16c-sync-refuses-broken-repo" "$out" 'exit=[1-9]'
 cmp -s "$TMP/live-perm-drift.json" "$TMP/live-from-broken-repo.json" && same=yes || same=no
 assert_contains "16d-live-untouched-by-broken-repo" "$same" '^yes$'
+
+# ----- Scenario 17: merge keys — repo entries merged in, live-only kept -----
+# `claude plugin install` writes enabledPlugins in live, so live-only entries
+# are a second owner's data: sync must keep them and let repo win per entry.
+cat > "$TMP/repo-merge.json" <<'JSON'
+{ "permissions": { "allow": ["Bash(x *)"] },
+  "enabledPlugins": { "a@m": true, "b@m": false },
+  "extraKnownMarketplaces": { "m": { "source": { "source": "github", "repo": "o/m" } } },
+  "skillOverrides": { "nj": "user-invocable-only" } }
+JSON
+cat > "$TMP/live-merge.json" <<'JSON'
+{ "permissions": { "allow": ["Bash(x *)"] },
+  "enabledPlugins": { "b@m": true, "cli@n": true },
+  "skillOverrides": { "old": "off" },
+  "hooks": { "Stop": [] } }
+JSON
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-merge.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/live-merge.json" $DOCTOR settings 2>&1 || true)
+assert_contains "17-doctor-entry-absent" "$out" 'FAIL: enabledPlugins\.a@m drifted from repo \(repo: true; live: absent\)'
+assert_contains "17b-doctor-entry-differs" "$out" 'FAIL: enabledPlugins\.b@m drifted from repo \(repo: false; live: true\)'
+assert_contains "17c-doctor-live-only-not-fail" "$out" 'OK: enabledPlugins live-only \(not in repo, kept by sync\): cli@n'
+assert_contains "17d-doctor-key-absent-in-live" "$out" 'FAIL: extraKnownMarketplaces\.m drifted from repo'
+out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-merge.json" CLAUDE_SETTINGS_LIVE="$TMP/live-merge.json" \
+      $SYNC --yes 2>&1; echo "exit=$?")
+assert_contains "17e-sync-ok" "$out" 'synced settings'
+assert_contains "17f-sync-plugin-hint" "$out" 'task claude:plugins'
+assert_contains "17g-merged" "$(jq -cS '[.enabledPlugins, .extraKnownMarketplaces.m.source.repo, .skillOverrides, .hooks]' "$TMP/live-merge.json")" \
+  '^\[\{"a@m":true,"b@m":false,"cli@n":true\},"o/m",\{"nj":"user-invocable-only","old":"off"\},\{"Stop":\[\]\}\]$'
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-merge.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/live-merge.json" $DOCTOR settings 2>&1 || true)
+assert_contains "17h-doctor-clean-after-sync" "$out" 'Summary: FAIL=0'
+
+# ----- Scenario 18: permissions in sync but a merge key drifted -> not "already in sync" -----
+printf '{ "permissions": { "allow": ["Bash(x *)"] }, "skillOverrides": {} }' > "$TMP/live-perm-ok-merge-drift.json"
+out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-merge.json" CLAUDE_SETTINGS_LIVE="$TMP/live-perm-ok-merge-drift.json" \
+      $SYNC --yes 2>&1; echo "exit=$?")
+assert_contains "18-merge-drift-not-noop" "$out" 'synced settings'
+
+# ----- Scenario 19: non-object merge key on either side -> refuse, live untouched -----
+# jq `//` would read null/false as {} and `+` errors on other types.
+for bad in null false '"x"' '[]'; do
+  printf '{ "permissions": { "allow": ["Bash(x *)"] }, "enabledPlugins": %s }' "$bad" > "$TMP/live-bad-merge.json"
+  cp "$TMP/live-bad-merge.json" "$TMP/live-bad-merge.orig"
+  out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-merge.json" CLAUDE_SETTINGS_LIVE="$TMP/live-bad-merge.json" \
+        $SYNC --yes 2>&1; echo "exit=$?")
+  assert_contains "19-sync-refuses-live-$bad" "$out" 'enabledPlugins is [a-z]+; refusing to sync'
+  assert_contains "19a-sync-exit-nonzero-$bad" "$out" 'exit=[1-9]'
+  cmp -s "$TMP/live-bad-merge.orig" "$TMP/live-bad-merge.json" && same=yes || same=no
+  assert_contains "19b-live-untouched-$bad" "$same" '^yes$'
+done
+printf '{ "permissions": { "allow": ["Bash(x *)"] }, "skillOverrides": null }' > "$TMP/repo-bad-merge.json"
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-bad-merge.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/live-merge.json" $DOCTOR settings 2>&1 || true)
+assert_contains "19c-doctor-repo-null" "$out" 'FAIL: skillOverrides is not an object in repo settings \(null\)'
+out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-bad-merge.json" CLAUDE_SETTINGS_LIVE="$TMP/live-merge.json" \
+      $SYNC --yes 2>&1; echo "exit=$?")
+assert_contains "19d-sync-refuses-repo-null" "$out" 'exit=[1-9]'
+
+# ----- Scenario 20: entry removed from repo stays in live (documented non-goal) -----
+printf '{ "permissions": { "allow": ["Bash(x *)"] }, "extraKnownMarketplaces": {} }' > "$TMP/repo-dropped-mkt.json"
+out=$(SETUP_DOCTOR_REPO_SETTINGS="$TMP/repo-dropped-mkt.json" \
+      SETUP_DOCTOR_SETTINGS="$TMP/live-merge.json" $DOCTOR settings 2>&1 || true)
+assert_contains "20-dropped-entry-reported-live-only" "$out" 'OK: extraKnownMarketplaces live-only \(not in repo, kept by sync\): m'
+
+# ----- Scenario 21: empty repo key absent from live -> sync creates it, not "in sync" -----
+printf '{ "permissions": { "allow": ["Bash(x *)"] }, "skillOverrides": {} }' > "$TMP/repo-empty-key.json"
+printf '{ "permissions": { "allow": ["Bash(x *)"] } }' > "$TMP/live-no-key.json"
+out=$(CLAUDE_SETTINGS_REPO="$TMP/repo-empty-key.json" CLAUDE_SETTINGS_LIVE="$TMP/live-no-key.json" \
+      $SYNC --yes 2>&1; echo "exit=$?")
+assert_contains "21-empty-key-synced" "$out" 'synced settings'
+assert_contains "21b-empty-key-created" "$(jq -c '.skillOverrides' "$TMP/live-no-key.json")" '^\{\}$'
 
 echo
 echo "=== Summary: PASS=$PASS FAIL=$FAIL ==="
