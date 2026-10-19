@@ -25,6 +25,16 @@ platforms: [agents, codex]
 - `git diff --stat` または同等の差分確認
 - subagent review を使った場合は、その findings を最終判断へ統合したこと
 
+## Verdict（完了宣言のとき）
+
+主張や「直った」の報告は、次のどれか一つにする（`.config/claude/references/trust-verification-policy.md` ルール 6）:
+
+- `VERIFIED` — 選んだ validation が通った、またはベースライン対比で主張どおり動いた
+- `NOT VERIFIED` — 失敗した、または主張と逆方向だった
+- `INCONCLUSIVE` — コマンドを走れない、比較が無効、観測が壊れている
+
+`INCONCLUSIVE` を pass や完了扱いにしない。理由を書いて止め、実行可能なら同じ検証を取り直す。
+
 ## Dotfiles Hints
 
 - config / script 変更: `task validate-configs`
@@ -40,3 +50,4 @@ platforms: [agents, codex]
 - 古い成功結果を使い回す
 - failure を把握せずに warning 扱いで流す
 - diff を見ずに副作用なしと判断する
+- 測定不能・比較不能を「たぶん大丈夫」で閉じる（`INCONCLUSIVE` と書き、完了にしない）

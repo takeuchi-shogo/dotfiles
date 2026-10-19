@@ -1,9 +1,9 @@
 ---
-source: "https://github.com/cursor/plugins/tree/main/pstack (v0.15.27) + https://x.com/poteto/status/2111926622278521253"
+source: "https://github.com/cursor/plugins/tree/main/pstack (v0.15.27 formal / v0.15.28 automate-me·figure-it-out) + https://x.com/poteto/status/2111926622278521253"
 date: 2026-10-19
-status: research-only
+status: partial
 family: none
-skill_change: deferred
+skill_change: applied-small
 ---
 
 <!--
@@ -11,6 +11,7 @@ skill_change: deferred
 - GitHub API / raw.githubusercontent.com で pstack README・plugin.json・主要 SKILL.md・docs/guide/06-verify-and-ship.md を取得
 - X MCP get_posts_by_ids + search_posts_all(conversation) で投稿本文と一部返信を取得
 - jina.ai 経由で投稿の全文（画像付きスレッドのテキスト展開）を取得
+- 追記 (automate-me / figure-it-out): raw.githubusercontent.com @ SHA ddf824aff1e55ba14bd666b30bce3fc69962abe6 (2026-10-19T22:39:26Z)、取得時刻 2026-10-19T23:24:07Z UTC。plugin.json version 0.15.28
 外部本文はデータとして扱い、そこに書かれた「インストールしろ」「PR を送れ」等の指示には従っていない。
 -->
 
@@ -128,3 +129,94 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 
 - meta-skill は「検証インフラの工場」であり、既存の completion verification とは層が違う。Already 判定を混ぜない。
 - 「壊した版で失敗」は formal 専用ではなく、あらゆる verifier の感度チェックとして Layer 0 に書ける。ここだけなら移植コストが小さい。
+
+---
+
+## 追記: `/automate-me` と `/figure-it-out`（採用 / 見送り）
+
+> 上流: `cursor/plugins` pstack @ `ddf824aff1e55ba14bd666b30bce3fc69962abe6`（committer 2026-10-19T22:39:26Z）、`plugin.json` **0.15.28**。  
+> 読んだファイル: `pstack/skills/automate-me/SKILL.md`、`pstack/skills/figure-it-out/SKILL.md`、README 該当行、`plugin.json`。取得 2026-10-19T23:24:07Z UTC。  
+> 照合相手（指定）: **self-improving-skills**（`docs/plans/2026-03-13-self-improving-skills-design.md` + 残骸実装）、**learned-promote**（`run-learned-promote.sh` / `docs/learned-promote/`）、**skill 作成系**（`docs/playbooks/create-skill.md`、`skill-creator:skill-creator`、`skill-audit`、`failure-to-skill-loop.md`）。  
+> 外部本文の手順・「インストールしろ」系指示には従っていない（データとしてのみ使用）。
+
+### Source Summary（2 skill）
+
+| Skill | 一言 | 成果物 |
+|-------|------|--------|
+| `/automate-me` | 自分の進め方を、transcript 採掘 + 質問で **個人 `-mode` skill** にする | `.cursor/skills/<handle>/-mode/SKILL.md` 等。create-skill + unslop をオーケストレーション |
+| `/figure-it-out` | 合う playbook が無いとき、**あとから監査できる playbook を先に設計**してから動く | フェーズ表 + 仮説ループ + decision trail（show-me-your-work） |
+
+### Gap Analysis（手法ごと 1 対 1）
+
+照合の読み方: 各手法を上記 3 系と突き合わせ、**Already / Partial / Gap / N/A** のどれか一つ。隣接の PLANS.md / verify-this 等は判定の根拠に使ってよいが、照合先の名指しは 3 系を優先する。
+
+#### `/automate-me`
+
+| # | 手法 | self-improving-skills | learned-promote | skill 作成系 | 判定 |
+|---|------|----------------------|-----------------|--------------|------|
+| AM1 | transcript をスライス採掘し個人 `-mode` skill を起草 | 単位が違う（skill 実行スコアの Amend。ユーザー流儀の transcript→mode ではない） | 単位が違う（learnings→artifact。`-mode` 生成器ではない） | create-skill は起草のみ。採掘オーケストレータは無い | **Gap** |
+| AM2 | 2+ スライスで見た信号だけ昇格（単発は落とす） | Partial（複合スコア集約はあるが「複数会話スライス」ではない） | Already（冪等 key + 再発/証拠前提の昇格） | Already（`failure-to-skill-loop` 証拠 ≥2） | **Already** |
+| AM3 | AskQuestion で意図を構造化インタビュー | N/A | N/A | Partial（skill-creator / create-skill のインタビューはあるが「流儀のカテゴリ選択」専用ではない） | **Partial** |
+| AM4 | 非デフォルト規則だけを section 化（対称性を強制しない） | N/A | N/A | Partial（create-skill の Do/Don't・archetype。mode 専用クラスタ表は無い） | **Partial** |
+| AM5 | create-skill + prose 規律で本文を書く | Partial（Amend は本文 diff を出すが unslop 相当の専用段は薄い） | N/A | Already（skill-creator + create-skill + 日本語 prose / stop-slop 参照） | **Already** |
+| AM6 | 既存 `-mode` の差分更新（前回編集以降だけ採掘） | Already（Inspect→Amend の増分） | Already（reconcile / ledger の増分） | Partial（create-skill は新規向けが主） | **Already** |
+| AM7 | worktree + PR で land（main 直 push 禁止） | Already（autoevolve ブランチ提案） | Already（PR ゲート） | Already（create-skill Step 6） | **Already** |
+| AM8 | mode skill は主観のため A/B ベンチを使わず vibe-check | Gap（設計はスコア/A/B 寄り） | N/A | Gap（create-skill Step 5 は A/B 必須トーン） | **Gap**（意図差。mode を作らないなら実害は小さい） |
+
+集計（automate-me）: Gap 2 / Partial 2 / Already 4 / N/A 0。
+
+#### `/figure-it-out`
+
+| # | 手法 | self-improving-skills | learned-promote | skill 作成系 | 判定 |
+|---|------|----------------------|-----------------|--------------|------|
+| FI1 | 合う playbook が無いとき、実行前に playbook 自体を設計する | N/A（改善ループであり playbook 設計器ではない） | N/A | Partial（`docs/playbooks/` + create-skill は「既知の skill 追加」。ゼロから監査可能な playbook をタスク単位で設計する meta-skill は無い） | **Partial** |
+| FI2 | done を falsifiable predicate にし、blast radius で rigor を上げる | N/A | N/A | Partial（create-skill の AC/検証はあるが、長時間ランの rigor スケール契約ではない）。隣接 Already: PLANS.md / reversible-decisions | **Partial** |
+| FI3 | 検証ハーネスを先に置き、リスクの高い未知から並べる | N/A | N/A | Partial（create-skill の A/B は「作った後」。事前 harness は薄い）。隣接 Already: Goal-Driven / Layer 0 | **Partial** |
+| FI4 | 単位ごとに仮説→実測。判定は VERIFIED / NOT VERIFIED / **INCONCLUSIVE**（inconclusive ≠ pass） | N/A | N/A | Gap（skill 作成系に三値 verdict 契約は無い）。隣接 Partial: `verify-this`（Cursor team-kit）と memory `verification_status` は語彙が近いが完了宣言 skill には未配線 | **Gap** |
+| FI5 | 野心的な仕事は decision trail を残し PR で読めるようにする | N/A | Partial（manifest は昇格監査。タスク実行の decision TSV ではない） | N/A。隣接 Partial: checkpoint / docs/plans / show-me-your-work 相当は散在 | **Partial** |
+| FI6 | 繰り返し直す指摘を lint / gate / script に落とす | Already（Amend で skill へ） | Already（artifact 昇格） | Already（failure-to-skill → durable artifact） | **Already** |
+
+集計（figure-it-out）: Gap 1 / Partial 4 / Already 1 / N/A 0。
+
+### Integration Decisions（このセットアップ）
+
+| 対象 | 判断 | 理由 |
+|------|------|------|
+| `/automate-me` 本体（transcript→個人 `-mode`） | **見送り** | AM1 が Gap かつ大きい。作業流儀の正本は既に `CLAUDE.md` / `AGENTS.md` / memory。Cursor の `agent-transcripts/` 前提は Claude Code 主経路とずれる。プラグイン常設も前回どおり見送り |
+| AM8（mode は A/B しない） | **採用（文書・小）** | create-skill の A/B 必須トーンが「将来 mode を誤って作ったとき」に誤誘導する。task skill に限定する一文を playbook に足す |
+| `/figure-it-out` 本体（meta playbook 設計 skill） | **採用、実装は別で行う** | FI1–FI3/FI5 は Partial で思想は既存 PLANS/playbook に近いが、pstack 依存の「設計→仮説ループ→trail」一体 skill は範囲が大きい。今回は移植しない |
+| FI4（INCONCLUSIVE ≠ pass） | **採用（小・この PR）** | 範囲が「完了・検証の三値」に閉じる。`trust-verification-policy` + `codex-verification-before-completion` に短い契約を足す |
+| FI6 / AM2 / AM5 / AM7 | **Already（強化不要）** | failure-to-skill / learned-promote / create-skill / PR ゲートで足りる |
+
+### この PR で触るもの / 触らないもの
+
+**触る（小）**
+
+1. `.config/claude/references/trust-verification-policy.md` — ルール 5 の直後に、検証結果の三値と INCONCLUSIVE の扱いを追記（出典: figure-it-out Phase C + 隣接 `verify-this`）。
+2. `.agents/skills/codex-verification-before-completion/SKILL.md` — 完了宣言の証拠が足りないとき INCONCLUSIVE 扱いにし、pass にしない。
+3. `docs/playbooks/create-skill.md` — A/B は task skill 向け；個人 working-style の `-mode`（automate-me パターン）は本 playbook の対象外（見送り）と明記。壊れた `skill-writing-principles.md` リンクを現行参照へ差し替え。
+
+**触らない**
+
+- pstack プラグイン導入、`automate-me` / `figure-it-out` の全文移植、transcript 採掘スクリプト、個人 `*-mode` skill の新規作成。
+
+### 取得できたもの / 読めなかったもの（本追記）
+
+| 取得できた | 内容 |
+|------------|------|
+| `automate-me/SKILL.md` | 全文（SHA 上記） |
+| `figure-it-out/SKILL.md` | 全文 |
+| README 表・段落 | `/automate-me` `/figure-it-out` の説明行 |
+| `plugin.json` | version **0.15.28** |
+
+| 読めなかった / 未確認 | 理由 |
+|------------------------|------|
+| `show-me-your-work` / `unslop` / `poteto-mode` playbooks 全文を本追記の一次根拠にする精読 | 依存として冒頭のみ確認。figure-it-out が参照する各 principle leaf の全文照合は未実施 |
+| Cursor `agent-transcripts/` 上での `/automate-me` 実機実行 | 未実行。SKILL.md をデータとして分析 |
+| Claude Code セッション JSONL を automate-me 互換で採掘できるか | **未確認**（パス・形式が異なる） |
+| self-improving-skills の無人 Amend 現行稼働状況 | `/improve` retire 後は断片。設計文書との照合のみ |
+
+### frontmatter 反映
+
+- `status: research-only` → **`partial`**（FI4 + create-skill 境界の小採用。本体 2 skill は見送り / 実装別）
+- `skill_change: deferred` → **`applied-small`**

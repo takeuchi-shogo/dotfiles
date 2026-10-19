@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-04-23
+last_reviewed: 2026-10-19
 ---
 
 # Create Skill Playbook
@@ -11,7 +11,9 @@ last_reviewed: 2026-04-23
 
 - skill = skip 不能な contract。prompt より強い
 - 既存 skill を必ず確認（重複禁止）: `ls .config/claude/skills/`
-- 詳細原則: `.config/claude/references/skill-writing-principles.md`
+- 詳細原則: `skill-creator:skill-creator` + `.config/claude/references/skill-patterns.md` / `skill-invocation-patterns.md`
+  （旧 `skill-writing-principles.md` は 2026-09-24 にプラグイン版へ一本化し削除済み）
+- **対象外**: 個人の working-style を transcript から掘って `*-mode` skill にする流れ（pstack `/automate-me`）。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。automate-me 本体の導入は見送り（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）
 
 ## 6-step
 
@@ -66,7 +68,7 @@ description: |
 
 ### 5. A/B テスト
 
-新 skill が機能するか実測:
+**task skill**（再現可能な手順・判定があるもの）が機能するか実測:
 
 ```bash
 # 同じタスクを skill あり / なしで実行
@@ -76,6 +78,7 @@ description: |
 - A/B delta < 0pp → skill 不要 (revert)
 - A/B delta +2pp 以上 → keep
 - delta 微妙 → 1 ヶ月運用後に再評価
+- 個人 `-mode` / 主観の「自分らしさ」skill は本 Step の対象外（automate-me パターンは見送り。作るなら別トラック）
 
 ### 6. Validate / Symlink / Commit
 
@@ -99,7 +102,9 @@ git commit -m "feat(skills): add my-skill for ..."
 
 ## 関連
 
-- 原則: `.config/claude/references/skill-writing-principles.md`
+- 作成パイプライン: `skill-creator:skill-creator`
+- パターン: `.config/claude/references/skill-patterns.md`
 - 衝突解決: `.config/claude/references/skill-conflict-resolution.md`
 - 起動パターン: `.config/claude/references/skill-invocation-patterns.md`
 - インベントリ: `.config/claude/references/skill-inventory.md`
+- 失敗→skill: `.config/claude/skills/skill-audit/references/failure-to-skill-loop.md`

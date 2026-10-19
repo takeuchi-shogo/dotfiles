@@ -55,13 +55,19 @@ Layer 3: Human Escalation（人間エスカレーション）
    - モデル・バウンド・モック境界の外まで「システム全体が正しい」と言い切らない
    - 出典の考え方: 同上 "Honest about scope"。完了宣言の evidence 契約を具体化したもの
 
+6. **検証結果は三値。INCONCLUSIVE を pass にしない**
+   - 主張・変更単位の判定は `VERIFIED` / `NOT VERIFIED` / `INCONCLUSIVE` のどれか一つにする
+   - ベースが取れない・比較が無効・観測が壊れているときは `INCONCLUSIVE`。完了や「問題なし」に読み替えない
+   - 出典の考え方: pstack `/figure-it-out` Phase C（研究メモ同ファイル追記）。隣接実装: Cursor `verify-this` skill。本ルールに hook / gate 強制は無い（ルール 4・5 と同じ文書規律）
+
 ## 適用箇所
 
 - `completion-gate.py`: Layer 0 チェック（テスト実行済み確認）を Review Gate より前に配置
 - `/review` Step 4 Synthesis: テスト未実行時は verdict に警告を付加
 - `rationalization-scanner.py`: PostToolUse(Agent) で FM-018 パターンを検出
 - `derivation-honesty-hook.py`: PostToolUse(Bash|Write|Edit) で FM-016 パターンを検出
-- **ルール 4・5 に対応する hook / gate / 自動強制は無い**（2026-10-19 時点）。文書上の導入規律であり、`completion-gate.py` やルール 1・2 の機械的強制とは別レイヤ。強制が必要になったら別タスクで仕組みを足す
+- **ルール 4・5・6 に対応する hook / gate / 自動強制は無い**（2026-10-19 時点）。文書上の導入規律であり、`completion-gate.py` やルール 1・2 の機械的強制とは別レイヤ。強制が必要になったら別タスクで仕組みを足す
+- Codex 完了前検証: `.agents/skills/codex-verification-before-completion/SKILL.md` がルール 6 の三値を完了宣言側で参照する
 
 ---
 
