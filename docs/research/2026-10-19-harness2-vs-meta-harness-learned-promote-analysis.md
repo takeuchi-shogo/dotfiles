@@ -26,7 +26,10 @@ family: harness-engineering
 - **実行器**: OpenCode（既定）または Codex (`--substrate cx`)。
 - **経験ライブラリ**: ドメイン単位で採用ツリー全文 + `EXPERIENCE.md`（cue / lesson / evidence）。要約ではなく **tree ごと保持**（meta-harness の「要約は害」と方向が一致）。
 
-**根拠（論文 abstract / README の報告値）**: WorkBuddy 最大 +11.5pt、JobBench +4.5、LAB partial pass +11.8pp。4 model–harness 構成。本セッションではベンチを再実行していない（コスト・依存のため未検証）。
+**根拠（出典つき・再実験なし）**:
+- README（`google-research/harness2` 取得時点）: 「gains of up to **11.5 points** on WorkBuddy-Bench, **4.5 points** on JobBench, and **11.8 percentage points** on LAB's partial pass rate」／「four model–harness configurations」
+- arXiv abstract `2610.14224v1`（2026-10-09）: 同趣旨（「up to 11.5 points on WorkBuddy-Bench, 4.5 points on JobBench, and 11.8 percentage points on LAB」）
+- 本セッションではベンチを再実行していない（コスト・依存のため未検証）。数値は上記一次ソースの転記。
 
 **前提条件**: Python 3.12 + uv、ベンチごとに Node / gcloud / Docker / Pandoc 等。モデル API 費用。公開ベンチの rubric がネットから取れるため、評価時は egress 制限が必要（README 明記）。
 
@@ -105,4 +108,4 @@ family: harness-engineering
 ## 教訓
 
 - 「GT なしで harness を直す」は Meta-Harness（スコアあり）とも learned-promote（人間あり）とも違う第三のループ。個人環境ではまず **evidence を要約せず残す** 側だけ借りるのがコスパが良い。
-- Harness² の library 設計は、過去に「要約を入れると下がる」と分かっている meta-harness 知見の独立な再確認になる。
+- Harness² の library 設計（tree 全文・要約しない）は、meta-harness の「要約は害・生トレース優先」と**方向が一致する**。同一アブレーションの再実験ではない。

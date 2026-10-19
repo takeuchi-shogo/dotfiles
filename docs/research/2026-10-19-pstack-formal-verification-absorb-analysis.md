@@ -29,7 +29,7 @@ skill_change: deferred
 
 **根拠**:
 - プラグイン本体: `plugin.json` version `0.15.27`、作者 Lauren Tan (poteto)。skills ディレクトリに上記 3 meta-skill + `principle-prove-it-works` 等。
-- 参考投稿 (@poteto, 2026-10-18): beta 告知。例として TLA+（並行・状態機械）と Kani（Rust UB）。本体は「意図をモデル化しコードと同期し続けるのが難しい」と明言。投稿時点でいいね約 1540 / 表示約 4.7 万。
+- 参考投稿 (@poteto, 2026-10-18T21:05:19Z): beta 告知。例として TLA+（並行・状態機械）と Kani（Rust UB）。本体は「意図をモデル化しコードと同期し続けるのが難しい」と明言。engagement（X MCP `get_posts_by_ids`、**2026-10-19T01:54:18Z UTC 取得**）: likes 1559 / impressions 48086 / reposts 87 / replies 103。
 - ガイド `docs/guide/06-verify-and-ship.md`: 「It compiles is not evidence」。形式検証は「誰も駆動しないパス」向けと位置づけ。
 
 **前提条件**:
@@ -61,7 +61,7 @@ skill_change: deferred
 |------|------------------------------------------|-------------------------------------|
 | 何が入るか | 原則だけ / または meta-skill 全文 | poteto-mode・原則・検証 meta-skill・playbook 一式 |
 | 起動面 | Claude Code / Codex の既存 skill 一覧 | Cursor `/add-plugin pstack` または CC marketplace |
-| 保守 | こちらで差分を追う。上流 v0.15.x の追従コストあり | プラグイン更新に乗る（生成された project-local skill は自動更新されない — 投稿スレッド上の Grok 回答） |
+| 保守 | こちらで差分を追う。上流 v0.15.x の追従コストあり | プラグイン本体の更新経路に乗る。生成物の追従は下表「自動更新」注記 |
 | 適合 | Partial の M3/M4 だけなら小さい | アプリ開発セッションで verify-\<app\> を回すとき |
 | リスク | 全文移植は skill 数・router 劣化・既存 completion-gate と重複 | Cursor 専用機能（bugbot 等）は CC adapter で skip される |
 | 今回の判断 | **原則（M3/M4）のみ reference に入れる。skill 新規は入れない** | **アプリ作業時のオプションとして文書化。dotfiles 本体には入れない** |
@@ -85,7 +85,15 @@ skill_change: deferred
 | M1/M2 | meta-skill 移植 | **見送り** | 対象未定義 |
 | B | プラグイン常設 | **見送り** | 研究メモに「アプリ作業時の選択肢」と残す |
 
-実施: `.config/claude/references/trust-verification-policy.md` に短い節を追加。`.config/claude/skills/` の SKILL.md は変更しない。
+実施: `.config/claude/references/trust-verification-policy.md` に短い節を追加。`.config/claude/skills/` の SKILL.md は変更しない。ルール 4・5 は文書規律のみで、hook / gate による強制は未配線（policy「適用箇所」に明記）。
+
+### 注記: 生成 verify skill の「自動更新」
+
+| 主張 | 確度 | 根拠 |
+|------|------|------|
+| 生成物は project-local（例: `.cursor/skills/verify-<app>/`）に書かれる | **確認** | 一次情報: `create-verification-skill/SKILL.md`（書き込みパス明記）。formal 側も "project-local skill" |
+| プラグイン更新が、その project-local 生成物を自動で書き換える | **未確認** | 公式 README / setup / create-* SKILL に「生成物は（しない／する）自動更新」の明言なし。書き込み先がプラグインツリー外であることから「バンドル更新だけでは触れない」とは推論できるが、Cursor/CC の plugin 同期が project skill をどう扱うかは一次情報未取得 |
+| 「生成された formal verification skill は自動更新されない」 | **未確認（二次）** | X スレッド上の @grok 回答のみ。poteto 本人・公式 docs では未裏取り |
 
 ## Phase 2.5 記録
 
@@ -99,7 +107,7 @@ skill_change: deferred
 |--------|------|
 | `cursor/plugins` pstack | README, plugin.json (0.15.27), skills 一覧, create-*-verification / maintain / prove-it-works / poteto-mode の SKILL.md, guide `06-verify-and-ship.md`, feature-map example |
 | X 投稿 2111926622278521253 | 本文全文（jina 展開含む）、metrics、author @poteto |
-| 会話の一部返信 | auto-update に関する Grok 回答、命名質問、一般コメント数件 |
+| 会話の一部返信 | auto-update に関する Grok 回答（二次・未裏取り）、命名質問、一般コメント数件 |
 
 ### 読めなかった / 未取得
 
@@ -110,6 +118,7 @@ skill_change: deferred
 | `agents/`, `automations/benny` | 一覧のみ。動作検証せず |
 | Claude Code 生成ツリー `harness/pstack/` の差分監査 | raw 取得は一部成功。生成物と手書きの一致確認は未実施 |
 | 実機での `/create-formal-verification-skill` 実行 | API/モデルコストと対象コード未選定のため未実行。SKILL.md をデータとして分析 |
+| 生成 skill の自動更新に関する公式明言 | README / setup / create-* に「生成物は自動更新（されない）」の一文なし。上記注記表を参照 |
 
 ## Plan
 
