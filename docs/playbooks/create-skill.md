@@ -79,6 +79,8 @@ description: |
 - A/B delta +2pp 以上 → keep
 - delta 微妙 → 1 ヶ月運用後に再評価
 - **必須の A/B が実行できない**（環境欠落・ベンチ不能など）ときは採用せず **`INCONCLUSIVE`** とする。SKIP / 「たぶん大丈夫」で閉じない（`trust-verification-policy` ルール 6 と同型）
+- A/B 不能の原因が **skill 自体の破損**なら **`NOT VERIFIED`**（環境欠落ではない）
+- flaky な結果を `INCONCLUSIVE` にするのは、原因が**環境**の場合だけ（変更・skill 破損が原因なら NOT VERIFIED）
 
 #### A/B の対象範囲
 

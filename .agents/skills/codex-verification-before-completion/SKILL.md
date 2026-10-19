@@ -30,12 +30,12 @@ platforms: [agents, codex]
 主張や「直った」の報告は、次のどれか一つにする（`.config/claude/references/trust-verification-policy.md` ルール 6）:
 
 - `VERIFIED` — 選んだ validation が通った、またはベースライン対比で主張どおり動いた
-- `NOT VERIFIED` — 失敗した、または主張と逆方向だった（**変更が原因の** Layer 0 Fail を含む）
+- `NOT VERIFIED` — 失敗した、または主張と逆方向だった（**変更が原因の** Layer 0 Fail を含む。環境が原因の Layer 0 Fail は INCONCLUSIVE）
 - `INCONCLUSIVE` — 必須の validation が**環境要因**で実行・比較できない（必須 toolchain 未導入を含む。下記）
 
 `INCONCLUSIVE` を PASS や完了扱いにしない。理由を書いて止め、実行可能なら同じ検証を取り直す。
 
-**Fail と INCONCLUSIVE が混在**したら **Fail（NOT VERIFIED）を優先**する。環境か変更かの切り分けは、完了を主張する側が根拠を示す。flaky なテストは再実行しても不安定なら `INCONCLUSIVE`。
+**Fail と INCONCLUSIVE が混在**したら **Fail（NOT VERIFIED）を優先**する。環境か変更かの切り分けは、完了を主張する側が根拠を示す。flaky なテストは原因が環境で再実行しても不安定なら `INCONCLUSIVE`（変更が原因なら NOT VERIFIED）。
 
 ### 必須 / optional（SKIP の前提）
 

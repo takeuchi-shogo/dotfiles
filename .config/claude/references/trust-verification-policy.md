@@ -65,20 +65,20 @@ Layer 3: Human Escalation（人間エスカレーション）
      - **SKIP** = 対象外（optional または変更面に無関係）。三値の外。VERIFIED / PASS の根拠にしない
      - 自分で optional と宣言しただけでは SKIP できない。必須が実行できないなら SKIP ではなく INCONCLUSIVE
    - 境界（完了宣言 skill と同型）:
-     - **環境起因**の失敗（必須 toolchain〈pytest / uv 等〉の未導入、測定基盤ダウン、環境差で比較不能。optional binary 未導入は SKIP）→ `INCONCLUSIVE`
+     - **環境起因**の失敗（必須 toolchain〈pytest / uv 等〉の未導入、測定基盤ダウン、比較不能な環境差。optional binary 未導入は SKIP）→ `INCONCLUSIVE`
      - **変更そのものが原因**の ImportError・構文エラー・テスト Fail → `NOT VERIFIED`（Fail）。INCONCLUSIVE にしない
      - 必須チェックの一部だけ Pass、他が Fail → `NOT VERIFIED`（Fail 優先）
      - 主張と無関係な箇所だけ Pass（主張面を測っていない）→ `INCONCLUSIVE`
-     - 環境か変更かの切り分けは完了を主張する側が根拠を示す。flaky は再実行しても不安定なら `INCONCLUSIVE`
+     - 環境か変更かの切り分けは完了を主張する側が根拠を示す。flaky は原因が環境で再実行しても不安定なら `INCONCLUSIVE`（変更が原因なら NOT VERIFIED）
    - 出典の考え方: pstack `/figure-it-out` Phase C（`docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md` 追記節）。隣接実装: Cursor `verify-this` skill。本ルールに hook / gate 強制は無い（ルール 4・5 と同じ文書規律）
 
 ### 既存判定語彙との対応（ルール 6）
 
 | 既存語彙 | 役割 | 三値との関係 |
 |----------|------|--------------|
-| Layer 0 Pass / Fail | 決定論チェックの生結果 | Pass は VERIFIED の材料、Fail は NOT VERIFIED の材料。単体で完了宣言の三値全体にはならない |
-| ルール 1 の reviewer PASS / BLOCK | Layer 0 のテスト失敗による上書き | reviewer PASS でも Layer 0 Fail があれば BLOCK（完了拒否・NOT VERIFIED 寄り）。テスト未実行があれば完了にしない |
-| `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | 警告を付加 | 別軸。三値は「主張の実証」。テスト未実行時は review PASS でも完了にせず警告を付加する（ルール 2 / review SKILL） |
+| Layer 0 Pass / Fail | 決定論チェックの生結果 | Pass は VERIFIED の材料、**変更が原因の** Fail は NOT VERIFIED の材料、**環境が原因の** Fail は INCONCLUSIVE。単体で完了宣言の三値全体にはならない |
+| ルール 1 の reviewer PASS / BLOCK | Layer 0 のテスト失敗による上書き | reviewer PASS でも **変更が原因の** Layer 0 Fail があれば BLOCK（完了拒否・NOT VERIFIED 寄り）。環境が原因の Layer 0 Fail は INCONCLUSIVE |
+| `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | レビュー合成 verdict | 別軸。三値は「主張の実証」。テスト未実行時は review PASS でも PASS とみなさず、警告を付加する（ルール 2 / review SKILL） |
 | `completion-gate.py` | 決定論の block / allow | 三値を機械強制しない。`CLAUDE_SKIP_TEST_GATE=1` はゲート全体を無効化する抜け道（PASS 扱いの根拠にしない。本 PR では未修正） |
 
 ## 適用箇所
