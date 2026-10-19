@@ -44,6 +44,16 @@ Layer 3: Human Escalation（人間エスカレーション）
    - レビュー出力に矮小化表現が含まれる場合、`[RATIONALIZATION_WARNING]` を発出する
    - 問題を発見した後の自己説得による承認を防止する
 
+4. **壊した版で必ず失敗すること（verifier 感度）**
+   - 新しい検証（テスト・ゲート・形式チェック・生成した verify skill）を導入するときは、守る性質を意図的に壊した変種で一度失敗を確認する
+   - 失敗を見たことがないチェックは「通るだけの儀式」であり、Layer 0 として信頼しない
+   - 出典の考え方: pstack `/create-formal-verification-skill` の "Able to fail"（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）。meta-skill 本体は未移植
+
+5. **検証範囲を正直に書く**
+   - Pass の報告には、何を・どの境界/仮定の下で検証したか、何を見ていないかを添える
+   - モデル・バウンド・モック境界の外まで「システム全体が正しい」と言い切らない
+   - 出典の考え方: 同上 "Honest about scope"。完了宣言の evidence 契約を具体化したもの
+
 ## 適用箇所
 
 - `completion-gate.py`: Layer 0 チェック（テスト実行済み確認）を Review Gate より前に配置
