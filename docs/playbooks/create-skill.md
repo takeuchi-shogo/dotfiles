@@ -12,7 +12,7 @@ last_reviewed: 2026-10-19
 - skill = skip 不能な contract。prompt より強い
 - 既存 skill を必ず確認（重複禁止）: `ls .config/claude/skills/`
 - 詳細原則: `skill-creator:skill-creator` + `.config/claude/references/skill-patterns.md` / `skill-invocation-patterns.md`
-  （旧 `skill-writing-principles.md` の削除: commit `060fba03` / PR #259 は **2026-09-25 07:36:54 +0900**。UTC では 2026-09-24 22:36 であり、JST では 09-25 にあたる。消えたパスは `.config/claude/skills/skill-creator/references/skill-writing-principles.md`。親コミット時点で `.config/claude/references/skill-writing-principles.md` は既に存在しなかった）
+  （旧 `skill-writing-principles.md` は PR #259 / `060fba03`（2026-09-25 +0900 = UTC 09-24 22:36）で `skills/skill-creator/references/` 下から削除。`.config/claude/references/` には親コミット時点で既に無かった）
 - **対象外**（意味は verification の SKIP と同じ: 手順上、この項目をこの面で走らせない／適用しないことが正しい）: 個人 working-style を transcript から掘って `*-mode` にする流れ（pstack `/automate-me`）。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。automate-me 本体は見送り（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）
 
 ## 6-step

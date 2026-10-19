@@ -30,12 +30,12 @@ platforms: [agents, codex]
 主張や「直った」の報告は、次のどれか一つにする（`.config/claude/references/trust-verification-policy.md` ルール 6）:
 
 - `VERIFIED` — 選んだ validation が通った、またはベースライン対比で主張どおり動いた
-- `NOT VERIFIED` — 失敗した、または主張と逆方向だった（Layer 0 Fail を含む）
-- `INCONCLUSIVE` — 必須の validation が**環境要因**で実行・比較できない（下記）
+- `NOT VERIFIED` — 失敗した、または主張と逆方向だった（**変更が原因の** Layer 0 Fail を含む）
+- `INCONCLUSIVE` — 必須の validation が**環境要因**で実行・比較できない（必須 toolchain 未導入を含む。下記）
 
 `INCONCLUSIVE` を PASS や完了扱いにしない。理由を書いて止め、実行可能なら同じ検証を取り直す。
 
-**Fail と INCONCLUSIVE が混在**したら **Fail（NOT VERIFIED）を優先**する。
+**Fail と INCONCLUSIVE が混在**したら **Fail（NOT VERIFIED）を優先**する。環境か変更かの切り分けは、完了を主張する側が根拠を示す。flaky なテストは再実行しても不安定なら `INCONCLUSIVE`。
 
 ### 必須 / optional（SKIP の前提）
 
@@ -58,7 +58,7 @@ platforms: [agents, codex]
 
 ### 境界（policy ルール 6 と同型）
 
-- **環境起因**の失敗（必須 toolchain 未導入以外の環境欠落、測定基盤ダウン、比較不能な環境差）→ `INCONCLUSIVE`
+- **環境起因**の失敗（必須 toolchain〈pytest / uv 等〉の未導入、測定基盤ダウン、比較不能な環境差。optional binary 未導入は SKIP）→ `INCONCLUSIVE`
 - **変更そのものが原因**の ImportError・構文エラー・テスト Fail → `NOT VERIFIED`（Fail）。INCONCLUSIVE にしない
 - 必須チェックの一部だけ Pass、他が Fail → `NOT VERIFIED`（Fail 優先）
 - 主張と無関係な箇所だけ Pass（主張面を測っていない）→ `INCONCLUSIVE`
