@@ -111,7 +111,7 @@ last_reviewed: 2026-10-19
 
 ### レビュー・品質
 
-- **pstack formal/behavioral verification meta-skills + `/automate-me`・`/figure-it-out` (poteto / cursor/plugins v0.15.27→0.15.28, 2026-10-19)** — family なし。検証 meta-skill は前回どおり見送り（原則 2 のみ `trust-verification-policy`）。追記で `/automate-me`（transcript→個人 `-mode`）と `/figure-it-out`（監査可能な playbook 設計）を self-improving-skills / learned-promote / skill 作成系と 1 対 1 照合。**automate-me 本体は見送り**。**figure-it-out 本体は採用・実装は別**。小採用: ルール 6（INCONCLUSIVE ≠ pass）+ `codex-verification-before-completion` + create-skill の A/B 対象境界。frontmatter `status: partial`。上流 SHA `ddf824aff1e55ba14bd666b30bce3fc69962abe6` → `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`
+- **pstack formal/behavioral verification meta-skills + `/automate-me`・`/figure-it-out` (poteto / cursor/plugins v0.15.27→0.15.28, 2026-10-19)** — family なし。検証 meta-skill は前回どおり見送り（原則 2 のみ `trust-verification-policy`）。追記で `/automate-me`（transcript→個人 `*-mode`）と `/figure-it-out`（監査可能な playbook 設計）を self-improving-skills / learned-promote / skill 作成系と 1 対 1 照合。**automate-me 本体は見送り**。**figure-it-out 本体は保留**（追跡先は未作成、ユーザーが判断する）。小採用: ルール 6（INCONCLUSIVE ≠ PASS、SKIP 対象外）+ `codex-verification-before-completion` + create-skill の A/B 対象境界。frontmatter `status: partial`。上流 SHA `ddf824aff1e55ba14bd666b30bce3fc69962abe6` → `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`
 - Spec&Verify, SlopCodeBench, code-review-graph, cc-skills-golang
 - Dual-Audience CLI, Pocock 5 Skills (prd-to-issues + improve-codebase-architecture 統合)
 - Atomic Skills — 原子スキル3原則 → skill-writing-guide + Capability Coverage表 + Deterministic Metrics方針 + Multi-Skill Regression Check

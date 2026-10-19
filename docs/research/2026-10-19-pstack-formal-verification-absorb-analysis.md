@@ -1,5 +1,5 @@
 ---
-source: "https://github.com/cursor/plugins/tree/main/pstack (v0.15.27 formal / v0.15.28 automate-me·figure-it-out) + https://x.com/poteto/status/2111926622278521253"
+source: "https://github.com/cursor/plugins/tree/main/pstack (v0.15.27 formal / v0.15.28 automate-me・figure-it-out) + https://x.com/poteto/status/2111926622278521253"
 date: 2026-10-19
 status: partial
 family: none
@@ -132,7 +132,7 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 
 ---
 
-## 追記: `/automate-me` と `/figure-it-out`（採用 / 見送り）
+## 追記: `/automate-me` と `/figure-it-out`（採用 / 見送り / 保留）
 
 > 上流: `cursor/plugins` pstack @ `ddf824aff1e55ba14bd666b30bce3fc69962abe6`（committer 2026-10-19T22:39:26Z）、`plugin.json` **0.15.28**。  
 > 読んだファイル: `pstack/skills/automate-me/SKILL.md`、`pstack/skills/figure-it-out/SKILL.md`、README 該当行、`plugin.json`。取得 2026-10-19T23:24:07Z UTC。  
@@ -143,25 +143,35 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 
 | Skill | 一言 | 成果物 |
 |-------|------|--------|
-| `/automate-me` | 自分の進め方を、transcript 採掘 + 質問で **個人 `-mode` skill** にする | `.cursor/skills/<handle>/-mode/SKILL.md` 等。create-skill + unslop をオーケストレーション |
+| `/automate-me` | 自分の進め方を、transcript 採掘 + 質問で **個人 `*-mode` skill** にする | `.cursor/skills/<handle>/<handle>-mode/SKILL.md` 等。create-skill + unslop をオーケストレーション |
 | `/figure-it-out` | 合う playbook が無いとき、**あとから監査できる playbook を先に設計**してから動く | フェーズ表 + 仮説ループ + decision trail（show-me-your-work） |
 
 ### Gap Analysis（手法ごと 1 対 1）
 
-照合の読み方: 各手法を上記 3 系と突き合わせ、**Already / Partial / Gap / N/A** のどれか一つ。隣接の PLANS.md / verify-this 等は判定の根拠に使ってよいが、照合先の名指しは 3 系を優先する。
+照合の読み方（行ごとの判定手順）:
+
+1. 手法を一文で定義する。
+2. 照合相手 3 系（self-improving-skills / learned-promote / skill 作成系）それぞれに、**同型の仕組みがあるか**を名指しで探す。
+3. 列ごとの記号:
+   - **Already** — 同目的の仕組みが実装または設計として揃い、強化不要
+   - **Partial** — 同目的だが欠ける・薄い・隣接でしかカバーしていない
+   - **Gap** — 3 系のいずれにも同型が無い（または意図が逆）
+   - **N/A** — その系の責務外（例: 昇格ループに「インタビュー UI」を求めない）
+4. 行の総合判定は、非 N/A 列を合成する。Gap が 1 つでも主欠損なら Gap。全 Already なら Already。混在は Partial。意図差のみの Gap は括弧で注記する。
+5. PLANS.md / `verify-this` 等の隣接は根拠に使ってよいが、照合先の名指しは 3 系を優先する。
 
 #### `/automate-me`
 
 | # | 手法 | self-improving-skills | learned-promote | skill 作成系 | 判定 |
 |---|------|----------------------|-----------------|--------------|------|
-| AM1 | transcript をスライス採掘し個人 `-mode` skill を起草 | 単位が違う（skill 実行スコアの Amend。ユーザー流儀の transcript→mode ではない） | 単位が違う（learnings→artifact。`-mode` 生成器ではない） | create-skill は起草のみ。採掘オーケストレータは無い | **Gap** |
+| AM1 | transcript をスライス採掘し個人 `*-mode` skill を起草 | 単位が違う（skill 実行スコアの Amend。ユーザー流儀の transcript→mode ではない） | 単位が違う（learnings→artifact。`*-mode` 生成器ではない） | create-skill は起草のみ。採掘オーケストレータは無い | **Gap** |
 | AM2 | 2+ スライスで見た信号だけ昇格（単発は落とす） | Partial（複合スコア集約はあるが「複数会話スライス」ではない） | Already（冪等 key + 再発/証拠前提の昇格） | Already（`failure-to-skill-loop` 証拠 ≥2） | **Already** |
 | AM3 | AskQuestion で意図を構造化インタビュー | N/A | N/A | Partial（skill-creator / create-skill のインタビューはあるが「流儀のカテゴリ選択」専用ではない） | **Partial** |
 | AM4 | 非デフォルト規則だけを section 化（対称性を強制しない） | N/A | N/A | Partial（create-skill の Do/Don't・archetype。mode 専用クラスタ表は無い） | **Partial** |
 | AM5 | create-skill + prose 規律で本文を書く | Partial（Amend は本文 diff を出すが unslop 相当の専用段は薄い） | N/A | Already（skill-creator + create-skill + 日本語 prose / stop-slop 参照） | **Already** |
-| AM6 | 既存 `-mode` の差分更新（前回編集以降だけ採掘） | Already（Inspect→Amend の増分） | Already（reconcile / ledger の増分） | Partial（create-skill は新規向けが主） | **Already** |
-| AM7 | worktree + PR で land（main 直 push 禁止） | Already（autoevolve ブランチ提案） | Already（PR ゲート） | Already（create-skill Step 6） | **Already** |
-| AM8 | mode skill は主観のため A/B ベンチを使わず vibe-check | Gap（設計はスコア/A/B 寄り） | N/A | Gap（create-skill Step 5 は A/B 必須トーン） | **Gap**（意図差。mode を作らないなら実害は小さい） |
+| AM6 | 既存 `*-mode` の差分更新（前回編集以降だけ採掘） | Already（Inspect→Amend の増分） | Already（reconcile / ledger の増分） | Partial（create-skill は新規向けが主） | **Already** |
+| AM7 | worktree + PR で land（main 直 push 禁止） | Already（autoevolve ブランチ提案） | Already（PR ゲート） | Partial（create-skill Step 6 は validate / symlink / commit のみ。worktree+PR は未記載） | **Already** |
+| AM8 | mode skill は主観のため A/B ベンチを使わず vibe-check | Gap（設計はスコア/A/B 寄り） | N/A | Gap（create-skill Step 5 は task skill 向け A/B。mode は対象外にした） | **Gap**（意図差。mode を作らないなら実害は小さい） |
 
 集計（automate-me）: Gap 2 / Partial 2 / Already 4 / N/A 0。
 
@@ -172,7 +182,7 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 | FI1 | 合う playbook が無いとき、実行前に playbook 自体を設計する | N/A（改善ループであり playbook 設計器ではない） | N/A | Partial（`docs/playbooks/` + create-skill は「既知の skill 追加」。ゼロから監査可能な playbook をタスク単位で設計する meta-skill は無い） | **Partial** |
 | FI2 | done を falsifiable predicate にし、blast radius で rigor を上げる | N/A | N/A | Partial（create-skill の AC/検証はあるが、長時間ランの rigor スケール契約ではない）。隣接 Already: PLANS.md / reversible-decisions | **Partial** |
 | FI3 | 検証ハーネスを先に置き、リスクの高い未知から並べる | N/A | N/A | Partial（create-skill の A/B は「作った後」。事前 harness は薄い）。隣接 Already: Goal-Driven / Layer 0 | **Partial** |
-| FI4 | 単位ごとに仮説→実測。判定は VERIFIED / NOT VERIFIED / **INCONCLUSIVE**（inconclusive ≠ pass） | N/A | N/A | Gap（skill 作成系に三値 verdict 契約は無い）。隣接 Partial: `verify-this`（Cursor team-kit）と memory `verification_status` は語彙が近いが完了宣言 skill には未配線 | **Gap** |
+| FI4 | 単位ごとに仮説→実測。判定は VERIFIED / NOT VERIFIED / **INCONCLUSIVE**（INCONCLUSIVE ≠ PASS） | N/A | N/A | Gap（skill 作成系に三値 verdict 契約は無かった）。隣接 Partial: `verify-this`（Cursor team-kit）と memory `verification_status` は語彙が近いが完了宣言 skill には未配線だった | **Gap** |
 | FI5 | 野心的な仕事は decision trail を残し PR で読めるようにする | N/A | Partial（manifest は昇格監査。タスク実行の decision TSV ではない） | N/A。隣接 Partial: checkpoint / docs/plans / show-me-your-work 相当は散在 | **Partial** |
 | FI6 | 繰り返し直す指摘を lint / gate / script に落とす | Already（Amend で skill へ） | Already（artifact 昇格） | Already（failure-to-skill → durable artifact） | **Already** |
 
@@ -182,19 +192,19 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 
 | 対象 | 判断 | 理由 |
 |------|------|------|
-| `/automate-me` 本体（transcript→個人 `-mode`） | **見送り** | AM1 が Gap かつ大きい。作業流儀の正本は既に `CLAUDE.md` / `AGENTS.md` / memory。Cursor の `agent-transcripts/` 前提は Claude Code 主経路とずれる。プラグイン常設も前回どおり見送り |
-| AM8（mode は A/B しない） | **採用（文書・小）** | create-skill の A/B 必須トーンが「将来 mode を誤って作ったとき」に誤誘導する。task skill に限定する一文を playbook に足す |
-| `/figure-it-out` 本体（meta playbook 設計 skill） | **採用、実装は別で行う** | FI1–FI3/FI5 は Partial で思想は既存 PLANS/playbook に近いが、pstack 依存の「設計→仮説ループ→trail」一体 skill は範囲が大きい。今回は移植しない |
-| FI4（INCONCLUSIVE ≠ pass） | **採用（小・この PR）** | 範囲が「完了・検証の三値」に閉じる。`trust-verification-policy` + `codex-verification-before-completion` に短い契約を足す |
-| FI6 / AM2 / AM5 / AM7 | **Already（強化不要）** | failure-to-skill / learned-promote / create-skill / PR ゲートで足りる |
+| `/automate-me` 本体（transcript→個人 `*-mode`） | **見送り** | AM1 が Gap かつ大きい。作業流儀の正本は既に `CLAUDE.md` / `AGENTS.md` / memory。Cursor の `agent-transcripts/` 前提は Claude Code 主経路とずれる。プラグイン常設も前回どおり見送り |
+| AM8（mode は A/B しない） | **採用（文書・小）** | create-skill の A/B を task skill に限定し、reference / routing / `*-mode` の境界と「別トラック」を明記する |
+| `/figure-it-out` 本体（meta playbook 設計 skill） | **保留** | FI1–FI3 / FI5 は Partial で、既存 PLANS / playbook に近いが一体 skill として移植する根拠は揃っていない。採用と書けるほど範囲が閉じていない。追跡先は **未作成、ユーザーが判断する** |
+| FI4（INCONCLUSIVE ≠ PASS） | **採用（小・この PR）** | 範囲が「完了・検証の三値」に閉じる。`trust-verification-policy` ルール 6 + `codex-verification-before-completion` に契約を足す（考え方の採用。figure-it-out skill 本体の移植ではない） |
+| FI6 / AM2 / AM5 / AM7 | **Already（強化不要）** | failure-to-skill / learned-promote / create-skill（起草）/ PR ゲート。AM7 の create-skill 列は Partial だが、learned-promote / self-improving 側で Already |
 
 ### この PR で触るもの / 触らないもの
 
 **触る（小）**
 
-1. `.config/claude/references/trust-verification-policy.md` — ルール 5 の直後に、検証結果の三値と INCONCLUSIVE の扱いを追記（出典: figure-it-out Phase C + 隣接 `verify-this`）。
-2. `.agents/skills/codex-verification-before-completion/SKILL.md` — 完了宣言の証拠が足りないとき INCONCLUSIVE 扱いにし、pass にしない。
-3. `docs/playbooks/create-skill.md` — A/B は task skill 向け；個人 working-style の `-mode`（automate-me パターン）は本 playbook の対象外（見送り）と明記。壊れた `skill-writing-principles.md` リンクを現行参照へ差し替え。
+1. `.config/claude/references/trust-verification-policy.md` — ルール 6（三値・SKIP・境界・既存語彙対応）。
+2. `.agents/skills/codex-verification-before-completion/SKILL.md` — Verdict / SKIP / 境界を policy と同型に。
+3. `docs/playbooks/create-skill.md` — A/B 対象表・別トラック・Anti-patterns・削除日訂正・Step 6 注記。
 
 **触らない**
 
@@ -218,5 +228,5 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 
 ### frontmatter 反映
 
-- `status: research-only` → **`partial`**（FI4 + create-skill 境界の小採用。本体 2 skill は見送り / 実装別）
+- `status: research-only` → **`partial`**（FI4 の考え方 + create-skill 境界を小採用。automate-me 本体は見送り、figure-it-out 本体は保留）
 - `skill_change: deferred` → **`applied-small`**
