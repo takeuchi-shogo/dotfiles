@@ -2441,7 +2441,7 @@
 - ソース: https://github.com/cursor/plugins/tree/main/pstack @ `ddf824aff1e55ba14bd666b30bce3fc69962abe6`（v0.15.28、取得 2026-10-19T23:24:07Z UTC）
 - 新規研究メモは作らない。既存 `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md` に追記
 - 照合: self-improving-skills / learned-promote / skill 作成系（create-skill・skill-creator・skill-audit・failure-to-skill）と手法ごと 1 対 1
-- 判定集計: automate-me Gap 2 / Partial 2 / Already 4。figure-it-out Gap 1 / Partial 4 / Already 1
+- 判定集計: automate-me Gap 2 / Partial 2 / Already 4。figure-it-out Gap 1 / Partial 4 / Already 1（総合ルール: Already+Partial 混在→Already、全 Partial→Partial）
 - 取り込み: **automate-me 本体見送り** / **figure-it-out 本体は保留**（追跡先は未作成、ユーザーが判断する） / 小採用 FI4（INCONCLUSIVE ≠ PASS）→ trust-verification-policy ルール 6 + `codex-verification-before-completion` + create-skill の A/B 境界
 - frontmatter: `status: partial` / `skill_change: applied-small`
 - INDEX: `docs/research/_index.md` と本 wiki `INDEX.md` の research 表を更新

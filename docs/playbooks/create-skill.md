@@ -12,8 +12,8 @@ last_reviewed: 2026-10-19
 - skill = skip 不能な contract。prompt より強い
 - 既存 skill を必ず確認（重複禁止）: `ls .config/claude/skills/`
 - 詳細原則: `skill-creator:skill-creator` + `.config/claude/references/skill-patterns.md` / `skill-invocation-patterns.md`
-  （旧 `skill-writing-principles.md` は **2026-09-25**（+0900、commit `060fba03` / PR #259）にローカル skill-creator 退役で削除。wiki 概念記事の「2026-09-24」は日付ずれ）
-- **対象外**: 個人の working-style を transcript から掘って `*-mode` skill にする流れ（pstack `/automate-me`）。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。automate-me 本体の導入は見送り（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）
+  （旧 `skill-writing-principles.md` の削除: commit `060fba03` / PR #259 は **2026-09-25 07:36:54 +0900**。UTC では 2026-09-24 22:36 であり、JST では 09-25 にあたる。消えたパスは `.config/claude/skills/skill-creator/references/skill-writing-principles.md`。親コミット時点で `.config/claude/references/skill-writing-principles.md` は既に存在しなかった）
+- **対象外**（意味は verification の SKIP と同じ: 手順上、この項目をこの面で走らせない／適用しないことが正しい）: 個人 working-style を transcript から掘って `*-mode` にする流れ（pstack `/automate-me`）。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。automate-me 本体は見送り（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）
 
 ## 6-step
 
@@ -78,6 +78,7 @@ description: |
 - A/B delta < 0pp → skill 不要 (revert)
 - A/B delta +2pp 以上 → keep
 - delta 微妙 → 1 ヶ月運用後に再評価
+- **必須の A/B が実行できない**（環境欠落・ベンチ不能など）ときは採用せず **`INCONCLUSIVE`** とする。SKIP / 「たぶん大丈夫」で閉じない（`trust-verification-policy` ルール 6 と同型）
 
 #### A/B の対象範囲
 
@@ -88,6 +89,8 @@ description: |
 | **routing skill**（起動・振り分けが本体） | 対象外 | `skill-audit` の description conflict-scan / trigger 精度 |
 | **hybrid**（task + routing） | task 面のみ A/B | routing 面は conflict-scan |
 | **個人 `*-mode`（working-style）** | 対象外 | **別トラック**（下記） |
+
+上表の「対象外」も、前提節と同じ意味（この面では A/B を走らせないのが正しい）。optional 宣言だけでは必須 A/B を SKIP できない。
 
 **別トラック**: pstack `/automate-me` 相当の専用フロー（transcript 採掘 → 個人 `*-mode` 起草 → vibe-check）。本 repo では **見送り**。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。create-skill の 6-step では扱わない。
 

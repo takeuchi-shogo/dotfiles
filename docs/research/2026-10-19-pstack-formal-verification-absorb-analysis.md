@@ -157,14 +157,18 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
    - **Partial** — 同目的だが欠ける・薄い・隣接でしかカバーしていない
    - **Gap** — 3 系のいずれにも同型が無い（または意図が逆）
    - **N/A** — その系の責務外（例: 昇格ループに「インタビュー UI」を求めない）
-4. 行の総合判定は、非 N/A 列を合成する。Gap が 1 つでも主欠損なら Gap。全 Already なら Already。混在は Partial。意図差のみの Gap は括弧で注記する。
+4. 行の総合判定は、非 N/A 列だけを合成する（優先順）:
+   - 非 N/A に **Gap が 1 つでも**あれば → **Gap**（意図差のみの Gap は括弧で注記可）
+   - 非 N/A が **すべて Already** → **Already**
+   - 非 N/A が **すべて Partial** → **Partial**（FI1–FI3・FI5 がこれに該当）
+   - **Already と Partial の混在** → **Already**（少なくとも 1 系で同目的が揃い強化不要。薄い列は Partial のままセルに残す。AM2 / AM5 / AM6 / AM7 がこれに該当）
 5. PLANS.md / `verify-this` 等の隣接は根拠に使ってよいが、照合先の名指しは 3 系を優先する。
 
 #### `/automate-me`
 
 | # | 手法 | self-improving-skills | learned-promote | skill 作成系 | 判定 |
 |---|------|----------------------|-----------------|--------------|------|
-| AM1 | transcript をスライス採掘し個人 `*-mode` skill を起草 | 単位が違う（skill 実行スコアの Amend。ユーザー流儀の transcript→mode ではない） | 単位が違う（learnings→artifact。`*-mode` 生成器ではない） | create-skill は起草のみ。採掘オーケストレータは無い | **Gap** |
+| AM1 | transcript をスライス採掘し個人 `*-mode` skill を起草 | Gap（単位: skill スコア Amend ≠ transcript→mode） | Gap（単位: learnings→artifact ≠ `*-mode` 生成） | Gap（create-skill は起草のみ。採掘なし） | **Gap** |
 | AM2 | 2+ スライスで見た信号だけ昇格（単発は落とす） | Partial（複合スコア集約はあるが「複数会話スライス」ではない） | Already（冪等 key + 再発/証拠前提の昇格） | Already（`failure-to-skill-loop` 証拠 ≥2） | **Already** |
 | AM3 | AskQuestion で意図を構造化インタビュー | N/A | N/A | Partial（skill-creator / create-skill のインタビューはあるが「流儀のカテゴリ選択」専用ではない） | **Partial** |
 | AM4 | 非デフォルト規則だけを section 化（対称性を強制しない） | N/A | N/A | Partial（create-skill の Do/Don't・archetype。mode 専用クラスタ表は無い） | **Partial** |
@@ -196,7 +200,7 @@ skill / プラグイン導入の実装 Plan は作らない（見送り）。再
 | AM8（mode は A/B しない） | **採用（文書・小）** | create-skill の A/B を task skill に限定し、reference / routing / `*-mode` の境界と「別トラック」を明記する |
 | `/figure-it-out` 本体（meta playbook 設計 skill） | **保留** | FI1–FI3 / FI5 は Partial で、既存 PLANS / playbook に近いが一体 skill として移植する根拠は揃っていない。採用と書けるほど範囲が閉じていない。追跡先は **未作成、ユーザーが判断する** |
 | FI4（INCONCLUSIVE ≠ PASS） | **採用（小・この PR）** | 範囲が「完了・検証の三値」に閉じる。`trust-verification-policy` ルール 6 + `codex-verification-before-completion` に契約を足す（考え方の採用。figure-it-out skill 本体の移植ではない） |
-| FI6 / AM2 / AM5 / AM7 | **Already（強化不要）** | failure-to-skill / learned-promote / create-skill（起草）/ PR ゲート。AM7 の create-skill 列は Partial だが、learned-promote / self-improving 側で Already |
+| FI6 / AM2 / AM5 / AM6 / AM7 | **Already（強化不要）** | 総合判定ルール上、Already+Partial 混在は Already。薄い列はセルに Partial のまま残す。カバーは failure-to-skill / learned-promote / create-skill（起草）/ PR ゲート側 |
 
 ### この PR で触るもの / 触らないもの
 

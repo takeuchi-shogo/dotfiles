@@ -57,11 +57,17 @@ Layer 3: Human Escalation（人間エスカレーション）
 
 6. **検証結果は三値。INCONCLUSIVE を PASS / 完了扱いにしない**
    - 主張・変更単位の判定は `VERIFIED` / `NOT VERIFIED` / `INCONCLUSIVE` のどれか一つにする
-   - 必須 validation が実行できない・比較が無効・観測が壊れているときは `INCONCLUSIVE`。完了や「問題なし」に読み替えない
-   - **SKIP（対象外）** は三値の外。変更面で走らせないのが正しい validation にだけ使う。SKIP を VERIFIED / PASS の根拠にしない。必須が実行できないなら SKIP ではなく INCONCLUSIVE
+   - **必須** validation が環境要因で実行できない・比較が無効なときは `INCONCLUSIVE`。完了や「問題なし」に読み替えない
+   - **Fail と INCONCLUSIVE が混在したら Fail（NOT VERIFIED）を優先**する
+   - **必須 / optional / SKIP（対象外）** — 「対象外」はこの意味だけ:
+     - **必須**: 変更種別に対し Dotfiles Hints / Taskfile / CI / 当該 playbook・skill が要求するもの
+     - **optional**: 文書が「未導入時は skip 可」と明記した optional binary、または変更面に無関係なチェック
+     - **SKIP** = 対象外（optional または変更面に無関係）。三値の外。VERIFIED / PASS の根拠にしない
+     - 自分で optional と宣言しただけでは SKIP できない。必須が実行できないなら SKIP ではなく INCONCLUSIVE
    - 境界（完了宣言 skill と同型）:
-     - インフラ起因の ERROR（必須コマンドのクラッシュ・環境欠落・測定不能）→ `INCONCLUSIVE`
-     - 必須チェックの一部だけ Pass、他が Fail → `NOT VERIFIED`
+     - **環境起因**の失敗（測定基盤ダウン、環境差で比較不能など）→ `INCONCLUSIVE`
+     - **変更そのものが原因**の ImportError・構文エラー・テスト Fail → `NOT VERIFIED`（Fail）。INCONCLUSIVE にしない
+     - 必須チェックの一部だけ Pass、他が Fail → `NOT VERIFIED`（Fail 優先）
      - 主張と無関係な箇所だけ Pass（主張面を測っていない）→ `INCONCLUSIVE`
    - 出典の考え方: pstack `/figure-it-out` Phase C（`docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md` 追記節）。隣接実装: Cursor `verify-this` skill。本ルールに hook / gate 強制は無い（ルール 4・5 と同じ文書規律）
 
@@ -70,9 +76,9 @@ Layer 3: Human Escalation（人間エスカレーション）
 | 既存語彙 | 役割 | 三値との関係 |
 |----------|------|--------------|
 | Layer 0 Pass / Fail | 決定論チェックの生結果 | Pass は VERIFIED の材料、Fail は NOT VERIFIED の材料。単体で完了宣言の三値全体にはならない |
-| ルール 1 の reviewer PASS / BLOCK | Layer 1-2 の合意・拒否 | BLOCK は完了拒否（NOT VERIFIED 寄り）。reviewer PASS でも Layer 0 Fail やテスト未実行があれば完了にしない |
-| `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | レビュー合成 verdict | 別軸。三値は「主張の実証」。テスト未実行は review PASS でも完了にしない（既存ルール 2 / review SKILL） |
-| `completion-gate.py` | 決定論の block / allow | 三値を機械強制しない。`CLAUDE_SKIP_TEST_GATE=1` はゲート全体を無効化する抜け道（PASS 扱いの根拠にしない） |
+| ルール 1 の reviewer PASS / BLOCK | Layer 1-2 の合意・拒否 | ルール 1 の BLOCK は、主に **Layer 0 のテスト失敗が reviewer PASS を上書きする**ときの完了拒否（NOT VERIFIED 寄り）。reviewer PASS でも Layer 0 Fail やテスト未実行があれば完了にしない |
+| `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | レビュー合成 verdict | 別軸。三値は「主張の実証」。テスト未実行時は review PASS でも完了にせず **警告を付加**する（ルール 2 / review SKILL） |
+| `completion-gate.py` | 決定論の block / allow | 三値を機械強制しない。`CLAUDE_SKIP_TEST_GATE=1` はゲート全体を無効化する抜け道（PASS 扱いの根拠にしない。本 PR では未修正） |
 
 ## 適用箇所
 
