@@ -71,29 +71,32 @@ trusted_hash = "sha256:49ce36456a4d19511d5b5fcb13328ab576aba93f3e552a131a575cff4
 enabled = false
 
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:pre_tool_use:0:0"]
-trusted_hash = "sha256:e1e103a35a07f3ff8fb86139e8b3ba52e3fd98a0368e64102991c0f2e7198a97"
-
+enabled = true
+trusted_hash = "sha256:33153c88ce09e9a5b899b9cb33dd23382be394a3e1cdb421e44e0b3778e8bdf2"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:permission_request:0:0"]
-trusted_hash = "sha256:7bf839811a6c803e7f3d9ca3839e7c61434085fdd1e160f5f79cf21445bd2f95"
-
+enabled = true
+trusted_hash = "sha256:bd2c29369e47a438a3f2c1c18896d7bd86ce58c0eb5542f1c3b879e427f92fc9"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:post_tool_use:0:0"]
-trusted_hash = "sha256:206f8d94c55b036f003c5dd10413b1b2e763194d12b5a98cf1fad08df92b3238"
-
+enabled = true
+trusted_hash = "sha256:a452131ceaecacb08404d1a8d49d85315fdf109905d152859c32b538c9002f93"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:session_start:1:0"]
-trusted_hash = "sha256:486a7803ae98a7b3e57482277e6a39e652f1282ba5e02ab66644a6ed608e0282"
-
+enabled = true
+trusted_hash = "sha256:d853ef9fbaf2ff5c8504bf2463675664aaf29a8016c6a35293a6ddc053b4f030"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:user_prompt_submit:0:0"]
-trusted_hash = "sha256:92c7a95a777d2994f638946a6ffe57a6378849546ff7b8a9c9d72f8e872284be"
-
+enabled = true
+trusted_hash = "sha256:5383e8af0fe09d96df4e6d0f5f3edaec15485d6162a1a749b5c69e7242eb0478"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:subagent_start:0:0"]
-trusted_hash = "sha256:9fecfd7a54b27d6301d40b0fbfc01bb42d90e2b4d82caf85e0d23f2f233f6e4b"
-
+enabled = true
+trusted_hash = "sha256:269737162a0cf2b29b3e40df23411c02a8bbdeb5f471243c924dac116624cdcf"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:subagent_stop:0:0"]
-trusted_hash = "sha256:c5df4fa4d59b19e8c459026e2ab5296d7b78734eaef7522eb07b4a1f243148d4"
-
+enabled = true
+trusted_hash = "sha256:62ff9ef7fcca3784011e955f35ee3612b11168b2f62bd772f08adefb918d34be"
 [hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:stop:0:0"]
-trusted_hash = "sha256:1fbd92ab2786341838374b1f66b5e9e4603d2a53255bad6eaf09fd604d214a88"
-
+enabled = true
+trusted_hash = "sha256:1ae8ee19d95298f7bc4821368a7d4600b9f9d36c68695812c19419b28b5ad53e"
+[hooks.state."/Users/shogo_takeuchi/.codex/hooks.json:interrupt:0:0"]
+enabled = true
+trusted_hash = "sha256:78b430d1d7794c49e6d83a36964d4082d05ec72023ccc38244e97b8e08d054d2"
 [memories]
 use_memories = true
 generate_memories = true
@@ -220,6 +223,9 @@ enabled = true
 
 [plugins."browser@openai-bundled"]
 enabled = true
+
+[tui]
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
