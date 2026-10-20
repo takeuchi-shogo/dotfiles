@@ -2435,3 +2435,14 @@
 - ソース: https://github.com/nanaism/yomiyasu (v2.0.1, commit 1bc21f9c)
 - 判定: Gap 5, Partial 3, Already 1 (強化案は取り下げ), N/A 0
 - 取り込み: yomiyasu を plugin で導入 / natural-japanese を user-invocable-only / japanese-ai-prose.md に「書き換えで意味を変えない」節。Codex 批評は usage limit で未取得
+
+## [2026-10-19] ingest | pstack `/automate-me`・`/figure-it-out` 採用判断（既存メモ追記）
+
+- ソース: https://github.com/cursor/plugins/tree/main/pstack @ `ddf824aff1e55ba14bd666b30bce3fc69962abe6`（v0.15.28、取得 2026-10-19T23:24:07Z UTC）
+- 新規研究メモは作らない。既存 `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md` に追記
+- 照合: self-improving-skills / learned-promote / skill 作成系（create-skill・skill-creator・skill-audit・failure-to-skill）と手法ごと 1 対 1
+- 判定集計: automate-me Gap 2 / Partial 2 / Already 4。figure-it-out Gap 1 / Partial 4 / Already 1（行判定: 全列 N/A→N/A / Gap 1 つでも→Gap / すべて Already→Already / すべて Partial→Partial / Already+Partial 混在・Gap なし→Already）
+- 取り込み: **automate-me 本体見送り** / **figure-it-out 本体は保留**（追跡先は未作成、ユーザーが判断する） / 小採用 FI4（INCONCLUSIVE ≠ PASS）→ trust-verification-policy ルール 6 + `codex-verification-before-completion` + create-skill の A/B 境界
+- frontmatter: `status: partial` / `skill_change: applied-small`
+- INDEX: `docs/research/_index.md` と本 wiki `INDEX.md` の research 表を更新
+- レポート: docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md

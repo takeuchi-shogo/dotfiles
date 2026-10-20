@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-04-23
+last_reviewed: 2026-10-19
 ---
 
 # Create Skill Playbook
@@ -11,7 +11,9 @@ last_reviewed: 2026-04-23
 
 - skill = skip 不能な contract。prompt より強い
 - 既存 skill を必ず確認（重複禁止）: `ls .config/claude/skills/`
-- 詳細原則: `.config/claude/references/skill-writing-principles.md`
+- 詳細原則: `skill-creator:skill-creator` + `.config/claude/references/skill-patterns.md` / `skill-invocation-patterns.md`
+  （旧 `skill-writing-principles.md` は PR #259 / `060fba03`（2026-09-25 +0900 = UTC 09-24 22:36）で `skills/skill-creator/references/` 下から削除。`.config/claude/references/` には親コミット時点で既に無かった）
+- **対象外**（意味は verification の SKIP と同じ: 手順上、この項目をこの面で走らせない／適用しないことが正しい）: 個人 working-style を transcript から掘って `*-mode` にする流れ（pstack `/automate-me`）。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。automate-me 本体は見送り（研究メモ `docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md`）
 
 ## 6-step
 
@@ -66,7 +68,7 @@ description: |
 
 ### 5. A/B テスト
 
-新 skill が機能するか実測:
+**task skill**（再現可能な手順・判定があるもの）が機能するか実測:
 
 ```bash
 # 同じタスクを skill あり / なしで実行
@@ -76,6 +78,23 @@ description: |
 - A/B delta < 0pp → skill 不要 (revert)
 - A/B delta +2pp 以上 → keep
 - delta 微妙 → 1 ヶ月運用後に再評価
+- **必須の A/B が実行できない**（環境欠落・ベンチ不能など）ときは採用せず **`INCONCLUSIVE`** とする。SKIP / 「たぶん大丈夫」で閉じない（`trust-verification-policy` ルール 6 と同型）
+- A/B 不能の原因が **skill 自体の破損**なら **`NOT VERIFIED`**（環境欠落ではない）
+- flaky な結果を `INCONCLUSIVE` にするのは、原因が**環境**の場合だけ（変更・skill 破損が原因なら NOT VERIFIED）
+
+#### A/B の対象範囲
+
+| 種別 | Step 5 A/B | 代わりに使うもの |
+|------|------------|------------------|
+| **task skill** | **必須** | skill-audit A/B（本 Step） |
+| **reference skill**（手順より参照知識・方針） | 対象外 | 人間レビュー / Invert Test / 読者テスト |
+| **routing skill**（起動・振り分けが本体） | 対象外 | `skill-audit` の description conflict-scan / trigger 精度 |
+| **hybrid**（task + routing） | task 面のみ A/B | routing 面は conflict-scan |
+| **個人 `*-mode`（working-style）** | 対象外 | **別トラック**（下記） |
+
+上表の「対象外」も、前提節と同じ意味（この面では A/B を走らせないのが正しい）。optional 宣言だけでは必須 A/B を SKIP できない。
+
+**別トラック**: pstack `/automate-me` 相当の専用フロー（transcript 採掘 → 個人 `*-mode` 起草 → vibe-check）。本 repo では **見送り**。流儀の正本は `CLAUDE.md` / `AGENTS.md` / memory。create-skill の 6-step では扱わない。
 
 ### 6. Validate / Symlink / Commit
 
@@ -90,16 +109,21 @@ git add .config/claude/skills/my-skill/SKILL.md
 git commit -m "feat(skills): add my-skill for ..."
 ```
 
+注: 本 Step は validate / symlink / commit まで。worktree 分離や PR 作成は含まない（learned-promote / worktree playbook 側）。
+
 ## Anti-patterns
 
 - ✗ 既存 skill と機能重複（必ず `ls skills/` 確認）
 - ✗ description に Triggers / Do NOT use を書かない（routing 精度低下）
 - ✗ skill を hook 化できる場合に skill にする（hook の方が強制力上）
-- ✗ A/B 検証なしで採用 → CQS スコア悪化の温床
+- ✗ **task skill** を A/B 検証なしで採用 → CQS スコア悪化の温床
+- ✗ reference / routing / 個人 `*-mode` に task 用 A/B を押し付ける（上表の対象外を無視）
 
 ## 関連
 
-- 原則: `.config/claude/references/skill-writing-principles.md`
+- 作成パイプライン: `skill-creator:skill-creator`
+- パターン: `.config/claude/references/skill-patterns.md`
 - 衝突解決: `.config/claude/references/skill-conflict-resolution.md`
 - 起動パターン: `.config/claude/references/skill-invocation-patterns.md`
 - インベントリ: `.config/claude/references/skill-inventory.md`
+- 失敗→skill: `.config/claude/skills/skill-audit/references/failure-to-skill-loop.md`

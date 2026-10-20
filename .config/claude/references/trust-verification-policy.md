@@ -55,13 +55,40 @@ Layer 3: Human Escalation（人間エスカレーション）
    - モデル・バウンド・モック境界の外まで「システム全体が正しい」と言い切らない
    - 出典の考え方: 同上 "Honest about scope"。完了宣言の evidence 契約を具体化したもの
 
+6. **検証結果は三値。INCONCLUSIVE を PASS / 完了扱いにしない**
+   - 主張・変更単位の判定は `VERIFIED` / `NOT VERIFIED` / `INCONCLUSIVE` のどれか一つにする
+   - **必須**の validation が**環境要因**で実行・比較できないときは `INCONCLUSIVE`（必須 toolchain 未導入を含む）。完了や「問題なし」に読み替えない
+   - **Fail と INCONCLUSIVE が混在したら Fail（NOT VERIFIED）を優先**する
+   - **必須 / optional / SKIP（対象外）** — 「対象外」はこの意味だけ:
+     - **必須**: 変更種別に対し Dotfiles Hints / Taskfile / CI / 当該 playbook・skill が要求するもの
+     - **optional**: 文書が「未導入時は skip 可」と明記した optional binary、または変更面に無関係なチェック
+     - **SKIP** = 対象外（optional または変更面に無関係）。三値の外。VERIFIED / PASS の根拠にしない
+     - 自分で optional と宣言しただけでは SKIP できない。必須が実行できないなら SKIP ではなく INCONCLUSIVE
+   - 境界（完了宣言 skill と同型）:
+     - **環境起因**の失敗（必須 toolchain〈pytest / uv 等〉の未導入、測定基盤ダウン、比較不能な環境差。optional binary 未導入は SKIP）→ `INCONCLUSIVE`
+     - **変更そのものが原因**の ImportError・構文エラー・テスト Fail → `NOT VERIFIED`（Fail）。INCONCLUSIVE にしない
+     - 必須チェックの一部だけ Pass、他が Fail → `NOT VERIFIED`（Fail 優先）
+     - 主張と無関係な箇所だけ Pass（主張面を測っていない）→ `INCONCLUSIVE`
+     - 環境か変更かの切り分けは完了を主張する側が根拠を示す。flaky は原因が環境で再実行しても不安定なら `INCONCLUSIVE`（変更が原因なら NOT VERIFIED）
+   - 出典の考え方: pstack `/figure-it-out` Phase C（`docs/research/2026-10-19-pstack-formal-verification-absorb-analysis.md` 追記節）。隣接実装: Cursor `verify-this` skill。本ルールに hook / gate 強制は無い（ルール 4・5 と同じ文書規律）
+
+### 既存判定語彙との対応（ルール 6）
+
+| 既存語彙 | 役割 | 三値との関係 |
+|----------|------|--------------|
+| Layer 0 Pass / Fail | 決定論チェックの生結果 | Pass は VERIFIED の材料、**変更が原因の** Fail は NOT VERIFIED の材料、**環境が原因の** Fail は INCONCLUSIVE。単体で完了宣言の三値全体にはならない |
+| ルール 1 の reviewer PASS / BLOCK | Layer 0 のテスト失敗による上書き | **review verdict 軸**: Layer 0 Fail なら原因を問わず BLOCK（:38 / review SKILL）。**三値軸**（別物）: 変更が原因なら NOT VERIFIED、環境が原因なら INCONCLUSIVE |
+| `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | レビュー合成 verdict | 別軸。三値は「主張の実証」。テスト未実行時は review PASS でも PASS とみなさず、警告を付加する（ルール 2 / review SKILL） |
+| `completion-gate.py` | 決定論の block / allow | 三値を機械強制しない。`CLAUDE_SKIP_TEST_GATE=1` はゲート全体を無効化する抜け道（PASS 扱いの根拠にしない。本 PR では未修正） |
+
 ## 適用箇所
 
 - `completion-gate.py`: Layer 0 チェック（テスト実行済み確認）を Review Gate より前に配置
 - `/review` Step 4 Synthesis: テスト未実行時は verdict に警告を付加
 - `rationalization-scanner.py`: PostToolUse(Agent) で FM-018 パターンを検出
 - `derivation-honesty-hook.py`: PostToolUse(Bash|Write|Edit) で FM-016 パターンを検出
-- **ルール 4・5 に対応する hook / gate / 自動強制は無い**（2026-10-19 時点）。文書上の導入規律であり、`completion-gate.py` やルール 1・2 の機械的強制とは別レイヤ。強制が必要になったら別タスクで仕組みを足す
+- **ルール 4・5・6 に対応する hook / gate / 自動強制は無い**（2026-10-19 時点）。文書上の導入規律であり、`completion-gate.py` やルール 1・2 の機械的強制とは別レイヤ。強制が必要になったら別タスクで仕組みを足す
+- Codex 完了前検証: `.agents/skills/codex-verification-before-completion/SKILL.md` がルール 6 の三値を完了宣言側で参照する
 
 ---
 
