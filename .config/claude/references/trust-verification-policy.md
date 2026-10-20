@@ -57,7 +57,7 @@ Layer 3: Human Escalation（人間エスカレーション）
 
 6. **検証結果は三値。INCONCLUSIVE を PASS / 完了扱いにしない**
    - 主張・変更単位の判定は `VERIFIED` / `NOT VERIFIED` / `INCONCLUSIVE` のどれか一つにする
-   - **必須** validation が環境要因で実行できない・比較が無効なときは `INCONCLUSIVE`。完了や「問題なし」に読み替えない
+   - **必須**の validation が**環境要因**で実行・比較できないときは `INCONCLUSIVE`（必須 toolchain 未導入を含む）。完了や「問題なし」に読み替えない
    - **Fail と INCONCLUSIVE が混在したら Fail（NOT VERIFIED）を優先**する
    - **必須 / optional / SKIP（対象外）** — 「対象外」はこの意味だけ:
      - **必須**: 変更種別に対し Dotfiles Hints / Taskfile / CI / 当該 playbook・skill が要求するもの
@@ -77,7 +77,7 @@ Layer 3: Human Escalation（人間エスカレーション）
 | 既存語彙 | 役割 | 三値との関係 |
 |----------|------|--------------|
 | Layer 0 Pass / Fail | 決定論チェックの生結果 | Pass は VERIFIED の材料、**変更が原因の** Fail は NOT VERIFIED の材料、**環境が原因の** Fail は INCONCLUSIVE。単体で完了宣言の三値全体にはならない |
-| ルール 1 の reviewer PASS / BLOCK | Layer 0 のテスト失敗による上書き | reviewer PASS でも **変更が原因の** Layer 0 Fail があれば BLOCK（完了拒否・NOT VERIFIED 寄り）。環境が原因の Layer 0 Fail は INCONCLUSIVE |
+| ルール 1 の reviewer PASS / BLOCK | Layer 0 のテスト失敗による上書き | **review verdict 軸**: Layer 0 Fail なら原因を問わず BLOCK（:38 / review SKILL）。**三値軸**（別物）: 変更が原因なら NOT VERIFIED、環境が原因なら INCONCLUSIVE |
 | `/review` の PASS / NEEDS_FIX / BLOCK / NEEDS_HUMAN_REVIEW | レビュー合成 verdict | 別軸。三値は「主張の実証」。テスト未実行時は review PASS でも PASS とみなさず、警告を付加する（ルール 2 / review SKILL） |
 | `completion-gate.py` | 決定論の block / allow | 三値を機械強制しない。`CLAUDE_SKIP_TEST_GATE=1` はゲート全体を無効化する抜け道（PASS 扱いの根拠にしない。本 PR では未修正） |
 
