@@ -410,6 +410,24 @@ tasks:
       - rm -f $HOME/Library/LaunchAgents/com.cmux.worktree-daemon.plist
       - echo "✅ cmux-worktree-daemon uninstalled"
 
+  launchd:do-not-track:install:
+    desc: 'Set DO_NOT_TRACK=1 in launchd env so GUI apps (Orca etc.) and their child CLIs inherit it'
+    cmds:
+      - mkdir -p $HOME/Library/LaunchAgents
+      - cp {{.TASKFILE_DIR}}/templates/launchagents/com.user.env.do-not-track.plist $HOME/Library/LaunchAgents/
+      - launchctl bootout gui/$UID/com.user.env.do-not-track 2>/dev/null || true
+      - launchctl bootstrap gui/$UID $HOME/Library/LaunchAgents/com.user.env.do-not-track.plist
+      - 'for _ in 1 2 3 4 5; do [ "$(launchctl getenv DO_NOT_TRACK)" = "1" ] && break; sleep 1; done; test "$(launchctl getenv DO_NOT_TRACK)" = "1"'
+      - echo "✅ DO_NOT_TRACK=1 set in launchd (restart apps to apply)"
+
+  launchd:do-not-track:uninstall:
+    desc: 'Remove DO_NOT_TRACK from launchd env'
+    cmds:
+      - launchctl bootout gui/$UID/com.user.env.do-not-track 2>/dev/null || true
+      - rm -f $HOME/Library/LaunchAgents/com.user.env.do-not-track.plist
+      - launchctl unsetenv DO_NOT_TRACK
+      - echo "✅ DO_NOT_TRACK removed from launchd"
+
   nightly:install:
     desc: 'Install/reload all nightly LaunchAgents incl. caffeinate umbrella (夜勤マシン化)'
     cmds:
