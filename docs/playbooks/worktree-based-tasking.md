@@ -34,6 +34,9 @@ task validate-configs
 - symlink や home 側へ影響する変更は、main workspace に戻る前に validation を通す
 - main workspace は現在の判断と統合に使い、長時間の代替案や invasive な試行は worktree に寄せる
 - 複数案を試すときは stash より worktree を優先し、attempt ごとの context を分離する
+- commit のたびに `git show --stat` でファイル名と行数を見て、意図したファイルが入っているか確かめる（出典: [AI が書き、レビューし、QA する開発で、私は「監督」の役割を考え始めた](https://tech.layerx.co.jp/entry/engineer-as-director)）
+- レビュー（レビュアーエージェントを含む）を頼む前に、対象のブランチと差分に自分の変更が入っているか確かめる（同上）
+- この repo では `.config/claude/settings.json` の `permissions.allow` から `git checkout` を外しており、別セッションがブランチを切り替える問題への部分的な対策になっている
 
 ## Permission Notes
 
