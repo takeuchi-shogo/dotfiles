@@ -39,6 +39,8 @@ CLAUDE.local.md
 .config/claude/skills/implementing-recording-ait/
 # Claude Code が ~/.claude/skills へ同期する公式 skill キャッシュ。アカウント ID 付きで上書きされる
 .config/claude/skills/synced/
+# 外部ツールが skill を消すときの退避先。Claude デスクトップ同梱の Proprietary skill が入るので公開しない
+.config/claude/skills/.trash/
 __pycache__/
 .worktrees/
 worktrees/
