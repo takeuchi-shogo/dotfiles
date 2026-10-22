@@ -137,6 +137,25 @@ def _has_taskfile_test_target(cwd: str) -> bool:
     return False
 
 
+def _uses_pytest(cwd: str) -> bool:
+    """True if conftest.py / pytest.ini exists or a project config mentions pytest."""
+    if any(
+        os.path.exists(os.path.join(cwd, name))
+        for name in ("conftest.py", "pytest.ini")
+    ):
+        return True
+    for name in ("pyproject.toml", "setup.cfg", "tox.ini"):
+        try:
+            with open(os.path.join(cwd, name), encoding="utf-8") as f:
+                if "pytest" in f.read():
+                    return True
+        except FileNotFoundError:
+            continue
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"[completion-gate] {name} read failed: {exc}", file=sys.stderr)
+    return False
+
+
 def _detect_test_command() -> str | None:
     """Detect the appropriate test command for the current project.
 
@@ -171,10 +190,7 @@ def _detect_test_command() -> str | None:
     if os.path.exists(os.path.join(cwd, "go.mod")):
         return "go test ./..."
 
-    # Python — pytest if pyproject.toml or conftest.py exists
-    if os.path.exists(os.path.join(cwd, "pyproject.toml")) or os.path.exists(
-        os.path.join(cwd, "conftest.py")
-    ):
+    if _uses_pytest(cwd):
         return "python3 -m pytest --tb=short -q"
 
     # Rust

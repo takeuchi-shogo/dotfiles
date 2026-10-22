@@ -87,3 +87,54 @@ def test_dotfiles_repo_itself_has_a_test_command(monkeypatch):
     monkeypatch.setattr(mod.shutil, "which", lambda _: "/usr/bin/task")
     monkeypatch.chdir(repo_root)
     assert mod._detect_test_command() is not None
+
+
+def test_pyproject_without_pytest_is_not_a_pytest_project(tmp_path, monkeypatch):
+    """Regression: a uv tool-only pyproject (kwdp) failed every Stop.
+
+    The gate ran pytest there and hit 'No module named pytest'.
+    """
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "x"\ndependencies = []\n\n[tool.uv]\npackage = false\n'
+    )
+    mod = _load()
+    monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+    assert mod._detect_test_command() is None
+
+
+def test_pyproject_with_pytest_config_runs_pytest(tmp_path, monkeypatch):
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "x"\n\n[tool.pytest.ini_options]\ntestpaths = ["tests"]\n'
+    )
+    mod = _load()
+    monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+    assert mod._detect_test_command() == "python3 -m pytest --tb=short -q"
+
+
+def test_pytest_ini_runs_pytest(tmp_path, monkeypatch):
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    mod = _load()
+    monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+    assert mod._detect_test_command() == "python3 -m pytest --tb=short -q"
+
+
+def test_setup_cfg_pytest_section_runs_pytest(tmp_path, monkeypatch):
+    (tmp_path / "pyproject.toml").write_text(
+        '[build-system]\nrequires = ["setuptools"]\n'
+    )
+    (tmp_path / "setup.cfg").write_text("[tool:pytest]\ntestpaths = tests\n")
+    mod = _load()
+    monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+    assert mod._detect_test_command() == "python3 -m pytest --tb=short -q"
+
+
+def test_root_conftest_alone_runs_pytest(tmp_path, monkeypatch):
+    (tmp_path / "conftest.py").write_text("")
+    mod = _load()
+    monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+    assert mod._detect_test_command() == "python3 -m pytest --tb=short -q"
