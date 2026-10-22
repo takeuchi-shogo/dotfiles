@@ -33,7 +33,7 @@ jobs:
             CLAUDE.md
 
       - name: Setup Claude Code
-        run: npm install -g @anthropic-ai/claude-code@2.1.195
+        run: npm install -g @anthropic-ai/claude-code@2.1.308
 
       - name: Determine issue number
         id: issue
