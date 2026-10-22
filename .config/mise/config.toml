@@ -15,7 +15,7 @@
 [tools]
 node = "24.22.1"  # LTS 系。major 更新 (非LTS 含む) は automerge されず手動判断
 go = "1.27.3"     # 野良 brew が amd64(Rosetta) だった → mise で arm64 ネイティブ化
-python = "3.15.0"  # brew 実体 3.14 / 旧 .tool-versions 3.12 から集約。更新は Renovate のクールダウン (7 日) に合わせる
+python = "3.15.1"  # 3.15.1 は eMudhra 対応のためクールダウン前に上げた。 brew 実体 3.14 / 旧 .tool-versions 3.12 から集約。更新は Renovate のクールダウン (7 日) に合わせる
 uv = "0.13.4"     # Nix home.packages から移管 (Intel brew の /usr/local/bin/uv 二重管理を解消)
 
 # NotebookLM CLI (非公式・更新頻繁) — 動画/記事→notebook→分析→fulltext を CLI 化。
