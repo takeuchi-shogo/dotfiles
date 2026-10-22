@@ -34,6 +34,10 @@ task validate-configs
 - symlink や home 側へ影響する変更は、main workspace に戻る前に validation を通す
 - main workspace は現在の判断と統合に使い、長時間の代替案や invasive な試行は worktree に寄せる
 - 複数案を試すときは stash より worktree を優先し、attempt ごとの context を分離する
+- commit のたびに `git show --stat` でファイル名と行数を見て、意図したファイルが入っているか確認する（出典の失敗事例から）
+- レビュー（レビュアーエージェントを含む）を頼む前に、対象の branch と差分に自分の変更が入っているか確認する（出典の失敗事例から）
+- global settings で `git checkout` を allow に入れていないのは部分的な対策である（人が承認すれば切り替えられること、Claude Code 以外のツールは対象外であること。Codex の `.codex/rules/default.rules` が禁じるのは `checkout --` のみ）。詳細は Permission Notes を参照する
+- 出典: [AI が書き、レビューし、QA する開発で、私は「監督」の役割を考え始めた](https://tech.layerx.co.jp/entry/engineer-as-director)
 
 ## Permission Notes
 
