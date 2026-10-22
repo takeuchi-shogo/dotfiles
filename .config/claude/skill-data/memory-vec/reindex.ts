@@ -14,7 +14,7 @@
 //     defense-in-depth signal)
 //   - Log stack/error with redact() applied (HIGH: traceback leaks raw text)
 //
-// Located alongside node_modules/ so ESM resolver finds @xenova/transformers
+// Located alongside node_modules/ so ESM resolver finds @huggingface/transformers
 // and sqlite-vec without NODE_PATH gymnastics.
 
 import { DatabaseSync } from "node:sqlite";
@@ -36,7 +36,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { performance } from "node:perf_hooks";
-import { pipeline, env } from "@xenova/transformers";
+import { pipeline, env } from "@huggingface/transformers";
 
 env.allowLocalModels = false;
 env.useBrowserCache = false;
@@ -231,7 +231,10 @@ let extractor: Awaited<ReturnType<typeof pipeline>> | null = null;
 
 async function getExtractor(): Promise<Awaited<ReturnType<typeof pipeline>>> {
 	if (!extractor) {
-		extractor = await pipeline("feature-extraction", EMBED_MODEL);
+		// q8 matches transformers v2 default (quantized); changing it drifts vectors from the existing index.db
+		extractor = await pipeline("feature-extraction", EMBED_MODEL, {
+			dtype: "q8",
+		});
 	}
 	return extractor;
 }

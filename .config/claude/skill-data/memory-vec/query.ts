@@ -9,7 +9,7 @@ import { DatabaseSync } from "node:sqlite";
 import * as sqliteVec from "sqlite-vec";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { pipeline, env } from "@xenova/transformers";
+import { pipeline, env } from "@huggingface/transformers";
 
 env.allowLocalModels = false;
 env.useBrowserCache = false;
@@ -31,7 +31,10 @@ let extractor: Awaited<ReturnType<typeof pipeline>> | null = null;
 
 export async function embed(text: string): Promise<Float32Array> {
 	if (!extractor) {
-		extractor = await pipeline("feature-extraction", EMBED_MODEL);
+		// q8 matches transformers v2 default (quantized); changing it drifts vectors from the existing index.db
+		extractor = await pipeline("feature-extraction", EMBED_MODEL, {
+			dtype: "q8",
+		});
 	}
 	const out = (await extractor(text, {
 		pooling: "mean",
