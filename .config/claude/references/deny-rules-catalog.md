@@ -57,7 +57,7 @@ audit では加えて次を見る（自動修正はしない）:
 
 | tier (category) | 件数 | 代表パターン | rationale |
 |-----------------|------|--------------|-----------|
-| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対。deny は前置形にしか一致しないので、それ以外の書き方は下記「git commit hook 迂回の補完」で止める |
+| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対。deny は前置形にしか一致しないので、末尾 `-n` や env 前置きは下記の pre-bash 補完で止める |
 | ネットワーク・外部実行 Bash | 14 | `curl *`, `wget *`, `sudo *`, `su *`, `ssh *`, `scp *`, `nc/ncat/netcat *`, `osascript *`, `security *`, `pbcopy/pbpaste *`, `open *` | 外部送信・権限昇格・リモート実行・クリップボード/GUI 経由の持ち出しを遮断 (exfiltration boundary) |
 | 環境変数・秘密露出 Bash | 16 | `printenv`, `env`, `* .env*`, `* ~/.ssh/*`, `* ~/.aws/*`, `* ~/.gnupg/*`, `* ~/.config/gcloud/*`, `* ~/.git-credentials`, `* ~/.netrc`, `* ~/.npmrc`, `* ~/.vault-token` ほか | Bash 経由での環境変数 dump / 秘密ディレクトリ・認証ファイルの読み出しを遮断 |
 | 秘密ファイル Read (glob) | 19 | `Read(.env*)`, `Read(**/*.pem)`, `Read(**/*.p12)`, `Read(**/*credentials*)`, `Read(**/*secret*)`, `Read(**/*.key)`, `Read(**/id_rsa*)`, `Read(**/*password*)`, `Read(**/.htpasswd)`, `Read(**/*.kdbx)`, `Read(**/auth.json)` ほか | Read tool での秘密ファイル混入を内容パターンで遮断 |
@@ -69,53 +69,29 @@ audit では加えて次を見る（自動修正はしない）:
 
 ### git commit hook 迂回の補完 (`claude-hooks pre-bash`)
 
-deny の `git commit --no-verify *` は前置形にしか一致しない。末尾の `--no-verify`、env、`-c core.hooksPath` などは
-`tools/claude-hooks/src/git_hook_bypass.rs` が Bash コマンドを argv に分けて調べ、exit 2 で止める。
+deny の `git commit --no-verify *` は前置形にしか一致しない。末尾の `--no-verify` / `-n`、`HUSKY=0` などの
+env 前置き、`git -c core.hooksPath=…` は `tools/claude-hooks/src/git_hook_bypass.rs` が単純コマンドへ分けて
+exit 2 で止める。語の分割は `shlex`。引用符の外の `;` `&&` `||` `|` 改行で区切る。解釈できない入力は通す。
 hook は `target/release/claude-hooks` を呼ぶので、`task build-hooks` で再ビルドするまで効かない。
-alias の表はビルド時の `.config/git/config` を埋め込むので、alias を変えたときも再ビルドが要る。
 
 止めるもの (`BLOCKED [hook-bypass]`):
 
-- `git commit` の `--no-verify` (`--no-veri` までの省略形を含む) と `-n` (`-an` などの束を含む)。末尾にあっても止める
-- `HUSKY=0`、`LEFTHOOK=0` や `false`、`LEFTHOOK_EXCLUDE`、`SKIP`、`LEFTHOOK_CONFIG`、`LEFTHOOK_BIN`。
-  前置、`env` 経由、同じコマンド文字列の中の代入や `export` を含む
-- `-c core.hooksPath=…`、`--config-env`、`GIT_CONFIG_PARAMETERS`、`GIT_CONFIG_KEY_<n>` による hooksPath と `alias.*` の上書き。
-  `-C <dir>` と組み合わせても止める
-- `.config/git/config` の alias (`cm`、`cane` など) をサブコマンドの位置で展開した結果が上記に当たるもの
-- xargs 経由の `git commit` (標準入力から引数が足されて argv が決まらないため)
-- `env -S` / `--split-string` の引数がそれ自体迂回なら止める（`env -S 'git commit -m x'` は通す）
+- `git commit` に付いた `--no-verify` と `-n`（`-an` のように短いフラグへまとめたものも含む）
+- `HUSKY=0` / `LEFTHOOK=0`（`false` を含む）の前置きと `env HUSKY=0 git commit`
+- `git -c core.hooksPath=… commit`（`-C <dir>` との組み合わせも含む）
+- 上を `;` `&&` `||` `|` 改行でつないだもの
 
-改行、`;`、`&&`、`||`、`|`、`&`、サブシェル `( )`、ブロック `{ }` で区切り、`$(…)` とバッククォートの中も調べる。
-`git` は先頭の語でなくても調べるので、`env`、`timeout`、`nice`、`sudo` などのラッパーを列挙していない。
-`bash -c`、`sh -c`、`eval`、`!` で始まる alias の中身は再帰で調べる (深さ 4 まで)。`$'...'` は展開してから中身を調べる。
-
-fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 分割に失敗したとき（入れ子 8 段超、10 万バイト超、閉じないクォート、
-`${v//(/}` のような解釈できない展開）に限り、git commit と迂回 token が両方あるときだけ止める。
-迂回 token は独立した語としての `--no-verify`（`--no-veri` 以上の省略形）、`commit` の後の `-n`、
-`HUSKY=0` / `LEFTHOOK=0`、`core.hooksPath` など。commit という文字列があるだけでは止めない。
-メッセージや `gh pr create` の本文に `lefthook` / `--no-verify` と書くのは、分割できるなら通す。
-`GIT_CONFIG_KEY_<n>` は文字列に実在するものだけを見るので、`GIT_CONFIG_COUNT` に巨大な値を入れても処理量は増えない。
+通すもの: 普通の `git commit -m`、heredoc / `$(cat <<'EOF')` のメッセージ本文に `--no-verify` と書くもの、
+`gh pr create --body`、`git log -n` や `echo git commit -n` など commit 以外。
 
 既知の穴 (意図的に扱わない):
 
-- 事前に設定した `git config core.hooksPath`
-- `git push` と `git merge` の `--no-verify`
-- 以前の Bash 呼び出しで export した値
-- `--no-post-rewrite`
-- `-c alias.x=…` で定義した alias の展開 (定義する `-c alias.*` 自体は止める)
-- 迂回の語を含まない動的生成 (`printf` や変数の連結で組み立てた文字列を `eval` するなど)
-- スクリプトファイル経由 (`bash script.sh`、`source`)、python や perl など別インタプリタからの実行
-- dotfiles 以外の git config にある alias、`GIT_CONFIG_GLOBAL` や `GIT_CONFIG_SYSTEM` で差し替えた設定ファイル
-- `$(…)` の中の `case` パターンの `)` は置換の終わりと誤解析する
-
-過検出 (安全側に倒している):
-
-- 引用していない `echo git commit -n` は語の列に `git commit -n` があるので止める
-- `git commit` の引数にある引用なしの `$VAR` は単語分割で `--no-verify` になり得るので、`-m $MSG` も止める (`-m "$MSG"` は通す)。位置引数の `"$EXTRA"` も同様
-- `-c core.hooksPath` はサブコマンドを問わず止める
-- 分割に失敗した文字列に git commit と `--no-verify` / `-n` が独立した token として残っている場合
-  （閉じないクォートのメッセージなど）は止める
-- xargs 経由の `git commit` は引数が足されるためすべて止める
+- `eval`、`bash -c` / `sh -c`、`$'…'` などのエスケープ、入れ子の `$(…)`、`git $O commit` のような変数経由
+- `GIT_CONFIG_GLOBAL` / `GIT_CONFIG_SYSTEM` / `GIT_CONFIG_PARAMETERS` / `GIT_CONFIG_KEY_*`
+- 事前に設定した `git config core.hooksPath`、以前の Bash 呼び出しで export した値
+- `git push` / `git merge` の `--no-verify`、`--no-post-rewrite`
+- alias（`git cm`）、`env -S`、xargs、timeout / sudo などのラッパー、スクリプトファイル経由
+- 閉じないクォートなど `shlex` が読めない入力（通す）
 
 ## ALLOW (72) — カテゴリ要約
 

@@ -27,3 +27,15 @@ jobs:
         run: uvx pytest .config/claude/skills/imozuru/scripts/tests/ -q
       - name: Root harness tests
         run: uvx pytest tests/ -q
+
+  claude-hooks-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
+        with:
+          toolchain: stable
+      - name: cargo test
+        working-directory: tools/claude-hooks
+        run: cargo test
