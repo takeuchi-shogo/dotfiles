@@ -248,7 +248,7 @@ function runBaselineCheck() {
  * Ralph Loop (completion-gate.py) uses this to only block on plans
  * created or modified during the current session.
  */
-function snapshotActivePlans() {
+function snapshotActivePlans(sessionId) {
 	const planDirs = [
 		path.join(process.cwd(), "docs", "plans", "active"),
 		path.join(process.cwd(), "tmp", "plans"),
@@ -276,10 +276,10 @@ function snapshotActivePlans() {
 			"session-state",
 		);
 		if (!fs.existsSync(stateDir)) fs.mkdirSync(stateDir, { recursive: true });
-		fs.writeFileSync(
-			path.join(stateDir, "active-plans-snapshot.json"),
-			JSON.stringify(snapshot),
-		);
+		const name = /^[A-Za-z0-9_-]{1,128}$/.test(sessionId)
+			? `active-plans-snapshot-${sessionId}.json`
+			: "active-plans-snapshot.json";
+		fs.writeFileSync(path.join(stateDir, name), JSON.stringify(snapshot));
 	} catch {
 		// Non-critical
 	}
@@ -663,7 +663,12 @@ process.stdin.on("end", () => {
 	}
 
 	loadLearningsForProfile(profile);
-	snapshotActivePlans();
+	let sessionId = "";
+	try {
+		const raw = JSON.parse(data).session_id;
+		if (typeof raw === "string") sessionId = raw;
+	} catch {}
+	snapshotActivePlans(sessionId);
 	loadFeatureList();
 	loadProgressLog();
 	suggestRefactorSession();

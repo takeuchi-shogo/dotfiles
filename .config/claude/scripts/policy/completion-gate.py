@@ -101,6 +101,18 @@ def _reset_retries() -> None:
         pass
 
 
+def _session_scoped(path: str, session_id: str) -> str:
+    """Embed session_id in the file name so concurrent sessions keep separate state.
+
+    Without a usable id (no hook stdin, or characters that could leave the
+    directory) the shared legacy path is kept.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", session_id):
+        return path
+    root, ext = os.path.splitext(path)
+    return f"{root}-{session_id}{ext}"
+
+
 def _get_ralph_count() -> int:
     try:
         with open(RALPH_COUNTER_FILE) as f:
@@ -1431,7 +1443,12 @@ def main() -> None:
             hook_data = {}
     if not isinstance(hook_data, dict):
         hook_data = {}
-    session_id = str(hook_data.get("session_id", ""))
+    raw_session_id = hook_data.get("session_id")
+    session_id = raw_session_id if isinstance(raw_session_id, str) else ""
+    global SNAPSHOT_FILE, RALPH_COUNTER_FILE, COUNTER_FILE
+    SNAPSHOT_FILE = _session_scoped(SNAPSHOT_FILE, session_id)
+    RALPH_COUNTER_FILE = _session_scoped(RALPH_COUNTER_FILE, session_id)
+    COUNTER_FILE = _session_scoped(COUNTER_FILE, session_id)
     if hook_data:
         claim_result = _check_fabricated_claims(hook_data)
         if claim_result is not None:
