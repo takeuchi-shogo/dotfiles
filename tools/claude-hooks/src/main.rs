@@ -1,4 +1,5 @@
 mod events;
+mod git_hook_bypass;
 mod io;
 mod post_any;
 mod post_bash;

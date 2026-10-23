@@ -1,5 +1,5 @@
 //! PreToolUse handlers — consolidates:
-//! pre-bash (git add -A block), pre-edit (protect-linter + search-first),
+//! pre-bash (git add -A block, git hook-bypass block), pre-edit (protect-linter + search-first),
 //! pre-search (search-first mark), pre-websearch (suggest-gemini), pre-commit (secret check)
 
 use regex::Regex;
@@ -18,6 +18,9 @@ pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
              （見分けようとすると回避経路が空くため）。文字列を渡したいだけなら\
              一時ファイルに書いて `\"$(cat <file>)\"` で渡してください。",
         );
+    }
+    if let Some(reason) = crate::git_hook_bypass::bypass_reason(command) {
+        crate::io::deny(&reason);
     }
     if let Some(msg) = check_timeout_clamp(data) {
         crate::io::context("PreToolUse", &msg);
