@@ -57,7 +57,7 @@ audit では加えて次を見る（自動修正はしない）:
 
 | tier (category) | 件数 | 代表パターン | rationale |
 |-----------------|------|--------------|-----------|
-| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対 |
+| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対。deny は前置形にしか一致しないので、末尾 `-n` や env 前置きは下記の pre-bash 補完で止める |
 | ネットワーク・外部実行 Bash | 14 | `curl *`, `wget *`, `sudo *`, `su *`, `ssh *`, `scp *`, `nc/ncat/netcat *`, `osascript *`, `security *`, `pbcopy/pbpaste *`, `open *` | 外部送信・権限昇格・リモート実行・クリップボード/GUI 経由の持ち出しを遮断 (exfiltration boundary) |
 | 環境変数・秘密露出 Bash | 16 | `printenv`, `env`, `* .env*`, `* ~/.ssh/*`, `* ~/.aws/*`, `* ~/.gnupg/*`, `* ~/.config/gcloud/*`, `* ~/.git-credentials`, `* ~/.netrc`, `* ~/.npmrc`, `* ~/.vault-token` ほか | Bash 経由での環境変数 dump / 秘密ディレクトリ・認証ファイルの読み出しを遮断 |
 | 秘密ファイル Read (glob) | 19 | `Read(.env*)`, `Read(**/*.pem)`, `Read(**/*.p12)`, `Read(**/*credentials*)`, `Read(**/*secret*)`, `Read(**/*.key)`, `Read(**/id_rsa*)`, `Read(**/*password*)`, `Read(**/.htpasswd)`, `Read(**/*.kdbx)`, `Read(**/auth.json)` ほか | Read tool での秘密ファイル混入を内容パターンで遮断 |
@@ -66,6 +66,38 @@ audit では加えて次を見る（自動修正はしない）:
 | shell rc Edit | 4 | `Edit(~/.zshrc)`, `Edit(~/.bashrc)`, `Edit(~/.zprofile)`, `Edit(~/.bash_profile)` | shell 起動ファイルの改変 (永続的バックドア・PATH 汚染) を遮断。dotfiles 管理外の直接編集も禁止 |
 
 **deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 4 = 88** (settings.json と一致)
+
+### git commit hook 迂回の補完 (`claude-hooks pre-bash`)
+
+deny の `git commit --no-verify *` は前置形にしか一致しない。末尾の `--no-verify` / `-n`、`HUSKY=0` などの
+env 前置き、`git -c core.hooksPath=…` は `tools/claude-hooks/src/git_hook_bypass.rs` が単純コマンドへ分けて
+exit 2 で止める。語の分割は `shlex`。引用符の外の `;` `&&` `||` `|` 改行で区切る。解釈できない入力は通す。
+hook は `target/release/claude-hooks` を呼ぶので、`task build-hooks` で再ビルドするまで効かない。
+
+止めるもの (`BLOCKED [hook-bypass]`):
+
+- `git commit` に付いた `--no-verify` と `-n`（`-an` のように短いフラグへまとめたものも含む）
+- `HUSKY=0` / `LEFTHOOK=0`（`false` を含む）の前置きと `env HUSKY=0 git commit`
+- `git -c core.hooksPath=… commit`（`-C <dir>` との組み合わせも含む）
+- 上を `;` `&&` `||` `|` 改行でつないだもの
+
+通すもの: 普通の `git commit -m`（`-m "- add new feature"` のように値が `-` で始まるものも含む）、
+heredoc は `$(cat <<'EOF' ... EOF)` でメッセージを渡す形に限る、`gh pr create --body`、
+`git log -n` や `echo git commit -n` など commit 以外。
+`git commit -F - <<'EOF'` や `cat <<'EOF' > file` の本文に `git commit --no-verify` で始まる行があると止まる。
+
+既知の穴 (意図的に扱わない):
+
+- `eval`、`bash -c` / `sh -c`、`$'…'` などのエスケープ、入れ子の `$(…)`、`git $O commit` のような変数経由
+- `GIT_CONFIG_GLOBAL` / `GIT_CONFIG_SYSTEM` / `GIT_CONFIG_PARAMETERS` / `GIT_CONFIG_KEY_*`
+- 事前に設定した `git config core.hooksPath`、以前の Bash 呼び出しで export した値
+- `export HUSKY=0 && git commit`（同じ単純コマンドの前置きだけ見る）
+- `--no-veri` などの省略形、`LEFTHOOK_EXCLUDE` / `SKIP` / `LEFTHOOK_CONFIG`
+- 単独の `&`、`{ …; }`、`if` / `!` / `time` / `command` / `nohup` を前に付けた形
+- `--config-env` と `--namespace`、`env -C` / `--chdir`
+- `git push` / `git merge` の `--no-verify`、`--no-post-rewrite`
+- alias（`git cm`）、`env -S`、xargs、timeout / sudo などのラッパー、スクリプトファイル経由
+- 閉じないクォートなど `shlex` が読めない入力（通す）
 
 ## ALLOW (72) — カテゴリ要約
 
