@@ -5,6 +5,7 @@ mod post_any;
 mod post_bash;
 mod post_edit;
 mod pre_tool;
+mod shell_lex;
 mod user_prompt;
 
 fn main() {
