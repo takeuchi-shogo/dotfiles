@@ -66,6 +66,9 @@ fn allows_ordinary_commits_and_messages() {
         r#"git commit -m "- add new feature""#,
         r#"git commit -m "- fix lint""#,
         r#"git commit -m "- refactor""#,
+        r#"git commit -m"- n""#,
+        r#"git commit --message="- n""#,
+        r#"git commit -am "- new""#,
         "git commit -m \"$(cat <<'EOF'\nchore: lefthook と --no-verify の説明\nEOF\n)\"",
         "git add lefthook.yml && git commit -m \"$(cat <<'EOF'\nchore: document lefthook\nEOF\n)\"",
         "LEFTHOOK=1 git commit -m msg",
@@ -96,6 +99,10 @@ fn blocks_no_verify_and_n() {
         "git commit -n -m x",
         "git commit -m x -n",
         "git commit -anm x",
+        r#"git commit -nm"fix bug""#,
+        r#"git commit -anm"wip 1""#,
+        "git commit -nm修正",
+        "git commit -nm x",
         "/usr/bin/git commit -n -m x",
     ]);
 }
