@@ -57,7 +57,7 @@ audit では加えて次を見る（自動修正はしない）:
 
 | tier (category) | 件数 | 代表パターン | rationale |
 |-----------------|------|--------------|-----------|
-| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 破壊・履歴改変・hook 迂回の前置形を deny。末尾 `--no-verify` や env / `-c core.hooksPath` は deny 外。`claude-hooks` pre-bash の argv 検査で補完するが、release 再ビルド前は効かない。永続 `git config core.hooksPath` や別呼び出しの `export` 引き継ぎ、`push`/`merge` の `--no-verify` は未カバー |
+| 破壊的 Bash | 10 | `rm -rf *`, `rm -r *`, `git push --force *`, `git reset --hard *`, `git clean -f *`, `git checkout -- *`, `chmod 777 *`, `git commit --no-verify *`, `git commit -n *`, `git commit -n` | 不可逆な破壊・履歴改変・lefthook バイパスを防ぐ。`--no-verify`/`-n` 禁止は CLAUDE.md の commit gate と対。deny は前置形にしか一致しないので、それ以外の書き方は下記「git commit hook 迂回の補完」で止める |
 | ネットワーク・外部実行 Bash | 14 | `curl *`, `wget *`, `sudo *`, `su *`, `ssh *`, `scp *`, `nc/ncat/netcat *`, `osascript *`, `security *`, `pbcopy/pbpaste *`, `open *` | 外部送信・権限昇格・リモート実行・クリップボード/GUI 経由の持ち出しを遮断 (exfiltration boundary) |
 | 環境変数・秘密露出 Bash | 16 | `printenv`, `env`, `* .env*`, `* ~/.ssh/*`, `* ~/.aws/*`, `* ~/.gnupg/*`, `* ~/.config/gcloud/*`, `* ~/.git-credentials`, `* ~/.netrc`, `* ~/.npmrc`, `* ~/.vault-token` ほか | Bash 経由での環境変数 dump / 秘密ディレクトリ・認証ファイルの読み出しを遮断 |
 | 秘密ファイル Read (glob) | 19 | `Read(.env*)`, `Read(**/*.pem)`, `Read(**/*.p12)`, `Read(**/*credentials*)`, `Read(**/*secret*)`, `Read(**/*.key)`, `Read(**/id_rsa*)`, `Read(**/*password*)`, `Read(**/.htpasswd)`, `Read(**/*.kdbx)`, `Read(**/auth.json)` ほか | Read tool での秘密ファイル混入を内容パターンで遮断 |
@@ -66,6 +66,53 @@ audit では加えて次を見る（自動修正はしない）:
 | shell rc Edit | 4 | `Edit(~/.zshrc)`, `Edit(~/.bashrc)`, `Edit(~/.zprofile)`, `Edit(~/.bash_profile)` | shell 起動ファイルの改変 (永続的バックドア・PATH 汚染) を遮断。dotfiles 管理外の直接編集も禁止 |
 
 **deny 合計: 10 + 14 + 16 + 19 + 13 + 12 + 4 = 88** (settings.json と一致)
+
+### git commit hook 迂回の補完 (`claude-hooks pre-bash`)
+
+deny の `git commit --no-verify *` は前置形にしか一致しない。末尾の `--no-verify`、env、`-c core.hooksPath` などは
+`tools/claude-hooks/src/git_hook_bypass.rs` が Bash コマンドを argv に分けて調べ、exit 2 で止める。
+hook は `target/release/claude-hooks` を呼ぶので、`task build-hooks` で再ビルドするまで効かない。
+alias の表はビルド時の `.config/git/config` を埋め込むので、alias を変えたときも再ビルドが要る。
+
+止めるもの (`BLOCKED [hook-bypass]`):
+
+- `git commit` の `--no-verify` (`--no-veri` までの省略形を含む) と `-n` (`-an` などの束を含む)。末尾にあっても止める
+- `HUSKY=0`、`LEFTHOOK=0` や `false`、`LEFTHOOK_EXCLUDE`、`SKIP`、`LEFTHOOK_CONFIG`、`LEFTHOOK_BIN`。
+  前置、`env` 経由、同じコマンド文字列の中の代入や `export` を含む
+- `-c core.hooksPath=…`、`--config-env`、`GIT_CONFIG_PARAMETERS`、`GIT_CONFIG_KEY_<n>` による hooksPath と `alias.*` の上書き。
+  `-C <dir>` と組み合わせても止める
+- `.config/git/config` の alias (`cm`、`cane` など) をサブコマンドの位置で展開した結果が上記に当たるもの
+- xargs 経由の `git commit` (標準入力から引数が足されて argv が決まらないため)
+
+改行、`;`、`&&`、`||`、`|`、`&`、サブシェル `( )`、ブロック `{ }` で区切り、`$(…)` とバッククォートの中も調べる。
+`git` は先頭の語でなくても調べるので、`env`、`timeout`、`nice`、`sudo` などのラッパーを列挙していない。
+`bash -c`、`sh -c`、`eval`、`!` で始まる alias の中身は再帰で調べる (深さ 4 まで)。
+
+fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 生の文字列が迂回の語 (`no-veri`、`hookspath`、`husky`、`lefthook`、
+`skip=`、`git_config`、`config-env`、`alias.`) を含み、かつ argv を確定できない箇所があれば止める。
+確定できない箇所とは、heredoc、`$'…'`、git のコマンド名・グローバルオプション・サブコマンド・commit の引数にある変数や置換、
+閉じないクォートや括弧、入れ子 8 段超、再帰 4 段超、10 万バイト超、標準入力からコマンドを読む shell (`… | sh`) を指す。
+`GIT_CONFIG_KEY_<n>` は文字列に実在するものだけを見るので、`GIT_CONFIG_COUNT` に巨大な値を入れても処理量は増えない。
+
+既知の穴 (意図的に扱わない):
+
+- 事前に設定した `git config core.hooksPath`
+- `git push` と `git merge` の `--no-verify`
+- 以前の Bash 呼び出しで export した値
+- `--no-post-rewrite`
+- `env -S` で 1 語にまとめた引数、`-c alias.x=…` で定義した alias の展開 (定義する `-c alias.*` 自体は止める)
+- 迂回の語を含まない動的生成 (`printf` や変数の連結で組み立てた文字列を `eval` するなど)
+- スクリプトファイル経由 (`bash script.sh`、`source`)、python や perl など別インタプリタからの実行
+- dotfiles 以外の git config にある alias、`GIT_CONFIG_GLOBAL` や `GIT_CONFIG_SYSTEM` で差し替えた設定ファイル
+- `$(…)` の中の `case` パターンの `)` は置換の終わりと誤解析する
+
+過検出 (安全側に倒している):
+
+- 引用していない `echo git commit -n` は語の列に `git commit -n` があるので止める
+- heredoc や `$` と迂回の語を同時に含むコマンド (heredoc の commit メッセージに `--no-verify` と書くなど) は止める。
+  メッセージをファイルに書いて `git commit -F <file>` で渡せば通る
+- `git commit` の引数にある引用なしの `$VAR` は単語分割で `--no-verify` になり得るので、`-m $MSG` も止める (`-m "$MSG"` は通す)
+- `-c core.hooksPath` はサブコマンドを問わず止める
 
 ## ALLOW (72) — カテゴリ要約
 
