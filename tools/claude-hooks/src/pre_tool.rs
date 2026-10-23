@@ -1,28 +1,16 @@
 //! PreToolUse handlers — consolidates:
-//! pre-bash (bulk `git add` block + git hook-bypass block), pre-edit (protect-linter + search-first),
+//! pre-bash (git add -A block + git commit hook-bypass block), pre-edit (protect-linter + search-first),
 //! pre-search (search-first mark), pre-websearch (suggest-gemini), pre-commit (secret check)
 
 use regex::Regex;
 use std::path::Path;
 
-// ── pre-bash: bulk git add + git hook bypass ────────────────────────
+// ── pre-bash: block git add -A/--all/. ──────────────────────────────
 
 pub fn pre_bash(data: &serde_json::Value) -> Result<(), String> {
     let command = data["tool_input"]["command"].as_str().unwrap_or("");
-    if let Some(reason) = pre_bash_denials(command) {
-        crate::io::deny(reason);
-    }
-    if let Some(msg) = check_timeout_clamp(data) {
-        crate::io::context("PreToolUse", &msg);
-    }
-    Ok(())
-}
-
-/// pre-bash の deny 判定を1箇所に集約する。
-/// 結合テストはここを通すので、hook-bypass の組み込みを外すと失敗する。
-fn pre_bash_denials(command: &str) -> Option<&'static str> {
     if is_bulk_git_add(command) {
-        return Some(
+        crate::io::deny(
             "BLOCKED [bulk-add]: `git add -A`/`--all`/`.` による一括追加が検出されました。\n\
              WHY: 意図しないファイル (secrets, 生成物, 一時ファイル) を巻き込むのを防ぐため。\n\
              FIX: 個別に確認して必要なファイルだけ `git add <file>` で追加してください。\n\
@@ -31,7 +19,13 @@ fn pre_bash_denials(command: &str) -> Option<&'static str> {
              一時ファイルに書いて `\"$(cat <file>)\"` で渡してください。",
         );
     }
-    crate::git_hook_bypass::bypass_reason(command)
+    if let Some(reason) = crate::git_hook_bypass::bypass_reason(command) {
+        crate::io::deny(reason);
+    }
+    if let Some(msg) = check_timeout_clamp(data) {
+        crate::io::context("PreToolUse", &msg);
+    }
+    Ok(())
 }
 
 /// 一括 `git add` を検出する。
@@ -747,14 +741,5 @@ mod tests {
         assert!(is_bulk_git_add(r#"zsh -lc "git add --all""#));
         assert!(is_bulk_git_add(r#"eval "git add -A""#));
         assert!(is_bulk_git_add("git ls-files -m | xargs git add -A"));
-    }
-
-    #[test]
-    fn pre_bash_wires_hook_bypass_denial() {
-        // pre_bash → pre_bash_denials → git_hook_bypass。この経路を外すと失敗する。
-        assert!(pre_bash_denials(r#"git commit -m "x" --no-verify"#).is_some());
-        assert!(pre_bash_denials(r#"HUSKY="0" git commit -m x"#).is_some());
-        assert!(pre_bash_denials(r#"git commit -m "ok""#).is_none());
-        assert!(pre_bash_denials("git add -A").is_some());
     }
 }
