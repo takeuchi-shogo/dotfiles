@@ -81,14 +81,20 @@ hook は `target/release/claude-hooks` を呼ぶので、`task build-hooks` で�
 - `git -c core.hooksPath=… commit`（`-C <dir>` との組み合わせも含む）
 - 上を `;` `&&` `||` `|` 改行でつないだもの
 
-通すもの: 普通の `git commit -m`、heredoc / `$(cat <<'EOF')` のメッセージ本文に `--no-verify` と書くもの、
-`gh pr create --body`、`git log -n` や `echo git commit -n` など commit 以外。
+通すもの: 普通の `git commit -m`（`-m "- add new feature"` のように値が `-` で始まるものも含む）、
+heredoc は `$(cat <<'EOF' ... EOF)` でメッセージを渡す形に限る、`gh pr create --body`、
+`git log -n` や `echo git commit -n` など commit 以外。
+`git commit -F - <<'EOF'` や `cat <<'EOF' > file` の本文に `git commit --no-verify` で始まる行があると止まる。
 
 既知の穴 (意図的に扱わない):
 
 - `eval`、`bash -c` / `sh -c`、`$'…'` などのエスケープ、入れ子の `$(…)`、`git $O commit` のような変数経由
 - `GIT_CONFIG_GLOBAL` / `GIT_CONFIG_SYSTEM` / `GIT_CONFIG_PARAMETERS` / `GIT_CONFIG_KEY_*`
 - 事前に設定した `git config core.hooksPath`、以前の Bash 呼び出しで export した値
+- `export HUSKY=0 && git commit`（同じ単純コマンドの前置きだけ見る）
+- `--no-veri` などの省略形、`LEFTHOOK_EXCLUDE` / `SKIP` / `LEFTHOOK_CONFIG`
+- 単独の `&`、`{ …; }`、`if` / `!` / `time` / `command` / `nohup` を前に付けた形
+- `--config-env` と `--namespace`、`env -C` / `--chdir`
 - `git push` / `git merge` の `--no-verify`、`--no-post-rewrite`
 - alias（`git cm`）、`env -S`、xargs、timeout / sudo などのラッパー、スクリプトファイル経由
 - 閉じないクォートなど `shlex` が読めない入力（通す）

@@ -38,4 +38,4 @@ jobs:
           toolchain: stable
       - name: cargo test
         working-directory: tools/claude-hooks
-        run: cargo test
+        run: cargo test --locked

@@ -172,9 +172,10 @@ fn commit_no_verify(args: &[String]) -> bool {
         if arg == "--no-verify" || arg.starts_with("--no-verify=") {
             return true;
         }
+        // `-m "- add new feature"` のような値は空白や記号を含むので、短いフラグの束ではない
         if let Some(cluster) = arg
             .strip_prefix('-')
-            .filter(|s| !s.is_empty() && !s.starts_with('-'))
+            .filter(|s| !s.is_empty() && s.chars().all(|c| c.is_ascii_alphabetic()))
         {
             if short_flags_have_n(cluster) {
                 return true;
