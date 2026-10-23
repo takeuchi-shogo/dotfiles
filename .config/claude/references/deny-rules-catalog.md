@@ -83,15 +83,17 @@ alias の表はビルド時の `.config/git/config` を埋め込むので、alia
   `-C <dir>` と組み合わせても止める
 - `.config/git/config` の alias (`cm`、`cane` など) をサブコマンドの位置で展開した結果が上記に当たるもの
 - xargs 経由の `git commit` (標準入力から引数が足されて argv が決まらないため)
+- `env -S` / `--split-string` の引数がそれ自体迂回なら止める（`env -S 'git commit -m x'` は通す）
 
 改行、`;`、`&&`、`||`、`|`、`&`、サブシェル `( )`、ブロック `{ }` で区切り、`$(…)` とバッククォートの中も調べる。
 `git` は先頭の語でなくても調べるので、`env`、`timeout`、`nice`、`sudo` などのラッパーを列挙していない。
-`bash -c`、`sh -c`、`eval`、`!` で始まる alias の中身は再帰で調べる (深さ 4 まで)。
+`bash -c`、`sh -c`、`eval`、`!` で始まる alias の中身は再帰で調べる (深さ 4 まで)。`$'...'` は展開してから中身を調べる。
 
-fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 生の文字列が迂回の語 (`no-veri`、`hookspath`、`husky`、`lefthook`、
-`skip=`、`git_config`、`config-env`、`alias.`) を含み、かつ argv を確定できない箇所があれば止める。
-確定できない箇所とは、heredoc、`$'…'`、git のコマンド名・グローバルオプション・サブコマンド・commit の引数にある変数や置換、
-閉じないクォートや括弧、入れ子 8 段超、再帰 4 段超、10 万バイト超、標準入力からコマンドを読む shell (`… | sh`) を指す。
+fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 分割に失敗したとき（入れ子 8 段超、10 万バイト超、閉じないクォート、
+`${v//(/}` のような解釈できない展開）に限り、git commit と迂回 token が両方あるときだけ止める。
+迂回 token は独立した語としての `--no-verify`（`--no-veri` 以上の省略形）、`commit` の後の `-n`、
+`HUSKY=0` / `LEFTHOOK=0`、`core.hooksPath` など。commit という文字列があるだけでは止めない。
+メッセージや `gh pr create` の本文に `lefthook` / `--no-verify` と書くのは、分割できるなら通す。
 `GIT_CONFIG_KEY_<n>` は文字列に実在するものだけを見るので、`GIT_CONFIG_COUNT` に巨大な値を入れても処理量は増えない。
 
 既知の穴 (意図的に扱わない):
@@ -100,7 +102,7 @@ fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 生の文字列が迂回の�
 - `git push` と `git merge` の `--no-verify`
 - 以前の Bash 呼び出しで export した値
 - `--no-post-rewrite`
-- `env -S` で 1 語にまとめた引数、`-c alias.x=…` で定義した alias の展開 (定義する `-c alias.*` 自体は止める)
+- `-c alias.x=…` で定義した alias の展開 (定義する `-c alias.*` 自体は止める)
 - 迂回の語を含まない動的生成 (`printf` や変数の連結で組み立てた文字列を `eval` するなど)
 - スクリプトファイル経由 (`bash script.sh`、`source`)、python や perl など別インタプリタからの実行
 - dotfiles 以外の git config にある alias、`GIT_CONFIG_GLOBAL` や `GIT_CONFIG_SYSTEM` で差し替えた設定ファイル
@@ -109,10 +111,11 @@ fail-closed (`BLOCKED [hook-bypass-unverifiable]`): 生の文字列が迂回の�
 過検出 (安全側に倒している):
 
 - 引用していない `echo git commit -n` は語の列に `git commit -n` があるので止める
-- heredoc や `$` と迂回の語を同時に含むコマンド (heredoc の commit メッセージに `--no-verify` と書くなど) は止める。
-  メッセージをファイルに書いて `git commit -F <file>` で渡せば通る
-- `git commit` の引数にある引用なしの `$VAR` は単語分割で `--no-verify` になり得るので、`-m $MSG` も止める (`-m "$MSG"` は通す)
+- `git commit` の引数にある引用なしの `$VAR` は単語分割で `--no-verify` になり得るので、`-m $MSG` も止める (`-m "$MSG"` は通す)。位置引数の `"$EXTRA"` も同様
 - `-c core.hooksPath` はサブコマンドを問わず止める
+- 分割に失敗した文字列に git commit と `--no-verify` / `-n` が独立した token として残っている場合
+  （閉じないクォートのメッセージなど）は止める
+- xargs 経由の `git commit` は引数が足されるためすべて止める
 
 ## ALLOW (72) — カテゴリ要約
 

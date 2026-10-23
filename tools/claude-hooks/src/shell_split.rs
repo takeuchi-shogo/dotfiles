@@ -24,8 +24,6 @@ pub struct Split {
     pub nested: Vec<String>,
     /// heredoc 本文と、区切り語がクォートされていたか（クォート時は本文が展開されない）。
     pub heredocs: Vec<(String, bool)>,
-    /// `$'…'` (ANSI-C quoting) を含んでいたか。
-    pub ansi_c: bool,
 }
 
 pub fn split(src: &str) -> Result<Split, String> {
@@ -176,12 +174,12 @@ impl<'a> Splitter<'a> {
                 self.pos += 1;
                 return self.substitution(UNQUOTED_DYNAMIC);
             }
-            // `$'…'` の中身は `\` でエスケープされるので、単純な `'` 対応では閉じを誤る
+            // `$'…'` はバックスラッシュを展開して 1 語にし、呼び出し側が中身を再検査できるようにする
             Some('\'') => {
                 self.pos += 1;
-                self.read_until('\'', true)?;
-                self.out.ansi_c = true;
-                self.cur.push_str(DYNAMIC);
+                let body = unescape_ansi_c(&self.read_until('\'', true)?);
+                self.cur
+                    .push_str(&format!("'{}'", body.replace('\'', "'\\''")));
                 return Ok(());
             }
             // `${X:-$(cmd)}` の中の置換も拾えるよう、`{` 以降は通常どおり読み進める
@@ -309,6 +307,68 @@ impl<'a> Splitter<'a> {
     }
 }
 
+/// `$'…'` の本体の `\` を展開する（`\n` / `\t` / `\r` / `\\` / `\'` / `\"`、他は次の 1 文字）。
+pub(crate) fn unescape_ansi_c(body: &str) -> String {
+    let mut out = String::with_capacity(body.len());
+    let mut chars = body.chars();
+    while let Some(c) = chars.next() {
+        if c != '\\' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('n') => out.push('\n'),
+            Some('t') => out.push('\t'),
+            Some('r') => out.push('\r'),
+            Some('\\') => out.push('\\'),
+            Some('\'') => out.push('\''),
+            Some('"') => out.push('"'),
+            Some(other) => out.push(other),
+            None => out.push('\\'),
+        }
+    }
+    out
+}
+
+/// 生文字列中の `$'...'` を展開する（分割に失敗したときの token 検査用）。
+pub(crate) fn expand_dollar_quotes(src: &str) -> String {
+    let chars: Vec<char> = src.chars().collect();
+    let mut out = String::with_capacity(src.len());
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '$' && chars.get(i + 1) == Some(&'\'') {
+            if let Some((expanded, next)) = take_dollar_quote(&chars, i) {
+                out.push_str(&expanded);
+                i = next;
+                continue;
+            }
+        }
+        out.push(chars[i]);
+        i += 1;
+    }
+    out
+}
+
+/// `chars[i]` が `$` のとき、対応する `$'…'` を展開して閉じの次の位置を返す。
+fn take_dollar_quote(chars: &[char], i: usize) -> Option<(String, usize)> {
+    let mut j = i + 2;
+    let mut inner = String::new();
+    while j < chars.len() {
+        if chars[j] == '\\' && j + 1 < chars.len() {
+            inner.push('\\');
+            inner.push(chars[j + 1]);
+            j += 2;
+            continue;
+        }
+        if chars[j] == '\'' {
+            return Some((unescape_ansi_c(&inner), j + 1));
+        }
+        inner.push(chars[j]);
+        j += 1;
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -331,7 +391,7 @@ mod tests {
             (r#"git commit -m "a; b" --no-verify"#, r#"git commit -m "a; b" --no-verify"#),
             ("git commit -m x 2>&1 &>log <<< y", "git commit -m x 2>&1 &>log <<< y"),
             (r#"git commit -m $MSG "$X" `id`"#, r#"git commit -m DD "$X" DD"#),
-            (r"echo $'it\'s'; git commit -n", "echo D | git commit -n"),
+            (r"echo $'it\'s'; git commit -n", "echo 'it'\\''s' | git commit -n"),
             ("# don't\ngit commit -n; echo a#b", "git commit -n | echo a#b"),
         ];
         for (src, expected) in cases {

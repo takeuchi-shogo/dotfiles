@@ -4,11 +4,12 @@
 //! 末尾の `--no-verify`、`HUSKY=0` / `LEFTHOOK=0` などの env、`git -c core.hooksPath=…`、
 //! alias、ラッパー経由の実行がすり抜ける。ここではそれらを argv 単位で判定する。
 //!
-//! - [`shell_split`] で単純コマンドに分け、各断片を `shlex` で語に分ける
+//! - [`shell_split`] で単純コマンドに分け、各断片を `shlex` で語に分ける。`$'...'` は展開してから語にする
 //! - `git` は先頭に限らず語の列のどこに現れても調べる（`sudo` / `timeout` / `xargs` などを列挙しない）
-//! - `bash -c` / `sh -c` / `eval` / `!` alias / `$(…)` / サブシェルの中身は再帰で調べる
-//! - 解釈に自信が持てない入力（heredoc・`$'…'`・git 引数中の変数や置換・解釈できない入れ子）は、
-//!   生の文字列が迂回マーカーを含むときだけ block する (fail-closed)
+//! - `bash -c` / `sh -c` / `eval` / `env -S` / `!` alias / `$(…)` / サブシェルの中身は再帰で調べる
+//! - 分割に失敗したときだけ fail-closed する。git commit があり、かつ迂回が独立した token
+//!   （`--no-verify`、`commit` の後の `-n`、`HUSKY=0`、`LEFTHOOK=0`、`core.hooksPath` など）として
+//!   見える場合に限る。commit メッセージや非 git コマンドの本文に出てくる語だけでは止めない
 //!
 //! 意図的に扱わないもの（永続 `git config core.hooksPath`、別の Bash 呼び出しで export した値、
 //! `git push` / `git merge` の `--no-verify` など）は deny-rules-catalog.md に記録している。
@@ -21,8 +22,8 @@ const BYPASS_REASON: &str = "BLOCKED [hook-bypass]: git hook を迂回する書�
      FIX: 通常の `git commit` を使い、hook の失敗を直してから再実行してください。";
 
 const UNVERIFIABLE_REASON: &str = "BLOCKED [hook-bypass-unverifiable]: hook 迂回の語を含むコマンドを安全と確認できませんでした。\n\
-     WHY: heredoc・`$'…'`・変数や置換・解釈できない入れ子があると実際の argv を確定できないため、\
-     迂回の語（`--no-verify` / `HUSKY` / `LEFTHOOK` / `core.hooksPath` など）を含む場合は fail-closed で止めます。\n\
+     WHY: 入れ子が深すぎる・入力が長すぎる・閉じないクォートなど、argv を確定できない書き方と、\
+     git commit に対する迂回 token（`--no-verify` / `-n` / `HUSKY=0` / `core.hooksPath` など）が同時にあります。\n\
      FIX: 変数や置換を使わない形に書き直してください。commit メッセージにこれらの語を書きたいだけなら\
      ファイルに書いて `git commit -F <file>` で渡してください。";
 
@@ -30,12 +31,6 @@ const UNVERIFIABLE_REASON: &str = "BLOCKED [hook-bypass-unverifiable]: hook 迂�
 const MAX_DEPTH: usize = 4;
 /// これより長い入力は解釈せず「確認できない」扱いにする。
 const MAX_COMMAND_BYTES: usize = 100_000;
-
-/// 解釈に自信が持てないとき、生の文字列（小文字化）がこれを含めば block する。
-#[rustfmt::skip]
-const MARKERS: &[&str] = &[
-    "no-veri", "hookspath", "husky", "lefthook", "skip=", "git_config", "config-env", "alias.",
-];
 
 /// `-c` で実行文字列を受け取るコマンド（`su` も同じ形）。
 const SHELLS: &[&str] = &[
@@ -64,13 +59,13 @@ type Env = Vec<(String, String)>;
 pub fn bypass_reason(command: &str) -> Option<&'static str> {
     let mut checker = Checker::default();
     if command.len() > MAX_COMMAND_BYTES {
-        checker.unverifiable = true;
+        checker.parse_failed = true;
     } else {
         checker.check_str(command, &mut Env::new(), 0);
     }
     if checker.bypass {
         Some(BYPASS_REASON)
-    } else if checker.unverifiable && has_marker(command) {
+    } else if checker.parse_failed && commit_with_bypass_token(command) {
         Some(UNVERIFIABLE_REASON)
     } else {
         None
@@ -81,27 +76,25 @@ pub fn bypass_reason(command: &str) -> Option<&'static str> {
 struct Checker {
     /// 迂回と判定できた
     bypass: bool,
-    /// 実際の argv を確定できない箇所があった
-    unverifiable: bool,
+    /// 分割や語への分解に失敗した（fail-closed の対象）
+    parse_failed: bool,
 }
 
 impl Checker {
     /// コマンド文字列を検査する。`env` には同じ文字列内で先に設定・export された値が溜まる。
     fn check_str(&mut self, src: &str, env: &mut Env, depth: usize) {
         if depth > MAX_DEPTH {
-            self.unverifiable = true;
             return;
         }
         let Ok(split) = shell_split::split(src) else {
-            self.unverifiable = true;
+            self.parse_failed = true;
             return;
         };
-        self.unverifiable |= split.ansi_c || !split.heredocs.is_empty();
         let mut commands = Vec::new();
         for segment in &split.segments {
             match shlex::split(segment) {
                 Some(words) => commands.push(words),
-                None => self.unverifiable = true,
+                None => self.parse_failed = true,
             }
         }
         let mut stdin_shell = false;
@@ -153,7 +146,6 @@ impl Checker {
         }
         if is_dynamic(head) {
             // `$G commit -n` のように実行するコマンド自体が動的なら、git かもしれないものとして調べる
-            self.unverifiable = true;
             let inline = env_before(env, words, assigns);
             self.check_git(&words[assigns + 1..], &inline, false, true, depth);
         }
@@ -168,6 +160,11 @@ impl Checker {
                     self.check_git(rest, &inline(), via_xargs, false, depth);
                 }
                 "eval" => self.check_str(&rest.join(" "), &mut inline(), depth + 1),
+                "env" => {
+                    if let Some(payload) = env_split_string_payload(rest) {
+                        self.check_str(payload, &mut inline(), depth + 1);
+                    }
+                }
                 name if SHELLS.contains(&name) => match shell_payload(rest) {
                     Some(payload) => self.check_str(payload, &mut inline(), depth + 1),
                     None => stdin_shell |= i == assigns,
@@ -175,7 +172,6 @@ impl Checker {
                 _ => {}
             }
         }
-        self.unverifiable |= stdin_shell;
         stdin_shell
     }
 
@@ -189,12 +185,10 @@ impl Checker {
         depth: usize,
     ) {
         if depth > MAX_DEPTH {
-            self.unverifiable = true;
             return;
         }
         let globals = GitGlobals::parse(args);
         self.bypass |= globals.overrides_hooks;
-        self.unverifiable |= globals.dynamic;
         let Some(index) = globals.subcommand else {
             if dynamic_head {
                 self.check_commit(args, env, via_xargs);
@@ -204,7 +198,6 @@ impl Checker {
         let (sub, rest) = (args[index].as_str(), &args[index + 1..]);
         if is_dynamic(sub) {
             // `git $SUB -n` は commit かもしれない
-            self.unverifiable = true;
             self.check_commit(rest, env, via_xargs);
         } else if let Some(value) = repo_alias(sub) {
             self.expand_alias(value, rest, env, via_xargs, depth);
@@ -231,14 +224,13 @@ impl Checker {
                 args.extend_from_slice(rest);
                 self.check_git(&args, env, via_xargs, false, depth + 1);
             }
-            None => self.unverifiable = true,
+            None => self.parse_failed = true,
         }
     }
 
     fn check_commit(&mut self, args: &[String], env: &Env, via_xargs: bool) {
         // xargs は標準入力から引数を足すので argv を確定できない
         self.bypass |= via_xargs || env_disables_hooks(env) || commit_args_bypass(args);
-        self.unverifiable |= args.iter().any(|a| is_dynamic(a));
     }
 }
 
@@ -247,7 +239,6 @@ impl Checker {
 struct GitGlobals {
     subcommand: Option<usize>,
     overrides_hooks: bool,
-    dynamic: bool,
 }
 
 impl GitGlobals {
@@ -273,8 +264,6 @@ impl GitGlobals {
                 }
             }
         }
-        let end = globals.subcommand.unwrap_or(args.len());
-        globals.dynamic = args[..end].iter().any(|a| is_dynamic(a));
         globals
     }
 }
@@ -453,9 +442,98 @@ fn base(word: &str) -> &str {
     word.rsplit('/').next().unwrap_or(word)
 }
 
-fn has_marker(command: &str) -> bool {
-    let lower = command.to_ascii_lowercase();
-    MARKERS.iter().any(|marker| lower.contains(marker))
+/// `env -S` / `--split-string` の実行文字列。見つからなければ None。
+fn env_split_string_payload(args: &[String]) -> Option<&str> {
+    let mut i = 0;
+    while let Some(arg) = args.get(i).map(String::as_str) {
+        if arg == "-S" || arg == "--split-string" {
+            return args.get(i + 1).map(String::as_str);
+        }
+        if let Some(value) = arg.strip_prefix("--split-string=") {
+            return Some(value);
+        }
+        if let Some(value) = arg.strip_prefix("-S") {
+            if !value.is_empty() {
+                return Some(value);
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// 分割に失敗したとき: git commit があり、迂回が独立した token として見えるか。
+fn commit_with_bypass_token(src: &str) -> bool {
+    let tokens = crude_tokens(&shell_split::expand_dollar_quotes(src));
+    if !has_git_commit(&tokens) {
+        return false;
+    }
+    let mut seen_commit = false;
+    for tok in &tokens {
+        if tok == "commit" {
+            seen_commit = true;
+        }
+        if is_bypass_token(tok) || (seen_commit && tok == "-n") {
+            return true;
+        }
+    }
+    false
+}
+
+fn has_git_commit(tokens: &[String]) -> bool {
+    let mut seen_git = false;
+    for tok in tokens {
+        if base(tok) == "git" {
+            seen_git = true;
+        }
+        if seen_git && tok == "commit" {
+            return true;
+        }
+    }
+    false
+}
+
+fn crude_tokens(src: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut cur = String::new();
+    for c in src.chars() {
+        if c.is_whitespace() || matches!(c, ';' | '&' | '|' | '(' | ')' | '<' | '>') {
+            if !cur.is_empty() {
+                tokens.push(std::mem::take(&mut cur));
+            }
+        } else if !matches!(c, '\'' | '"') {
+            cur.push(c);
+        }
+    }
+    if !cur.is_empty() {
+        tokens.push(cur);
+    }
+    tokens
+}
+
+/// `--no-verify`、`HUSKY=0`、`core.hooksPath` など、それ自体が迂回を表す token か。
+fn is_bypass_token(tok: &str) -> bool {
+    let lower = tok.to_ascii_lowercase();
+    if let Some(name) = lower.strip_prefix("--") {
+        if name.len() >= "no-veri".len() && "no-verify".starts_with(name) {
+            return true;
+        }
+    }
+    env_token_disables_hooks(&lower) || lower.contains("core.hookspath")
+}
+
+fn env_token_disables_hooks(lower: &str) -> bool {
+    let (key, value) = lower.split_once('=').unwrap_or((lower, ""));
+    match key {
+        "husky" | "lefthook" => !matches!(value, "1" | "true" | ""),
+        "lefthook_exclude" | "skip" => !value.is_empty(),
+        "lefthook_config" | "lefthook_bin" => true,
+        "git_config_parameters" => lower.contains("hookspath") || lower.contains("alias."),
+        _ if key.starts_with("git_config_key_") => {
+            value == "core.hookspath" || value.starts_with("alias.")
+        }
+        _ => false,
+    }
 }
 
 #[cfg(test)]

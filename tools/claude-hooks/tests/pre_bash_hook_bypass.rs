@@ -93,6 +93,10 @@ fn allows_messages_and_searches_that_only_mention_bypass_words() {
         r#"git cm -n"#,
         r#"rg -n "core.hooksPath|LEFTHOOK_EXCLUDE" .config lefthook.yml"#,
         "git log -n 5 --grep=no-verify",
+        "git add lefthook.yml && git commit -m \"$(cat <<'EOF'\nchore: document lefthook and --no-verify\nEOF\n)\"",
+        "gh pr create --body \"$(cat <<EOF\nlefthook の設定を更新\nEOF\n)\"",
+        r#"git commit -m $'a\nHUSKY=0'"#,
+        "env -S 'git commit -m x'",
     ]);
 }
 
@@ -194,6 +198,12 @@ fn blocks_bypass_inside_wrappers_subshells_and_blocks() {
         "if git commit -n -m x; then echo ok; fi",
         "cat <<EOF | sh\ngit commit -n -m x\nEOF",
         "echo 'git commit -n -m x' | bash",
+        "env -S 'HUSKY=0 git commit -m x'",
+        "env --split-string 'LEFTHOOK=0 git commit -m x'",
+        "env --split-string='HUSKY=0 git commit -m x'",
+        "env -S 'git commit -m x -n'",
+        r#"bash -c $'git commit -m x -n'"#,
+        r#"eval $'git commit -n'"#,
     ]);
 }
 
@@ -230,27 +240,29 @@ fn blocks_dynamic_words_in_commit_option_position() {
 }
 
 #[test]
-fn fails_closed_when_bypass_words_cannot_be_verified() {
+fn fails_closed_when_unparsed_commit_has_bypass_token() {
+    let deep = format!("{}x{} git commit -m x -n", "$(".repeat(10), ")".repeat(10));
+    let long = format!("{} git commit -m x -n", "a".repeat(100_001));
     blocked_fail_closed(&[
-        "git commit -m \"$(cat <<'EOF'\ndocs: explain --no-verify\nEOF\n)\"",
-        "git commit -m $'a\\nHUSKY=0'",
-        r#"CMD='git commit --no-verify'; eval "$CMD""#,
-        r#"bash -c "$(printf 'LEFTHOOK=0 git commit')""#,
         "git commit -m 'unterminated --no-verify",
+        r#"git commit -m x -n ${v//(/}"#,
+        &deep,
+        &long,
     ]);
 }
 
 #[test]
 fn work_is_bounded_for_huge_counts_and_deep_nesting() {
     let deep = |tail: &str| format!("{}x{}{tail}", "$(".repeat(5_000), ")".repeat(5_000));
-    let long = format!("echo {} --no-verify", "a ".repeat(60_000));
+    let long = format!("{} git commit -m x -n", "a".repeat(100_001));
     let started = Instant::now();
     blocked(&["GIT_CONFIG_COUNT=99999999999999999999 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m x"]);
     allowed(&[
         "GIT_CONFIG_COUNT=99999999999999999999 git commit -m x",
         &deep(""),
+        &format!("{} git commit -m x", "a".repeat(100_001)),
     ]);
-    blocked_fail_closed(&[&deep(" --no-verify"), &long]);
+    blocked_fail_closed(&[&deep(" git commit -m x -n"), &long]);
     assert!(
         started.elapsed() < Duration::from_secs(10),
         "took {:?}",
