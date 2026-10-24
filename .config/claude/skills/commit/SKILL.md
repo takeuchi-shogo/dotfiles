@@ -13,6 +13,12 @@ origin: self
 
 Create well-formatted commit: $ARGUMENTS
 
+## 型の正本（コピーしない）
+
+件名・「本文は subject を言い換えない」は `.agents/skills/pr-issue-style/templates/commit-message.txt`（`$pr-issue-style`）に従う。
+この skill の絵文字 + conventional + contextual action lines は **残す**（型と両立）。
+`git commit`（`-m` なし）なら同じひな形が `commit.template` から開く。
+
 ## Current Repository State
 
 - Git status: !`git status --porcelain`

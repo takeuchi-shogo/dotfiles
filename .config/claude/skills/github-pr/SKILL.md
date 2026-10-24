@@ -15,6 +15,11 @@ metadata:
 
 PR品質を繰り返しチェックし、マージ判断を行う。
 
+## 型の正本（コピーしない）
+
+レビューコメントの型は `.agents/skills/pr-issue-style/templates/review-comments.md`（`$pr-issue-style`）に従う。
+PR 本文を直すときは同 skill の `pr-body-*.md` を使う（Summary/Test plan には戻さない）。
+
 ## 開発フローとスキルの役割
 
 1. 実装・push・PR作成（`/pull-request`）

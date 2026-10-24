@@ -127,6 +127,7 @@
 - 長時間タスク、resume、compact、handoff は `$codex-checkpoint-resume`
 - thread 継続 / fork / resume 判断が絡むときは `$codex-session-hygiene`
 - repo 固有 learnings の保存は `$codex-memory-capture`
+- PR / Issue / コミット本文を書くときは `$pr-issue-style`（`.agents/skills/pr-issue-style/`）。文言はコピーせず templates を参照する
 
 ## Subagent Usage
 - `spawn_agent` は `task_name` / `message` / `fork_turns` のみを取る built-in の仕組み。名前付き custom agent の選択はできない

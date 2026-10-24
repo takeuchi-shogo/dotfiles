@@ -15,6 +15,12 @@ metadata:
 
 ユーザーの自由文テキストから構造化された GitHub Issue を生成し、確認後に `gh issue create` で投稿する。
 
+## 型の正本（コピーしない）
+
+- **上流へのバグ報告**は `.agents/skills/pr-issue-style/templates/issue-bug.md`（Current / Expected / Steps / Root cause）を使う。
+- **TODO リスト Issue**は `templates/issue-todo.md`、定型返信は `templates/issue-replies.md`。
+- 下記の「背景 / 要件 / 受入基準」型は、**機能要望・要件テキストの構造化**向けに残す（バグ報告では上書きしない）。
+
 ## Workflow
 
 ```
