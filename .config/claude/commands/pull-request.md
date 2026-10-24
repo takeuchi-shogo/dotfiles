@@ -74,30 +74,26 @@ PR 作成前に以下のいずれかが未実行と判断したら **実行を�
 
 判断後 `gh pr create [--draft]` を実行する。
 
-## PR Format
+## PR Format（正本は pr-issue-style — コピーしない）
 
-### タイトル
-- 70文字以内
-- 変更の要約を簡潔に記述
+タイトル・本文・分け方は `.agents/skills/pr-issue-style/`（`$pr-issue-style`）に従う。
+旧 Summary / Test plan / Risk / How to revert は使わない。
 
-### 本文
-```markdown
-## Summary
-- 変更の概要を箇条書き（1-3項目）
+- 読む: `.agents/skills/pr-issue-style/SKILL.md`
+- タイトル: `templates/pr-title.md`
+- 小さい PR: `templates/pr-body-small.md`（見出しなし・3文）
+- 中〜大 PR: `templates/pr-body-medium.md`（Why / What changed / Scope / Blast Radius / Verification）
+- 分け方: `templates/pr-split.md`
+- Revert: `templates/revert.md`
 
-## Test plan
-- [ ] テスト項目のチェックリスト
-
-## Risk
-- 壊れうる挙動と影響範囲（なければ「なし」と書く）
-
-## How to revert
-- 戻し方（例: `git revert <sha>`、設定反映が要るなら `task nix:switch` など）
-```
+repo に `.github/PULL_REQUEST_TEMPLATE*` がある場合は **その構造を優先**し、不足する Why / Verification を足す。
 
 ## Guidelines
 
 - コミットが1つの場合: コミットメッセージをベースにタイトル生成
 - コミットが複数の場合: 全コミットを総合してタイトル生成
 - Draft PR が適切な場合は `--draft` フラグを提案
+- 素のシェルでは `ghpr small` / `ghpr medium` も可
 - PR 作成後は URL を表示
+- Verification には実行したコマンドと結果を残す（「テスト済み」だけ禁止）
+

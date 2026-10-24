@@ -5,6 +5,11 @@
 [init]
 	defaultBranch = main
 
+[commit]
+	# 正本は .agents/skills/pr-issue-style/templates/commit-message.txt
+	# （このファイルは symlink。文言をここにコピーしない）
+	template = ~/.config/git/commit-template.txt
+
 [core]
 	editor = nvim
 	excludesFile = ~/.config/git/ignore

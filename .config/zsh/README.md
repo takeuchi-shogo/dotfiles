@@ -32,6 +32,16 @@ zsh/
 | `gb` | `git branch` |
 | `gpl` | `git pull` |
 
+### PR ひな形（functions/ghpr.zsh）
+
+| 呼び出し | 動作 |
+|----------|------|
+| `ghpr small [--draft …]` | `pr-issue-style` の小さい PR 本文を `--body-file` して `gh pr create` |
+| `ghpr medium [--draft …]` | 中〜大 PR 本文（Why / What changed / …）で同様 |
+| `ghpr-small` / `ghpr-medium` | 上記の短別名 |
+
+正本: `.agents/skills/pr-issue-style/templates/`（文言はコピーしない）
+
 ### General
 
 | エイリアス | コマンド |
