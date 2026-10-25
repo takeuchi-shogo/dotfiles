@@ -1,0 +1,10 @@
+# [領域] 動詞で始める命令形の要約（末尾に句点なし・実在のシンボル名を入れる）
+# （チームが Conventional Commits なら: type(scope): subject）
+# 絵文字プレフィックスを使う場合: ✨ feat(scope): subject
+#
+# 本文は subject の言い換えにしない（why / decision だけ）。
+# 空行のあとに書く。不要なら空のまま。
+#
+# ---
+# Prefer five narrow commits/PRs to one large one.
+# バージョン更新・リネーム・整形は別コミット。
