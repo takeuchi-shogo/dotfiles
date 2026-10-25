@@ -1,6 +1,6 @@
 ---
 status: reference
-last_reviewed: 2026-08-01
+last_reviewed: 2026-10-25
 ---
 
 # 日本語成果物の文章規範（脱・AI 臭 / 論証 / 整形）
@@ -40,7 +40,7 @@ AI が生成する**日本語の文章成果物**（PR 概要・Issue 本文・m
 
 書き換えた箇所は原文と次の 6 点で比べ、1 つでも変わったら原文に戻す: 何について述べているか / 肯定か否定か / 誰が誰に対してか / 範囲と条件 / 言い切りの強さ / 数値・固有名詞・時期。（出典: [yomiyasu](https://github.com/nanaism/yomiyasu) の `references/rephrase-test.md`）
 
-書き上がった文章の推敲は yomiyasu plugin が自動で拾う。この節は、commit body や PR 本文を自分で書き直すときの最低限の歯止めとして置く。
+書き上がった文章の推敲は、グローバル CLAUDE.md の指示どおり `yomiyasu:yomiyasu` を呼び出して行う（yomiyasu v2.0.2 以降、名前を出さない依頼では発火しない）。この節は、commit body や PR 本文を自分で書き直すときの最低限の歯止めとして置く。
 
 ## 適用しない場面
 

@@ -1,11 +1,20 @@
 ---
-source: "https://github.com/nanaism/yomiyasu (commit 1bc21f9c, v2.0.1)"
+source: "https://github.com/nanaism/yomiyasu (commit 1bc21f9c, v2.0.1; v2.0.2 追記 2026-10-25; v2.1–2.4 メモ追記 2026-10-25)"
 date: 2026-10-17
 status: integrated
 family: none
+adopted: 4
 ---
 
 <!-- Phase 1.5: 既存 taxonomy のどの family にも該当せず PASS。新分野として none。近い先行分析は 2026-06-18-japanese-tech-writing-absorb-analysis.md (family: prose-writing-style) だが、この family は taxonomy に未登録 (N=1) なので飽和判定の対象外。 -->
+
+<!-- adopted: 4 の内訳
+  1. Task 1: yomiyasu を Claude Code plugin として導入
+  2. Task 2: natural-japanese を skillOverrides で user-invocable-only
+  3. Task 3: japanese-ai-prose.md に「書き換えで意味を変えない」節
+  4. v2.0.2 追記: グローバル CLAUDE.md へ常時呼び出し 1 行 + japanese-ai-prose.md の「自動で拾う」前提修正
+  注: `.codex/AGENTS.md` への同趣旨 1 行と `/review` ルール 19 は、2026-10-25 16:58 JST のユーザー判断で PR から外した（採用しない）。
+-->
 
 ## Source Summary
 
@@ -76,8 +85,36 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 - yomiyasu を plugin として入れる。repo の `settings.json` には新 PC の雛形として書き、この PC の live 設定には CLI で入れる (Task 1)。
 - natural-japanese は `skillOverrides` で `user-invocable-only` にする。トリガーの衝突を止めるため、PR #247 の stop-ai-slop-jp と同じ扱い。
-- 役割分担: yomiyasu は書き上がった下書きの書き直し(自動)。natural-japanese は新規執筆・採点・文体プロファイル(`/natural-japanese` で明示起動)。
+- 役割分担: yomiyasu は書き上がった下書きの書き直し。natural-japanese は新規執筆・採点・文体プロファイル(`/natural-japanese` で明示起動)。
 - 採用しないもの: vendoring、hook、検査記録のワークフローを harness に組み込むこと。
+
+### v2.0.2 追記 (2026-10-25)
+
+README（nanaism/yomiyasu）の原文: 「2.0.2 からは名前を出さずに書かせると yomiyasu は使われません」。『毎回 yomiyasu を使いたいとき』節は、エージェントが毎回読む指示ファイルへ 1 行を足すよう勧めている。
+
+dotfiles の導入形態は Claude Code **plugin**（`enabledPlugins["yomiyasu@yomiyasu"]`）。プラグイン時のスキル名は `yomiyasu:yomiyasu`。repo の `.agents/skills/` には yomiyasu を置いていない。
+
+- `.config/claude/CLAUDE.md` に README 推奨の 1 行を追加（スキル名は `yomiyasu:yomiyasu`）。**採用確定（adopted #4）**。
+- `japanese-ai-prose.md` の「plugin が自動で拾う」前提を、明示呼び出し前提に直す。
+- `.codex/AGENTS.md` への同趣旨 1 行は **入れない**（2026-10-25 16:58 JST:「AGENTS.md の1行とルール19を両方外して、最小限にして」）。Codex 側は upstream README の入れ方を別途検討する余地があるが、この PR の範囲外。
+- 撤退条件の「自動発火」は、指示ファイル経由の常時呼び出しに読み替える。
+
+### v2.1〜2.4 メモ (2026-10-25)
+
+吸収時点は v2.0.1。その後の upstream 変更は [CHANGELOG.md](https://github.com/nanaism/yomiyasu/blob/main/CHANGELOG.md) と [docs/limitations.md](https://github.com/nanaism/yomiyasu/blob/main/docs/limitations.md) で確認した。ここに書く数字・要約は両ファイルの原文に限る。
+
+| 版 | 日付 (CHANGELOG) | 要点（原文の要約） |
+|---|---|---|
+| 2.1.0 | 2026-10-20 | 推敲結果が変わる。語順・省略・助詞による読み違いと、仕様書での許可・能力・保証の言い方のずれを扱う。diff に modality 系の意味が変わる恐れを足す。「書き手に確かめたい点」上限 2→3 |
+| 2.1.1–2.1.3 | 2026-10-21〜22 | 主に検査・フック・Windows / 全角小数点の不具合修正。2.1.1 は推敲手順（SKILL.md 本文）を変えないと明記 |
+| 2.2.0 | 2026-10-23 | 推敲結果が変わる。直訳語（calque）など lint の info 印と、文脈を見て直す手順を追加。`.yomiyasu-words/` の allow/flag |
+| 2.2.1–2.2.2 | 2026-10-23 | 直訳語の抜け修正と、同じ段落を繰り返す文書での diff 高速化（出力は版文字列以外ほぼ不変） |
+| 2.3.0 | 2026-10-24 | 推敲結果が変わる。他動詞の連用形を1語だけ名詞にした「の」受け（renyo_noun）を lint し書き直す。diff を一部高速化 |
+| 2.4.0 | 2026-10-25 | 推敲・lint・diff・check の出力が変わる。英語短術語への漢字1字当て（版/印/頭）の型4、原文にない人・担当を足した文の節、`--doc-type slides` の slide_comma |
+
+**コスト（原典あり）**: CHANGELOG 2.4.0「確かめたこと」の受入評価。作者が書いていない業務依頼 16 本を素の Claude に書かせ、スキルなし / 2.3.0 / 2.4.0 で推敲したときの **1本あたり費用（API 定価換算の中央値）は、スキルなし $0.11、2.3.0 $0.58、2.4.0 $0.60**。時間の中央値は 24 秒、55 秒、58 秒。出典: https://github.com/nanaism/yomiyasu/blob/main/CHANGELOG.md （見出し `## 2.4.0 - 2026-10-25` 内）。
+
+**確認できなかったこと**: limitations.md には上記 $0.60 の再掲は見当たらなかった（CHANGELOG への参照と検証範囲の記述が中心）。「約 $0.60/文書」を limitations.md 単独では裏付けられない。v2.1〜2.3 の 1本あたり API 費用の中央値も、CHANGELOG / limitations の該当節では確認できなかった。
 
 ## Plan
 
@@ -98,7 +135,7 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ## 撤退条件
 
-- yomiyasu の自動発火が文章以外のタスクで起きる、またはトークンコストを実感したら、plugin を disable する。
+- CLAUDE.md / AGENTS.md の常時呼び出し指示が文章以外のタスクでも yomiyasu を読ませる、またはトークンコストを実感したら、当該 1 行を削るか plugin を disable する。
 - natural-japanese を使えなくて困ったら、`skillOverrides` を元に戻す。
 - marketplace は pin していない(HEAD 追従)。他の 7 marketplace と同じ扱いで、更新で upstream の変更が入る。更新時に CHANGELOG を確認する。
 
