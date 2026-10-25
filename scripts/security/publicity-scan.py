@@ -56,10 +56,14 @@ def load_patterns() -> list:
 
 
 def added_lines(diff_args: list[str]) -> list[tuple[str, str]]:
-    """Return [(path, added_line), ...] from `git diff <diff_args>` (added/modified)."""
+    """Return [(path, added_line), ...] from `git diff <diff_args>`.
+
+    ``--diff-filter=AMR`` includes renames. AM alone drops a rename, so a
+    secret added in that same commit is never scanned.
+    """
     try:
         out = subprocess.run(
-            ["git", "diff", *diff_args, "--diff-filter=AM", "-U0"],
+            ["git", "diff", *diff_args, "--diff-filter=AMR", "-U0"],
             capture_output=True,
             text=True,
             check=True,

@@ -158,10 +158,13 @@ tasks:
       - target/release/claude-hooks
 
   test:
-    desc: Run the harness Python test suites (mirrors .github/workflows/ci.yml)
+    desc: Run the harness Python test suites (mirrors harness-tests in .github/workflows/ci.yml)
     cmds:
       - uvx pytest scripts/tests/ -q
-      - uvx pytest .config/claude/scripts/tests/ -q
+      # go-task はコマンド単位の dir: を無視する。CI の working-directory と同じく移ってから実行する。
+      - cd .config/claude/scripts && uvx pytest tests/ -q
+      - uvx pytest .config/claude/skills/imozuru/scripts/tests/ -q
+      - uvx pytest tests/ -q
 
   validate:
     desc: Run all dotfiles validation checks
