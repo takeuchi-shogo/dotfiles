@@ -1,8 +1,9 @@
 ---
-source: "https://github.com/nanaism/yomiyasu (commit 1bc21f9c, v2.0.1)"
+source: "https://github.com/nanaism/yomiyasu (commit 1bc21f9c, v2.0.1; v2.0.2 追記 2026-10-25)"
 date: 2026-10-17
 status: integrated
 family: none
+adopted: 4
 ---
 
 <!-- Phase 1.5: 既存 taxonomy のどの family にも該当せず PASS。新分野として none。近い先行分析は 2026-06-18-japanese-tech-writing-absorb-analysis.md (family: prose-writing-style) だが、この family は taxonomy に未登録 (N=1) なので飽和判定の対象外。 -->
@@ -76,8 +77,18 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 - yomiyasu を plugin として入れる。repo の `settings.json` には新 PC の雛形として書き、この PC の live 設定には CLI で入れる (Task 1)。
 - natural-japanese は `skillOverrides` で `user-invocable-only` にする。トリガーの衝突を止めるため、PR #247 の stop-ai-slop-jp と同じ扱い。
-- 役割分担: yomiyasu は書き上がった下書きの書き直し(自動)。natural-japanese は新規執筆・採点・文体プロファイル(`/natural-japanese` で明示起動)。
+- 役割分担: yomiyasu は書き上がった下書きの書き直し。natural-japanese は新規執筆・採点・文体プロファイル(`/natural-japanese` で明示起動)。
 - 採用しないもの: vendoring、hook、検査記録のワークフローを harness に組み込むこと。
+
+### v2.0.2 追記 (2026-10-25)
+
+README（nanaism/yomiyasu）の原文: 「2.0.2 からは名前を出さずに書かせると yomiyasu は使われません」。『毎回 yomiyasu を使いたいとき』節は、エージェントが毎回読む指示ファイルへ 1 行を足すよう勧めている。
+
+dotfiles の導入形態は Claude Code **plugin**（`enabledPlugins["yomiyasu@yomiyasu"]`）。プラグイン時のスキル名は `yomiyasu:yomiyasu`。Codex 向けにも同名で `.codex/AGENTS.md` へ 1 行を入れる（repo の `.agents/skills/` には yomiyasu を置いていない。Codex で使うときは upstream README の入れ方で別途入れる）。
+
+- `.config/claude/CLAUDE.md` と `.codex/AGENTS.md` に README 推奨の 1 行を追加（スキル名は `yomiyasu:yomiyasu`）。
+- `japanese-ai-prose.md` の「plugin が自動で拾う」前提を、明示呼び出し前提に直す。
+- 撤退条件の「自動発火」は、指示ファイル経由の常時呼び出しに読み替える。
 
 ## Plan
 
@@ -98,7 +109,7 @@ S1 を撤回した理由は、vendored ファイルに手を入れると upstrea
 
 ## 撤退条件
 
-- yomiyasu の自動発火が文章以外のタスクで起きる、またはトークンコストを実感したら、plugin を disable する。
+- CLAUDE.md / AGENTS.md の常時呼び出し指示が文章以外のタスクでも yomiyasu を読ませる、またはトークンコストを実感したら、当該 1 行を削るか plugin を disable する。
 - natural-japanese を使えなくて困ったら、`skillOverrides` を元に戻す。
 - marketplace は pin していない(HEAD 追従)。他の 7 marketplace と同じ扱いで、更新で upstream の変更が入る。更新時に CHANGELOG を確認する。
 

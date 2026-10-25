@@ -985,6 +985,13 @@ class TestEmitFilteredFindings:
         with pytest.raises(ValueError, match="filter_rule"):
             emit_filtered_findings([_filtered(filter_rule="made-up")])
 
+    def test_synthesis_yagni_accepted(self, tmp_path):
+        emit_filtered_findings(
+            [_filtered(filter_rule="synthesis-yagni", reason="実害を示せない")]
+        )
+        row = json.loads((tmp_path / "review" / "filtered.jsonl").read_text())
+        assert row["filter_rule"] == "synthesis-yagni"
+
     @pytest.mark.parametrize("field", ["finding", "file", "reviewer"])
     @pytest.mark.parametrize("bad", ["missing", ""])
     def test_required_text_fields_rejected(self, tmp_path, field, bad):
