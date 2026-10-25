@@ -69,3 +69,7 @@ jobs:
 
       - name: Validate readmes
         run: .bin/validate_readmes.sh
+
+      # HOME の symlink は見ない。outLink のリンク元（repo 側）だけ実在確認する。
+      - name: Validate symlink targets
+        run: .bin/validate_symlink_targets.sh
