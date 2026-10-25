@@ -161,8 +161,8 @@ tasks:
     desc: Run the harness Python test suites (mirrors harness-tests in .github/workflows/ci.yml)
     cmds:
       - uvx pytest scripts/tests/ -q
-      - cmd: uvx pytest tests/ -q
-        dir: .config/claude/scripts
+      # go-task はコマンド単位の dir: を無視する。CI の working-directory と同じく移ってから実行する。
+      - cd .config/claude/scripts && uvx pytest tests/ -q
       - uvx pytest .config/claude/skills/imozuru/scripts/tests/ -q
       - uvx pytest tests/ -q
 

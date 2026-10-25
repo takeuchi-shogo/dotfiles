@@ -45,12 +45,15 @@ jobs:
   publicity-and-config:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # 既定の fetch-depth: 1 では origin/master も merge-base も取れず
           # origin/master...HEAD が解けない。0 は全 branch の全履歴を取る。
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Publicity scan (PR diff)
         run: |
