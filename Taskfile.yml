@@ -173,6 +173,7 @@ tasks:
       - task: validate-readmes
       - task: validate-symlinks
       - task: validate-cccc
+      - .bin/validate_symlink_targets.sh
 
   validate-cccc:
     desc: Run cccc complexity gate on changed functions (skips if cccc unavailable)
