@@ -39,3 +39,30 @@ jobs:
       - name: cargo test
         working-directory: tools/claude-hooks
         run: cargo test --locked
+
+  # lefthook pre-commit だけだと hook 未設定の commit が PUBLIC repo に通る。
+  # biome / oxlint などの整形はここには入れない。
+  publicity-and-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 既定の fetch-depth: 1 では origin/master も merge-base も取れず
+          # origin/master...HEAD が解けない。0 は全 branch の全履歴を取る。
+          fetch-depth: 0
+
+      - name: Publicity scan (PR diff)
+        run: |
+          git rev-parse --verify origin/master
+          python3 scripts/security/publicity-scan.py origin/master...HEAD
+
+      - name: Company content guard (PR diff)
+        run: bash scripts/security/check-company-content.sh origin/master...HEAD
+
+      # validate-symlinks は HOME の managed symlink が要るので回さない。
+      - name: Validate configs
+        run: .bin/validate_configs.sh
+
+      - name: Validate readmes
+        run: .bin/validate_readmes.sh
