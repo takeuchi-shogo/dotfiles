@@ -1,9 +1,6 @@
 """validate_symlink_targets.sh の赤ケース。
 
-harness-tests は `uvx pytest scripts/tests/ -q` でこのファイルを集める。
-ログに各ケース名を残すときは次を直接実行する。
-
-    python3 scripts/tests/test_validate_symlink_targets.py
+CI では harness-tests の `uvx pytest scripts/tests/ -q` がこのファイルを 1 回実行する。
 """
 
 from __future__ import annotations
@@ -35,6 +32,19 @@ def assignment(home_key: str, repo_path: str) -> str:
     return f'"{home_key}" = outLink "{repo_path}";\n'
 
 
+_INTERNAL_NAMES = (
+    "duplicate_key_errors",
+    "parse_targets",
+    "read_nix",
+    "nix_files",
+)
+
+
+def assert_user_facing(stderr: str) -> None:
+    for name in _INTERNAL_NAMES:
+        assert name not in stderr, stderr
+
+
 def test_directory_missing_is_red() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -61,9 +71,11 @@ def test_unparseable_outlink_is_red() -> None:
         )
         result = run(root)
         assert result.returncode == 1, result.stdout
+        assert "default.nix" in result.stderr
         assert "refusing to ignore it" in result.stderr
         assert "not-quoted" in result.stderr
         assert result.stdout == ""
+        assert_user_facing(result.stderr)
 
 
 def test_outside_repo_is_red() -> None:
@@ -80,6 +92,7 @@ def test_outside_repo_is_red() -> None:
         assert "'../outside'" in result.stderr
         assert "'/etc/passwd'" in result.stderr
         assert result.stdout == ""
+        assert_user_facing(result.stderr)
 
 
 def test_zero_outlinks_is_red() -> None:
@@ -90,6 +103,7 @@ def test_zero_outlinks_is_red() -> None:
         assert defined.returncode == 1, defined.stdout
         assert 'no outLink "..." targets' in defined.stderr
         assert defined.stdout == ""
+        assert_user_facing(defined.stderr)
 
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -98,6 +112,7 @@ def test_zero_outlinks_is_red() -> None:
         assert commented.returncode == 1, commented.stdout
         assert 'no outLink "..." targets' in commented.stderr
         assert "missing target" not in commented.stderr
+        assert_user_facing(commented.stderr)
 
 
 def test_comment_line_is_ignored() -> None:
@@ -128,6 +143,7 @@ def test_errors_are_on_stderr() -> None:
         assert result.stdout == ""
         assert "missing target" in result.stderr
         assert "missing-file" in result.stderr
+        assert_user_facing(result.stderr)
 
 
 def test_reads_nix_files_under_home() -> None:
@@ -157,9 +173,11 @@ def test_duplicate_home_key_is_red() -> None:
         )
         result = run(root)
         assert result.returncode == 1, result.stdout
-        assert "duplicate outLink key" in result.stderr
+        assert "duplicate home key" in result.stderr
         assert "'same'" in result.stderr
+        assert "default.nix" in result.stderr
         assert result.stdout == ""
+        assert_user_facing(result.stderr)
 
 
 def test_same_repo_path_from_two_keys_is_ok() -> None:
@@ -174,6 +192,64 @@ def test_same_repo_path_from_two_keys_is_ok() -> None:
         result = run(root)
         assert result.returncode == 0, result.stderr
         assert "checked 2 symlink targets" in result.stdout
+
+
+def test_same_home_key_in_separate_files_is_ok() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "one").write_text("a", encoding="utf-8")
+        (root / "two").write_text("b", encoding="utf-8")
+        write_nix(root, "default.nix", assignment("same", "one"))
+        write_nix(root, "wsl.nix", assignment("same", "two"))
+        result = run(root)
+        assert result.returncode == 0, result.stderr
+        assert "duplicate" not in result.stderr
+        assert "checked 2 symlink targets" in result.stdout
+
+
+def test_cross_file_same_key_reports_missing_not_duplicate() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "one").write_text("a", encoding="utf-8")
+        write_nix(root, "default.nix", assignment("same", "one"))
+        write_nix(root, "wsl.nix", assignment("same", "missing-file"))
+        result = run(root)
+        assert result.returncode == 1, result.stdout
+        assert "missing target" in result.stderr
+        assert "missing-file" in result.stderr
+        assert "duplicate" not in result.stderr
+        assert_user_facing(result.stderr)
+
+
+def test_trailing_comment_outlink_is_ignored() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "present#keep").write_text("x", encoding="utf-8")
+        write_nix(
+            root,
+            "default.nix",
+            '"home" = outLink "present#keep";  # outLink in trailing comment\n',
+        )
+        result = run(root)
+        assert result.returncode == 0, result.stderr
+        assert "ok  present#keep" in result.stdout
+        assert "checked 1 symlink targets" in result.stdout
+
+
+def test_trailing_comment_does_not_hide_unparsed_call() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_nix(
+            root,
+            "default.nix",
+            "x = outLink ./not-quoted;  # outLink\n",
+        )
+        result = run(root)
+        assert result.returncode == 1, result.stdout
+        assert "default.nix" in result.stderr
+        assert "not-quoted" in result.stderr
+        assert "refusing to ignore" in result.stderr
+        assert_user_facing(result.stderr)
 
 
 def test_no_args_uses_script_repo() -> None:
@@ -200,6 +276,10 @@ CASES = (
     ("分割ファイル", test_reads_nix_files_under_home),
     ("重複定義", test_duplicate_home_key_is_red),
     ("同一パスは重複にしない", test_same_repo_path_from_two_keys_is_ok),
+    ("別ファイルの同一キー", test_same_home_key_in_separate_files_is_ok),
+    ("別ファイルの欠落", test_cross_file_same_key_reports_missing_not_duplicate),
+    ("行末コメント", test_trailing_comment_outlink_is_ignored),
+    ("行末コメントは不正を隠さない", test_trailing_comment_does_not_hide_unparsed_call),
     ("引数なし", test_no_args_uses_script_repo),
 )
 

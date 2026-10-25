@@ -40,13 +40,38 @@ def eprint(message: str) -> None:
     print(message, file=sys.stderr)
 
 
+def strip_unquoted_hash_comment(line: str) -> str:
+    """文字列の外にある `#` 以降を落とす。`"foo#bar"` の中の `#` は残す。"""
+    in_string = False
+    index = 0
+    while index < len(line):
+        char = line[index]
+        if in_string:
+            if char == "\\" and index + 1 < len(line):
+                index += 2
+                continue
+            if char == '"':
+                in_string = False
+            index += 1
+            continue
+        if char == '"':
+            in_string = True
+            index += 1
+            continue
+        if char == "#":
+            return line[:index]
+        index += 1
+    return line
+
+
 def without_hash_comment_lines(nix_text: str) -> str:
-    """`#` で始まる行はコメントなので、代入としても未知構文としても見ない。"""
+    """`#` コメントは代入にも未知構文にも数えない。行頭でも行末でも同じ。"""
     kept: list[str] = []
     for line in nix_text.splitlines():
-        if line.lstrip().startswith("#"):
+        code = strip_unquoted_hash_comment(line).rstrip()
+        if code == "":
             continue
-        kept.append(line)
+        kept.append(code)
     return "\n".join(kept)
 
 
@@ -85,20 +110,22 @@ def target_error(root: pathlib.Path, rel: str) -> str | None:
 
 
 def duplicate_key_errors(keys: list[tuple[str, str, str]]) -> list[str]:
-    """同じ home key が複数回なら赤。source は `nix ファイル -> target`。"""
-    seen: dict[str, tuple[str, str]] = {}
+    """同一ファイル内の home key 重複だけを赤にする。
+
+    `import ./home` は default.nix だけを読む。別ファイルの同じキーは
+    同時に一つの attrset になるとは限らない。
+    """
+    seen: dict[tuple[str, str], str] = {}
     errors: list[str] = []
     for source, key, rel in keys:
-        previous = seen.get(key)
+        previous = seen.get((source, key))
         if previous is not None:
-            prev_source, prev_rel = previous
             errors.append(
-                "validate_symlink_targets: duplicate_key_errors: "
-                f"duplicate outLink key {key!r} "
-                f"({prev_source} -> {prev_rel!r}, {source} -> {rel!r})"
+                "validate_symlink_targets: duplicate home key "
+                f"{key!r} in {source} (targets {previous!r} and {rel!r})"
             )
             continue
-        seen[key] = (source, rel)
+        seen[(source, key)] = rel
     return errors
 
 
@@ -114,7 +141,7 @@ def read_nix(path: pathlib.Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
-        eprint(f"validate_symlink_targets: read_nix: cannot read {path}: {exc}")
+        eprint(f"validate_symlink_targets: cannot read {path}: {exc}")
         sys.exit(1)
 
 
@@ -128,7 +155,7 @@ def collect(
     files = nix_files(root)
     if not files:
         eprint(
-            "validate_symlink_targets: nix_files: no *.nix under "
+            "validate_symlink_targets: no *.nix under "
             f"{root / 'nix' / 'home'}"
         )
         sys.exit(1)
@@ -138,7 +165,7 @@ def collect(
     for path in files:
         file_targets, file_keys, parse_error = parse_targets(read_nix(path))
         if parse_error:
-            eprint(f"validate_symlink_targets: parse_targets: {path}: {parse_error}")
+            eprint(f"validate_symlink_targets: {path}: {parse_error}")
             sys.exit(1)
         source = str(path)
         targets.extend(file_targets)
@@ -151,7 +178,7 @@ def main() -> None:
     targets, keys, files = collect(root)
     if not targets:
         eprint(
-            "validate_symlink_targets: parse_targets: "
+            "validate_symlink_targets: "
             f'no outLink "..." targets in {format_sources(files)}'
         )
         sys.exit(1)
