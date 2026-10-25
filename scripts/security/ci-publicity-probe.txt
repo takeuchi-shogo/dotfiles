@@ -1,2 +1,0 @@
-# CI probe only. Obvious dummy, not a real credential.
-ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
