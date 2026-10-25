@@ -427,8 +427,7 @@ Agent ツールの `mode` パラメータは省略するか `"default"` を使�
 15. **Codex 指摘の必須対応**: codex-reviewer の Critical/Important 指摘は個別に対応を明記すること。「他レビューアーが指摘していない」「外れ値に見える」は無視の理由にならない。Codex の deep reasoning による指摘は verdict 計算から除外してはならない（`[DEEP_REASONING]` タグで常時保持）。詳細: `references/review-consensus-policy.md` Section 4
 16. **Synthesis Output Verbosity Constraint (MoA verbosity guard)**: マルチレビューア合成レポートは MoA (Mixture of Agents) パターンの既知の failure mode として**冗長化**しやすい (Wang et al. ICLR 2025 — failure mode #2)。以下を守る: (a) 各 finding の finding フィールドは 2 文以内、(b) 同じ根本原因の指摘は 1 件に集約し「他 N 件も同様指摘」と注記、(c) Watch 指摘は 5 件を超えたら「上位 5 件のみ表示、残りは review-findings.jsonl で参照」に切り詰める、(d) 合成レポート全体が 400 行を超える場合は「Critical のみ詳細、Important は 1 行要約」に圧縮する。verbosity は Signal 低下を意味し、ユーザー体験を損なう。詳細: `references/review-consensus-policy.md` Section 5
 17. **ペルソナレビューアーの統合**: reviewer-ma/mu の指摘は `[PERSONA]` タグを付与する。verdict 計算には含めるが、外れ値検出（ルール13）の対象外とする。ペルソナ指摘が汎用レビューアーと重複する場合、ペルソナ側の具体的な修正案（suggestion ブロック、リファクタリングコード）を統合レポートに採用する
-18. **除外した指摘の記録**: ルール 7/9/19 で落とした指摘と reviewer の `## Filtered` 節の行は `emit_filtered_findings` で `review/filtered.jsonl` に保存し、`templates/review-output.md` の `**除外**:` 行に件数を出す。出力契約に `## Filtered` 節を持つ reviewer (code-reviewer / codex-reviewer) が節を出さなかったら `unknown` と書き、0 に寄せない。手順: `references/findings-and-feedback.md` Step 6
-19. **YAGNI フィルタ（実害の示せない指摘）**: verdict / 自動修正の入力にする前に、各指摘へ「従わないと、いま実際にどんな誤動作やデータの不整合が起きるか」を一文で要求する。示せない指摘は Watch に降格するか除外し、除外時は `filter_rule: synthesis-yagni` でルール 18 の経路に残す。設計方針・将来の拡張・好みだけの指摘はここに落とす（出典: e-dash 敵対的レビュー記事の YAGNI レーン）
+18. **除外した指摘の記録**: ルール 7/9 で落とした指摘と reviewer の `## Filtered` 節の行は `emit_filtered_findings` で `review/filtered.jsonl` に保存し、`templates/review-output.md` の `**除外**:` 行に件数を出す。出力契約に `## Filtered` 節を持つ reviewer (code-reviewer / codex-reviewer) が節を出さなかったら `unknown` と書き、0 に寄せない。手順: `references/findings-and-feedback.md` Step 6
 
 ### Layer 0 優先ルール（Trust Verification Policy）
 

@@ -10,7 +10,7 @@ source:
   intro: "https://x.com/nwiizo/status/2113669279727898810"
 status: integrated
 family: code-review-best-practices
-adopted: 1
+adopted: 0
 ---
 
 # e-dash 敵対的レビュー記事 — 採否
@@ -47,9 +47,7 @@ family: `code-review-best-practices`（先行: agentic-code-review / monotaro / 
 | 自動修正ループの周回上限 | Anthropic absorb の再レビュー収束（上限・diff-only・再掲禁止） | Already |
 | 行数でなく危険度で敵対レビューを当てる | review tier（light / standard / deep）と変更内容ルーティング | Already |
 | 8 レーン常時の敵対的レビュー一式 | 記事自身が token 約 9 倍・500 行未満で確定 0 が珍しくないと報告 | Reject |
-| **YAGNI レーン**（実害を示せない指摘の棄却・降格） | 信頼度フィルタ・verbosity・Watch はあるが、「いまの誤動作/データ不整合を示せ」という実害ゲートは無い | **Adopt** |
-
-事前の見立てどおり、新規に足すのは YAGNI 観点のフィルタだけ。
+| **YAGNI レーン**（実害を示せない指摘の棄却・降格） | 信頼度フィルタ・verbosity・Watch はあるが、「いまの誤動作/データ不整合を示せ」という実害ゲートは無い | **Reject**（当初 Adopt 案だったが、ユーザー判断で取り消し） |
 
 ## Integration Decisions
 
@@ -57,11 +55,11 @@ family: `code-review-best-practices`（先行: agentic-code-review / monotaro / 
 |---|---|---|---|
 | 1 | 8 レーン敵対的レビューの常時導入 | Reject | 記事の計測でコストが大きく、既存の並列レビュー＋ tier で危険度切り分けは足りる |
 | 2 | Fable 仲裁レーンの新設 | Reject | モデル役割は既存。レビュー専用の追加レーンはトークン増のみ |
-| 3 | YAGNI フィルタ（実害一文） | **Adopt** | 交差検証後のノイズ削減。記事の定義を合成ルール 1 本に落とす |
+| 3 | YAGNI フィルタ（実害一文） | **Reject** | **ユーザー判断で最小限にした**（2026-10-25 16:58 JST:「#304 は AGENTS.md の1行とルール19を両方外して、最小限にして」）。`/review` の挙動は変えない。参考: レビューで指摘されたとおり、実害を示せない指摘を落とすルールは Codex Critical/Important の必須対応（統合ルール 15）と衝突しうる |
 
 ### 採用した変更
 
-- `.config/claude/skills/review/SKILL.md` Step 4 統合ルール 19: 実害を示せない指摘を Watch 降格または除外し、`filter_rule: synthesis-yagni` で記録する
+なし（`adopted: 0`）。YAGNI フィルタ（ルール 19 / `synthesis-yagni`）は branch から外し、base と同じ `/review` に戻した。
 
 ## 取得できたもの / 読めなかったもの
 

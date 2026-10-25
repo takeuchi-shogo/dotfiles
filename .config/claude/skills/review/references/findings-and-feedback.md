@@ -102,7 +102,7 @@ FILTERED_JSON
 | `line` | - | int (bool 不可)。行番号が無ければキーごと省く |
 | `reason` / `run_id` | - | 非空 str。`run_id` は review-metrics との join キー |
 
-`filter_rule`: `synthesis-low-confidence` (ルール 7) / `synthesis-linter-duplicate` (9) / `synthesis-yagni` (ルール 19) / `reviewer-false-positive` / `reviewer-not-reproducible`。ルール 8 の diff 外指摘は `[OUT-OF-DIFF]` としてレポートに残るので除外記録に入れない
+`filter_rule`: `synthesis-low-confidence` (ルール 7) / `synthesis-linter-duplicate` (9) / `reviewer-false-positive` / `reviewer-not-reproducible`。ルール 8 の diff 外指摘は `[OUT-OF-DIFF]` としてレポートに残るので除外記録に入れない
 
 保存先は `review/filtered.jsonl`。`learnings/` に置くと `review-findings.jsonl` の pending 判定や `learnings/*.jsonl` を全件読む集計 3 本に混ざるため分けている。0 件なら呼ばなくてよい。
 

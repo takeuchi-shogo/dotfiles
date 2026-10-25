@@ -13,7 +13,7 @@ adopted: 4
   2. Task 2: natural-japanese を skillOverrides で user-invocable-only
   3. Task 3: japanese-ai-prose.md に「書き換えで意味を変えない」節
   4. v2.0.2 追記: グローバル CLAUDE.md へ常時呼び出し 1 行 + japanese-ai-prose.md の「自動で拾う」前提修正
-  注: `.codex/AGENTS.md` への同趣旨 1 行と `/review` ルール 19 は branch 上にあるが、本人確認中（MUST）のため adopted 件数には含めない。
+  注: `.codex/AGENTS.md` への同趣旨 1 行と `/review` ルール 19 は、2026-10-25 16:58 JST のユーザー判断で PR から外した（採用しない）。
 -->
 
 ## Source Summary
@@ -96,7 +96,7 @@ dotfiles の導入形態は Claude Code **plugin**（`enabledPlugins["yomiyasu@y
 
 - `.config/claude/CLAUDE.md` に README 推奨の 1 行を追加（スキル名は `yomiyasu:yomiyasu`）。**採用確定（adopted #4）**。
 - `japanese-ai-prose.md` の「plugin が自動で拾う」前提を、明示呼び出し前提に直す。
-- `.codex/AGENTS.md` への同趣旨 1 行は branch に入っているが、**本人確認中（MUST-1）**。Codex で使うときは upstream README の入れ方が別途必要。
+- `.codex/AGENTS.md` への同趣旨 1 行は **入れない**（2026-10-25 16:58 JST:「AGENTS.md の1行とルール19を両方外して、最小限にして」）。Codex 側は upstream README の入れ方を別途検討する余地があるが、この PR の範囲外。
 - 撤退条件の「自動発火」は、指示ファイル経由の常時呼び出しに読み替える。
 
 ### v2.1〜2.4 メモ (2026-10-25)
