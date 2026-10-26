@@ -60,10 +60,10 @@ Pages Router、同じ `.go` で connect-go と net/http) に応じてチェッ�
 
 ## Progress
 
-- [ ] T0
-- [ ] T1
-- [ ] T2
-- [ ] T3
+- [ ] T0 (blocked: 記録先が未決定。本業 repo の file 単位の実例は public dotfiles に書けない。review-findings.jsonl は指摘済みのみで見逃しは引けず、repo 欄も空)
+- [ ] T1 (blocked: Unknowns 1-4 はユーザー判断。2 はチーム合意が要る)
+- [ ] T2 (blocked: T1 の決定に依存)
+- [ ] T3 (blocked: T1 の決定に依存)
 
 ## Surprises & Discoveries
 
