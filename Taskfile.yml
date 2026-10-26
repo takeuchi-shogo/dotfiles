@@ -172,6 +172,7 @@ tasks:
       - task: validate-configs
       - task: validate-readmes
       - task: validate-symlinks
+      - task: validate-symlink-targets
       - task: validate-cccc
 
   validate-cccc:
@@ -202,6 +203,11 @@ tasks:
     desc: Validate key symlinks managed by dotfiles
     cmds:
       - ~/dotfiles/.bin/validate_symlinks.sh
+
+  validate-symlink-targets:
+    desc: Validate outLink targets exist in the repo
+    cmds:
+      - .bin/validate_symlink_targets.sh
 
   docs:harness-overview:
     desc: Regenerate docs/share/ai-harness-overview.html from live skills/agents/settings

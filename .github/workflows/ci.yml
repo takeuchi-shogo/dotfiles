@@ -71,5 +71,8 @@ jobs:
         run: .bin/validate_readmes.sh
 
       # HOME の symlink は見ない。outLink のリンク元（repo 側）だけ実在確認する。
+      # 前段失敗でも欠かさない。キャンセル時は走らせない。順序は変えない。
+      # fixture は harness-tests の pytest が 1 回だけ実行する。
       - name: Validate symlink targets
+        if: ${{ !cancelled() }}
         run: .bin/validate_symlink_targets.sh
