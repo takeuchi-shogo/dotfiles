@@ -1,6 +1,6 @@
 """validate_symlink_targets.sh の赤ケース。
 
-CI では harness-tests の `uvx pytest scripts/tests/ -q` がこのファイルを 1 回実行する。
+CI では harness-tests の `uvx pytest scripts/tests/ -v` がこのファイルを 1 回実行する。
 """
 
 from __future__ import annotations
@@ -53,6 +53,8 @@ def test_directory_missing_is_red() -> None:
         assert missing.returncode == 1, missing.stdout + missing.stderr
         assert "missing target" in missing.stderr
         assert "missing-dir" in missing.stderr
+        assert "'home'" in missing.stderr
+        assert "default.nix" in missing.stderr
 
         # outLink は種別を持たない。ディレクトリが実在すれば通す。
         (root / "missing-dir").mkdir()
@@ -143,6 +145,8 @@ def test_errors_are_on_stderr() -> None:
         assert result.stdout == ""
         assert "missing target" in result.stderr
         assert "missing-file" in result.stderr
+        assert "'home'" in result.stderr
+        assert "default.nix" in result.stderr
         assert_user_facing(result.stderr)
 
 
@@ -217,6 +221,9 @@ def test_cross_file_same_key_reports_missing_not_duplicate() -> None:
         assert result.returncode == 1, result.stdout
         assert "missing target" in result.stderr
         assert "missing-file" in result.stderr
+        assert "'same'" in result.stderr
+        assert "wsl.nix" in result.stderr
+        assert "default.nix" not in result.stderr
         assert "duplicate" not in result.stderr
         assert_user_facing(result.stderr)
 
@@ -252,6 +259,46 @@ def test_trailing_comment_does_not_hide_unparsed_call() -> None:
         assert_user_facing(result.stderr)
 
 
+def test_no_nix_files_under_home_is_red() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        home = root / "nix" / "home"
+        home.mkdir(parents=True)
+        (home / "notes.txt").write_text("not nix", encoding="utf-8")
+        result = run(root)
+        assert result.returncode == 1, result.stdout + result.stderr
+        assert "no *.nix under" in result.stderr
+        assert str(home) in result.stderr
+        assert result.stdout == ""
+        assert_user_facing(result.stderr)
+
+
+def test_nix_read_failure_is_red() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = root / "nix" / "home" / "default.nix"
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b"\xff\xfe not utf-8")
+        result = run(root)
+        assert result.returncode == 1, result.stdout + result.stderr
+        assert "cannot read" in result.stderr
+        assert "default.nix" in result.stderr
+        assert result.stdout == ""
+        assert_user_facing(result.stderr)
+
+
+def test_extra_args_exit_2() -> None:
+    result = subprocess.run(
+        ["bash", str(SCRIPT), "one", "two"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "usage: validate_symlink_targets.sh" in result.stderr
+    assert result.stdout == ""
+
+
 def test_no_args_uses_script_repo() -> None:
     result = subprocess.run(
         ["bash", str(SCRIPT)],
@@ -280,6 +327,9 @@ CASES = (
     ("別ファイルの欠落", test_cross_file_same_key_reports_missing_not_duplicate),
     ("行末コメント", test_trailing_comment_outlink_is_ignored),
     ("行末コメントは不正を隠さない", test_trailing_comment_does_not_hide_unparsed_call),
+    ("nix が 0 本", test_no_nix_files_under_home_is_red),
+    ("読み込み失敗", test_nix_read_failure_is_red),
+    ("引数が多すぎる", test_extra_args_exit_2),
     ("引数なし", test_no_args_uses_script_repo),
 )
 

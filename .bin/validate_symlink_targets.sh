@@ -64,7 +64,7 @@ def strip_unquoted_hash_comment(line: str) -> str:
     return line
 
 
-def without_hash_comment_lines(nix_text: str) -> str:
+def without_hash_comments(nix_text: str) -> str:
     """`#` コメントは代入にも未知構文にも数えない。行頭でも行末でも同じ。"""
     kept: list[str] = []
     for line in nix_text.splitlines():
@@ -82,7 +82,7 @@ def parse_targets(
 
     ファイル単体で 0 件でもエラーにしない。分割後の空ファイルと、合計 0 件は別。
     """
-    body = without_hash_comment_lines(nix_text)
+    body = without_hash_comments(nix_text)
     targets = OUTLINK_CALL.findall(body)
     keys = OUTLINK_KEY.findall(body)
     remaining = OUTLINK_DEF.sub("", OUTLINK_CALL.sub("", body))
@@ -95,17 +95,24 @@ def parse_targets(
     return targets, keys, None
 
 
-def target_error(root: pathlib.Path, rel: str) -> str | None:
+def target_error(
+    root: pathlib.Path,
+    rel: str,
+    owners: list[tuple[str, str]],
+) -> str | None:
     """実在しない、または repo の外へ出るパスならメッセージを返す。
 
     outLink は file / directory を区別しないので、実在するどちらも通す。
+    欠落時は定義元のファイルと home key を含める。
     """
     pure = pathlib.PurePosixPath(rel)
     if rel == "" or pure.is_absolute() or ".." in pure.parts:
         return f"validate_symlink_targets: refusing path outside repo: {rel!r}"
     target = root / rel
     if not target.exists():
-        return f"validate_symlink_targets: missing target {rel}: {target}"
+        where = ", ".join(f"{key!r} in {source}" for source, key in owners)
+        defined = f" ({where})" if where else ""
+        return f"validate_symlink_targets: missing target {rel}{defined}: {target}"
     return None
 
 
@@ -185,7 +192,10 @@ def main() -> None:
 
     errors = duplicate_key_errors(keys)
     for rel in targets:
-        message = target_error(root, rel)
+        owners = [
+            (source, key) for source, key, key_rel in keys if key_rel == rel
+        ]
+        message = target_error(root, rel, owners)
         if message:
             errors.append(message)
     if errors:
