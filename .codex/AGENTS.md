@@ -92,7 +92,7 @@
 - 後方互換性を暗黙の既定にしない。変更対象の旧 path が不要と確認でき、現行要件や外部 contract が要求しなければ削除し、compatibility layer、fallback、migration を追加しない。互換性が必要なら対象 contract と removal criteria を明示する。
 - architecture は長期運用に耐える決定を選び、「後で置き換える」前提の stopgap は避ける。段階導入が必要なら temporary scope と exit criteria を明示する。
 - 同じ運用を 2 回以上繰り返したら、skill 化や AGENTS 追加を検討する。
-- AGENTS / rule を追加する前に、既存が同じか矛盾を持たないか照合する。重複なら新設せず統合・書き換えで一本化する。
+- AGENTS / rule を追加する前に、既存が同じか矛盾を持たないか照合する。重複なら新設せず統合・書き換えで一本化する。ドキュメント（指示ファイル）と既存コードが食い違ったら既存コードに従い、見つけた食い違いを最後の報告で挙げる。
 
 ## Harness Rules
 - リンター設定ファイル (`.eslintrc*`, `biome.json`, `.prettierrc*`, `.golangci.yml` 等) は変更禁止。lint 違反はコードで修正する。
