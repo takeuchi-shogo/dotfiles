@@ -107,7 +107,10 @@
       "Bash(agent-browser *--restore*)",
       "Bash(agent-browser *state load*)",
       "Bash(agent-browser *auth *)",
-      "Bash(arc-debug*)"
+      "Bash(arc-debug*)",
+      "Edit(.claude/settings*.json)",
+      "Edit(**/.claude/settings*.json)",
+      "Edit(~/.codex/config.toml)"
     ],
     "deny": [
       "Bash(rm -rf *)",
