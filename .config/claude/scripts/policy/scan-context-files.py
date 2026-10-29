@@ -10,18 +10,26 @@ cd した状態で起動すると、その context ファイルに仕込まれ�
 正規ファイルには現れない難読化シグナル (zero-width / ANSI escape / null byte /
 base64 eval payload) を検出したら additionalContext で警告する。
 
+加えて、Forever Security が報告した Downloads 経由の平文攻撃指標
+(ANTHROPIC_BASE_URL / --dangerously-bypass-approvals-and-sandbox /
+mcp_servers 追加指示) と、cwd が ~/Downloads 配下であることも警告する。
+難読化検出の挙動は変えない。
+
 設計判断:
-- 自然言語の jailbreak ("ignore previous instructions" 等) は対象外。
+- 自然言語の汎用 jailbreak ("ignore previous instructions" 等) は対象外。
   false-positive が高く、SessionStart で誤警告を出すと毎回ノイズになる。
   難読化系は正規の CLAUDE.md には絶対に現れない高シグナル指標なので、
   trust-skip (dotfiles 自身を除外する allowlist) なしで全 cwd をスキャンしても
   誤警告が出ない。
+- 平文の危険指示は攻撃 PoC に現れる固定トークンに限定する (汎用 jailbreak ではない)。
 - symlink: repo 内の相対リンク (例: CLAUDE.md -> AGENTS.md) は正規運用として
   follow + 中身スキャン。絶対パスや cwd 外へ逃げるリンクだけを hostile として警告する。
 - warn-only (exit 2 でブロックしない)。起動を妨げず、判断は人間に委ねる。
 - 出典: Hermes Harness (NousResearch) の "context tier runs prompt-injection
   scanning before loading cwd project files" を /absorb (2026-05-30) で採用。
   難読化パターンは prompt-injection-detector.py と同期 (DRY: 3 consumer 目で lib 化)。
+  平文指標・Downloads 警告は Forever Security (2026-10-22) Downloads hijack を
+  2026-10-27 に採用。
 """
 
 from __future__ import annotations
@@ -78,6 +86,26 @@ SUSPICIOUS_DECODED = (
     "/bin/",
 )
 
+# Forever Security Downloads hijack で観測された平文の危険指示 (高シグナル固定語)
+# 汎用 jailbreak 文言は対象外。攻撃 PoC に現れるトークンのみ。
+PLAINTEXT_THREAT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("anthropic-base-url", re.compile(r"ANTHROPIC_BASE_URL")),
+    (
+        "dangerously-bypass-approvals-and-sandbox",
+        re.compile(r"--dangerously-bypass-approvals-and-sandbox"),
+    ),
+    (
+        "mcp-servers-add",
+        re.compile(
+            r"\[mcp_servers\b"
+            r"|mcp_servers\.[A-Za-z0-9_-]+"
+            r"|(?:add|append|register|追加|登録).{0,120}mcp_servers"
+            r"|mcp_servers.{0,120}(?:add|append|register|追加|登録|config\.toml)",
+            re.IGNORECASE,
+        ),
+    ),
+)
+
 # cwd 起動時に Claude Code が読み込む可能性のある context ファイル
 CONTEXT_FILES = ("CLAUDE.md", "AGENTS.md", ".cursorrules", ".claude/CLAUDE.md")
 
@@ -112,6 +140,26 @@ def _scan_text(text: str) -> tuple[str, str] | None:
     if detail:
         return "base64-payload", detail
     return None
+
+
+def _scan_plaintext_threats(text: str) -> list[tuple[str, str]]:
+    """Return list of (pattern_name, detail) for plain-text attack indicators."""
+    hits: list[tuple[str, str]] = []
+    for name, pattern in PLAINTEXT_THREAT_PATTERNS:
+        match = pattern.search(text)
+        if match:
+            hits.append((name, match.group(0)[:80]))
+    return hits
+
+
+def _is_under_downloads(cwd: Path) -> bool:
+    """True when cwd resolves under ~/Downloads (web-writable drop folder)."""
+    downloads = (Path.home() / "Downloads").resolve()
+    try:
+        cwd.resolve().relative_to(downloads)
+    except (ValueError, OSError):
+        return False
+    return True
 
 
 def _is_in_repo_relative_symlink(fpath: Path, cwd: Path) -> bool:
@@ -157,13 +205,42 @@ def _log(
     )
 
 
+def _emit_warnings(
+    findings: list[tuple[str, str, str]], under_downloads: bool
+) -> None:
+    lines: list[str] = []
+    if under_downloads:
+        lines.extend(
+            [
+                "⚠️ SECURITY: cwd が ~/Downloads 配下です。",
+                "Web ページが無操作で AGENTS.md / CLAUDE.md を落とせる場所なので、"
+                "ここでの agent 起動は設定書き換え攻撃の対象になります。"
+                "別ディレクトリへ移してから起動してください。",
+            ]
+        )
+    if findings:
+        if lines:
+            lines.append("")
+        lines.extend(
+            [
+                "⚠️ SECURITY: cwd の context ファイルに injection / 危険指示 "
+                "シグナルを検出しました。",
+                "これらのファイルは起動時に system prompt へ読み込まれます。"
+                "内容を信頼する前に確認してください:",
+            ]
+        )
+        for rel_path, pattern_name, detail in findings:
+            lines.append(f"  - {rel_path}: {pattern_name} ({detail})")
+    output_context("SessionStart", "\n".join(lines))
+
+
 def main() -> None:
     data = load_hook_input()
     cwd = data.get("cwd") or os.getcwd()
     session_id = data.get("session_id", "unknown")
     cwd_path = Path(cwd)
 
-    findings = []
+    findings: list[tuple[str, str, str]] = []
     for rel_path in CONTEXT_FILES:
         fpath = cwd_path / rel_path
         try:
@@ -187,17 +264,16 @@ def main() -> None:
             pattern_name, detail = result
             _log(cwd, rel_path, pattern_name, detail, session_id)
             findings.append((rel_path, pattern_name, detail))
+        for pattern_name, detail in _scan_plaintext_threats(text):
+            _log(cwd, rel_path, pattern_name, detail, session_id)
+            findings.append((rel_path, pattern_name, detail))
 
-    if findings:
-        lines = [
-            "⚠️ SECURITY: cwd の context ファイルに難読化された injection "
-            "シグナルを検出しました。",
-            "これらのファイルは起動時に system prompt へ読み込まれます。"
-            "内容を信頼する前に確認してください:",
-        ]
-        for rel_path, pattern_name, detail in findings:
-            lines.append(f"  - {rel_path}: {pattern_name} ({detail})")
-        output_context("SessionStart", "\n".join(lines))
+    under_downloads = _is_under_downloads(cwd_path)
+    if under_downloads:
+        _log(cwd, "(cwd)", "downloads-cwd", str(cwd_path), session_id)
+
+    if findings or under_downloads:
+        _emit_warnings(findings, under_downloads)
         return
 
     # Clean — emit nothing (no additionalContext noise)
