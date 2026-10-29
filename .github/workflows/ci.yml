@@ -19,7 +19,7 @@ jobs:
         with:
           enable-cache: false
       - name: Repo harness script tests
-        run: uvx pytest scripts/tests/ -q
+        run: uvx pytest scripts/tests/ -v
       - name: Claude scripts tests
         working-directory: .config/claude/scripts
         run: uvx pytest tests/ -q
