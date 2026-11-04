@@ -16,6 +16,7 @@
 
 ## Blast Radius
 
+取り消せる変更か（two-way）、取り消せない変更か（one-way: 破壊的マイグレーション、公開 API の削除、取り返しのつかない判断）を判断して書く
 1〜2文
 
 ## Verification
