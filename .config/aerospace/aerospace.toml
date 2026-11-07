@@ -213,16 +213,12 @@ if.app-id = 'com.obsproject.obs-studio'
 run = 'layout floating'
 
 [[on-window-detected]]
-if.app-id = 'company.thebrowser.Browser'
+if.app-id = 'company.thebrowser.dia'
 run = 'move-node-to-workspace A'
 
 [[on-window-detected]]
 if.app-id = 'com.brave.Browser'
 run = 'move-node-to-workspace B'
-
-[[on-window-detected]]
-if.app-id = 'company.thebrowser.dia'
-run = 'move-node-to-workspace I'
 
 [[on-window-detected]]
 if.app-id = 'com.github.wez.wezterm'
