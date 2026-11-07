@@ -862,7 +862,8 @@
     "ponytail@ponytail": true,
     "show-me@skills": true,
     "document-skills@anthropic-agent-skills": true,
-    "yomiyasu@yomiyasu": true
+    "yomiyasu@yomiyasu": true,
+    "visual-explainer@visual-explainer-marketplace": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -911,6 +912,12 @@
       "source": {
         "source": "github",
         "repo": "nanaism/yomiyasu"
+      }
+    },
+    "visual-explainer-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "nicobailon/visual-explainer"
       }
     }
   },
