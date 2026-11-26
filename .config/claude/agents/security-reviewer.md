@@ -229,7 +229,7 @@ For each finding, provide:
 
 Output "SECURE — no vulnerabilities detected." if clean.
 PROMPT
-)" 2>/dev/null
+)" </dev/null 2>/dev/null
 ```
 
 **使い分け**: 表面チェックで十分な場合は Codex を呼ばない。以下の場合に Codex を併用する:

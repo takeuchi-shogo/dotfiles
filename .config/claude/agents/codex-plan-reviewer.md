@@ -97,7 +97,7 @@ For each, explain WHY a human should review this specific point.
 If everything looks solid, say so — don't invent problems. Only report genuine concerns.
 Output "NO SIGNIFICANT ISSUES" if the spec and plan are sound.
 PROMPT
-)" 2>/dev/null
+)" </dev/null 2>/dev/null
 ```
 
 4. Codex の分析結果を整理して返す
