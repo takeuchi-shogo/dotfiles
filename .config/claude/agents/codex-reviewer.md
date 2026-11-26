@@ -98,7 +98,7 @@ performance: ?/5
 consistency: ?/5
 weakest: <dimension with lowest score>
 PROMPT
-)" 2>/dev/null
+)" </dev/null 2>/dev/null
 ```
 
 5. Codex の出力をそのまま返す（追加の編集や要約は不要）

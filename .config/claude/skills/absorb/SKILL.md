@@ -336,7 +336,7 @@ Codex と Gemini を **並列** で起動する:
 
 ```bash
 codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only \
-  --config model_reasoning_effort="xhigh" "<prompt>" 2>/dev/null
+  --config model_reasoning_effort="xhigh" "<prompt>" </dev/null 2>/dev/null
 ```
 
 **NG パターン (両方失敗事例あり、使用禁止)**:

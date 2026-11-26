@@ -9,14 +9,16 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 正規パス (優先順):
 
 1. **対話ラリー / セカンドオピニオン / ブラッシュアップ系**: cmux Worker — `scripts/runtime/launch-worker.sh --model codex --task "..."`
-2. **単発投げ・読み取り専用**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..." 2>/dev/null`
+2. **単発投げ・読み取り専用**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..." </dev/null 2>/dev/null`
 3. **Spec/Plan 批評・コードレビュー**: 専用 subagent (`codex-plan-reviewer` / `codex-reviewer`) — これらは codex CLI を内部で直接 spawn する設計で codex:rescue 経路と異なる
-4. **セキュリティ深掘り**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..."`
+4. **セキュリティ深掘り**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..." </dev/null`
+
+> **Bash ツールから `codex exec` を呼ぶときは必ず `</dev/null` を付ける**: codex-cli 0.172.0 の `codex exec` は、プロンプトを引数で渡しても stdin がパイプなら stdin を読んで `<stdin>` ブロックとして足す。Bash ツールの stdin は閉じないソケットなので、EOF を待って API を一度も呼ばずに止まる（CPU 0%、`~/.codex/logs_2.sqlite` に記録なし）。実測 (2026-11-27): stdin を引き継ぐと 40 秒で timeout、`</dev/null` 付きは 4 秒で応答。下の例もすべてこの前提で読む。
 
 > **cmux 不在環境 (CI / SSH 単独) の fallback**: `launch-worker.sh` は cmux が無いと exit 1 する。CI/SSH 環境では正規パス 1 を使わず、正規パス 2 (`codex exec` 直接呼び出し) に切り替える。具体例:
 > ```bash
 > codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only \
->   --config model_reasoning_effort="xhigh" "<prompt>" 2>/dev/null
+>   --config model_reasoning_effort="xhigh" "<prompt>" </dev/null 2>/dev/null
 > ```
 > docs/policy script の推奨メッセージが launch-worker.sh のみを示している場合は読み手が判断する責任。
 > **codex-reviewer subagent と codex:codex-rescue subagent の差**: codex-reviewer は codex CLI を内部で短時間 spawn する確定的 wrapper (input/output ともに structured)、codex:codex-rescue は `--background` で codex を長時間 detach し reasoning loop で stall するインタラクティブ経路。両者は「subagent → codex」という共通点はあるが、ライフサイクル管理と observability が決定的に異なる。前者は安全、後者は廃止。
@@ -38,11 +40,11 @@ Codex CLI は設計判断、深い推論、複雑なデバッグを担当する�
 ## 委譲方法
 
 - **Spec/Plan 批評**: `codex-plan-reviewer` エージェント（read-only、CREATE 後 → Implement 前で起動）
-- **セキュリティ分析**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..."`
+- **セキュリティ分析**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only --config model_reasoning_effort="xhigh" "..." </dev/null`
 - **分析・レビュー (対話ラリー)**: cmux Worker — `scripts/runtime/launch-worker.sh --model codex --task "..."`
 - **コードレビュー**: `codex-reviewer` エージェント（read-only、他レビューアーと並列起動）
 - **手動レビュー**: `/codex:review` または `/codex:adversarial-review` スキル（公式プラグイン）
-- **直接呼び出し**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only "..." 2>/dev/null`
+- **直接呼び出し**: `codex exec --skip-git-repo-check -m gpt-5.6-terra --sandbox read-only "..." </dev/null 2>/dev/null`
 - **レビュー/セキュリティは必ず xhigh**: `--config model_reasoning_effort="xhigh"` を明示する。`-p <profile>` は使わない（後述）
 
 ## Codex 深掘り分析の使い分け
@@ -82,7 +84,7 @@ Codex (GPT系) は `apply_patch` 形式に最適化されているが、`str_rep
 ```bash
 # Plan ファイルを渡して実装を委譲
 codex exec --skip-git-repo-check -m gpt-5.6-terra \
-  "Read tmp/plans/{plan}.md and implement all tasks. Follow the acceptance criteria exactly."
+  "Read tmp/plans/{plan}.md and implement all tasks. Follow the acceptance criteria exactly." </dev/null
 ```
 
 Claude はプラン策定・レビュー・統合の上流/下流を担当し、Codex は中間の実装を担当する分業モデル。
@@ -154,7 +156,7 @@ codex-cli 0.144.6 の `spawn_agent` が取るのは `task_name` / `message` / `f
 
 ```bash
 codex exec --skip-git-repo-check --sandbox read-only -c model_reasoning_effort=low \
-  "List the parameter names of your spawn_agent tool, one per line. Nothing else."
+  "List the parameter names of your spawn_agent tool, one per line. Nothing else." </dev/null
 ```
 
 ### `-p <profile>` は使わない
